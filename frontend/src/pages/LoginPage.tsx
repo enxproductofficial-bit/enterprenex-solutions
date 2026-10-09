@@ -12,6 +12,7 @@ import {
   Users,
   Home,
   CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import { useAdmin } from '../admin/context/AdminContext';
 import './register/register.css';
@@ -24,24 +25,48 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setStatusMessage(null);
+    setErrorMessage(null);
 
-    const inputEmail = email.trim();
+    const inputEmail = email.trim().toLowerCase();
+    const inputPassword = password.trim();
+
+    const REQUIRED_PASSWORD = 'Enx_sol_121006';
+    const DIRECTOR_EMAILS = [
+      'director@enterprenexsolution.com',
+      'rohit@enterprenexsolution.com',
+      'abvpcsnagar@gmail.com'
+    ];
+    const MANAGER_HR_EMAILS = [
+      'hr@enterprenexsolution.com',
+      'manager@enterprenexsolution.com'
+    ];
+
     setTimeout(() => {
       setIsLoading(false);
-      setStatusMessage(`Logged in successfully as ${role.toUpperCase()}! Redirecting...`);
+
+      // Validate Password
+      if (inputPassword !== REQUIRED_PASSWORD && inputPassword !== '7020443880') {
+        setErrorMessage('Access Denied: Incorrect security password.');
+        return;
+      }
 
       if (role === 'director') {
+        if (!DIRECTOR_EMAILS.includes(inputEmail)) {
+          setErrorMessage('Access Denied: Only authorized Director email accounts can log in here.');
+          return;
+        }
+
+        setStatusMessage('Authenticated successfully as DIRECTOR. Redirecting to Executive Suite...');
         login({
           id: 'usr-dir',
           name: 'Company Director',
-          email: inputEmail || 'director@enterprenexsolution.com',
+          email: inputEmail,
           role: 'Super Admin',
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
           department: 'Executive Board',
@@ -51,23 +76,37 @@ export const LoginPage: React.FC = () => {
         });
         setTimeout(() => navigate('/admin'), 600);
       } else if (role === 'manager') {
+        if (!MANAGER_HR_EMAILS.includes(inputEmail)) {
+          setErrorMessage('Access Denied: Only authorized Manager / HR email accounts can log in here.');
+          return;
+        }
+
+        const isHr = inputEmail.includes('hr@');
+        setStatusMessage(`Authenticated successfully as ${isHr ? 'HR ADMINISTRATOR' : 'OPERATIONS MANAGER'}. Redirecting...`);
         login({
           id: 'usr-mgr',
-          name: 'Manager / HR Admin',
-          email: inputEmail || 'manager@enterprenexsolution.com',
+          name: isHr ? 'HR Administrator' : 'Operations Manager',
+          email: inputEmail,
           role: 'Project Manager',
           avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-          department: 'HR & Project Operations',
+          department: isHr ? 'Human Resources' : 'Project Management',
           status: 'Active',
           lastLogin: 'Just now',
           phone: '+91-7020443880'
         });
         setTimeout(() => navigate('/admin'), 600);
       } else {
+        // Employee portal
+        if (!inputEmail) {
+          setErrorMessage('Please enter your Official Email or Employee ID (e.g. EPX-101).');
+          return;
+        }
+
+        setStatusMessage('Authenticated successfully as STAFF. Redirecting to Task Workspace...');
         login({
           id: 'usr-emp',
           name: 'Staff Employee',
-          email: inputEmail || 'EPX-101',
+          email: inputEmail,
           role: 'Team Member',
           avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
           department: 'Engineering Department',
@@ -77,7 +116,7 @@ export const LoginPage: React.FC = () => {
         });
         setTimeout(() => navigate('/admin/tasks'), 600);
       }
-    }, 500);
+    }, 400);
   };
 
   return (
@@ -186,6 +225,27 @@ export const LoginPage: React.FC = () => {
             >
               <CheckCircle2 size={16} />
               <span>{statusMessage}</span>
+            </div>
+          )}
+
+          {errorMessage && (
+            <div
+              style={{
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                color: '#991b1b',
+                padding: '0.75rem 1rem',
+                borderRadius: '10px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '1.25rem',
+              }}
+            >
+              <AlertCircle size={16} color="#dc2626" />
+              <span>{errorMessage}</span>
             </div>
           )}
 

@@ -20,24 +20,30 @@ export const AdminLoginPage: React.FC = () => {
     const inputEmail = email.trim().toLowerCase();
     const inputPassword = password.trim();
 
-    // Authenticate primary Super Admin credentials
-    const isPrimaryAuth = inputEmail === 'abvpcsnagar@gmail.com' && inputPassword === '7020443880';
+    const isPasswordValid = inputPassword === 'Enx_sol_121006' || inputPassword === '7020443880';
+    const isDirector = (inputEmail === 'director@enterprenexsolution.com' || inputEmail === 'rohit@enterprenexsolution.com' || inputEmail === 'abvpcsnagar@gmail.com') && isPasswordValid;
+    const isHr = inputEmail === 'hr@enterprenexsolution.com' && isPasswordValid;
+    const isManager = inputEmail === 'manager@enterprenexsolution.com' && isPasswordValid;
 
-    if (isPrimaryAuth) {
-      const superAdminUser: AdminUser = {
-        id: 'usr-1',
-        name: 'Enterprenex Super Admin',
-        email: 'abvpcsnagar@gmail.com',
-        role: 'Super Admin',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-        department: 'Executive Management',
+    if (isDirector || isHr || isManager) {
+      const authenticatedUser: AdminUser = {
+        id: isDirector ? 'usr-dir' : isHr ? 'usr-hr' : 'usr-mgr',
+        name: isDirector ? 'Company Director' : isHr ? 'HR Administrator' : 'Operations Manager',
+        email: inputEmail,
+        role: isDirector ? 'Super Admin' : 'Project Manager',
+        avatar: isDirector
+          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+          : isHr
+          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150'
+          : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        department: isDirector ? 'Executive Management' : isHr ? 'Human Resources' : 'Project Management',
         status: 'Active',
         lastLogin: 'Just now',
         phone: '+91-7020443880'
       };
 
       setTimeout(() => {
-        login(superAdminUser);
+        login(authenticatedUser);
         setIsLoading(false);
         navigate('/admin');
       }, 400);
