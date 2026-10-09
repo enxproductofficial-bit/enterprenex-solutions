@@ -13,10 +13,12 @@ import {
   Home,
   CheckCircle2,
 } from 'lucide-react';
+import { useAdmin } from '../admin/context/AdminContext';
 import './register/register.css';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAdmin();
   const [role, setRole] = useState<'director' | 'employee' | 'manager'>('director');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,18 +32,52 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
     setStatusMessage(null);
 
-    // Simulate login for the selected role
+    const inputEmail = email.trim();
     setTimeout(() => {
       setIsLoading(false);
       setStatusMessage(`Logged in successfully as ${role.toUpperCase()}! Redirecting...`);
-      setTimeout(() => {
-        if (role === 'director' || role === 'manager') {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
-      }, 1000);
-    }, 600);
+
+      if (role === 'director') {
+        login({
+          id: 'usr-dir',
+          name: 'Company Director',
+          email: inputEmail || 'director@enterprenexsolution.com',
+          role: 'Super Admin',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          department: 'Executive Board',
+          status: 'Active',
+          lastLogin: 'Just now',
+          phone: '+91-7020443880'
+        });
+        setTimeout(() => navigate('/admin'), 600);
+      } else if (role === 'manager') {
+        login({
+          id: 'usr-mgr',
+          name: 'Manager / HR Admin',
+          email: inputEmail || 'manager@enterprenexsolution.com',
+          role: 'Project Manager',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          department: 'HR & Project Operations',
+          status: 'Active',
+          lastLogin: 'Just now',
+          phone: '+91-7020443880'
+        });
+        setTimeout(() => navigate('/admin'), 600);
+      } else {
+        login({
+          id: 'usr-emp',
+          name: 'Staff Employee',
+          email: inputEmail || 'EPX-101',
+          role: 'Team Member',
+          avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+          department: 'Engineering Department',
+          status: 'Active',
+          lastLogin: 'Just now',
+          phone: '+91-7020443880'
+        });
+        setTimeout(() => navigate('/admin/tasks'), 600);
+      }
+    }, 500);
   };
 
   return (
