@@ -317,7 +317,7 @@ export interface VaultDocument {
 export interface CalendarMeeting {
   id: string;
   title: string;
-  type: 'Client Demo' | 'Sprint Planning' | 'Lead Follow-up' | 'Project Milestone' | 'Internal Sync';
+  type: 'Client Presentation' | 'Sprint Planning' | 'Lead Follow-up' | 'Project Milestone' | 'Internal Sync';
   date: string; // YYYY-MM-DD
   time: string; // e.g. 10:30 AM - 11:30 AM
   attendees: string[];

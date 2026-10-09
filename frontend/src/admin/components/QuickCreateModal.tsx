@@ -329,17 +329,17 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
             <div className="adm-grid-2">
               <div className="adm-form-group">
                 <label className="adm-form-label">Company Name *</label>
-                <input className="adm-input" required value={cName} onChange={e => setCName(e.target.value)} placeholder="e.g. Apex Industrial Systems" />
+                <input className="adm-input" required value={cName} onChange={e => setCName(e.target.value)} placeholder="Enterprise Company Name" />
               </div>
               <div className="adm-form-group">
                 <label className="adm-form-label">Industry</label>
-                <input className="adm-input" value={cIndustry} onChange={e => setCIndustry(e.target.value)} placeholder="e.g. Logistics & Supply Chain" />
+                <input className="adm-input" value={cIndustry} onChange={e => setCIndustry(e.target.value)} placeholder="Industry / Domain" />
               </div>
             </div>
             <div className="adm-grid-3">
               <div className="adm-form-group">
                 <label className="adm-form-label">Primary Contact Person</label>
-                <input className="adm-input" value={cContactName} onChange={e => setCContactName(e.target.value)} placeholder="e.g. Vikramaditya Mehta" />
+                <input className="adm-input" value={cContactName} onChange={e => setCContactName(e.target.value)} placeholder="Primary Contact Name" />
               </div>
               <div className="adm-form-group">
                 <label className="adm-form-label">Email</label>
@@ -347,7 +347,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               </div>
               <div className="adm-form-group">
                 <label className="adm-form-label">Phone</label>
-                <input className="adm-input" value={cPhone} onChange={e => setCPhone(e.target.value)} placeholder="+91-9820112233" />
+                <input className="adm-input" value={cPhone} onChange={e => setCPhone(e.target.value)} placeholder="+91-98XXXXXXXX" />
               </div>
             </div>
             <div className="adm-grid-3">
@@ -357,7 +357,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               </div>
               <div className="adm-form-group">
                 <label className="adm-form-label">Website URL</label>
-                <input className="adm-input" value={cWebsite} onChange={e => setCWebsite(e.target.value)} placeholder="https://apex.com" />
+                <input className="adm-input" value={cWebsite} onChange={e => setCWebsite(e.target.value)} placeholder="https://company.com" />
               </div>
               <div className="adm-form-group">
                 <label className="adm-form-label">City</label>
@@ -377,21 +377,21 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
             <div className="adm-grid-2">
               <div className="adm-form-group">
                 <label className="adm-form-label">Prospect Name *</label>
-                <input className="adm-input" required value={lName} onChange={e => setLName(e.target.value)} placeholder="e.g. Sameer Joshi" />
+                <input className="adm-input" required value={lName} onChange={e => setLName(e.target.value)} placeholder="Prospect Contact Name" />
               </div>
               <div className="adm-form-group">
                 <label className="adm-form-label">Company / Organization *</label>
-                <input className="adm-input" required value={lCompany} onChange={e => setLCompany(e.target.value)} placeholder="e.g. Apex Logistics" />
+                <input className="adm-input" required value={lCompany} onChange={e => setLCompany(e.target.value)} placeholder="Prospect Enterprise Name" />
               </div>
             </div>
             <div className="adm-grid-3">
               <div className="adm-form-group">
                 <label className="adm-form-label">Email</label>
-                <input className="adm-input" type="email" value={lEmail} onChange={e => setLEmail(e.target.value)} placeholder="sameer@apex.in" />
+                <input className="adm-input" type="email" value={lEmail} onChange={e => setLEmail(e.target.value)} placeholder="prospect@company.com" />
               </div>
               <div className="adm-form-group">
                 <label className="adm-form-label">Phone</label>
-                <input className="adm-input" value={lPhone} onChange={e => setLPhone(e.target.value)} placeholder="+91-9890123456" />
+                <input className="adm-input" value={lPhone} onChange={e => setLPhone(e.target.value)} placeholder="+91-98XXXXXXXX" />
               </div>
               <div className="adm-form-group">
                 <label className="adm-form-label">Estimated Deal Value (₹)</label>

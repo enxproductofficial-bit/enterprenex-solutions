@@ -22,7 +22,7 @@ import type {
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-1',
-    name: 'Enterprenex Director',
+    name: 'Rohit P.',
     email: 'director@enterprenexsolution.com',
     role: 'Super Admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
@@ -33,7 +33,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   },
   {
     id: 'usr-2',
-    name: 'Operations & HR Manager',
+    name: 'Operations & HR Lead',
     email: 'manager@enterprenexsolution.com',
     role: 'Project Manager',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
@@ -44,7 +44,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   },
   {
     id: 'usr-3',
-    name: 'Staff Employee (EPX-101)',
+    name: 'Engineering Staff (EPX-101)',
     email: 'employee@enterprenexsolution.com',
     role: 'Team Member',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
@@ -206,13 +206,13 @@ export const INITIAL_EXPENSES: ExpenseRecord[] = [];
 export const INITIAL_EMPLOYEES: Employee[] = [
   {
     id: 'emp-1',
-    name: 'Enterprenex Admin',
-    role: 'Lead Full-Stack Architect',
-    department: 'Engineering',
+    name: 'Rohit P.',
+    role: 'Managing Director & Lead Architect',
+    department: 'Executive Engineering',
     email: 'director@enterprenexsolution.com',
     phone: '+91-9226860060',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker', 'Kubernetes'],
+    skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Cloud Architecture', 'AI Systems'],
     currentProjects: [],
     workloadPercentage: 20,
     joinDate: '2026-01-01',
@@ -269,53 +269,15 @@ export const INITIAL_CMS: WebsiteCmsData = {
     ctaPrimary: 'Explore Our Services',
     ctaSecondary: 'Schedule a Consultation'
   },
-  testimonials: [
-    {
-      id: 'tst-1',
-      name: 'Vikramaditya Mehta',
-      role: 'Chief Technology Officer',
-      company: 'Bharat Fintech Solutions',
-      rating: 5,
-      quote: 'Enterprenex delivered our micro-lending architecture on time with immaculate security standards. Their engineering team is second to none.',
-      approved: true
-    },
-    {
-      id: 'tst-2',
-      name: 'Dr. Ananya Ray',
-      role: 'Managing Director',
-      company: 'MediHealth Diagnostics',
-      rating: 5,
-      quote: 'The AI pathology scanner built by Enterprenex transformed our lab throughput. The attention to clinical accuracy was outstanding.',
-      approved: true
-    }
-  ],
-  portfolioItems: [
-    {
-      id: 'port-1',
-      title: 'BharatPay MSME Lending Core',
-      category: 'Fintech & Web',
-      description: 'Instant credit decisioning portal processing over ₹50M in daily loan disbursements with automated KYC.',
-      metric: '₹50M+ Daily Disbursements',
-      techStack: ['React', 'Node.js', 'PostgreSQL', 'Docker'],
-      featured: true
-    },
-    {
-      id: 'port-2',
-      title: 'CellVision Deep Learning Pathology',
-      category: 'AI & Healthcare',
-      description: 'High-throughput computer vision classifier detecting abnormal histopathology cellular structures in <150ms.',
-      metric: '99.4% Detection Recall',
-      techStack: ['PyTorch', 'FastAPI', 'AWS SageMaker', 'React'],
-      featured: true
-    }
-  ],
+  testimonials: [],
+  portfolioItems: [],
   blogPosts: [
     {
       id: 'blg-1',
       title: 'Building Zero-Downtime Microservices on Kubernetes for Fintech',
       slug: 'zero-downtime-fintech-kubernetes',
       category: 'Engineering',
-      author: 'Enterprenex Team',
+      author: 'Enterprenex Engineering',
       date: 'Feb 15, 2026',
       readTime: '6 min read',
       status: 'Published',
@@ -349,13 +311,13 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
   {
     id: 'log-1',
     userId: 'usr-1',
-    userName: 'Enterprenex Super Admin',
+    userName: 'Rohit P. (Director)',
     userRole: 'Super Admin',
-    action: 'System Initialized',
+    action: 'Platform Active',
     module: 'Admin & Security',
     ipAddress: '10.206.229.155',
     timestamp: 'Just now',
-    details: 'Zero-trust clean database initialized with primary admin director@enterprenexsolution.com'
+    details: 'Zero-trust enterprise governance active for director@enterprenexsolution.com'
   }
 ];
 
@@ -374,8 +336,8 @@ export const INITIAL_API_KEYS: ApiKeyItem[] = [
 export const INITIAL_SESSIONS: UserSession[] = [
   {
     id: 'sess-1',
-    userName: 'Enterprenex Super Admin',
-    device: 'Authorized Admin Station',
+    userName: 'Rohit P. (Director)',
+    device: 'Authorized Executive Workstation',
     ipAddress: '10.206.229.155',
     location: 'India',
     loginTime: 'Just now',

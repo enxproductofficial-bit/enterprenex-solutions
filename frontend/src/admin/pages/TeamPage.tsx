@@ -252,7 +252,7 @@ export const TeamPage: React.FC = () => {
               <div className="adm-grid-2">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Full Name *</label>
-                  <input className="adm-input" required value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Rahul Deshmukh" />
+                  <input className="adm-input" required value={name} onChange={e => setName(e.target.value)} placeholder="Enter Employee Full Name" />
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Governance Role *</label>

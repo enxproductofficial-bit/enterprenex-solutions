@@ -66,7 +66,7 @@ export const LoginPage: React.FC = () => {
         setStatusMessage('Authenticated successfully as DIRECTOR. Redirecting to Executive Suite...');
         login({
           id: 'usr-dir',
-          name: 'Company Director',
+          name: 'Rohit P. (Managing Director)',
           email: inputEmail,
           role: 'Super Admin',
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
@@ -106,7 +106,7 @@ export const LoginPage: React.FC = () => {
         setStatusMessage('Authenticated successfully as STAFF. Redirecting to Task Workspace...');
         login({
           id: 'usr-emp',
-          name: 'Staff Employee',
+          name: 'Engineering Staff (EPX-101)',
           email: inputEmail,
           role: 'Team Member',
           avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',

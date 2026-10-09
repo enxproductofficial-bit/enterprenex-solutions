@@ -424,38 +424,41 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     borderRadius: 'var(--adm-radius)',
                     boxShadow: 'var(--adm-shadow-lg)',
                     zIndex: 1000,
-                    padding: '0.75rem'
+                    padding: '1rem'
                   }}
                 >
-                  <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', padding: '4px 8px', fontWeight: 700 }}>
-                    Switch Demo Profile
-                  </div>
-
-                  {users.map(u => (
-                    <div
-                      key={u.id}
-                      onClick={() => { switchUser(u.id); setShowUserMenu(false); }}
-                      style={{
-                        padding: '6px 8px',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.6rem',
-                        background: currentUser?.id === u.id ? 'var(--adm-primary-soft)' : 'transparent',
-                        border: currentUser?.id === u.id ? '1px solid var(--adm-primary-border)' : '1px solid transparent',
-                        marginBottom: '4px'
-                      }}
-                    >
-                      <img src={u.avatar} alt={u.name} style={{ width: '26px', height: '26px', borderRadius: '50%' }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fff' }}>{u.name}</div>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-muted)' }}>{u.role}</div>
+                  {currentUser && (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
+                        <img src={currentUser.avatar} alt={currentUser.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {currentUser.name}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
+                            {currentUser.role}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
 
-                  <div style={{ borderTop: '1px solid var(--adm-border)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
+                      <div style={{ padding: '0.65rem 0.75rem', background: 'var(--adm-bg)', borderRadius: '6px', fontSize: '0.75rem', marginBottom: '0.85rem', border: '1px solid var(--adm-border)' }}>
+                        <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '2px' }}>
+                          Official Email
+                        </div>
+                        <div style={{ color: '#fff', fontWeight: 600, wordBreak: 'break-all' }}>
+                          {currentUser.email}
+                        </div>
+                        <div style={{ marginTop: '6px', color: 'var(--adm-text-dim)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '2px' }}>
+                          Department
+                        </div>
+                        <div style={{ color: 'var(--adm-text-muted)', fontWeight: 500 }}>
+                          {currentUser.department}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div style={{ borderTop: '1px solid var(--adm-border)', paddingTop: '0.5rem' }}>
                     <button
                       onClick={() => { logout(); navigate('/admin/login'); }}
                       style={{

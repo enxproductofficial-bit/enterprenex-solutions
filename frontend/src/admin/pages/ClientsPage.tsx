@@ -377,11 +377,11 @@ export const ClientsPage: React.FC = () => {
               <div className="adm-grid-2">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Company Name *</label>
-                  <input className="adm-input" required value={formName} onChange={e => setFormName(e.target.value)} placeholder="e.g. Apex Industrial Solutions" />
+                  <input className="adm-input" required value={formName} onChange={e => setFormName(e.target.value)} placeholder="Enterprise Company Name" />
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Industry Sector</label>
-                  <input className="adm-input" value={formIndustry} onChange={e => setFormIndustry(e.target.value)} placeholder="e.g. Logistics & Supply Chain" />
+                  <input className="adm-input" value={formIndustry} onChange={e => setFormIndustry(e.target.value)} placeholder="Industry Sector" />
                 </div>
               </div>
 
@@ -392,29 +392,29 @@ export const ClientsPage: React.FC = () => {
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Website URL</label>
-                  <input className="adm-input" value={formWebsite} onChange={e => setFormWebsite(e.target.value)} placeholder="https://apex.com" />
+                  <input className="adm-input" value={formWebsite} onChange={e => setFormWebsite(e.target.value)} placeholder="https://company.com" />
                 </div>
               </div>
 
               <div className="adm-grid-3">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Primary Contact Person *</label>
-                  <input className="adm-input" required value={formContactName} onChange={e => setFormContactName(e.target.value)} placeholder="e.g. Rohan Deshpande" />
+                  <input className="adm-input" required value={formContactName} onChange={e => setFormContactName(e.target.value)} placeholder="Primary Contact Name" />
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Designation</label>
-                  <input className="adm-input" value={formContactRole} onChange={e => setFormContactRole(e.target.value)} placeholder="VP Engineering" />
+                  <input className="adm-input" value={formContactRole} onChange={e => setFormContactRole(e.target.value)} placeholder="Designation / Role" />
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Contact Email *</label>
-                  <input className="adm-input" type="email" required value={formEmail} onChange={e => setFormEmail(e.target.value)} placeholder="rohan@apex.com" />
+                  <input className="adm-input" type="email" required value={formEmail} onChange={e => setFormEmail(e.target.value)} placeholder="contact@company.com" />
                 </div>
               </div>
 
               <div className="adm-grid-2">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Phone Number</label>
-                  <input className="adm-input" value={formPhone} onChange={e => setFormPhone(e.target.value)} placeholder="+91-9820112233" />
+                  <input className="adm-input" value={formPhone} onChange={e => setFormPhone(e.target.value)} placeholder="+91-98XXXXXXXX" />
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">City</label>

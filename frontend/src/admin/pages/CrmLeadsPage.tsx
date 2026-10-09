@@ -449,22 +449,22 @@ export const CrmLeadsPage: React.FC = () => {
               <div className="adm-grid-2">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Contact Name *</label>
-                  <input className="adm-input" required value={fName} onChange={e => setFName(e.target.value)} placeholder="e.g. Sameer Joshi" />
+                  <input className="adm-input" required value={fName} onChange={e => setFName(e.target.value)} placeholder="Prospect Contact Name" />
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Company / Enterprise *</label>
-                  <input className="adm-input" required value={fCompany} onChange={e => setFCompany(e.target.value)} placeholder="e.g. Apex Logistics Corp" />
+                  <input className="adm-input" required value={fCompany} onChange={e => setFCompany(e.target.value)} placeholder="Prospect Enterprise Name" />
                 </div>
               </div>
 
               <div className="adm-grid-2">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Email</label>
-                  <input className="adm-input" type="email" required value={fEmail} onChange={e => setFEmail(e.target.value)} placeholder="sameer@apex.in" />
+                  <input className="adm-input" type="email" required value={fEmail} onChange={e => setFEmail(e.target.value)} placeholder="contact@enterprise.com" />
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Phone Number</label>
-                  <input className="adm-input" value={fPhone} onChange={e => setFPhone(e.target.value)} placeholder="+91-9890123456" />
+                  <input className="adm-input" value={fPhone} onChange={e => setFPhone(e.target.value)} placeholder="+91-98XXXXXXXX" />
                 </div>
               </div>
 

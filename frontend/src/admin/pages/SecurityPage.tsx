@@ -88,9 +88,9 @@ export const SecurityPage: React.FC = () => {
           <p>Zero-trust IP whitelisting, granular RBAC permissions, real-time audit stream & cryptographic API keys</p>
         </div>
         <div className="adm-page-actions">
-          <button className="adm-btn adm-btn-danger" onClick={resetAllData} title="Reset mock data to initial seeds">
+          <button className="adm-btn adm-btn-secondary" onClick={resetAllData} title="Synchronize security state with ledger">
             <RefreshCw size={15} />
-            <span>Reset Demo Store</span>
+            <span>Sync Security State</span>
           </button>
         </div>
       </div>

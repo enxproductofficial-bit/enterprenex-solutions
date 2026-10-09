@@ -28,7 +28,7 @@ export const AdminLoginPage: React.FC = () => {
     if (isDirector || isHr || isManager) {
       const authenticatedUser: AdminUser = {
         id: isDirector ? 'usr-dir' : isHr ? 'usr-hr' : 'usr-mgr',
-        name: isDirector ? 'Company Director' : isHr ? 'HR Administrator' : 'Operations Manager',
+        name: isDirector ? 'Rohit P. (Managing Director)' : isHr ? 'HR Administrator' : 'Operations Manager',
         email: inputEmail,
         role: isDirector ? 'Super Admin' : 'Project Manager',
         avatar: isDirector

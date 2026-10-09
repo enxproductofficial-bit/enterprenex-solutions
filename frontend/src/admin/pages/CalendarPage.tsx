@@ -12,13 +12,13 @@ import {
 import type { CalendarMeeting } from '../types';
 
 export const CalendarPage: React.FC = () => {
-  const { meetings, addMeeting, deleteMeeting } = useAdmin();
+  const { meetings, addMeeting, deleteMeeting, currentUser } = useAdmin();
   const [selectedType, setSelectedType] = useState<string>('All');
   const [showAddModal, setShowAddModal] = useState(false);
 
   // Form State
   const [fTitle, setFTitle] = useState('');
-  const [fType, setFType] = useState<CalendarMeeting['type']>('Client Demo');
+  const [fType, setFType] = useState<CalendarMeeting['type']>('Client Presentation');
   const [fDate, setFDate] = useState(new Date().toISOString().split('T')[0]);
   const [fTime, setFTime] = useState('11:00 AM - 12:00 PM');
   const [fLocation, setFLocation] = useState('Google Meet');
@@ -34,7 +34,7 @@ export const CalendarPage: React.FC = () => {
       type: fType,
       date: fDate,
       time: fTime,
-      attendees: ['Pranav Khaire', 'Aniket Tambe'],
+      attendees: [currentUser?.name || 'Enterprenex Team'],
       location: fLocation,
       meetUrl: fMeetUrl,
       description: fDesc || 'Sprint sync & client roadmap discussion.'
@@ -50,7 +50,7 @@ export const CalendarPage: React.FC = () => {
       <div className="adm-page-header">
         <div className="adm-page-title-group">
           <h1>Calendar & Executive Meetings</h1>
-          <p>Client demonstrations, sprint milestone reviews, Google Meet/Zoom video integration & follow-ups</p>
+          <p>Executive reviews, client presentations, Google Meet/Zoom video integration & follow-ups</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
@@ -63,7 +63,7 @@ export const CalendarPage: React.FC = () => {
       {/* Filter Bar */}
       <div className="adm-card" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontWeight: 600, marginRight: '0.5rem' }}>Meeting Type:</span>
-        {(['All', 'Client Demo', 'Sprint Planning', 'Lead Follow-up', 'Internal Sync'] as const).map(t => (
+        {(['All', 'Client Presentation', 'Sprint Planning', 'Lead Follow-up', 'Internal Sync'] as const).map(t => (
           <button
             key={t}
             onClick={() => setSelectedType(t)}
@@ -155,7 +155,7 @@ export const CalendarPage: React.FC = () => {
         <div className="adm-modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Schedule Event / Demo Call</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Schedule Event / Meeting</h3>
               <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
@@ -164,14 +164,14 @@ export const CalendarPage: React.FC = () => {
             <form onSubmit={handleCreateMeeting}>
               <div className="adm-form-group">
                 <label className="adm-form-label">Meeting Title *</label>
-                <input className="adm-input" required value={fTitle} onChange={e => setFTitle(e.target.value)} placeholder="e.g. AI Scanner Live Client Demo" />
+                <input className="adm-input" required value={fTitle} onChange={e => setFTitle(e.target.value)} placeholder="e.g. Solution Architecture Review" />
               </div>
 
               <div className="adm-grid-2">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Meeting Type</label>
                   <select className="adm-select" value={fType} onChange={e => setFType(e.target.value as any)}>
-                    <option value="Client Demo">Client Demo</option>
+                    <option value="Client Presentation">Client Presentation</option>
                     <option value="Sprint Planning">Sprint Planning</option>
                     <option value="Lead Follow-up">Lead Follow-up</option>
                     <option value="Internal Sync">Internal Sync</option>

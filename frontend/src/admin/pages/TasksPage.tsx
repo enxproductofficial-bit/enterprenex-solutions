@@ -17,7 +17,7 @@ import type { Task, TaskColumn, TaskPriority } from '../types';
 const TASK_COLUMNS: TaskColumn[] = ['To Do', 'In Progress', 'In Review', 'Testing', 'Done'];
 
 export const TasksPage: React.FC = () => {
-  const { tasks, projects, employees, addTask, updateTaskStatus, toggleSubtask, addTaskComment, logTaskTime, deleteTask } = useAdmin();
+  const { tasks, projects, employees, addTask, updateTaskStatus, toggleSubtask, addTaskComment, logTaskTime, deleteTask, currentUser } = useAdmin();
   const [search, setSearch] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('All');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -28,7 +28,7 @@ export const TasksPage: React.FC = () => {
   // Form State
   const [fTitle, setFTitle] = useState('');
   const [fProjectId, setFProjectId] = useState(projects[0]?.id || '');
-  const [fAssignedTo, setFAssignedTo] = useState(employees[0]?.name || 'Aniket Tambe');
+  const [fAssignedTo, setFAssignedTo] = useState(employees[0]?.name || currentUser?.name || 'Assigned Engineer');
   const [fPriority, setFPriority] = useState<TaskPriority>('Medium');
   const [fDue, setFDue] = useState('2026-03-01');
   const [fDesc, setFDesc] = useState('');
@@ -72,8 +72,8 @@ export const TasksPage: React.FC = () => {
     if (selectedTask?.id === taskId) {
       const newCm = {
         id: 'cm-' + Date.now(),
-        author: 'Pranav Khaire',
-        authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        author: currentUser?.name || 'Assigned Engineer',
+        authorAvatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
         text: commentInput,
         createdAt: 'Just now'
       };

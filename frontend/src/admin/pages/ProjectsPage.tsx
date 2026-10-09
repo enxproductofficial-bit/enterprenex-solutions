@@ -59,7 +59,7 @@ export const ProjectsPage: React.FC = () => {
       expenses: 0,
       startDate: fStart,
       targetEndDate: fEnd,
-      assignedTeam: [employees[0]?.name || 'Aniket Tambe', employees[1]?.name || 'Rahul Deshmukh'],
+      assignedTeam: employees.length > 0 ? employees.map(e => e.name) : ['Enterprenex Engineering Squad'],
       techStack: fTechStack.split(',').map(s => s.trim()).filter(Boolean),
       serviceCategory: fCategory,
       description: fDesc || 'Full-cycle enterprise software development engagement.',

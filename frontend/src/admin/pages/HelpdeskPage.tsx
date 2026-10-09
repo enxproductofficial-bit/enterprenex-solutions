@@ -11,7 +11,7 @@ import {
 import type { SupportTicket } from '../types';
 
 export const HelpdeskPage: React.FC = () => {
-  const { tickets, clients, employees, addTicket, updateTicketStatus, addTicketReply } = useAdmin();
+  const { tickets, clients, employees, addTicket, updateTicketStatus, addTicketReply, currentUser } = useAdmin();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
@@ -23,7 +23,7 @@ export const HelpdeskPage: React.FC = () => {
   const [fClientId, setFClientId] = useState(clients[0]?.id || '');
   const [fPriority, setFPriority] = useState<SupportTicket['priority']>('Medium');
   const [fCategory, setFCategory] = useState<SupportTicket['category']>('Bug Fix');
-  const [fAssignedTo, setFAssignedTo] = useState(employees[0]?.name || 'Aniket Tambe');
+  const [fAssignedTo, setFAssignedTo] = useState(employees[0]?.name || currentUser?.name || 'Support Specialist');
 
   const filteredTickets = tickets.filter(t => {
     const matchSearch = t.ticketNumber.toLowerCase().includes(search.toLowerCase()) ||
@@ -57,7 +57,7 @@ export const HelpdeskPage: React.FC = () => {
     if (selectedTicket?.id === ticketId) {
       const newMsg = {
         id: 'msg-' + Date.now(),
-        sender: 'Pranav Khaire (Staff)',
+        sender: currentUser?.name ? `${currentUser.name} (Support)` : 'Technical Support',
         isClient: false,
         text: replyText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
