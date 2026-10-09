@@ -1,6 +1,7 @@
-# React + TypeScript + Vite
+# Enterprenex Solutions - Enterprise Workspace Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Official management platform and staff portal for Enterprenex Solutions Pvt Ltd.
+
 
 Currently, two official plugins are available:
 
