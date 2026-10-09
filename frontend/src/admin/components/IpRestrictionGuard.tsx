@@ -47,7 +47,8 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
     e.preventDefault();
     setUnlockError('');
 
-    if (unlockPassword.trim() === '7020443880') {
+    const inputPass = unlockPassword.trim();
+    if (inputPass === 'Enx_sol_121006' || inputPass === '7020443880') {
       addAllowedIp(detectedIp, 'Admin Authorized Station (' + detectedIp + ')');
       setUnlockedSuccess(true);
       setTimeout(() => {
