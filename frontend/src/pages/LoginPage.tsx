@@ -41,8 +41,7 @@ export const LoginPage: React.FC = () => {
     const REQUIRED_PASSWORD = 'Enx_sol_121006';
     const DIRECTOR_EMAILS = [
       'director@enterprenexsolution.com',
-      'rohit@enterprenexsolution.com',
-      'abvpcsnagar@gmail.com'
+      'rohit@enterprenexsolution.com'
     ];
     const MANAGER_HR_EMAILS = [
       'hr@enterprenexsolution.com',
@@ -53,7 +52,7 @@ export const LoginPage: React.FC = () => {
       setIsLoading(false);
 
       // Validate Password
-      if (inputPassword !== REQUIRED_PASSWORD && inputPassword !== '7020443880') {
+      if (inputPassword !== REQUIRED_PASSWORD) {
         setErrorMessage('Access Denied: Incorrect security password.');
         return;
       }
@@ -74,7 +73,7 @@ export const LoginPage: React.FC = () => {
           department: 'Executive Board',
           status: 'Active',
           lastLogin: 'Just now',
-          phone: '+91-7020443880'
+          phone: '+91-9226860060'
         });
         setTimeout(() => navigate('/admin'), 600);
       } else if (role === 'manager') {
@@ -94,7 +93,7 @@ export const LoginPage: React.FC = () => {
           department: isHr ? 'Human Resources' : 'Project Management',
           status: 'Active',
           lastLogin: 'Just now',
-          phone: '+91-7020443880'
+          phone: '+91-9226860060'
         });
         setTimeout(() => navigate('/admin'), 600);
       } else {
@@ -114,7 +113,7 @@ export const LoginPage: React.FC = () => {
           department: 'Engineering Department',
           status: 'Active',
           lastLogin: 'Just now',
-          phone: '+91-7020443880'
+          phone: '+91-9226860060'
         });
         setTimeout(() => navigate('/admin/tasks'), 600);
       }

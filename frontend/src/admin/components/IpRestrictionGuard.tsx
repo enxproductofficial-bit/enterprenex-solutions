@@ -48,7 +48,7 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
     setUnlockError('');
 
     const inputPass = unlockPassword.trim();
-    if (inputPass === 'Enx_sol_121006' || inputPass === '7020443880') {
+    if (inputPass === 'Enx_sol_121006') {
       addAllowedIp(detectedIp, 'Admin Authorized Station (' + detectedIp + ')');
       setUnlockedSuccess(true);
       setTimeout(() => {
@@ -156,7 +156,7 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
               <span>Instant IP Authorization Unlock</span>
             </div>
             <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.85rem 0' }}>
-              Enter the Super Admin master password (<code>7020443880</code>) to instantly authorize IP <strong>{detectedIp}</strong>:
+              Enter the Director master password (<code>Enx_sol_121006</code>) to instantly authorize IP <strong>{detectedIp}</strong>:
             </p>
 
             <form onSubmit={handleUnlockCurrentIp}>

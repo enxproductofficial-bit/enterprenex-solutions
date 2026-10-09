@@ -22,14 +22,14 @@ import type {
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-1',
-    name: 'Enterprenex Super Admin',
-    email: 'abvpcsnagar@gmail.com',
+    name: 'Enterprenex Director',
+    email: 'director@enterprenexsolution.com',
     role: 'Super Admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     department: 'Executive Management',
     status: 'Active',
     lastLogin: 'Just now',
-    phone: '+91-7020443880'
+    phone: '+91-9226860060'
   }
 ];
 
@@ -187,8 +187,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     name: 'Enterprenex Admin',
     role: 'Lead Full-Stack Architect',
     department: 'Engineering',
-    email: 'abvpcsnagar@gmail.com',
-    phone: '+91-7020443880',
+    email: 'director@enterprenexsolution.com',
+    phone: '+91-9226860060',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker', 'Kubernetes'],
     currentProjects: [],
@@ -333,7 +333,7 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
     module: 'Admin & Security',
     ipAddress: '10.206.229.155',
     timestamp: 'Just now',
-    details: 'Zero-trust clean database initialized with primary admin abvpcsnagar@gmail.com'
+    details: 'Zero-trust clean database initialized with primary admin director@enterprenexsolution.com'
   }
 ];
 

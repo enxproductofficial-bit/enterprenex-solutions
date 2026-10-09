@@ -20,8 +20,8 @@ export const AdminLoginPage: React.FC = () => {
     const inputEmail = email.trim().toLowerCase();
     const inputPassword = password.trim();
 
-    const isPasswordValid = inputPassword === 'Enx_sol_121006' || inputPassword === '7020443880';
-    const isDirector = (inputEmail === 'director@enterprenexsolution.com' || inputEmail === 'rohit@enterprenexsolution.com' || inputEmail === 'abvpcsnagar@gmail.com') && isPasswordValid;
+    const isPasswordValid = inputPassword === 'Enx_sol_121006';
+    const isDirector = (inputEmail === 'director@enterprenexsolution.com' || inputEmail === 'rohit@enterprenexsolution.com') && isPasswordValid;
     const isHr = inputEmail === 'hr@enterprenexsolution.com' && isPasswordValid;
     const isManager = inputEmail === 'manager@enterprenexsolution.com' && isPasswordValid;
 
@@ -39,7 +39,7 @@ export const AdminLoginPage: React.FC = () => {
         department: isDirector ? 'Executive Management' : isHr ? 'Human Resources' : 'Project Management',
         status: 'Active',
         lastLogin: 'Just now',
-        phone: '+91-7020443880'
+        phone: '+91-9226860060'
       };
 
       setTimeout(() => {

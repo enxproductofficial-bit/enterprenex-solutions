@@ -53,7 +53,7 @@ export interface ToastNotification {
 }
 
 const INITIAL_IP_SETTINGS: IpSecuritySettings = {
-  enforceIpRestriction: true,
+  enforceIpRestriction: false,
   allowedIps: [
     { id: 'ip-admin-1', ip: '10.206.229.155', label: 'Primary Admin Station (10.206.229.155)', addedBy: 'Security Policy', addedAt: '2026-01-01' },
     { id: 'ip-local-1', ip: '127.0.0.1', label: 'Local Development IPv4', addedBy: 'System', addedAt: '2026-01-01' },
