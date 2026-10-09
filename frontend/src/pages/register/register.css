@@ -1,0 +1,654 @@
+/* Register & Onboarding Portal Styles */
+.reg-container {
+  min-height: 100vh;
+  background: linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 45%, #f8fafc 100%);
+  color: #1e293b;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.reg-header {
+  padding: 1.25rem 2rem;
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reg-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.reg-logo-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+  flex-shrink: 0;
+}
+
+.reg-brand-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.reg-brand-sub {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #059669;
+}
+
+.reg-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reg-btn-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.reg-btn-nav:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.reg-lang-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.reg-lang-select select {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Stepper bar */
+.reg-stepper-wrap {
+  max-width: 960px;
+  margin: 0.5rem auto 1.5rem auto;
+  width: 100%;
+  padding: 0 1.5rem;
+}
+
+.reg-stepper-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.reg-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.reg-step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  color: #64748b;
+}
+
+.reg-step-item.active .reg-step-circle {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.2);
+}
+
+.reg-step-item.completed .reg-step-circle {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+.reg-step-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.reg-step-item.active .reg-step-label {
+  color: #059669;
+  font-weight: 700;
+}
+
+.reg-step-item.completed .reg-step-label {
+  color: #0f172a;
+}
+
+.reg-step-line {
+  position: absolute;
+  top: 28px;
+  left: 6%;
+  right: 6%;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.reg-step-line-progress {
+  height: 100%;
+  background: #059669;
+  transition: width 0.3s ease;
+}
+
+/* Main Content Wrapper */
+.reg-main-content {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto 3rem auto;
+  width: 100%;
+  padding: 0 1.5rem;
+}
+
+.reg-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 2.25rem;
+}
+
+.reg-badge-step {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #059669;
+  margin-bottom: 0.5rem;
+}
+
+.reg-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.4rem;
+}
+
+.reg-subtitle {
+  font-size: 0.925rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+}
+
+/* Primary Button */
+.reg-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.95rem 1.5rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.28);
+}
+
+.reg-btn-primary:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.35);
+  transform: translateY(-1px);
+}
+
+.reg-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Google SSO Button */
+.reg-btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.reg-btn-google:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* Role Selector Cards */
+.reg-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.reg-role-card {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 1.5rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.reg-role-card:hover {
+  border-color: #a7f3d0;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(5, 150, 105, 0.08);
+}
+
+.reg-role-card.selected {
+  border-color: #059669;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(5, 150, 105, 0.12);
+}
+
+.reg-role-badge {
+  display: inline-block;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #ecfdf5;
+  color: #047857;
+  margin-bottom: 0.85rem;
+  align-self: flex-start;
+}
+
+.reg-role-card.selected .reg-role-badge {
+  background: #059669;
+  color: #ffffff;
+}
+
+.reg-role-check {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.reg-role-card.selected .reg-role-check {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+.reg-role-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+.reg-role-card.selected .reg-role-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.reg-role-title {
+  font-size: 1.2rem;
+  font-weight: 750;
+  color: #0f172a;
+  margin-bottom: 0.4rem;
+}
+
+.reg-role-desc {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin-bottom: 1rem;
+}
+
+.reg-role-highlight-box {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  color: #334155;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  border-left: 3px solid #059669;
+}
+
+.reg-role-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.reg-role-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+/* Info notification banner */
+.reg-notice-banner {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.reg-notice-text {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #166534;
+}
+
+/* Form Styles */
+.reg-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.15rem;
+  margin-bottom: 1.25rem;
+}
+
+.reg-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.reg-field-group.full-width {
+  grid-column: span 2;
+}
+
+.reg-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.reg-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.reg-input-icon {
+  position: absolute;
+  left: 0.9rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.reg-input {
+  width: 100%;
+  padding: 0.75rem 0.9rem 0.75rem 2.5rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #0f172a;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.reg-input:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+.reg-input-wrap select.reg-input {
+  padding-left: 2.5rem;
+  cursor: pointer;
+}
+
+.reg-eye-btn {
+  position: absolute;
+  right: 0.85rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.reg-checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.reg-checkbox-wrap input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #059669;
+  cursor: pointer;
+}
+
+/* Divider */
+.reg-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.reg-divider::before,
+.reg-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.reg-divider span {
+  padding: 0 0.85rem;
+}
+
+/* Two Column Layout for Step 3 */
+.reg-split-layout {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.reg-sidebar-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 1.5rem;
+}
+
+.reg-sidebar-hero {
+  height: 130px;
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #064e3b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.reg-sidebar-hero-shape {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  top: -30px;
+  right: -30px;
+}
+
+.reg-sidebar-body {
+  padding: 1.5rem;
+}
+
+.reg-role-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  background: #ecfdf5;
+  color: #047857;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .reg-roles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reg-split-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .reg-sidebar-card {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .reg-header {
+    padding: 1rem;
+  }
+
+  .reg-stepper-wrap {
+    padding: 0 0.5rem;
+  }
+
+  .reg-step-label {
+    display: none;
+  }
+
+  .reg-card {
+    padding: 1.25rem;
+  }
+
+  .reg-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reg-field-group.full-width {
+    grid-column: span 1;
+  }
+}
