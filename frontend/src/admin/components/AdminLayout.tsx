@@ -49,29 +49,77 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const newLeadsCount = leads.filter(l => l.status === 'New Lead').length;
   const activeProjectsCount = projects.filter(p => p.status !== 'Delivered').length;
 
-  const NAV_ITEMS = [
-    { section: 'Core Operations' },
-    { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { to: '/admin/clients', label: 'Client Management', icon: Users, badge: clients.length },
-    { to: '/admin/projects', label: 'Project Lifecycle', icon: Briefcase, badge: activeProjectsCount },
-    { to: '/admin/tasks', label: 'Task Kanban & Sprints', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done').length },
+  // Determine current user role
+  const userRole = currentUser?.role || 'Super Admin';
+  const isEmployee = userRole === 'Team Member' || userRole === 'Developer';
+  const isManagerOrHr = userRole === 'Project Manager' || userRole === 'HR Manager' || userRole === 'Sales Lead' || userRole === 'Finance Officer';
+  const isDirector = userRole === 'Super Admin';
 
-    { section: 'Growth & Commerce' },
-    { to: '/admin/services', label: 'Services Catalogue', icon: Layers },
-    { to: '/admin/crm', label: 'Leads & Sales CRM', icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
-    { to: '/admin/finance', label: 'Finance & Invoices', icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
+  // Navigation Items strictly filtered according to EWMS Permissions Matrix
+  const getNavItems = () => {
+    // 1. Employee / Staff Portal
+    if (isEmployee) {
+      return [
+        { section: 'My Work Portal' },
+        { to: '/admin/tasks', label: 'My Tasks & Kanban', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done').length },
+        { to: '/admin/team', label: 'My Attendance & Leave', icon: UserCheck },
+        { to: '/admin/support', label: 'Helpdesk & Support', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/documents', label: 'Document Vault', icon: FileText },
+        { to: '/admin/calendar', label: 'Calendar & Schedule', icon: Calendar }
+      ];
+    }
 
-    { section: 'People & Delivery' },
-    { to: '/admin/team', label: 'Team & Attendance', icon: UserCheck },
-    { to: '/admin/support', label: 'Support & Helpdesk', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
-    { to: '/admin/documents', label: 'Document Vault', icon: FileText },
-    { to: '/admin/calendar', label: 'Calendar & Meetings', icon: Calendar },
+    // 2. Manager / HR Operations Portal (Finance, CMS & Security strictly excluded)
+    if (isManagerOrHr) {
+      return [
+        { section: 'Core Operations' },
+        { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+        { to: '/admin/clients', label: 'Client Management', icon: Users, badge: clients.length },
+        { to: '/admin/projects', label: 'Project Lifecycle', icon: Briefcase, badge: activeProjectsCount },
+        { to: '/admin/tasks', label: 'Task Kanban & Sprints', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done').length },
 
-    { section: 'Platform & Intelligence' },
-    { to: '/admin/cms', label: 'CMS & Website', icon: Globe },
-    { to: '/admin/analytics', label: 'Analytics & Reports', icon: BarChart3 },
-    { to: '/admin/security', label: 'Admin & RBAC Security', icon: ShieldCheck }
-  ];
+        { section: 'Growth & Commerce' },
+        { to: '/admin/services', label: 'Services Catalogue', icon: Layers },
+        { to: '/admin/crm', label: 'Leads & Sales CRM', icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
+
+        { section: 'People & Delivery' },
+        { to: '/admin/team', label: 'Team & Attendance', icon: UserCheck },
+        { to: '/admin/support', label: 'Support & Helpdesk', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/documents', label: 'Document Vault', icon: FileText },
+        { to: '/admin/calendar', label: 'Calendar & Meetings', icon: Calendar },
+
+        { section: 'Platform & Intelligence' },
+        { to: '/admin/analytics', label: 'Analytics & Reports', icon: BarChart3 }
+      ];
+    }
+
+    // 3. Director (Super Admin) - Full 14-Module Unrestricted Access
+    return [
+      { section: 'Core Operations' },
+      { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+      { to: '/admin/clients', label: 'Client Management', icon: Users, badge: clients.length },
+      { to: '/admin/projects', label: 'Project Lifecycle', icon: Briefcase, badge: activeProjectsCount },
+      { to: '/admin/tasks', label: 'Task Kanban & Sprints', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done').length },
+
+      { section: 'Growth & Commerce' },
+      { to: '/admin/services', label: 'Services Catalogue', icon: Layers },
+      { to: '/admin/crm', label: 'Leads & Sales CRM', icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
+      { to: '/admin/finance', label: 'Finance & Invoices', icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
+
+      { section: 'People & Delivery' },
+      { to: '/admin/team', label: 'Team & Attendance', icon: UserCheck },
+      { to: '/admin/support', label: 'Support & Helpdesk', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+      { to: '/admin/documents', label: 'Document Vault', icon: FileText },
+      { to: '/admin/calendar', label: 'Calendar & Meetings', icon: Calendar },
+
+      { section: 'Platform & Intelligence' },
+      { to: '/admin/cms', label: 'CMS & Website', icon: Globe },
+      { to: '/admin/analytics', label: 'Analytics & Reports', icon: BarChart3 },
+      { to: '/admin/security', label: 'Admin & RBAC Security', icon: ShieldCheck }
+    ];
+  };
+
+  const NAV_ITEMS = getNavItems();
 
   // Search matches
   const matchingProjects = searchQuery ? projects.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.clientName.toLowerCase().includes(searchQuery.toLowerCase())) : [];
@@ -93,7 +141,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <aside className={`adm-sidebar ${collapsed ? 'collapsed' : ''}`}>
         {/* Sidebar Brand Header */}
         <div className="adm-sidebar-header">
-          <NavLink to="/admin" className="adm-brand-link">
+          <NavLink to={isEmployee ? '/admin/tasks' : '/admin'} className="adm-brand-link">
             <div className="adm-brand-logo" style={{ background: 'transparent', boxShadow: 'none', padding: '2px' }}>
               <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
             </div>
@@ -301,7 +349,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <div style={{ position: 'relative' }}>
               <button className="adm-topbar-btn" onClick={() => setShowNotifMenu(!showNotifMenu)} title="Notifications">
                 <Bell size={17} />
-                {(openTicketsCount > 0 || pendingInvoicesCount > 0) && <span className="adm-badge-dot" />}
+                {(openTicketsCount > 0 || (isDirector && pendingInvoicesCount > 0)) && <span className="adm-badge-dot" />}
               </button>
 
               {/* Notification Dropdown */}
@@ -322,7 +370,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--adm-border)' }}>
                     <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff' }}>System Alerts</span>
-                    <span className="adm-badge adm-badge-primary">{openTicketsCount + pendingInvoicesCount} Active</span>
+                    <span className="adm-badge adm-badge-primary">{openTicketsCount + (isDirector ? pendingInvoicesCount : 0)} Active</span>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
@@ -337,7 +385,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                       </div>
                     ))}
 
-                    {invoices.filter(i => i.status === 'Pending').slice(0, 1).map(i => (
+                    {isDirector && invoices.filter(i => i.status === 'Pending').slice(0, 1).map(i => (
                       <div
                         key={i.id}
                         onClick={() => { navigate('/admin/finance'); setShowNotifMenu(false); }}

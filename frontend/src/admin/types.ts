@@ -1,6 +1,6 @@
 // TypeScript interfaces for Enterprenex Admin & Operations Suite
 
-export type UserRole = 'Super Admin' | 'Project Manager' | 'Sales Lead' | 'Finance Officer' | 'HR Manager' | 'Developer';
+export type UserRole = 'Super Admin' | 'Project Manager' | 'Sales Lead' | 'Finance Officer' | 'HR Manager' | 'Developer' | 'Team Member';
 
 export interface AdminUser {
   id: string;

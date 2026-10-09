@@ -44,21 +44,23 @@ export const SecurityPage: React.FC = () => {
   const [newIpAddress, setNewIpAddress] = useState('');
   const [newIpLabel, setNewIpLabel] = useState('');
 
-  // RBAC Matrix
-  const ROLES: UserRole[] = ['Super Admin', 'Project Manager', 'Sales Lead', 'Finance Officer', 'HR Manager', 'Developer'];
+  // EWMS Role-Based Access Control (RBAC) Matrix
+  const ROLES: UserRole[] = ['Super Admin', 'Project Manager', 'HR Manager', 'Sales Lead', 'Finance Officer', 'Team Member'];
   const PERMISSIONS = [
-    { module: 'Dashboard & Executive KPIs', roles: ['Super Admin', 'Project Manager', 'Sales Lead', 'Finance Officer', 'HR Manager'] },
-    { module: 'Client Management (Create/Edit/Delete)', roles: ['Super Admin', 'Project Manager', 'Sales Lead'] },
-    { module: 'Project Management & Lifecycle Signoff', roles: ['Super Admin', 'Project Manager', 'Developer'] },
-    { module: 'Services Catalogue & Pricing Edit', roles: ['Super Admin', 'Sales Lead'] },
-    { module: 'Lead & CRM Sales Pipeline', roles: ['Super Admin', 'Sales Lead'] },
-    { module: 'Finance, Invoicing & GST Records', roles: ['Super Admin', 'Finance Officer'] },
-    { module: 'Team, Attendance & Leave Approvals', roles: ['Super Admin', 'HR Manager'] },
-    { module: 'Task Management & Sprint Kanban', roles: ['Super Admin', 'Project Manager', 'Developer', 'Design'] },
-    { module: 'Support & Helpdesk Dispatch', roles: ['Super Admin', 'Project Manager', 'Developer'] },
-    { module: 'Document Vault (Confidential & NDAs)', roles: ['Super Admin', 'Project Manager'] },
-    { module: 'CMS & Public Website Publishing', roles: ['Super Admin', 'Sales Lead'] },
-    { module: 'IP Firewall & API Keys Administration', roles: ['Super Admin'] }
+    { module: 'Executive Dashboard & Company KPIs', roles: ['Super Admin', 'Project Manager', 'Sales Lead', 'Finance Officer', 'HR Manager'] },
+    { module: 'Client Management & Enterprise Accounts', roles: ['Super Admin', 'Project Manager', 'Sales Lead'] },
+    { module: 'Project Management & Milestone Signoff', roles: ['Super Admin', 'Project Manager'] },
+    { module: 'Services Catalogue & Master Pricing', roles: ['Super Admin', 'Project Manager', 'Sales Lead'] },
+    { module: 'Leads & Sales CRM Pipeline', roles: ['Super Admin', 'Project Manager', 'Sales Lead'] },
+    { module: 'Finance, Invoicing & GST (Director Only)', roles: ['Super Admin'] },
+    { module: 'Team, Attendance & Leave Management', roles: ['Super Admin', 'Project Manager', 'HR Manager', 'Team Member'] },
+    { module: 'Task Management & Sprint Kanban', roles: ['Super Admin', 'Project Manager', 'Team Member'] },
+    { module: 'Support & Helpdesk Dispatch', roles: ['Super Admin', 'Project Manager', 'Team Member'] },
+    { module: 'Document Vault (Files, Policies & NDAs)', roles: ['Super Admin', 'Project Manager', 'Team Member'] },
+    { module: 'Calendar & Meetings Schedule', roles: ['Super Admin', 'Project Manager', 'Team Member'] },
+    { module: 'CMS & Website Publishing (Director Only)', roles: ['Super Admin'] },
+    { module: 'Analytics & Delivery Velocity Reports', roles: ['Super Admin', 'Project Manager'] },
+    { module: 'Admin, IP Firewall & RBAC (Director Only)', roles: ['Super Admin'] }
   ];
 
   const handleGenerateKey = (e: React.FormEvent) => {

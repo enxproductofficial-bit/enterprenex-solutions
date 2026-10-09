@@ -26,9 +26,31 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     email: 'director@enterprenexsolution.com',
     role: 'Super Admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    department: 'Executive Management',
+    department: 'Executive Board',
     status: 'Active',
     lastLogin: 'Just now',
+    phone: '+91-9226860060'
+  },
+  {
+    id: 'usr-2',
+    name: 'Operations & HR Manager',
+    email: 'manager@enterprenexsolution.com',
+    role: 'Project Manager',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    department: 'Operations & HR Management',
+    status: 'Active',
+    lastLogin: '10 mins ago',
+    phone: '+91-9226860060'
+  },
+  {
+    id: 'usr-3',
+    name: 'Staff Employee (EPX-101)',
+    email: 'employee@enterprenexsolution.com',
+    role: 'Team Member',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    department: 'Engineering & Operations',
+    status: 'Active',
+    lastLogin: '1 hour ago',
     phone: '+91-9226860060'
   }
 ];
