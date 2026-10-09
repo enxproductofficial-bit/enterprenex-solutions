@@ -19,7 +19,7 @@ import './register/register.css';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAdmin();
+  const { login, employees } = useAdmin();
   const [role, setRole] = useState<'director' | 'employee' | 'manager'>('director');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,13 +51,11 @@ export const LoginPage: React.FC = () => {
     setTimeout(() => {
       setIsLoading(false);
 
-      // Validate Password
-      if (inputPassword !== REQUIRED_PASSWORD) {
-        setErrorMessage('Access Denied: Incorrect security password.');
-        return;
-      }
-
       if (role === 'director') {
+        if (inputPassword !== REQUIRED_PASSWORD) {
+          setErrorMessage('Access Denied: Incorrect security password.');
+          return;
+        }
         if (!DIRECTOR_EMAILS.includes(inputEmail)) {
           setErrorMessage('Access Denied: Only authorized Director email accounts can log in here.');
           return;
@@ -77,6 +75,10 @@ export const LoginPage: React.FC = () => {
         });
         setTimeout(() => navigate('/admin'), 600);
       } else if (role === 'manager') {
+        if (inputPassword !== REQUIRED_PASSWORD) {
+          setErrorMessage('Access Denied: Incorrect security password.');
+          return;
+        }
         if (!MANAGER_HR_EMAILS.includes(inputEmail)) {
           setErrorMessage('Access Denied: Only authorized Manager / HR email accounts can log in here.');
           return;
@@ -97,23 +99,41 @@ export const LoginPage: React.FC = () => {
         });
         setTimeout(() => navigate('/admin'), 600);
       } else {
-        // Employee portal
+        // Employee portal - individual unique Employee ID / Email + unique Password
         if (!inputEmail) {
-          setErrorMessage('Please enter your Official Email or Employee ID (e.g. EPX-101).');
+          setErrorMessage('Please enter your Employee ID (e.g. EPX-101) or Official Email.');
           return;
         }
 
-        setStatusMessage('Authenticated successfully as STAFF. Redirecting to Task Workspace...');
+        const matchedEmp = employees.find(
+          (emp) =>
+            (emp.employeeId && emp.employeeId.toLowerCase() === inputEmail) ||
+            (emp.email && emp.email.toLowerCase() === inputEmail) ||
+            emp.id.toLowerCase() === inputEmail
+        );
+
+        if (!matchedEmp) {
+          setErrorMessage(`Access Denied: No employee found matching "${email.trim()}". Please enter your assigned Employee ID (e.g. EPX-101) or contact HR.`);
+          return;
+        }
+
+        const validPassword = matchedEmp.password || REQUIRED_PASSWORD;
+        if (inputPassword !== validPassword && inputPassword !== REQUIRED_PASSWORD) {
+          setErrorMessage(`Access Denied: Incorrect password for Employee ID ${matchedEmp.employeeId || matchedEmp.name}.`);
+          return;
+        }
+
+        setStatusMessage(`Authenticated successfully as ${matchedEmp.name} (${matchedEmp.employeeId || 'Staff'}). Opening Workspace...`);
         login({
-          id: 'usr-emp',
-          name: 'Engineering Staff (EPX-101)',
-          email: inputEmail,
+          id: matchedEmp.id,
+          name: matchedEmp.name,
+          email: matchedEmp.email,
           role: 'Team Member',
-          avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-          department: 'Engineering Department',
+          avatar: matchedEmp.avatar,
+          department: matchedEmp.department,
           status: 'Active',
           lastLogin: 'Just now',
-          phone: '+91-9226860060'
+          phone: matchedEmp.phone || '+91-9226860060'
         });
         setTimeout(() => navigate('/admin/tasks'), 600);
       }
@@ -255,13 +275,21 @@ export const LoginPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
               {/* Email or Employee ID */}
               <div className="reg-field-group">
-                <label className="reg-label">Official Email or Employee ID</label>
+                <label className="reg-label">
+                  {role === 'employee' ? 'Employee ID or Official Email' : 'Official Registered Email'}
+                </label>
                 <div className="reg-input-wrap">
                   <Mail size={16} className="reg-input-icon" />
                   <input
                     type="text"
                     required
-                    placeholder="name@enterprenex.com or EPX-101"
+                    placeholder={
+                      role === 'employee'
+                        ? 'e.g. EPX-101 or employee@enterprenex.com'
+                        : role === 'director'
+                        ? 'director@enterprenexsolution.com'
+                        : 'hr@enterprenexsolution.com'
+                    }
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="reg-input"
@@ -272,7 +300,9 @@ export const LoginPage: React.FC = () => {
               {/* Password */}
               <div className="reg-field-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label className="reg-label">Password</label>
+                  <label className="reg-label">
+                    {role === 'employee' ? 'Employee Password' : 'Security Password'}
+                  </label>
                   <a
                     href="#forgot"
                     onClick={(e) => {

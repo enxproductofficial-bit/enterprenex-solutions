@@ -5,7 +5,7 @@ import { Lock, Mail, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import type { AdminUser } from '../types';
 
 export const AdminLoginPage: React.FC = () => {
-  const { login } = useAdmin();
+  const { login, employees } = useAdmin();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,6 +24,16 @@ export const AdminLoginPage: React.FC = () => {
     const isDirector = (inputEmail === 'director@enterprenexsolution.com' || inputEmail === 'rohit@enterprenexsolution.com') && isPasswordValid;
     const isHr = inputEmail === 'hr@enterprenexsolution.com' && isPasswordValid;
     const isManager = inputEmail === 'manager@enterprenexsolution.com' && isPasswordValid;
+
+    // Check Employee match by Employee ID or Email
+    const matchedEmp = employees.find(
+      (emp) =>
+        (emp.employeeId && emp.employeeId.toLowerCase() === inputEmail) ||
+        (emp.email && emp.email.toLowerCase() === inputEmail) ||
+        emp.id.toLowerCase() === inputEmail
+    );
+    const validEmpPassword = matchedEmp?.password || 'Enx_sol_121006';
+    const isEmployee = matchedEmp && (inputPassword === validEmpPassword || isPasswordValid);
 
     if (isDirector || isHr || isManager) {
       const authenticatedUser: AdminUser = {
@@ -47,10 +57,28 @@ export const AdminLoginPage: React.FC = () => {
         setIsLoading(false);
         navigate('/admin');
       }, 400);
+    } else if (isEmployee && matchedEmp) {
+      const empUser: AdminUser = {
+        id: matchedEmp.id,
+        name: matchedEmp.name,
+        email: matchedEmp.email,
+        role: 'Team Member',
+        avatar: matchedEmp.avatar,
+        department: matchedEmp.department,
+        status: 'Active',
+        lastLogin: 'Just now',
+        phone: matchedEmp.phone || '+91-9226860060'
+      };
+
+      setTimeout(() => {
+        login(empUser);
+        setIsLoading(false);
+        navigate('/admin/tasks');
+      }, 400);
     } else {
       setTimeout(() => {
         setIsLoading(false);
-        setError('Authentication failed. Invalid email address or security password.');
+        setError('Authentication failed. Invalid Employee ID/email or password.');
       }, 400);
     }
   };
@@ -124,16 +152,16 @@ export const AdminLoginPage: React.FC = () => {
         {/* Login Form */}
         <form onSubmit={handleFormLogin}>
           <div className="adm-form-group">
-            <label className="adm-form-label" style={{ color: '#9ba3af' }}>Authorized Email</label>
+            <label className="adm-form-label" style={{ color: '#9ba3af' }}>Authorized Email or Employee ID</label>
             <div style={{ position: 'relative' }}>
               <Mail size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
               <input
-                type="email"
+                type="text"
                 className="adm-input"
                 style={{ paddingLeft: '2.5rem' }}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="Enter authorized email..."
+                placeholder="e.g. EPX-101 or authorized email..."
                 required
                 autoFocus
               />

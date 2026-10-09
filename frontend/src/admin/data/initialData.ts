@@ -206,9 +206,11 @@ export const INITIAL_EXPENSES: ExpenseRecord[] = [];
 export const INITIAL_EMPLOYEES: Employee[] = [
   {
     id: 'emp-1',
+    employeeId: 'EPX-101',
+    password: 'Enx_sol_121006',
     name: 'Rohit P.',
     role: 'Managing Director & Lead Architect',
-    department: 'Executive Engineering',
+    department: 'Engineering',
     email: 'director@enterprenexsolution.com',
     phone: '+91-9226860060',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',

@@ -224,16 +224,23 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.invoices) setInvoices(parsed.invoices);
         if (parsed.expenses) setExpenses(parsed.expenses);
         if (parsed.employees) {
-          const sanitized = parsed.employees.map((emp: any) => {
-            if (emp.email === 'abvpcsnagar@gmail.com' || emp.phone?.includes('7020443880')) {
-              return {
-                ...emp,
-                name: 'Enterprenex Director',
+          const sanitized = parsed.employees.map((emp: any, idx: number) => {
+            let item = { ...emp };
+            if (item.email === 'abvpcsnagar@gmail.com' || item.phone?.includes('7020443880')) {
+              item = {
+                ...item,
+                name: 'Rohit P.',
                 email: 'director@enterprenexsolution.com',
                 phone: '+91-9226860060'
               };
             }
-            return emp;
+            if (!item.employeeId) {
+              item.employeeId = `EPX-${101 + idx}`;
+            }
+            if (!item.password) {
+              item.password = 'Enx_sol_121006';
+            }
+            return item;
           });
           setEmployees(sanitized);
         }

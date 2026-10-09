@@ -211,6 +211,8 @@ export interface ExpenseRecord {
 // 7. Team & Employees
 export interface Employee {
   id: string;
+  employeeId: string;
+  password?: string;
   name: string;
   role: string;
   department: 'Engineering' | 'AI & ML' | 'Design' | 'Product' | 'Sales & Marketing' | 'Finance & HR';

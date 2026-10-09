@@ -45,8 +45,8 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
   // 4. Task form
   const [tTitle, setTTitle] = useState('');
   const [tProjectId, setTProjectId] = useState(projects[0]?.id || '');
-  const [tAssignedTo, setTAssignedTo] = useState(employees[0]?.name || 'Enterprenex Admin');
-  const [tPriority, setTPriority] = useState<TaskPriority>('Medium');
+  const [tAssignedTo, setTAssignedTo] = useState(employees[0]?.name || 'Assigned Engineer');
+  const [tPriority, setFPriority] = useState<TaskPriority>('Medium');
   const [tStatus] = useState<TaskColumn>('To Do');
   const [tDue, setTDue] = useState('2026-03-01');
   const [tDesc, setTDesc] = useState('');
@@ -63,7 +63,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
   const [tkClientEmail, setTkClientEmail] = useState(clients[0]?.primaryContact?.email || '');
   const [tkPriority, setTkPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
   const [tkCategory, setTkCategory] = useState<'Bug Fix' | 'Feature Request' | 'Server Issue' | 'Billing' | 'General Query'>('Bug Fix');
-  const [tkAssignedTo, setTkAssignedTo] = useState(employees[0]?.name || 'Enterprenex Admin');
+  const [tkAssignedTo, setTkAssignedTo] = useState(employees[0]?.name || 'Support Specialist');
 
   // 7. Document form
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -87,7 +87,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
       expenses: 0,
       startDate: new Date().toISOString().split('T')[0],
       targetEndDate: pEnd,
-      assignedTeam: [employees[0]?.name || 'Enterprenex Admin'],
+      assignedTeam: employees.length > 0 ? [employees[0].name] : ['Enterprenex Engineering Squad'],
       techStack: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
       serviceCategory: pCategory,
       description: pDesc || 'Comprehensive enterprise software development scope.',
