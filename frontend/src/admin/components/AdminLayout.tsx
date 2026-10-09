@@ -94,8 +94,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         {/* Sidebar Brand Header */}
         <div className="adm-sidebar-header">
           <NavLink to="/admin" className="adm-brand-link">
-            <div className="adm-brand-logo">
-              <Sparkles size={20} color="#fff" />
+            <div className="adm-brand-logo" style={{ background: 'transparent', boxShadow: 'none', padding: '2px' }}>
+              <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
             </div>
             {!collapsed && (
               <div className="adm-brand-text">

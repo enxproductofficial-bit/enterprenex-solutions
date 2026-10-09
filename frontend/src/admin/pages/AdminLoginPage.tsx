@@ -82,18 +82,15 @@ export const AdminLoginPage: React.FC = () => {
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div
             style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #F66135 0%, #D94E22 100%)',
+              width: '64px',
+              height: '64px',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(246, 97, 53, 0.4)',
               marginBottom: '1rem'
             }}
           >
-            <Sparkles size={28} color="#fff" />
+            <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
           </div>
           <h1 style={{ fontSize: '1.55rem', fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
             Enterprenex Admin

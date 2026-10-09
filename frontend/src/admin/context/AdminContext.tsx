@@ -223,7 +223,20 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.leads) setLeads(parsed.leads);
         if (parsed.invoices) setInvoices(parsed.invoices);
         if (parsed.expenses) setExpenses(parsed.expenses);
-        if (parsed.employees) setEmployees(parsed.employees);
+        if (parsed.employees) {
+          const sanitized = parsed.employees.map((emp: any) => {
+            if (emp.email === 'abvpcsnagar@gmail.com' || emp.phone?.includes('7020443880')) {
+              return {
+                ...emp,
+                name: 'Enterprenex Director',
+                email: 'director@enterprenexsolution.com',
+                phone: '+91-9226860060'
+              };
+            }
+            return emp;
+          });
+          setEmployees(sanitized);
+        }
         if (parsed.attendance) setAttendance(parsed.attendance);
         if (parsed.leaves) setLeaves(parsed.leaves);
         if (parsed.tasks) setTasks(parsed.tasks);
@@ -233,7 +246,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.cms) setCms(parsed.cms);
         if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
         if (parsed.apiKeys) setApiKeys(parsed.apiKeys);
-        if (parsed.currentUser) setCurrentUser(parsed.currentUser);
+        if (parsed.currentUser) {
+          const cur = parsed.currentUser;
+          if (cur.email === 'abvpcsnagar@gmail.com' || cur.phone?.includes('7020443880')) {
+            setCurrentUser({
+              ...cur,
+              name: 'Company Director',
+              email: 'director@enterprenexsolution.com',
+              phone: '+91-9226860060'
+            });
+          } else {
+            setCurrentUser(cur);
+          }
+        }
         if (parsed.ipSettings) setIpSettings(parsed.ipSettings);
       }
     } catch (e) {
