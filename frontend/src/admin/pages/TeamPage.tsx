@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   Share2,
   Lock,
-  UserCheck
+  UserCheck,
+  AlertCircle
 } from 'lucide-react';
 import type { Employee } from '../types';
 
@@ -34,11 +35,47 @@ export const TeamPage: React.FC = () => {
   const [skills, setSkills] = useState('React, TypeScript, Node.js');
   const [salary, setSalary] = useState(100000);
 
+  // 12-Digit Guaranteed Unique Employee ID Generator (guaranteed non-repeating across all employees)
+  const generateUnique12DigitId = (): string => {
+    const existingIds = new Set(
+      employees
+        .map(e => (e.employeeId || '').trim().toUpperCase())
+        .filter(Boolean)
+    );
+
+    const year = new Date().getFullYear().toString(); // "2026" (4 digits)
+    let counter = employees.length + 1;
+    let candidate = '';
+
+    // First attempt: Year (4 digits) + 8 digits sequential index = 12 digits (e.g. 202600000002)
+    while (counter <= 99999999) {
+      const padded = counter.toString().padStart(8, '0');
+      candidate = `${year}${padded}`;
+      if (!existingIds.has(candidate)) {
+        return candidate;
+      }
+      counter++;
+    }
+
+    // High entropy fallback: Year + random 8 digits = 12 digits, checking uniqueness
+    do {
+      const rand8 = Math.floor(10000000 + Math.random() * 90000000).toString();
+      candidate = `${year}${rand8}`;
+    } while (existingIds.has(candidate));
+
+    return candidate;
+  };
+
   // Employee ID and Password state
-  const nextEmpId = `EPX-${100 + employees.length + 1}`;
-  const [empId, setEmpId] = useState(nextEmpId);
+  const [empId, setEmpId] = useState('');
   const [empPassword, setEmpPassword] = useState('');
   const [showEmpPassword, setShowEmpPassword] = useState(false);
+
+  // Duplicate Check across all employees in database
+  const isDuplicateId = Boolean(
+    empId.trim() &&
+    employees.some(e => (e.employeeId || '').trim().toUpperCase() === empId.trim().toUpperCase())
+  );
 
   // Portal credentials management modal state
   const [credentialEmp, setCredentialEmp] = useState<Employee | null>(null);
@@ -63,7 +100,8 @@ export const TeamPage: React.FC = () => {
   };
 
   const openAddMemberModal = () => {
-    setEmpId(`EPX-${100 + employees.length + 1}`);
+    const auto12DigitId = generateUnique12DigitId();
+    setEmpId(auto12DigitId);
     setEmpPassword(generateRandomPassword('EPX'));
     setShowEmpPassword(true);
     setShowAddModal(true);
@@ -71,8 +109,22 @@ export const TeamPage: React.FC = () => {
 
   const handleCreateEmployee = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalEmpId = empId.trim() || nextEmpId;
+    const finalEmpId = empId.trim() || generateUnique12DigitId();
     const finalPassword = empPassword.trim() || generateRandomPassword('EPX');
+
+    // Duplicate check validation
+    const alreadyExists = employees.some(
+      emp => (emp.employeeId || '').trim().toUpperCase() === finalEmpId.toUpperCase()
+    );
+
+    if (alreadyExists) {
+      showToast(
+        'Duplicate Employee ID',
+        `Employee ID "${finalEmpId}" is already assigned to another staff member! Please click "Auto Generate (12-Digit)".`,
+        'error'
+      );
+      return;
+    }
 
     addEmployee({
       employeeId: finalEmpId,
@@ -91,7 +143,7 @@ export const TeamPage: React.FC = () => {
       performanceRating: 5.0,
       status: 'Active'
     });
-    showToast('Employee Added', `Assigned Employee ID: ${finalEmpId} with individual portal access.`, 'success');
+    showToast('Employee Added', `Assigned Unique 12-Digit Employee ID: ${finalEmpId} with portal access.`, 'success');
     setShowAddModal(false);
     setName('');
     setRole('');
@@ -337,15 +389,61 @@ export const TeamPage: React.FC = () => {
                 </div>
                 <div className="adm-grid-2">
                   <div className="adm-form-group" style={{ margin: 0 }}>
-                    <label className="adm-form-label" style={{ fontSize: '0.78rem' }}>Unique Employee ID *</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <label className="adm-form-label" style={{ margin: 0, fontSize: '0.78rem' }}>
+                        Unique Employee ID (12 Digits) *
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const freshId = generateUnique12DigitId();
+                          setEmpId(freshId);
+                          showToast('Generated 12-Digit ID', `Assigned: ${freshId}`, 'info');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#34d399',
+                          fontSize: '0.72rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          fontWeight: 600
+                        }}
+                        title="Auto-generate a non-repeating 12-digit corporate ID"
+                      >
+                        <RefreshCw size={11} /> Auto Generate (12-Digit)
+                      </button>
+                    </div>
                     <input
                       className="adm-input"
                       required
                       value={empId}
-                      onChange={e => setEmpId(e.target.value.toUpperCase())}
-                      placeholder="e.g. EPX-102"
-                      style={{ fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.04em' }}
+                      onChange={e => setEmpId(e.target.value.trim().toUpperCase())}
+                      placeholder="e.g. 202600000001"
+                      style={{
+                        fontFamily: 'monospace',
+                        fontWeight: 700,
+                        letterSpacing: '0.04em',
+                        borderColor: isDuplicateId ? '#ef4444' : undefined
+                      }}
                     />
+                    {isDuplicateId ? (
+                      <div style={{ color: '#ef4444', fontSize: '0.72rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                        <AlertCircle size={12} />
+                        <span>This ID is already assigned! Click "Auto Generate (12-Digit)".</span>
+                      </div>
+                    ) : empId.trim().length === 12 && /^\d{12}$/.test(empId.trim()) ? (
+                      <div style={{ color: '#34d399', fontSize: '0.72rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                        <Check size={12} />
+                        <span>Unique 12-digit ID verified (Guaranteed Non-Repeating)</span>
+                      </div>
+                    ) : empId.trim().length > 0 ? (
+                      <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginTop: '4px' }}>
+                        Length: {empId.trim().length} digits (12-digit numeric format recommended)
+                      </div>
+                    ) : null}
                   </div>
                   <div className="adm-form-group" style={{ margin: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -378,8 +476,8 @@ export const TeamPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
-                  The employee can sign in at <strong>enterprenexsolution.com/login</strong> using this <strong>Employee ID</strong> or their email and this password.
+                <p style={{ margin: '0.65rem 0 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
+                  The employee can sign in at <strong>enterprenexsolution.com/login</strong> using this unique <strong>12-digit Employee ID</strong> or their email and this password. This ID is permanently unique and will never repeat for any other employee.
                 </p>
               </div>
 

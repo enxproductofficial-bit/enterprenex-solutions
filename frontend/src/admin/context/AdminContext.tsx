@@ -235,7 +235,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               };
             }
             if (!item.employeeId) {
-              item.employeeId = `EPX-${101 + idx}`;
+              item.employeeId = `2026${(idx + 1).toString().padStart(8, '0')}`;
             }
             if (!item.password) {
               item.password = 'Enx_sol_121006';

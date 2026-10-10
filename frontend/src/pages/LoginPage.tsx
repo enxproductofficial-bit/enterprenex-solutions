@@ -285,7 +285,7 @@ export const LoginPage: React.FC = () => {
                     required
                     placeholder={
                       role === 'employee'
-                        ? 'e.g. EPX-101 or employee@enterprenex.com'
+                        ? 'e.g. 202600000001 or employee@enterprenex.com'
                         : role === 'director'
                         ? 'director@enterprenexsolution.com'
                         : 'hr@enterprenexsolution.com'

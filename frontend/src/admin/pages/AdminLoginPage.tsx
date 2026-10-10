@@ -161,7 +161,7 @@ export const AdminLoginPage: React.FC = () => {
                 style={{ paddingLeft: '2.5rem' }}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="e.g. EPX-101 or authorized email..."
+                placeholder="e.g. 202600000001 or authorized email..."
                 required
                 autoFocus
               />

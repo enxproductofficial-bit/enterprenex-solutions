@@ -206,7 +206,7 @@ export const INITIAL_EXPENSES: ExpenseRecord[] = [];
 export const INITIAL_EMPLOYEES: Employee[] = [
   {
     id: 'emp-1',
-    employeeId: 'EPX-101',
+    employeeId: '202600000001',
     password: 'Enx_sol_121006',
     name: 'Rohit P.',
     role: 'Managing Director & Lead Architect',
