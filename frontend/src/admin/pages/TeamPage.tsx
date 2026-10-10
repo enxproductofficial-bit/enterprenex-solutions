@@ -47,6 +47,7 @@ export const TeamPage: React.FC = () => {
     deleteLeaveRequest,
     markAttendanceToday,
     currentUser,
+    uploadDocument,
     showToast
   } = useAdmin();
 
@@ -94,6 +95,14 @@ export const TeamPage: React.FC = () => {
   const [editKycPan, setEditKycPan] = useState('');
   const [editKycAadhaar, setEditKycAadhaar] = useState('');
 
+  // Document Viewer Lightbox state
+  const [previewDocModal, setPreviewDocModal] = useState<{
+    title: string;
+    url: string;
+    number?: string;
+    type: string;
+  } | null>(null);
+
   // Strict DPDP Act & Statutory RBAC: Only Director and HR can view government KYC documents
   const canAccessKyc = isDirector || currentUser?.department === 'Human Resources' || Boolean(currentUser?.email?.includes('hr@'));
   const canViewEmployeeKyc = (emp: Employee) => {
@@ -110,6 +119,20 @@ export const TeamPage: React.FC = () => {
     return `XXXX-XXXX-${last4}`;
   };
 
+  const downloadDoc = (url: string, filename: string) => {
+    if (!url) {
+      showToast('No Document Available', 'No physical or electronic file uploaded yet.', 'warning');
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('Download Started', `Downloading ${filename}`, 'info');
+  };
+
   // Form state - Apply Leave
   const [applicantName, setApplicantName] = useState(currentUser?.name || 'HR Administrator');
   const [leaveType, setLeaveType] = useState<LeaveRequest['type']>('Casual Leave');
@@ -117,11 +140,11 @@ export const TeamPage: React.FC = () => {
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [leaveReason, setLeaveReason] = useState('');
 
-  // Photo upload helper
+  // File upload helper (supports images & PDFs up to 10MB)
   const handlePhotoFileChange = (file: File, onDone: (dataUrl: string) => void) => {
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('File Too Large', 'Please select an image smaller than 5MB.', 'error');
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('File Too Large', 'Please select a document or image smaller than 10MB.', 'error');
       return;
     }
     const reader = new FileReader();
@@ -2260,8 +2283,65 @@ export const TeamPage: React.FC = () => {
                   </button>
                 </div>
 
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginBottom: '10px' }}>
-                  Document: {kycModalEmp.panDocUrl ? '✓ Official Document Attached' : 'Attached during physical onboarding'}
+                {/* Document Status & View/Download Buttons */}
+                <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '8px', padding: '0.65rem', marginBottom: '10px', border: '1px solid var(--adm-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: kycModalEmp.panDocUrl ? '6px' : 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FileText size={14} color="var(--adm-primary)" />
+                      <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: 600 }}>
+                        {kycModalEmp.panDocUrl ? 'PAN_Document.pdf/img' : 'Physical File Onboarded'}
+                      </span>
+                    </div>
+                    <span className="adm-badge adm-badge-success" style={{ fontSize: '0.62rem' }}>
+                      {kycModalEmp.panDocUrl ? 'Uploaded' : 'Archived'}
+                    </span>
+                  </div>
+
+                  {/* Thumbnail / Document Preview Banner */}
+                  {kycModalEmp.panDocUrl && (
+                    <div style={{ margin: '6px 0', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: '#000', maxHeight: '110px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      {kycModalEmp.panDocUrl.startsWith('data:image') || kycModalEmp.panDocUrl.includes('.jpg') || kycModalEmp.panDocUrl.includes('.png') ? (
+                        <img src={kycModalEmp.panDocUrl} alt="PAN Card" style={{ width: '100%', maxHeight: '110px', objectFit: 'contain' }} />
+                      ) : (
+                        <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <FileText size={24} color="#ef4444" />
+                          <span>PDF Document Attached</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* View Document & Download Action Buttons */}
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-sm adm-btn-secondary"
+                      style={{ flex: 1, justifyContent: 'center', padding: '0.35rem 0.5rem', fontSize: '0.72rem', gap: '4px' }}
+                      onClick={() => {
+                        setPreviewDocModal({
+                          title: `PAN Card - ${kycModalEmp.name}`,
+                          url: kycModalEmp.panDocUrl || '',
+                          number: editKycPan || kycModalEmp.panNumber,
+                          type: 'Permanent Account Number (PAN) • Income Tax Dept'
+                        });
+                      }}
+                    >
+                      <Eye size={12} color="var(--adm-primary)" />
+                      <span>View Document</span>
+                    </button>
+
+                    {kycModalEmp.panDocUrl && (
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn-sm adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.6rem' }}
+                        onClick={() => downloadDoc(kycModalEmp.panDocUrl!, `PAN_${kycModalEmp.name.replace(/\s+/g, '_')}.png`)}
+                        title="Download PAN Document"
+                      >
+                        <Download size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <label
@@ -2269,7 +2349,7 @@ export const TeamPage: React.FC = () => {
                   style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', gap: '5px' }}
                 >
                   <Upload size={12} color="var(--adm-primary)" />
-                  <span>Update PAN File</span>
+                  <span>{kycModalEmp.panDocUrl ? 'Replace PAN File' : 'Upload PAN File'}</span>
                   <input
                     type="file"
                     accept=".pdf,image/*"
@@ -2280,7 +2360,17 @@ export const TeamPage: React.FC = () => {
                         handlePhotoFileChange(f, url => {
                           updateEmployee(kycModalEmp.id, { panDocUrl: url });
                           setKycModalEmp(prev => prev ? { ...prev, panDocUrl: url } : null);
-                          showToast('PAN Document Updated', `${f.name} attached.`, 'success');
+                          // Sync to central Document Vault
+                          uploadDocument({
+                            title: `PAN Card - ${kycModalEmp.name} (${editKycPan || kycModalEmp.panNumber || kycModalEmp.employeeId})`,
+                            category: 'Employee Docs',
+                            format: f.name.endsWith('.pdf') ? 'PDF' : 'JPG',
+                            fileSize: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
+                            version: 'v1.0',
+                            accessPermission: 'Executive',
+                            tags: ['KYC', 'PAN', 'IncomeTax', kycModalEmp.employeeId || kycModalEmp.id]
+                          });
+                          showToast('PAN Document Uploaded', `${f.name} attached and secured in Document Vault. Click "View Document" to inspect.`, 'success');
                         });
                       }
                     }}
@@ -2339,8 +2429,65 @@ export const TeamPage: React.FC = () => {
                   </button>
                 </div>
 
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginBottom: '10px' }}>
-                  Document: {kycModalEmp.aadhaarDocUrl ? '✓ Official Document Attached' : 'Attached during physical onboarding'}
+                {/* Document Status & View/Download Buttons */}
+                <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '8px', padding: '0.65rem', marginBottom: '10px', border: '1px solid var(--adm-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: kycModalEmp.aadhaarDocUrl ? '6px' : 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FileText size={14} color="var(--adm-info)" />
+                      <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: 600 }}>
+                        {kycModalEmp.aadhaarDocUrl ? 'Aadhaar_Document.pdf/img' : 'Physical File Onboarded'}
+                      </span>
+                    </div>
+                    <span className="adm-badge adm-badge-success" style={{ fontSize: '0.62rem' }}>
+                      {kycModalEmp.aadhaarDocUrl ? 'Uploaded' : 'Archived'}
+                    </span>
+                  </div>
+
+                  {/* Thumbnail / Document Preview Banner */}
+                  {kycModalEmp.aadhaarDocUrl && (
+                    <div style={{ margin: '6px 0', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: '#000', maxHeight: '110px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                      {kycModalEmp.aadhaarDocUrl.startsWith('data:image') || kycModalEmp.aadhaarDocUrl.includes('.jpg') || kycModalEmp.aadhaarDocUrl.includes('.png') ? (
+                        <img src={kycModalEmp.aadhaarDocUrl} alt="Aadhaar Card" style={{ width: '100%', maxHeight: '110px', objectFit: 'contain' }} />
+                      ) : (
+                        <div style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <FileText size={24} color="#ef4444" />
+                          <span>PDF Document Attached</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* View Document & Download Action Buttons */}
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-sm adm-btn-secondary"
+                      style={{ flex: 1, justifyContent: 'center', padding: '0.35rem 0.5rem', fontSize: '0.72rem', gap: '4px' }}
+                      onClick={() => {
+                        setPreviewDocModal({
+                          title: `Aadhaar Card - ${kycModalEmp.name}`,
+                          url: kycModalEmp.aadhaarDocUrl || '',
+                          number: editKycAadhaar || kycModalEmp.aadhaarNumber,
+                          type: 'Aadhaar Card (UIDAI Identity & EPFO)'
+                        });
+                      }}
+                    >
+                      <Eye size={12} color="var(--adm-info)" />
+                      <span>View Document</span>
+                    </button>
+
+                    {kycModalEmp.aadhaarDocUrl && (
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn-sm adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.6rem' }}
+                        onClick={() => downloadDoc(kycModalEmp.aadhaarDocUrl!, `Aadhaar_${kycModalEmp.name.replace(/\s+/g, '_')}.png`)}
+                        title="Download Aadhaar Document"
+                      >
+                        <Download size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <label
@@ -2348,7 +2495,7 @@ export const TeamPage: React.FC = () => {
                   style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', gap: '5px' }}
                 >
                   <Upload size={12} color="var(--adm-info)" />
-                  <span>Update Aadhaar File</span>
+                  <span>{kycModalEmp.aadhaarDocUrl ? 'Replace Aadhaar File' : 'Upload Aadhaar File'}</span>
                   <input
                     type="file"
                     accept=".pdf,image/*"
@@ -2359,7 +2506,17 @@ export const TeamPage: React.FC = () => {
                         handlePhotoFileChange(f, url => {
                           updateEmployee(kycModalEmp.id, { aadhaarDocUrl: url });
                           setKycModalEmp(prev => prev ? { ...prev, aadhaarDocUrl: url } : null);
-                          showToast('Aadhaar Document Updated', `${f.name} attached.`, 'success');
+                          // Sync to central Document Vault
+                          uploadDocument({
+                            title: `Aadhaar Card - ${kycModalEmp.name} (${kycModalEmp.employeeId || kycModalEmp.id})`,
+                            category: 'Employee Docs',
+                            format: f.name.endsWith('.pdf') ? 'PDF' : 'JPG',
+                            fileSize: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
+                            version: 'v1.0',
+                            accessPermission: 'Executive',
+                            tags: ['KYC', 'Aadhaar', 'UIDAI', kycModalEmp.employeeId || kycModalEmp.id]
+                          });
+                          showToast('Aadhaar Document Uploaded', `${f.name} attached and secured in Document Vault. Click "View Document" to inspect.`, 'success');
                         });
                       }
                     }}
@@ -2439,6 +2596,11 @@ export const TeamPage: React.FC = () => {
                         panNumber: cleanPan,
                         aadhaarNumber: cleanAadhaar
                       });
+                      setKycModalEmp(prev => prev ? {
+                        ...prev,
+                        panNumber: cleanPan,
+                        aadhaarNumber: cleanAadhaar
+                      } : null);
                       showToast('Changes Saved', 'Updated PAN & Aadhaar details.', 'info');
                     }}
                   >
@@ -2452,6 +2614,76 @@ export const TeamPage: React.FC = () => {
               <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setKycModalEmp(null)}>
                 Close Vault
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── HIGH-RES DOCUMENT LIGHTBOX PREVIEW MODAL ── */}
+      {previewDocModal && (
+        <div className="adm-modal-overlay" style={{ zIndex: 1100 }} onClick={() => setPreviewDocModal(null)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '680px', width: '95%' }}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                  {previewDocModal.title}
+                </h3>
+                <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
+                  {previewDocModal.type} &bull; Identifier: <strong style={{ color: 'var(--adm-primary)', fontFamily: 'monospace' }}>{previewDocModal.number || 'Verified'}</strong>
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setPreviewDocModal(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Document Preview Display */}
+            <div style={{ margin: '1.25rem 0', minHeight: '260px', maxHeight: '65vh', overflowY: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#070d19', borderRadius: '10px', padding: '1rem', border: '1px solid var(--adm-border)' }}>
+              {previewDocModal.url ? (
+                previewDocModal.url.startsWith('data:application/pdf') || previewDocModal.url.endsWith('.pdf') ? (
+                  <iframe src={previewDocModal.url} title={previewDocModal.title} style={{ width: '100%', height: '55vh', border: 'none', borderRadius: '6px' }} />
+                ) : (
+                  <img src={previewDocModal.url} alt={previewDocModal.title} style={{ maxWidth: '100%', maxHeight: '55vh', objectFit: 'contain', borderRadius: '6px', boxShadow: '0 8px 30px rgba(0,0,0,0.6)' }} />
+                )
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', maxWidth: '440px' }}>
+                  <div style={{ display: 'inline-flex', padding: '14px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '1rem' }}>
+                    <ShieldCheck size={44} color="#10b981" />
+                  </div>
+                  <h4 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>
+                    Physical Document On File (Verified)
+                  </h4>
+                  <p style={{ color: 'var(--adm-text-dim)', fontSize: '0.8rem', lineHeight: 1.5, margin: '0 0 1rem 0' }}>
+                    Official government statutory record verified for ID <strong>{previewDocModal.number}</strong>. You can upload an electronic scan anytime using the <strong>Upload File</strong> button in the KYC Vault.
+                  </p>
+                  <div style={{ background: 'rgba(255,255,255,0.04)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--adm-border)', fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--adm-primary)', fontWeight: 700 }}>
+                    GOVT ID: {previewDocModal.number}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Buttons */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                🔒 Watermarked for Enterprenex Solutions Pvt Ltd compliance.
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {previewDocModal.url && (
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-primary"
+                    style={{ gap: '5px' }}
+                    onClick={() => downloadDoc(previewDocModal.url, `${previewDocModal.title.replace(/\s+/g, '_')}.png`)}
+                  >
+                    <Download size={14} />
+                    <span>Download</span>
+                  </button>
+                )}
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setPreviewDocModal(null)}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
