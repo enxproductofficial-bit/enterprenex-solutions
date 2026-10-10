@@ -13,6 +13,7 @@ import ServicePage from './pages/ServicePage';
 import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 import AboutPage from './pages/AboutPage';
+import VerificationPage from './pages/VerificationPage';
 import FloatingWidgets from './components/FloatingWidgets';
 import LoginPage from './pages/LoginPage';
 
@@ -205,6 +206,10 @@ function MainAppRoutes() {
         <Route path="/services/:serviceId" element={<PublicWebsiteLayout><ServicePage /></PublicWebsiteLayout>} />
         <Route path="/contact" element={<PublicWebsiteLayout><ContactPage /></PublicWebsiteLayout>} />
         <Route path="/about" element={<PublicWebsiteLayout><AboutPage /></PublicWebsiteLayout>} />
+        <Route path="/verification" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
+        <Route path="/verification/internship" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
+        <Route path="/verification/soc" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
+        <Route path="/verification/employee" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
 
         {/* ── STAFF AUTH PORTAL (Approach A: Internal Onboarding Only) ── */}
         <Route path="/register" element={<Navigate to="/login?notice=internal_only" replace />} />

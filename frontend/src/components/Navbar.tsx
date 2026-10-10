@@ -36,6 +36,16 @@ const NAV_ITEMS = [
       },
     ],
   },
+  {
+    label: 'Verification',
+    href: '/verification',
+    hasIndicator: true,
+    items: [
+      { label: 'Internship Verification', to: '/verification/internship' },
+      { label: 'SOC Verification', to: '/verification/soc' },
+      { label: 'Employee Verification', to: '/verification/employee' },
+    ],
+  },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
@@ -145,7 +155,10 @@ export function Header() {
                 {item.href.startsWith('/') ? (
                   <Link to={item.href} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', minHeight: '44px' }} onClick={handleNavClick}>
                     {item.label}
-                    {item.cols && (
+                    {(item as any).hasIndicator && (
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 8px rgba(34,197,94,0.6)' }} />
+                    )}
+                    {((item as any).cols || (item as any).items) && (
                       <svg className="nav-chevron" viewBox="0 0 24 24" fill="currentColor" style={{ width: '1rem', height: '1rem' }}>
                         <path d="M7 10l5 5 5-5z" />
                       </svg>
@@ -154,7 +167,10 @@ export function Header() {
                 ) : (
                   <a href={item.href} onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', minHeight: '44px' }}>
                     {item.label}
-                    {item.cols && (
+                    {(item as any).hasIndicator && (
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 8px rgba(34,197,94,0.6)' }} />
+                    )}
+                    {((item as any).cols || (item as any).items) && (
                       <svg className="nav-chevron" viewBox="0 0 24 24" fill="currentColor" style={{ width: '1rem', height: '1rem' }}>
                         <path d="M7 10l5 5 5-5z" />
                       </svg>
@@ -218,6 +234,62 @@ export function Header() {
                           ))}
                         </div>
                       </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Standard dropdown (e.g. Verification) */}
+                {activeItem === item.label && (item as any).items && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: '#ffffff',
+                      borderRadius: '14px',
+                      boxShadow: '0 16px 40px -8px rgba(0,0,0,0.16), 0 2px 10px rgba(0,0,0,0.06)',
+                      padding: '0.5rem',
+                      zIndex: 100,
+                      minWidth: '220px',
+                      border: '1px solid #e2e8f0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.2rem',
+                    }}
+                    onMouseEnter={() => setActiveItem(item.label)}
+                    onMouseLeave={() => setActiveItem(null)}
+                  >
+                    {(item as any).items.map((sub: any) => (
+                      <Link
+                        key={sub.label}
+                        to={sub.to}
+                        onClick={handleNavClick}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.65rem',
+                          padding: '0.7rem 1rem',
+                          fontSize: '0.88rem',
+                          fontWeight: 600,
+                          color: '#1e293b',
+                          borderRadius: '8px',
+                          textDecoration: 'none',
+                          transition: 'all 0.15s ease',
+                          whiteSpace: 'nowrap',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fff7f4';
+                          e.currentTarget.style.color = '#F66135';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#1e293b';
+                        }}
+                      >
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#F66135', opacity: 0.8 }} />
+                        {sub.label}
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -365,6 +437,28 @@ export function Header() {
                         {linkObj.label}
                       </Link>
                     ))}
+                </div>
+              )}
+              {(item as any).items && (
+                <div style={{ paddingLeft: '0.5rem', marginTop: '0.25rem' }}>
+                  {(item as any).items.map((linkObj: any) => (
+                    <Link
+                      key={linkObj.label}
+                      to={linkObj.to}
+                      onClick={handleNavClick}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '0.925rem',
+                        color: '#4d4d4d',
+                        padding: '0.5rem 0.75rem',
+                        minHeight: '44px',
+                        borderRadius: '6px',
+                      }}
+                    >
+                      {linkObj.label}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
