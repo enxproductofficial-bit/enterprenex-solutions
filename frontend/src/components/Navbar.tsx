@@ -300,34 +300,6 @@ export function Header() {
         {/* Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Link
-            to="/login"
-            onClick={handleNavClick}
-            style={{
-              padding: isScrolled ? '.45rem 1.15rem' : '.55rem 1.25rem',
-              fontSize: '.875rem',
-              borderRadius: '9999px',
-              fontWeight: 600,
-              color: '#1e293b',
-              backgroundColor: '#f1f5f9',
-              border: '1px solid #cbd5e1',
-              transition: 'all 0.2s ease',
-              minHeight: '40px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              textDecoration: 'none',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#e2e8f0';
-              e.currentTarget.style.borderColor = '#94a3b8';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#f1f5f9';
-              e.currentTarget.style.borderColor = '#cbd5e1';
-            }}
-          >
-            Staff Login
-          </Link>
-          <Link
             to="/contact"
             className="btn btn-orange desktop-schedule-btn"
             onClick={handleNavClick}
@@ -465,27 +437,6 @@ export function Header() {
         </div>
 
         <div style={{ marginTop: '2rem', paddingBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <Link
-            to="/login"
-            onClick={handleNavClick}
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: '9999px',
-              padding: '0.75rem',
-              minHeight: '44px',
-              border: '1.5px solid #cbd5e1',
-              background: '#f8fafc',
-              color: '#1e293b',
-              fontWeight: 600,
-              fontSize: '0.9rem',
-              textDecoration: 'none',
-            }}
-          >
-            Staff Login
-          </Link>
-
           <Link
             to="/contact"
             className="btn btn-orange"
