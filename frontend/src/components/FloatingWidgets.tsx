@@ -5,7 +5,7 @@ const WHATSAPP_NUMBER = '919226860060';
 const WHATSAPP_MSG = encodeURIComponent(
   'Hello Enterprenex Solutions,\n\nI would like to discuss my software project.\n\nPlease contact me.'
 );
-const EMAIL = 'rohit@enterprenexsolution.com';
+const EMAIL = 'contact@enterprenex.solutions';
 
 export default function FloatingWidgets() {
   const [showScrollTop, setShowScrollTop] = useState(false);
