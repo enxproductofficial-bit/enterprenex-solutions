@@ -320,9 +320,13 @@ export interface VaultDocument {
   fileSize: string;
   uploadedBy: string;
   uploadDate: string;
-  accessPermission: 'Public' | 'Internal' | 'Confidential' | 'Admin Only';
+  accessPermission: 'Public' | 'Internal' | 'Confidential' | 'Admin Only' | 'Executive';
   tags: string[];
   url: string;
+  employeeId?: string;
+  verificationStatus?: 'Verified' | 'Pending Verification' | 'Rejected' | 'Not Submitted';
+  verifiedBy?: string;
+  verifiedAt?: string;
 }
 
 // 11. Calendar & Meetings

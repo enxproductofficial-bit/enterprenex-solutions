@@ -48,6 +48,8 @@ export const TeamPage: React.FC = () => {
     markAttendanceToday,
     currentUser,
     uploadDocument,
+    updateDocument,
+    documents,
     showToast
   } = useAdmin();
 
@@ -2604,34 +2606,76 @@ export const TeamPage: React.FC = () => {
               {/* Action Buttons for KYC Verification and Saving */}
               <div style={{ display: 'flex', gap: '6px' }}>
                 {canAccessKyc && (
-                  <button
-                    type="button"
-                    className="adm-btn adm-btn-sm adm-btn-primary"
-                    style={{ background: '#059669', borderColor: '#059669', gap: '5px' }}
-                    onClick={() => {
-                      const cleanPan = editKycPan.trim().toUpperCase();
-                      const cleanAadhaar = editKycAadhaar.trim().replace(/\D/g, '');
-                      updateEmployee(kycModalEmp.id, {
-                        panNumber: cleanPan || kycModalEmp.panNumber,
-                        aadhaarNumber: cleanAadhaar || kycModalEmp.aadhaarNumber,
-                        kycStatus: 'Verified',
-                        kycVerifiedBy: currentUser?.name || 'Managing Director',
-                        kycVerifiedAt: new Date().toISOString()
-                      });
-                      setKycModalEmp(prev => prev ? {
-                        ...prev,
-                        panNumber: cleanPan || prev.panNumber,
-                        aadhaarNumber: cleanAadhaar || prev.aadhaarNumber,
-                        kycStatus: 'Verified',
-                        kycVerifiedBy: currentUser?.name || 'Managing Director',
-                        kycVerifiedAt: new Date().toISOString()
-                      } : null);
-                      showToast('KYC Verified', `Approved and verified statutory KYC for ${kycModalEmp.name}.`, 'success');
-                    }}
-                  >
-                    <CheckCircle2 size={13} />
-                    <span>Approve & Verify KYC</span>
-                  </button>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-sm adm-btn-primary"
+                      style={{ background: '#059669', borderColor: '#059669', gap: '5px' }}
+                      onClick={() => {
+                        const cleanPan = editKycPan.trim().toUpperCase();
+                        const cleanAadhaar = editKycAadhaar.trim().replace(/\D/g, '');
+                        const verifier = currentUser?.name || 'Managing Director';
+                        const verDate = new Date().toISOString();
+
+                        updateEmployee(kycModalEmp.id, {
+                          panNumber: cleanPan || kycModalEmp.panNumber,
+                          aadhaarNumber: cleanAadhaar || kycModalEmp.aadhaarNumber,
+                          kycStatus: 'Verified',
+                          kycVerifiedBy: verifier,
+                          kycVerifiedAt: verDate
+                        });
+                        setKycModalEmp(prev => prev ? {
+                          ...prev,
+                          panNumber: cleanPan || prev.panNumber,
+                          aadhaarNumber: cleanAadhaar || prev.aadhaarNumber,
+                          kycStatus: 'Verified',
+                          kycVerifiedBy: verifier,
+                          kycVerifiedAt: verDate
+                        } : null);
+
+                        // Sync to all vault documents matching this employee ID
+                        if (documents && updateDocument) {
+                          documents.forEach(d => {
+                            if (d.employeeId === kycModalEmp.employeeId || d.tags.includes(kycModalEmp.employeeId) || d.tags.includes(kycModalEmp.id)) {
+                              updateDocument(d.id, {
+                                employeeId: kycModalEmp.employeeId,
+                                verificationStatus: 'Verified',
+                                verifiedBy: verifier,
+                                verifiedAt: verDate
+                              });
+                            }
+                          });
+                        }
+
+                        showToast('KYC Verified', `Approved and verified statutory KYC for Employee ID: ${kycModalEmp.employeeId} (${kycModalEmp.name}).`, 'success');
+                      }}
+                    >
+                      <CheckCircle2 size={13} />
+                      <span>Approve & Verify</span>
+                    </button>
+
+                    {kycModalEmp.kycStatus === 'Verified' && (
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn-sm adm-btn-secondary"
+                        style={{ fontSize: '0.72rem' }}
+                        onClick={() => {
+                          updateEmployee(kycModalEmp.id, { kycStatus: 'Pending Verification' });
+                          setKycModalEmp(prev => prev ? { ...prev, kycStatus: 'Pending Verification' } : null);
+                          if (documents && updateDocument) {
+                            documents.forEach(d => {
+                              if (d.employeeId === kycModalEmp.employeeId || d.tags.includes(kycModalEmp.employeeId) || d.tags.includes(kycModalEmp.id)) {
+                                updateDocument(d.id, { verificationStatus: 'Pending Verification' });
+                              }
+                            });
+                          }
+                          showToast('KYC Set to Pending', `Employee ID ${kycModalEmp.employeeId} set to Pending Verification.`, 'info');
+                        }}
+                      >
+                        Reset to Pending
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 <button

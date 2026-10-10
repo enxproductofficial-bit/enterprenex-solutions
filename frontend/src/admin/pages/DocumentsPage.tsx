@@ -16,13 +16,17 @@ import {
   Share2,
   ExternalLink,
   CheckCircle2,
+  Clock,
+  XCircle,
   Lock,
   FileSpreadsheet,
   AlertCircle,
   Sparkles,
   Send,
   Building,
-  UserCheck
+  UserCheck,
+  BadgeCheck,
+  Filter
 } from 'lucide-react';
 import type { VaultDocument, Employee } from '../types';
 
@@ -38,19 +42,35 @@ const CATEGORIES = [
   'Employee Docs'
 ];
 
+const VERIFICATION_STATUSES = [
+  'All',
+  'Verified',
+  'Pending Verification',
+  'Rejected'
+];
+
 export const DocumentsPage: React.FC = () => {
   const {
     documents,
     uploadDocument,
     updateDocument,
     deleteDocument,
+    updateEmployee,
     showToast,
     currentUser,
     employees,
     logAction
   } = useAdmin();
 
+  const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenexsolution.com';
+  const isManagerOrHr =
+    currentUser?.role === 'Project Manager' ||
+    currentUser?.role === 'HR Manager' ||
+    Boolean(currentUser?.department === 'Human Resources' || currentUser?.email?.includes('hr@') || currentUser?.email?.includes('manager@'));
+  const canManageVerification = isDirector || isManagerOrHr;
+
   const [selectedCat, setSelectedCat] = useState<string>('All');
+  const [selectedStatus, setSelectedStatus] = useState<string>('All');
   const [search, setSearch] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<VaultDocument | null>(null);
@@ -67,9 +87,36 @@ export const DocumentsPage: React.FC = () => {
   const [fSize, setFSize] = useState('1.2 MB');
   const [fPermission, setFPermission] = useState<VaultDocument['accessPermission']>('Internal');
   const [fTags, setFTags] = useState('Legal, Enterprise, 2026');
+  const [fEmployeeId, setFEmployeeId] = useState('');
+  const [fVerificationStatus, setFVerificationStatus] = useState<'Verified' | 'Pending Verification' | 'Rejected'>('Pending Verification');
 
-  // Auto-heal documents in storage: If an employee document is missing its URL or format,
-  // link it automatically to the employee's panDocUrl / aadhaarDocUrl
+  // Helper to extract or resolve Employee ID and Verification Status for any document
+  const getDocEmployeeInfo = (doc: VaultDocument): {
+    empId: string | undefined;
+    emp: Employee | undefined;
+    verificationStatus: 'Verified' | 'Pending Verification' | 'Rejected' | 'Not Submitted';
+  } => {
+    let empId = doc.employeeId;
+    let emp = employees.find(e => (empId && e.employeeId === empId) || (empId && e.id === empId));
+
+    if (!empId) {
+      emp = employees.find(e =>
+        doc.tags.includes(e.employeeId) ||
+        doc.tags.includes(e.id) ||
+        doc.title.toLowerCase().includes(e.name.toLowerCase())
+      );
+      if (emp) {
+        empId = emp.employeeId || emp.id;
+      }
+    }
+
+    const verificationStatus: 'Verified' | 'Pending Verification' | 'Rejected' | 'Not Submitted' =
+      doc.verificationStatus || (emp?.kycStatus ? emp.kycStatus : (doc.category === 'Employee Docs' ? 'Pending Verification' : 'Verified'));
+
+    return { empId, emp, verificationStatus };
+  };
+
+  // Auto-heal documents: link employee documents to employee IDs and verification status
   useEffect(() => {
     documents.forEach(doc => {
       let needsUpdate = false;
@@ -80,26 +127,30 @@ export const DocumentsPage: React.FC = () => {
         needsUpdate = true;
       }
 
-      if ((!doc.url || doc.url === '#') && doc.category === 'Employee Docs') {
-        const matchingEmp = employees.find(e =>
-          doc.tags.includes(e.employeeId) ||
-          doc.tags.includes(e.id) ||
-          doc.title.toLowerCase().includes(e.name.toLowerCase())
-        );
+      const { empId, emp, verificationStatus } = getDocEmployeeInfo(doc);
 
-        if (matchingEmp) {
-          const isPan = doc.title.toLowerCase().includes('pan');
-          const isAadhaar = doc.title.toLowerCase().includes('aadhaar');
+      if (empId && doc.employeeId !== empId) {
+        updates.employeeId = empId;
+        needsUpdate = true;
+      }
 
-          if (isPan && matchingEmp.panDocUrl) {
-            updates.url = matchingEmp.panDocUrl;
-            updates.fileFormat = matchingEmp.panDocUrl.startsWith('data:application/pdf') ? 'PDF' : 'JPG';
-            needsUpdate = true;
-          } else if (isAadhaar && matchingEmp.aadhaarDocUrl) {
-            updates.url = matchingEmp.aadhaarDocUrl;
-            updates.fileFormat = matchingEmp.aadhaarDocUrl.startsWith('data:application/pdf') ? 'PDF' : 'JPG';
-            needsUpdate = true;
-          }
+      if (emp && !doc.verificationStatus && emp.kycStatus) {
+        updates.verificationStatus = emp.kycStatus;
+        needsUpdate = true;
+      }
+
+      if ((!doc.url || doc.url === '#') && doc.category === 'Employee Docs' && emp) {
+        const isPan = doc.title.toLowerCase().includes('pan');
+        const isAadhaar = doc.title.toLowerCase().includes('aadhaar');
+
+        if (isPan && emp.panDocUrl) {
+          updates.url = emp.panDocUrl;
+          updates.fileFormat = emp.panDocUrl.startsWith('data:application/pdf') ? 'PDF' : 'JPG';
+          needsUpdate = true;
+        } else if (isAadhaar && emp.aadhaarDocUrl) {
+          updates.url = emp.aadhaarDocUrl;
+          updates.fileFormat = emp.aadhaarDocUrl.startsWith('data:application/pdf') ? 'PDF' : 'JPG';
+          needsUpdate = true;
         }
       }
 
@@ -109,43 +160,97 @@ export const DocumentsPage: React.FC = () => {
     });
   }, [employees, documents, updateDocument]);
 
+  // Update verification status according to Employee ID
+  const handleSetVerificationStatus = (
+    doc: VaultDocument,
+    newStatus: 'Verified' | 'Pending Verification' | 'Rejected'
+  ) => {
+    const { empId, emp } = getDocEmployeeInfo(doc);
+    const verifier = currentUser?.name || 'Managing Director';
+    const now = new Date().toISOString();
+
+    // 1. Update this vault document
+    updateDocument(doc.id, {
+      verificationStatus: newStatus,
+      employeeId: empId || doc.employeeId,
+      verifiedBy: verifier,
+      verifiedAt: now
+    });
+
+    // 2. Sync to all other documents matching this employee ID
+    if (empId) {
+      documents.forEach(d => {
+        if (d.id !== doc.id && (d.employeeId === empId || d.tags.includes(empId))) {
+          updateDocument(d.id, {
+            verificationStatus: newStatus,
+            employeeId: empId,
+            verifiedBy: verifier,
+            verifiedAt: now
+          });
+        }
+      });
+
+      // 3. Sync to the employee record
+      if (emp) {
+        updateEmployee(emp.id, {
+          kycStatus: newStatus,
+          kycVerifiedBy: verifier,
+          kycVerifiedAt: now
+        });
+      }
+    }
+
+    // 4. Update preview modal if open
+    if (previewDoc && previewDoc.id === doc.id) {
+      setPreviewDoc(prev => prev ? {
+        ...prev,
+        verificationStatus: newStatus,
+        verifiedBy: verifier,
+        verifiedAt: now
+      } : null);
+    }
+
+    if (logAction) {
+      logAction(
+        'Updated Verification Status',
+        'Document Vault',
+        `Set verification status to ${newStatus} for Employee ID: ${empId || 'N/A'}`
+      );
+    }
+
+    showToast(
+      'Verification Status Updated',
+      `Employee ID ${empId || doc.title}: Status set to ${newStatus}`,
+      newStatus === 'Verified' ? 'success' : newStatus === 'Rejected' ? 'error' : 'info'
+    );
+  };
+
   // Helper to resolve the effective file URL for any document
   const getEffectiveDocUrl = (doc: VaultDocument): string | null => {
     if (doc.url && doc.url !== '#') return doc.url;
-
-    // Check if matching employee has the file attached
-    const matchingEmp = employees.find(e =>
-      doc.tags.includes(e.employeeId) ||
-      doc.tags.includes(e.id) ||
-      doc.title.toLowerCase().includes(e.name.toLowerCase())
-    );
-
-    if (matchingEmp) {
-      if (doc.title.toLowerCase().includes('pan') && matchingEmp.panDocUrl) {
-        return matchingEmp.panDocUrl;
+    const { emp } = getDocEmployeeInfo(doc);
+    if (emp) {
+      if (doc.title.toLowerCase().includes('pan') && emp.panDocUrl) {
+        return emp.panDocUrl;
       }
-      if (doc.title.toLowerCase().includes('aadhaar') && matchingEmp.aadhaarDocUrl) {
-        return matchingEmp.aadhaarDocUrl;
+      if (doc.title.toLowerCase().includes('aadhaar') && emp.aadhaarDocUrl) {
+        return emp.aadhaarDocUrl;
       }
     }
     return null;
   };
 
-  // Helper to find associated employee if applicable
-  const getMatchingEmployee = (doc: VaultDocument): Employee | undefined => {
-    return employees.find(e =>
-      doc.tags.includes(e.employeeId) ||
-      doc.tags.includes(e.id) ||
-      doc.title.toLowerCase().includes(e.name.toLowerCase())
-    );
-  };
-
   const filteredDocs = documents.filter(d => {
     const matchCat = selectedCat === 'All' || d.category === selectedCat;
+    const { empId, verificationStatus } = getDocEmployeeInfo(d);
+    const matchStatus = selectedStatus === 'All' || verificationStatus === selectedStatus;
     const matchSearch =
       d.title.toLowerCase().includes(search.toLowerCase()) ||
-      d.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
-    return matchCat && matchSearch;
+      d.tags.some(t => t.toLowerCase().includes(search.toLowerCase())) ||
+      (empId && empId.toLowerCase().includes(search.toLowerCase())) ||
+      (d.employeeId && d.employeeId.toLowerCase().includes(search.toLowerCase()));
+
+    return matchCat && matchStatus && matchSearch;
   });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,14 +258,12 @@ export const DocumentsPage: React.FC = () => {
       const file = e.target.files[0];
       setSelectedFile(file);
 
-      // Auto-populate document name and details from selected file
       const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
       if (!fTitle) setFTitle(nameWithoutExt);
 
       const extension = file.name.split('.').pop()?.toUpperCase() || 'PDF';
       setFFormat(extension);
 
-      // Compute friendly file size
       const sizeInMb = (file.size / (1024 * 1024)).toFixed(2);
       const sizeInKb = (file.size / 1024).toFixed(0);
       setFSize(file.size > 1024 * 1024 ? `${sizeInMb} MB` : `${sizeInKb} KB`);
@@ -171,6 +274,11 @@ export const DocumentsPage: React.FC = () => {
     e.preventDefault();
 
     const saveDoc = (docUrl: string) => {
+      const tagList = fTags.split(',').map(s => s.trim()).filter(Boolean);
+      if (fEmployeeId && !tagList.includes(fEmployeeId)) {
+        tagList.push(fEmployeeId);
+      }
+
       uploadDocument({
         title: fTitle || (selectedFile ? selectedFile.name : 'Untitled Document'),
         category: fCategory,
@@ -178,14 +286,31 @@ export const DocumentsPage: React.FC = () => {
         fileFormat: fFormat,
         fileSize: fSize,
         accessPermission: fPermission,
-        tags: fTags.split(',').map(s => s.trim()).filter(Boolean),
-        url: docUrl
+        tags: tagList,
+        url: docUrl,
+        employeeId: fEmployeeId || undefined,
+        verificationStatus: fCategory === 'Employee Docs' ? fVerificationStatus : 'Verified',
+        verifiedBy: fVerificationStatus === 'Verified' ? (currentUser?.name || 'Managing Director') : undefined,
+        verifiedAt: fVerificationStatus === 'Verified' ? new Date().toISOString() : undefined
       });
+
+      // If tied to an existing employee, sync their KYC status
+      if (fEmployeeId && fCategory === 'Employee Docs') {
+        const emp = employees.find(e => e.employeeId === fEmployeeId || e.id === fEmployeeId);
+        if (emp && fVerificationStatus === 'Verified') {
+          updateEmployee(emp.id, {
+            kycStatus: 'Verified',
+            kycVerifiedBy: currentUser?.name || 'Managing Director',
+            kycVerifiedAt: new Date().toISOString()
+          });
+        }
+      }
 
       setShowUploadModal(false);
       setSelectedFile(null);
       setFTitle('');
-      showToast('Upload Successful', `${fTitle || 'Document'} secured in central vault.`, 'success');
+      setFEmployeeId('');
+      showToast('Upload Successful', `${fTitle || 'Document'} secured with Employee ID status tracking.`, 'success');
     };
 
     if (selectedFile) {
@@ -202,11 +327,12 @@ export const DocumentsPage: React.FC = () => {
     }
   };
 
-  // Generate official, legally formatted HTML content for contracts, NDAs, KYC, proposals, etc.
+  // Generate official HTML for document preview / PDF export
   const generateDocumentHtml = (doc: VaultDocument, emp?: Employee): string => {
     const isMsa = doc.title.toLowerCase().includes('msa') || doc.category === 'Contracts';
     const isNda = doc.title.toLowerCase().includes('nda') || doc.category === 'NDA';
     const isKyc = doc.category === 'Employee Docs' || doc.tags.includes('KYC');
+    const { empId, verificationStatus } = getDocEmployeeInfo(doc);
 
     let bodyContent = '';
 
@@ -254,29 +380,32 @@ export const DocumentsPage: React.FC = () => {
       `;
     } else if (isKyc) {
       const empName = emp?.name || doc.uploadedBy || 'Employee';
-      const empId = emp?.employeeId || emp?.id || '202600000002';
+      const finalEmpId = empId || emp?.employeeId || '202600000002';
       const panNum = emp?.panNumber || 'PRRPS8209K';
       const aadhaarNum = emp?.aadhaarNumber ? `XXXX-XXXX-${emp.aadhaarNumber.slice(-4)}` : 'XXXX-XXXX-2345';
+      const statusColor = verificationStatus === 'Verified' ? '#059669' : verificationStatus === 'Rejected' ? '#dc2626' : '#d97706';
 
       bodyContent = `
         <div class="kyc-badge-header">
           <div class="kyc-tag">STATUTORY GOVERNMENT COMPLIANCE RECORD &bull; DPDP ACT 2023 & UIDAI COMPLIANT</div>
-          <div class="status-verified">&check; KYC VERIFIED & SECURED</div>
+          <div class="status-verified" style="color: ${statusColor}; font-weight: 800;">
+            ${verificationStatus === 'Verified' ? '&check; VERIFIED & AUTHENTICATED' : verificationStatus === 'Rejected' ? '&cross; REJECTED / RESUBMISSION REQUIRED' : '⏳ PENDING STATUTORY VERIFICATION'}
+          </div>
         </div>
         <div class="kyc-table-container">
           <table class="kyc-table">
+            <tr><td><strong>12-Digit Employee ID:</strong></td><td><code style="font-size: 1rem; color: #f66135; font-weight: 800;">${finalEmpId}</code></td></tr>
             <tr><td><strong>Employee Full Name:</strong></td><td>${empName}</td></tr>
-            <tr><td><strong>12-Digit Employee ID:</strong></td><td><code>${empId}</code></td></tr>
+            <tr><td><strong>Verification Status:</strong></td><td><strong style="color: ${statusColor}; text-transform: uppercase;">${verificationStatus}</strong></td></tr>
             <tr><td><strong>Designation & Governance Role:</strong></td><td>${emp?.role || 'Executive Team Member'}</td></tr>
             <tr><td><strong>Permanent Account Number (PAN):</strong></td><td><code>${panNum}</code> (Income Tax Department, Govt of India)</td></tr>
             <tr><td><strong>Aadhaar Card UID:</strong></td><td><code>${aadhaarNum}</code> (UIDAI Masked Format)</td></tr>
-            <tr><td><strong>Verification Status:</strong></td><td><span style="color: #059669; font-weight: 800;">VERIFIED & ACTIVE</span></td></tr>
-            <tr><td><strong>Verification Officer:</strong></td><td>Managing Director / HR Operations &bull; Enterprenex Solutions</td></tr>
-            <tr><td><strong>Timestamp:</strong></td><td>${doc.uploadDate || '2026-10-10'} &bull; Digital Vault Record ID: ${doc.id}</td></tr>
+            <tr><td><strong>Authorized Verification Officer:</strong></td><td>${doc.verifiedBy || 'Rohit P. (Managing Director)'} &bull; Enterprenex Solutions</td></tr>
+            <tr><td><strong>Timestamp & Vault ID:</strong></td><td>${doc.uploadDate || '2026-10-10'} &bull; Reference ID: ${doc.id}</td></tr>
           </table>
         </div>
         <div class="legal-section" style="margin-top: 1.5rem; font-size: 0.8rem; color: #475569;">
-          <p><strong>Statutory Declaration:</strong> This identity verification record has been archived in compliance with Section 139AA of the Income Tax Act 1961, Employee Provident Fund & Miscellaneous Provisions Act 1952, and the Digital Personal Data Protection (DPDP) Act 2023. Unauthorized reproduction is strictly prohibited.</p>
+          <p><strong>Statutory Declaration:</strong> This identity verification record has been archived in compliance with Section 139AA of the Income Tax Act 1961, Employee Provident Fund & Miscellaneous Provisions Act 1952, and the Digital Personal Data Protection (DPDP) Act 2023. Authenticated by Enterprenex Solutions Central Security Vault.</p>
         </div>
       `;
     } else {
@@ -313,7 +442,6 @@ export const DocumentsPage: React.FC = () => {
             .legal-section p { font-size: 0.85rem; color: #334155; margin: 0; text-align: justify; }
             .kyc-badge-header { display: flex; justify-content: space-between; align-items: center; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; }
             .kyc-tag { font-size: 0.75rem; font-weight: 800; color: #047857; letter-spacing: 0.5px; }
-            .status-verified { font-size: 0.8rem; font-weight: 800; color: #059669; }
             .kyc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
             .kyc-table td { padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; }
             .kyc-table tr:nth-child(even) { background: #f8fafc; }
@@ -338,15 +466,15 @@ export const DocumentsPage: React.FC = () => {
             <div class="doc-meta">
               <div><strong>Document ID:</strong> ${doc.id}</div>
               <div><strong>Category:</strong> ${doc.category}</div>
-              <div><strong>Version:</strong> ${doc.version}</div>
-              <div><strong>Security:</strong> ${doc.accessPermission}</div>
+              <div><strong>Employee ID:</strong> ${empId || 'N/A'}</div>
+              <div><strong>Verification Status:</strong> ${verificationStatus}</div>
               <div><strong>Date:</strong> ${doc.uploadDate}</div>
             </div>
           </div>
 
           <div class="doc-title-block">
             <h1>${doc.title}</h1>
-            <p>OFFICIAL DIGITAL VAULT REPOSITORY RECORD &bull; AUTHENTICATED</p>
+            <p>EMPLOYEE ID: ${empId || 'GENERAL'} &bull; STATUS: ${verificationStatus.toUpperCase()}</p>
           </div>
 
           ${bodyContent}
@@ -386,14 +514,11 @@ export const DocumentsPage: React.FC = () => {
   // Instant Download Handler
   const handleDownload = (doc: VaultDocument) => {
     const effectiveUrl = getEffectiveDocUrl(doc);
-    const matchingEmp = getMatchingEmployee(doc);
+    const { emp } = getDocEmployeeInfo(doc);
     const cleanTitle = doc.title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim() || 'Document';
 
-    // 1. If we have a raw base64 DataURL or valid URL
     if (effectiveUrl && effectiveUrl !== '#') {
-      const isBase64 = effectiveUrl.startsWith('data:');
       const ext = (doc.fileFormat || (effectiveUrl.includes('image') ? 'jpg' : 'pdf')).toLowerCase().replace(/[^a-z0-9]/g, '');
-
       const link = document.createElement('a');
       link.href = effectiveUrl;
       link.download = `${cleanTitle}.${ext}`;
@@ -405,9 +530,7 @@ export const DocumentsPage: React.FC = () => {
       return;
     }
 
-    // 2. If it is a seeded template or document without raw uploaded file:
-    // Generate official corporate printable HTML & PDF blob download
-    const htmlContent = generateDocumentHtml(doc, matchingEmp);
+    const htmlContent = generateDocumentHtml(doc, emp);
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const blobUrl = URL.createObjectURL(blob);
 
@@ -419,12 +542,11 @@ export const DocumentsPage: React.FC = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(blobUrl);
 
-    // Also trigger instant print-to-PDF dialog for immediate "Save as PDF"
     handlePrintPdf(doc);
 
     showToast(
       'Document Generated & Downloaded',
-      `Official file saved. Opening "Print to PDF" for immediate vector PDF download.`,
+      `Official file saved. Opening "Print to PDF" for vector PDF download.`,
       'success'
     );
   };
@@ -432,9 +554,8 @@ export const DocumentsPage: React.FC = () => {
   // Instant Print to PDF Handler
   const handlePrintPdf = (doc: VaultDocument) => {
     const effectiveUrl = getEffectiveDocUrl(doc);
-    const matchingEmp = getMatchingEmployee(doc);
+    const { emp } = getDocEmployeeInfo(doc);
 
-    // If it is an image, open dedicated image print window
     if (effectiveUrl && effectiveUrl.startsWith('data:image')) {
       const win = window.open('', '_blank');
       if (win) {
@@ -464,19 +585,19 @@ export const DocumentsPage: React.FC = () => {
       return;
     }
 
-    // Open standard printable corporate agreement
     const win = window.open('', '_blank');
     if (!win) {
       showToast('Popup Blocked', 'Please allow popups to open printable PDF view.', 'warning');
       return;
     }
 
-    win.document.write(generateDocumentHtml(doc, matchingEmp));
+    win.document.write(generateDocumentHtml(doc, emp));
     win.document.close();
   };
 
-  // Email Document to Director, HR, Manager or Employee
+  // Email Document Dispatch
   const handleEmailDocument = (doc: VaultDocument, targetEmail: string) => {
+    const { empId, verificationStatus } = getDocEmployeeInfo(doc);
     const subject = encodeURIComponent(`[Enterprenex Vault] Official Document Dispatch: ${doc.title}`);
     const body = encodeURIComponent(
       `ENTERPRENEX SOLUTIONS PRIVATE LIMITED\n` +
@@ -485,7 +606,8 @@ export const DocumentsPage: React.FC = () => {
       `DOCUMENT DETAILS:\n` +
       `- Title: ${doc.title}\n` +
       `- Category: ${doc.category}\n` +
-      `- Version: ${doc.version}\n` +
+      `- Employee ID: ${empId || 'N/A'}\n` +
+      `- Verification Status: ${verificationStatus}\n` +
       `- Access Level: ${doc.accessPermission}\n` +
       `- File Format: ${doc.fileFormat} (${doc.fileSize})\n` +
       `- Uploaded On: ${doc.uploadDate} by ${doc.uploadedBy}\n` +
@@ -518,7 +640,7 @@ export const DocumentsPage: React.FC = () => {
       <div className="adm-page-header">
         <div className="adm-page-title-group">
           <h1>Central Document Vault & IP Repository</h1>
-          <p>Encrypted vault for client NDAs, master service agreements, technical specifications & compliance records</p>
+          <p>Encrypted vault for client NDAs, master service agreements, employee KYC and statutory records</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={() => setShowUploadModal(true)}>
@@ -560,43 +682,63 @@ export const DocumentsPage: React.FC = () => {
           </div>
           <div>
             <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.88rem' }}>
-              Vault Clearance: Active for {currentUser?.name} &bull; {currentUser?.role}
+              Vault Clearance & KYC Management: Active for {currentUser?.name} &bull; {currentUser?.role}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
-              Director, HR Manager, Project Manager & Employee roles cleared for 1-click View, PDF Download & Email dispatch
+              Verification Status tracked by Employee ID &bull; Director & HR can Verify, Approve, Download & Print all records
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span className="adm-badge adm-badge-success" style={{ fontSize: '0.72rem' }}>
-            <CheckCircle2 size={12} /> Download Clearance: 100% Active
+            <CheckCircle2 size={12} /> Status Sync: Active
           </span>
           <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.72rem' }}>
-            <Lock size={12} /> SHA-256 Encrypted
+            <Lock size={12} /> DPDP Act 2023 Compliant
           </span>
         </div>
       </div>
 
-      {/* Category Pills & Search */}
+      {/* Category Pills, Status Filter & Search */}
       <div className="adm-card" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ position: 'relative', width: '320px' }}>
+          {/* Search by Title, Tags or Employee ID */}
+          <div style={{ position: 'relative', width: '360px' }}>
             <Search size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }} />
             <input
               type="text"
               className="adm-input"
               style={{ paddingLeft: '2.4rem' }}
-              placeholder="Search document vault by title or tags..."
+              placeholder="Search by title, tags, or 12-digit Employee ID..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Verification Status Filter Dropdown */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Filter size={14} color="var(--adm-text-dim)" />
+              <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', fontWeight: 600 }}>Status:</span>
+              <select
+                className="adm-select"
+                style={{ padding: '0.35rem 0.65rem', fontSize: '0.78rem', width: 'auto' }}
+                value={selectedStatus}
+                onChange={e => setSelectedStatus(e.target.value)}
+              >
+                {VERIFICATION_STATUSES.map(st => (
+                  <option key={st} value={st}>
+                    {st === 'All' ? 'All Verification Statuses' : st}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <span style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', fontWeight: 600 }}>
               {filteredDocs.length} Documents
             </span>
+
             <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowUploadModal(true)}>
               <Plus size={14} /> Add Document
             </button>
@@ -636,6 +778,8 @@ export const DocumentsPage: React.FC = () => {
               <tr>
                 <th>Document Title & Format</th>
                 <th>Category</th>
+                <th>Employee ID</th>
+                <th>Verification Status</th>
                 <th>Version</th>
                 <th>Access Level</th>
                 <th>File Size</th>
@@ -647,9 +791,11 @@ export const DocumentsPage: React.FC = () => {
               {filteredDocs.map(doc => {
                 const effectiveUrl = getEffectiveDocUrl(doc);
                 const isRealFile = effectiveUrl && effectiveUrl !== '#';
+                const { empId, emp, verificationStatus } = getDocEmployeeInfo(doc);
 
                 return (
                   <tr key={doc.id}>
+                    {/* Document Title & Format */}
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div
@@ -679,12 +825,133 @@ export const DocumentsPage: React.FC = () => {
                         </div>
                       </div>
                     </td>
+
+                    {/* Category */}
                     <td>
                       <span className="adm-badge adm-badge-neutral">{doc.category}</span>
                     </td>
+
+                    {/* Employee ID Column */}
+                    <td>
+                      {empId ? (
+                        <div>
+                          <span
+                            style={{
+                              fontFamily: 'monospace',
+                              fontWeight: 800,
+                              color: '#38bdf8',
+                              background: 'rgba(56, 189, 248, 0.08)',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontSize: '0.76rem',
+                              border: '1px solid rgba(56, 189, 248, 0.2)'
+                            }}
+                          >
+                            {empId}
+                          </span>
+                          {emp && (
+                            <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
+                              {emp.name}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-dim)' }}>
+                          &mdash;
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Verification Status Column with Quick Actions */}
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span
+                          className={`adm-badge ${
+                            verificationStatus === 'Verified'
+                              ? 'adm-badge-success'
+                              : verificationStatus === 'Rejected'
+                              ? 'adm-badge-danger'
+                              : 'adm-badge-warning'
+                          }`}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', width: 'fit-content' }}
+                        >
+                          {verificationStatus === 'Verified' ? (
+                            <CheckCircle2 size={11} />
+                          ) : verificationStatus === 'Rejected' ? (
+                            <XCircle size={11} />
+                          ) : (
+                            <Clock size={11} />
+                          )}
+                          <span>{verificationStatus}</span>
+                        </span>
+
+                        {/* Interactive Status Switcher for Director & HR */}
+                        {canManageVerification && (
+                          <div style={{ display: 'flex', gap: '3px', marginTop: '2px' }}>
+                            {verificationStatus !== 'Verified' && (
+                              <button
+                                className="adm-btn adm-btn-sm"
+                                style={{
+                                  background: 'rgba(16, 185, 129, 0.15)',
+                                  color: '#10b981',
+                                  borderColor: 'rgba(16, 185, 129, 0.3)',
+                                  fontSize: '0.65rem',
+                                  padding: '1px 5px',
+                                  height: '19px'
+                                }}
+                                onClick={() => handleSetVerificationStatus(doc, 'Verified')}
+                                title="Approve & Mark as Verified"
+                              >
+                                &check; Verify
+                              </button>
+                            )}
+
+                            {verificationStatus !== 'Pending Verification' && (
+                              <button
+                                className="adm-btn adm-btn-sm"
+                                style={{
+                                  background: 'rgba(245, 158, 11, 0.15)',
+                                  color: '#f59e0b',
+                                  borderColor: 'rgba(245, 158, 11, 0.3)',
+                                  fontSize: '0.65rem',
+                                  padding: '1px 5px',
+                                  height: '19px'
+                                }}
+                                onClick={() => handleSetVerificationStatus(doc, 'Pending Verification')}
+                                title="Mark as Pending"
+                              >
+                                ⏳ Pending
+                              </button>
+                            )}
+
+                            {verificationStatus !== 'Rejected' && (
+                              <button
+                                className="adm-btn adm-btn-sm"
+                                style={{
+                                  background: 'rgba(239, 68, 68, 0.15)',
+                                  color: '#ef4444',
+                                  borderColor: 'rgba(239, 68, 68, 0.3)',
+                                  fontSize: '0.65rem',
+                                  padding: '1px 5px',
+                                  height: '19px'
+                                }}
+                                onClick={() => handleSetVerificationStatus(doc, 'Rejected')}
+                                title="Reject Document"
+                              >
+                                &cross; Reject
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Version */}
                     <td>
                       <span className="adm-badge adm-badge-primary">{doc.version}</span>
                     </td>
+
+                    {/* Access Level */}
                     <td>
                       <span
                         className={`adm-badge ${
@@ -701,19 +968,24 @@ export const DocumentsPage: React.FC = () => {
                         {doc.accessPermission}
                       </span>
                     </td>
+
+                    {/* File Size */}
                     <td>
                       <span style={{ fontWeight: 600 }}>{doc.fileSize}</span>{' '}
                       <span style={{ color: 'var(--adm-text-dim)', fontSize: '0.78rem' }}>
                         ({doc.fileFormat || 'PDF'})
                       </span>
                     </td>
+
+                    {/* Upload Date & By */}
                     <td>
                       <div style={{ fontSize: '0.8rem', color: '#fff' }}>{doc.uploadDate}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>by {doc.uploadedBy}</div>
                     </td>
+
+                    {/* Actions */}
                     <td>
                       <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                        {/* 1. Preview Button */}
                         <button
                           className="adm-btn adm-btn-sm adm-btn-secondary"
                           onClick={() => setPreviewDoc(doc)}
@@ -723,7 +995,6 @@ export const DocumentsPage: React.FC = () => {
                           <Eye size={13} />
                         </button>
 
-                        {/* 2. Download Button */}
                         <button
                           className="adm-btn adm-btn-sm adm-btn-primary"
                           onClick={() => handleDownload(doc)}
@@ -733,7 +1004,6 @@ export const DocumentsPage: React.FC = () => {
                           <Download size={13} />
                         </button>
 
-                        {/* 3. Print / Save as PDF Button */}
                         <button
                           className="adm-btn adm-btn-sm adm-btn-secondary"
                           onClick={() => handlePrintPdf(doc)}
@@ -743,7 +1013,6 @@ export const DocumentsPage: React.FC = () => {
                           <Printer size={13} />
                         </button>
 
-                        {/* 4. Email / Share Button */}
                         <button
                           className="adm-btn adm-btn-sm adm-btn-secondary"
                           onClick={() => setEmailModalDoc(doc)}
@@ -753,7 +1022,6 @@ export const DocumentsPage: React.FC = () => {
                           <Mail size={13} />
                         </button>
 
-                        {/* 5. Delete Button */}
                         <button
                           className="adm-btn adm-btn-sm adm-btn-danger"
                           onClick={() => deleteDocument(doc.id)}
@@ -788,10 +1056,10 @@ export const DocumentsPage: React.FC = () => {
             <UploadCloud size={30} />
           </div>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '0 0 0.5rem 0' }}>
-            No Documents Uploaded in this Category
+            No Documents Found Matching Filter
           </h3>
           <p style={{ color: 'var(--adm-text-muted)', fontSize: '0.85rem', maxWidth: '420px', margin: '0 auto 1.5rem auto' }}>
-            Securely upload NDAs, client contracts, proposals, invoices, and employee records into the central repository.
+            Filter by Employee ID or change verification status to display documents.
           </p>
           <button className="adm-btn adm-btn-primary" onClick={() => setShowUploadModal(true)}>
             <UploadCloud size={16} />
@@ -803,7 +1071,7 @@ export const DocumentsPage: React.FC = () => {
       {/* ── PREVIEW DOCUMENT READER MODAL ── */}
       {previewDoc && (() => {
         const effectiveUrl = getEffectiveDocUrl(previewDoc);
-        const matchingEmp = getMatchingEmployee(previewDoc);
+        const { empId, emp, verificationStatus } = getDocEmployeeInfo(previewDoc);
         const isImage = effectiveUrl && effectiveUrl.startsWith('data:image');
         const isPdf = effectiveUrl && (effectiveUrl.startsWith('data:application/pdf') || effectiveUrl.endsWith('.pdf'));
 
@@ -817,15 +1085,33 @@ export const DocumentsPage: React.FC = () => {
               {/* Header */}
               <div className="adm-modal-header" style={{ paddingBottom: '0.85rem', borderBottom: '1px solid var(--adm-border)' }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
                       {previewDoc.title}
                     </h3>
                     <span className="adm-badge adm-badge-primary">{previewDoc.version}</span>
                     <span className="adm-badge adm-badge-neutral">{previewDoc.category}</span>
+                    {empId && (
+                      <span className="adm-badge adm-badge-info" style={{ fontFamily: 'monospace', fontWeight: 700 }}>
+                        ID: {empId}
+                      </span>
+                    )}
+                    <span
+                      className={`adm-badge ${
+                        verificationStatus === 'Verified'
+                          ? 'adm-badge-success'
+                          : verificationStatus === 'Rejected'
+                          ? 'adm-badge-danger'
+                          : 'adm-badge-warning'
+                      }`}
+                    >
+                      {verificationStatus === 'Verified' ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+                      {verificationStatus}
+                    </span>
                   </div>
                   <p style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', margin: '4px 0 0 0' }}>
                     Uploaded on {previewDoc.uploadDate} by {previewDoc.uploadedBy} &bull; Classification: {previewDoc.accessPermission}
+                    {previewDoc.verifiedBy && ` &bull; Verified by ${previewDoc.verifiedBy}`}
                   </p>
                 </div>
 
@@ -856,16 +1142,79 @@ export const DocumentsPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Status Update Control Bar for Authorized Roles */}
+              {canManageVerification && (
+                <div
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    borderBottom: '1px solid var(--adm-border)',
+                    padding: '0.65rem 1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)' }}>
+                    <span>Verification Controls for Employee ID: </span>
+                    <strong style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{empId || 'N/A'}</strong>
+                    {emp && <span> ({emp.name})</span>}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      className="adm-btn adm-btn-sm"
+                      style={{
+                        background: verificationStatus === 'Verified' ? '#059669' : 'rgba(16, 185, 129, 0.15)',
+                        color: verificationStatus === 'Verified' ? '#fff' : '#10b981',
+                        border: '1px solid #059669',
+                        fontSize: '0.72rem'
+                      }}
+                      onClick={() => handleSetVerificationStatus(previewDoc, 'Verified')}
+                    >
+                      &check; Mark as Verified
+                    </button>
+
+                    <button
+                      className="adm-btn adm-btn-sm"
+                      style={{
+                        background: verificationStatus === 'Pending Verification' ? '#d97706' : 'rgba(245, 158, 11, 0.15)',
+                        color: verificationStatus === 'Pending Verification' ? '#fff' : '#f59e0b',
+                        border: '1px solid #d97706',
+                        fontSize: '0.72rem'
+                      }}
+                      onClick={() => handleSetVerificationStatus(previewDoc, 'Pending Verification')}
+                    >
+                      ⏳ Mark as Pending
+                    </button>
+
+                    <button
+                      className="adm-btn adm-btn-sm"
+                      style={{
+                        background: verificationStatus === 'Rejected' ? '#dc2626' : 'rgba(239, 68, 68, 0.15)',
+                        color: verificationStatus === 'Rejected' ? '#fff' : '#ef4444',
+                        border: '1px solid #dc2626',
+                        fontSize: '0.72rem'
+                      }}
+                      onClick={() => handleSetVerificationStatus(previewDoc, 'Rejected')}
+                    >
+                      &cross; Reject
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Reader Body */}
               <div
                 style={{
                   flex: 1,
                   overflowY: 'auto',
                   padding: '1.25rem 0',
-                  maxHeight: '62vh'
+                  maxHeight: '60vh'
                 }}
               >
-                {/* 1. Image Viewer (e.g. Uploaded PAN Card / Aadhaar photo) */}
+                {/* 1. Image Viewer */}
                 {isImage && (
                   <div style={{ textAlign: 'center', padding: '1rem', background: '#090d16', borderRadius: '10px' }}>
                     <img
@@ -880,7 +1229,7 @@ export const DocumentsPage: React.FC = () => {
                       }}
                     />
                     <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
-                      High-Resolution Scanned Document Preview ({previewDoc.fileSize})
+                      High-Resolution Verified Image Record ({previewDoc.fileSize})
                     </div>
                   </div>
                 )}
@@ -896,7 +1245,7 @@ export const DocumentsPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* 3. Official Corporate Document Paper Reader (Contracts, MSA, NDA, KYC) */}
+                {/* 3. Official Corporate Document Paper Reader */}
                 {!isImage && !isPdf && (
                   <div
                     style={{
@@ -908,8 +1257,8 @@ export const DocumentsPage: React.FC = () => {
                       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                     }}
                     dangerouslySetInnerHTML={{
-                      __html: generateDocumentHtml(previewDoc, matchingEmp)
-                        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '') // remove print script for inline reader
+                      __html: generateDocumentHtml(previewDoc, emp)
+                        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
                         .replace(/<!DOCTYPE html>[\s\S]*?<body.*?>/i, '')
                         .replace(/<\/body>[\s\S]*?<\/html>/i, '')
                     }}
@@ -917,7 +1266,7 @@ export const DocumentsPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Footer Actions */}
+              {/* Footer */}
               <div
                 style={{
                   display: 'flex',
@@ -930,7 +1279,7 @@ export const DocumentsPage: React.FC = () => {
                 }}
               >
                 <div>
-                  🔒 SHA-256 Checksum: <code style={{ color: 'var(--adm-primary)' }}>7f8a3c9e2b01d4a...</code> &bull; All roles cleared
+                  🔒 Employee ID: <code style={{ color: '#38bdf8' }}>{empId || 'General'}</code> &bull; Status: <strong style={{ color: '#fff' }}>{verificationStatus}</strong>
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -956,115 +1305,119 @@ export const DocumentsPage: React.FC = () => {
       })()}
 
       {/* ── EMAIL / SHARE DOCUMENT MODAL ── */}
-      {emailModalDoc && (
-        <div className="adm-modal-overlay" onClick={() => setEmailModalDoc(null)}>
-          <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
-            <div className="adm-modal-header">
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Share Document via Email</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
-                  Dispatch official document access packet directly to Director, HR, Manager or Staff
-                </p>
+      {emailModalDoc && (() => {
+        const { empId, verificationStatus } = getDocEmployeeInfo(emailModalDoc);
+
+        return (
+          <div className="adm-modal-overlay" onClick={() => setEmailModalDoc(null)}>
+            <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
+              <div className="adm-modal-header">
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Share Document via Email</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
+                    Dispatch official document access packet directly to Director, HR, Manager or Staff
+                  </p>
+                </div>
+                <button className="adm-modal-close" onClick={() => setEmailModalDoc(null)}>
+                  <X size={18} />
+                </button>
               </div>
-              <button className="adm-modal-close" onClick={() => setEmailModalDoc(null)}>
-                <X size={18} />
-              </button>
-            </div>
 
-            <div style={{ padding: '0.85rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)', marginBottom: '1.25rem' }}>
-              <div style={{ fontWeight: 800, color: '#fff' }}>{emailModalDoc.title}</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', marginTop: '3px' }}>
-                {emailModalDoc.category} &bull; {emailModalDoc.fileFormat} ({emailModalDoc.fileSize})
+              <div style={{ padding: '0.85rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)', marginBottom: '1.25rem' }}>
+                <div style={{ fontWeight: 800, color: '#fff' }}>{emailModalDoc.title}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', marginTop: '3px' }}>
+                  {emailModalDoc.category} &bull; Employee ID: {empId || 'N/A'} &bull; Status: {verificationStatus}
+                </div>
               </div>
-            </div>
 
-            <label className="adm-form-label" style={{ marginBottom: '8px', display: 'block' }}>
-              Quick Dispatch to Role Email:
-            </label>
+              <label className="adm-form-label" style={{ marginBottom: '8px', display: 'block' }}>
+                Quick Dispatch to Role Email:
+              </label>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.25rem' }}>
-              <button
-                className="adm-btn adm-btn-secondary"
-                style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
-                onClick={() => handleEmailDocument(emailModalDoc, 'director@enterprenexsolution.com')}
-              >
-                <Building size={16} color="var(--adm-primary)" />
-                <div style={{ textAlign: 'left', marginLeft: '6px' }}>
-                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Managing Director</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>director@enterprenexsolution.com</div>
-                </div>
-              </button>
-
-              <button
-                className="adm-btn adm-btn-secondary"
-                style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
-                onClick={() => handleEmailDocument(emailModalDoc, 'hr@enterprenexsolution.com')}
-              >
-                <UserCheck size={16} color="var(--adm-info)" />
-                <div style={{ textAlign: 'left', marginLeft: '6px' }}>
-                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>HR Operations & Compliance</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>hr@enterprenexsolution.com</div>
-                </div>
-              </button>
-
-              <button
-                className="adm-btn adm-btn-secondary"
-                style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
-                onClick={() => handleEmailDocument(emailModalDoc, 'manager@enterprenexsolution.com')}
-              >
-                <Shield size={16} color="var(--adm-warning)" />
-                <div style={{ textAlign: 'left', marginLeft: '6px' }}>
-                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Project & Operations Manager</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>manager@enterprenexsolution.com</div>
-                </div>
-              </button>
-
-              {currentUser?.email && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.25rem' }}>
                 <button
                   className="adm-btn adm-btn-secondary"
                   style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
-                  onClick={() => handleEmailDocument(emailModalDoc, currentUser.email)}
+                  onClick={() => handleEmailDocument(emailModalDoc, 'director@enterprenexsolution.com')}
                 >
-                  <Mail size={16} color="var(--adm-success)" />
+                  <Building size={16} color="var(--adm-primary)" />
                   <div style={{ textAlign: 'left', marginLeft: '6px' }}>
-                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Send to Myself ({currentUser.name})</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>{currentUser.email}</div>
+                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Managing Director</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>director@enterprenexsolution.com</div>
                   </div>
                 </button>
-              )}
-            </div>
 
-            <div className="adm-form-group">
-              <label className="adm-form-label">Or Custom Recipient Email:</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="email"
-                  className="adm-input"
-                  placeholder="e.g. client@enterprise.com"
-                  value={customEmail}
-                  onChange={e => setCustomEmail(e.target.value)}
-                />
                 <button
-                  className="adm-btn adm-btn-primary"
-                  disabled={!customEmail.trim()}
-                  onClick={() => handleEmailDocument(emailModalDoc, customEmail.trim())}
+                  className="adm-btn adm-btn-secondary"
+                  style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
+                  onClick={() => handleEmailDocument(emailModalDoc, 'hr@enterprenexsolution.com')}
                 >
-                  <Send size={14} />
-                  <span>Send</span>
+                  <UserCheck size={16} color="var(--adm-info)" />
+                  <div style={{ textAlign: 'left', marginLeft: '6px' }}>
+                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>HR Operations & Compliance</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>hr@enterprenexsolution.com</div>
+                  </div>
+                </button>
+
+                <button
+                  className="adm-btn adm-btn-secondary"
+                  style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
+                  onClick={() => handleEmailDocument(emailModalDoc, 'manager@enterprenexsolution.com')}
+                >
+                  <Shield size={16} color="var(--adm-warning)" />
+                  <div style={{ textAlign: 'left', marginLeft: '6px' }}>
+                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Project & Operations Manager</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>manager@enterprenexsolution.com</div>
+                  </div>
+                </button>
+
+                {currentUser?.email && (
+                  <button
+                    className="adm-btn adm-btn-secondary"
+                    style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
+                    onClick={() => handleEmailDocument(emailModalDoc, currentUser.email)}
+                  >
+                    <Mail size={16} color="var(--adm-success)" />
+                    <div style={{ textAlign: 'left', marginLeft: '6px' }}>
+                      <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Send to Myself ({currentUser.name})</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>{currentUser.email}</div>
+                    </div>
+                  </button>
+                )}
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-form-label">Or Custom Recipient Email:</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="email"
+                    className="adm-input"
+                    placeholder="e.g. client@enterprise.com"
+                    value={customEmail}
+                    onChange={e => setCustomEmail(e.target.value)}
+                  />
+                  <button
+                    className="adm-btn adm-btn-primary"
+                    disabled={!customEmail.trim()}
+                    onClick={() => handleEmailDocument(emailModalDoc, customEmail.trim())}
+                  >
+                    <Send size={14} />
+                    <span>Send</span>
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+                <button className="adm-btn adm-btn-secondary" onClick={() => setEmailModalDoc(null)}>
+                  Cancel
                 </button>
               </div>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
-              <button className="adm-btn adm-btn-secondary" onClick={() => setEmailModalDoc(null)}>
-                Cancel
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
-      {/* ── UPLOAD DOCUMENT MODAL WITH BASE64 FILE READER ── */}
+      {/* ── UPLOAD DOCUMENT MODAL WITH EMPLOYEE ID & STATUS ASSIGNMENT ── */}
       {showUploadModal && (
         <div className="adm-modal-overlay" onClick={() => setShowUploadModal(false)}>
           <div className="adm-modal-content adm-modal-lg" onClick={e => e.stopPropagation()}>
@@ -1072,7 +1425,7 @@ export const DocumentsPage: React.FC = () => {
               <div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Upload Document to Vault</h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
-                  Securely store PDF, DOCX, ZIP, or spreadsheet files with access controls
+                  Securely store records with Employee ID linkage and Verification Status tracking
                 </p>
               </div>
               <button className="adm-modal-close" onClick={() => setShowUploadModal(false)}>
@@ -1133,7 +1486,7 @@ export const DocumentsPage: React.FC = () => {
                   required
                   value={fTitle}
                   onChange={e => setFTitle(e.target.value)}
-                  placeholder="e.g. Master Services Agreement 2026"
+                  placeholder="e.g. PAN Card - Polamreddy Revanth Reddy"
                 />
               </div>
 
@@ -1141,6 +1494,7 @@ export const DocumentsPage: React.FC = () => {
                 <div className="adm-form-group">
                   <label className="adm-form-label">Category</label>
                   <select className="adm-select" value={fCategory} onChange={e => setFCategory(e.target.value as any)}>
+                    <option value="Employee Docs">Employee Docs</option>
                     <option value="Contracts">Contracts</option>
                     <option value="NDA">NDA</option>
                     <option value="Proposals">Proposals</option>
@@ -1148,12 +1502,43 @@ export const DocumentsPage: React.FC = () => {
                     <option value="Invoices">Invoices</option>
                     <option value="Technical Docs">Technical Docs</option>
                     <option value="Client Docs">Client Docs</option>
-                    <option value="Employee Docs">Employee Docs</option>
                   </select>
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Version</label>
                   <input className="adm-input" value={fVersion} onChange={e => setFVersion(e.target.value)} placeholder="v1.0" />
+                </div>
+              </div>
+
+              {/* Employee ID & Verification Status Fields */}
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Assign to Employee ID</label>
+                  <select
+                    className="adm-select"
+                    value={fEmployeeId}
+                    onChange={e => setFEmployeeId(e.target.value)}
+                  >
+                    <option value="">-- None (Company Corporate Document) --</option>
+                    {employees.map(emp => (
+                      <option key={emp.id} value={emp.employeeId || emp.id}>
+                        {emp.employeeId || emp.id} - {emp.name} ({emp.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Verification Status</label>
+                  <select
+                    className="adm-select"
+                    value={fVerificationStatus}
+                    onChange={e => setFVerificationStatus(e.target.value as any)}
+                  >
+                    <option value="Verified">✓ Verified</option>
+                    <option value="Pending Verification">⏳ Pending Verification</option>
+                    <option value="Rejected">✕ Rejected</option>
+                  </select>
                 </div>
               </div>
 
@@ -1165,6 +1550,7 @@ export const DocumentsPage: React.FC = () => {
                 <div className="adm-form-group">
                   <label className="adm-form-label">Access Level</label>
                   <select className="adm-select" value={fPermission} onChange={e => setFPermission(e.target.value as any)}>
+                    <option value="Executive">Executive</option>
                     <option value="Internal">Internal (All Staff)</option>
                     <option value="Confidential">Confidential</option>
                     <option value="Admin Only">Admin Only</option>
@@ -1179,7 +1565,7 @@ export const DocumentsPage: React.FC = () => {
 
               <div className="adm-form-group">
                 <label className="adm-form-label">Search Tags (Comma separated)</label>
-                <input className="adm-input" value={fTags} onChange={e => setFTags(e.target.value)} placeholder="Legal, Architecture, NDA" />
+                <input className="adm-input" value={fTags} onChange={e => setFTags(e.target.value)} placeholder="KYC, PAN, 202600000002" />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
@@ -1188,7 +1574,7 @@ export const DocumentsPage: React.FC = () => {
                 </button>
                 <button type="submit" className="adm-btn adm-btn-primary">
                   <UploadCloud size={16} />
-                  <span>Upload & Encrypt Document</span>
+                  <span>Upload & Save Status</span>
                 </button>
               </div>
             </form>
