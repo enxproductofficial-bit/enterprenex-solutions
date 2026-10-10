@@ -48,6 +48,12 @@ export const TeamPage: React.FC = () => {
   } = useAdmin();
 
   const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenexsolution.com';
+  const isManagerOrHr =
+    currentUser?.role === 'Project Manager' ||
+    currentUser?.department === 'Human Resources' ||
+    Boolean(currentUser?.email?.includes('hr@') || currentUser?.email?.includes('manager@'));
+  const canManageTeam = isDirector || isManagerOrHr;
+  const isRegularEmployee = !canManageTeam;
 
   const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves'>('roster');
   const [rosterFilter, setRosterFilter] = useState<'all' | 'pending' | 'approved'>('all');
@@ -476,10 +482,12 @@ export const TeamPage: React.FC = () => {
                 <Download size={15} />
                 <span>Export Roster CSV</span>
               </button>
-              <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal}>
-                <Plus size={16} />
-                <span>Add Team Member</span>
-              </button>
+              {canManageTeam && (
+                <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal}>
+                  <Plus size={16} />
+                  <span>Add Team Member</span>
+                </button>
+              )}
             </>
           )}
 
@@ -529,8 +537,8 @@ export const TeamPage: React.FC = () => {
             Daily Attendance ({attendance.length})
           </button>
           <button className={`adm-tab-btn ${tab === 'leaves' ? 'active' : ''}`} onClick={() => setTab('leaves')}>
-            Leave Approvals ({leaves.length})
-            {pendingLeavesCount > 0 && (
+            {canManageTeam ? 'Leave Approvals' : 'Leave Status & Applications'} ({leaves.length})
+            {canManageTeam && pendingLeavesCount > 0 && (
               <span className="adm-badge adm-badge-warning" style={{ marginLeft: '6px', fontSize: '0.65rem' }}>
                 {pendingLeavesCount} Pending
               </span>
@@ -665,10 +673,12 @@ export const TeamPage: React.FC = () => {
                   <Download size={13} />
                   <span>Export CSV</span>
                 </button>
-                <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={openAddMemberModal}>
-                  <Plus size={14} />
-                  <span>Add Member</span>
-                </button>
+                {canManageTeam && (
+                  <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={openAddMemberModal}>
+                    <Plus size={14} />
+                    <span>Add Member</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -922,13 +932,13 @@ export const TeamPage: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* Security RBAC: Director credentials are encrypted and inaccessible to HR */}
+                      {/* Security RBAC: Director credentials protected from HR, and employee credentials only manageable by HR/Director */}
                       {(emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') && !isDirector ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '0.3rem 0.6rem', background: 'rgba(5, 150, 105, 0.1)', border: '1px solid rgba(5, 150, 105, 0.3)', borderRadius: '6px', fontSize: '0.7rem', color: '#34d399', fontWeight: 700 }}>
                           <ShieldCheck size={13} />
                           <span>Executive Protected</span>
                         </div>
-                      ) : (
+                      ) : canManageTeam ? (
                         <button
                           className="adm-btn adm-btn-secondary"
                           style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
@@ -941,7 +951,7 @@ export const TeamPage: React.FC = () => {
                           <Key size={13} color="#f59e0b" />
                           <span>Portal Credentials</span>
                         </button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 );
@@ -1022,12 +1032,14 @@ export const TeamPage: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
-                LEAVE APPLICATIONS & APPROVALS ({leaves.length} TOTAL)
+                {canManageTeam ? 'LEAVE APPLICATIONS & APPROVALS' : 'LEAVE APPLICATIONS & STATUS'} ({leaves.length} TOTAL)
               </span>
-              {pendingLeavesCount > 0 ? (
-                <span className="adm-badge adm-badge-warning">{pendingLeavesCount} Pending Review</span>
-              ) : (
-                <span className="adm-badge adm-badge-success">All Reviewed</span>
+              {canManageTeam && (
+                pendingLeavesCount > 0 ? (
+                  <span className="adm-badge adm-badge-warning">{pendingLeavesCount} Pending Review</span>
+                ) : (
+                  <span className="adm-badge adm-badge-success">All Reviewed</span>
+                )
               )}
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1055,7 +1067,7 @@ export const TeamPage: React.FC = () => {
                   <th>Dates Requested</th>
                   <th>Reason</th>
                   <th>Approval Status</th>
-                  <th>Actions / Decision</th>
+                  <th>{canManageTeam ? 'Actions / Decision' : 'Action / Status'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1096,63 +1108,88 @@ export const TeamPage: React.FC = () => {
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          {lv.status === 'Pending' ? (
-                            <>
-                              <button
-                                className="adm-btn adm-btn-sm adm-btn-primary"
-                                style={{ padding: '0.3rem 0.65rem', background: '#059669', borderColor: '#059669' }}
-                                onClick={() => updateLeaveStatus(lv.id, 'Approved')}
-                              >
-                                <Check size={13} />
-                                <span>Approve</span>
-                              </button>
-                              <button
-                                className="adm-btn adm-btn-sm adm-btn-danger"
-                                style={{ padding: '0.3rem 0.65rem' }}
-                                onClick={() => updateLeaveStatus(lv.id, 'Rejected')}
-                              >
-                                <X size={13} />
-                                <span>Reject</span>
-                              </button>
-                            </>
-                          ) : lv.status === 'Approved' ? (
-                            <>
-                              <button
-                                className="adm-btn adm-btn-sm adm-btn-secondary"
-                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
-                                onClick={() => updateLeaveStatus(lv.id, 'Rejected')}
-                                title="Change decision to Rejected"
-                              >
-                                Reject
-                              </button>
-                              <button
-                                className="adm-btn adm-btn-sm adm-btn-secondary"
-                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
-                                onClick={() => deleteLeaveRequest(lv.id)}
-                                title="Delete this record"
-                              >
-                                <Trash2 size={12} color="#ef4444" />
-                              </button>
-                            </>
+                          {canManageTeam ? (
+                            lv.status === 'Pending' ? (
+                              <>
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-primary"
+                                  style={{ padding: '0.3rem 0.65rem', background: '#059669', borderColor: '#059669' }}
+                                  onClick={() => updateLeaveStatus(lv.id, 'Approved')}
+                                >
+                                  <Check size={13} />
+                                  <span>Approve</span>
+                                </button>
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-danger"
+                                  style={{ padding: '0.3rem 0.65rem' }}
+                                  onClick={() => updateLeaveStatus(lv.id, 'Rejected')}
+                                >
+                                  <X size={13} />
+                                  <span>Reject</span>
+                                </button>
+                              </>
+                            ) : lv.status === 'Approved' ? (
+                              <>
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                                  style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
+                                  onClick={() => updateLeaveStatus(lv.id, 'Rejected')}
+                                  title="Change decision to Rejected"
+                                >
+                                  Reject
+                                </button>
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                                  style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
+                                  onClick={() => deleteLeaveRequest(lv.id)}
+                                  title="Delete this record"
+                                >
+                                  <Trash2 size={12} color="#ef4444" />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-primary"
+                                  style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
+                                  onClick={() => updateLeaveStatus(lv.id, 'Approved')}
+                                  title="Re-approve this leave"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                                  style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
+                                  onClick={() => deleteLeaveRequest(lv.id)}
+                                  title="Delete this record"
+                                >
+                                  <Trash2 size={12} color="#ef4444" />
+                                </button>
+                              </>
+                            )
                           ) : (
-                            <>
-                              <button
-                                className="adm-btn adm-btn-sm adm-btn-primary"
-                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
-                                onClick={() => updateLeaveStatus(lv.id, 'Approved')}
-                                title="Re-approve this leave"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                className="adm-btn adm-btn-sm adm-btn-secondary"
-                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
-                                onClick={() => deleteLeaveRequest(lv.id)}
-                                title="Delete this record"
-                              >
-                                <Trash2 size={12} color="#ef4444" />
-                              </button>
-                            </>
+                            // Regular employee view: Cannot approve/reject leaves
+                            lv.employeeName.trim().toLowerCase() === (currentUser?.name || '').trim().toLowerCase() ? (
+                              lv.status === 'Pending' ? (
+                                <button
+                                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                                  style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem', color: '#ef4444', gap: '4px' }}
+                                  onClick={() => deleteLeaveRequest(lv.id)}
+                                  title="Withdraw your leave application"
+                                >
+                                  <X size={12} />
+                                  <span>Withdraw</span>
+                                </button>
+                              ) : (
+                                <span style={{ fontSize: '0.72rem', color: lv.status === 'Approved' ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+                                  {lv.status === 'Approved' ? '✓ Approved' : '✕ Declined'}
+                                </span>
+                              )
+                            ) : (
+                              <span style={{ fontSize: '0.72rem', color: lv.status === 'Approved' ? '#10b981' : lv.status === 'Rejected' ? '#ef4444' : 'var(--adm-text-dim)', fontStyle: 'italic' }}>
+                                {lv.status === 'Pending' ? 'Pending HR Review' : lv.status === 'Approved' ? '✓ Approved' : '✕ Declined'}
+                              </span>
+                            )
                           )}
                         </div>
                       </td>
