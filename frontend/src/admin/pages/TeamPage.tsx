@@ -133,6 +133,24 @@ export const TeamPage: React.FC = () => {
     showToast('Download Started', `Downloading ${filename}`, 'info');
   };
 
+  const handleSaveKycData = () => {
+    if (!kycModalEmp) return;
+    const cleanPan = editKycPan.trim().toUpperCase();
+    const cleanAadhaar = editKycAadhaar.trim().replace(/\D/g, '');
+
+    const updates: Partial<Employee> = {
+      panNumber: cleanPan || kycModalEmp.panNumber,
+      aadhaarNumber: cleanAadhaar || kycModalEmp.aadhaarNumber,
+      kycStatus: canAccessKyc ? 'Verified' : (kycModalEmp.kycStatus === 'Verified' ? 'Verified' : 'Pending Verification'),
+      kycVerifiedBy: canAccessKyc ? (currentUser?.name || 'Managing Director') : kycModalEmp.kycVerifiedBy,
+      kycVerifiedAt: canAccessKyc ? new Date().toISOString() : kycModalEmp.kycVerifiedAt
+    };
+
+    updateEmployee(kycModalEmp.id, updates);
+    setKycModalEmp(prev => prev ? { ...prev, ...updates } : null);
+    showToast('KYC Details Saved', `Saved PAN (${cleanPan || 'Recorded'}) & Aadhaar (${cleanAadhaar || 'Recorded'}) for ${kycModalEmp.name}.`, 'success');
+  };
+
   // Form state - Apply Leave
   const [applicantName, setApplicantName] = useState(currentUser?.name || 'HR Administrator');
   const [leaveType, setLeaveType] = useState<LeaveRequest['type']>('Casual Leave');
@@ -2400,13 +2418,14 @@ export const TeamPage: React.FC = () => {
                   <input
                     className="adm-input"
                     value={showFullAadhaar ? editKycAadhaar : maskAadhaarNumber(editKycAadhaar)}
+                    onFocus={() => setShowFullAadhaar(true)}
+                    onClick={() => setShowFullAadhaar(true)}
                     onChange={e => {
                       const digits = e.target.value.replace(/\D/g, '').slice(0, 12);
                       setEditKycAadhaar(digits);
                     }}
                     placeholder="12-Digit Aadhaar"
                     maxLength={12}
-                    readOnly={!showFullAadhaar}
                     style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.95rem', letterSpacing: '1px' }}
                   />
                   <button
@@ -2554,9 +2573,9 @@ export const TeamPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action Buttons for Director and HR */}
-              {canAccessKyc && (
-                <div style={{ display: 'flex', gap: '6px' }}>
+              {/* Action Buttons for KYC Verification and Saving */}
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {canAccessKyc && (
                   <button
                     type="button"
                     className="adm-btn adm-btn-sm adm-btn-primary"
@@ -2585,34 +2604,33 @@ export const TeamPage: React.FC = () => {
                     <CheckCircle2 size={13} />
                     <span>Approve & Verify KYC</span>
                   </button>
+                )}
 
-                  <button
-                    type="button"
-                    className="adm-btn adm-btn-sm adm-btn-secondary"
-                    onClick={() => {
-                      const cleanPan = editKycPan.trim().toUpperCase();
-                      const cleanAadhaar = editKycAadhaar.trim().replace(/\D/g, '');
-                      updateEmployee(kycModalEmp.id, {
-                        panNumber: cleanPan,
-                        aadhaarNumber: cleanAadhaar
-                      });
-                      setKycModalEmp(prev => prev ? {
-                        ...prev,
-                        panNumber: cleanPan,
-                        aadhaarNumber: cleanAadhaar
-                      } : null);
-                      showToast('Changes Saved', 'Updated PAN & Aadhaar details.', 'info');
-                    }}
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              )}
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-sm adm-btn-primary"
+                  onClick={handleSaveKycData}
+                  style={{ gap: '5px' }}
+                >
+                  <Check size={13} />
+                  <span>Save Changes</span>
+                </button>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            {/* Modal Footer with Primary Save Button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem', marginTop: '0.5rem' }}>
               <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setKycModalEmp(null)}>
                 Close Vault
+              </button>
+              <button
+                type="button"
+                className="adm-btn adm-btn-primary"
+                style={{ gap: '6px', padding: '0.5rem 1.25rem', fontWeight: 700 }}
+                onClick={handleSaveKycData}
+              >
+                <Check size={15} />
+                <span>Save KYC Details</span>
               </button>
             </div>
           </div>
