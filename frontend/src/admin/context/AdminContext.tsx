@@ -89,6 +89,7 @@ interface AdminContextType {
   login: (user: AdminUser) => void;
   logout: () => void;
   switchUser: (userId: string) => void;
+  updateCurrentUser: (updates: Partial<AdminUser>) => void;
 
   // Toast
   showToast: (title: string, message: string, type?: 'success' | 'info' | 'warning' | 'error') => void;
@@ -239,12 +240,22 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (!item.employeeId) {
               item.employeeId = `2026${(idx + 1).toString().padStart(8, '0')}`;
             }
-            if (!item.password) {
-              item.password = 'Enx_sol_121006';
+            if (!item.approvalStatus) {
+              item.approvalStatus = 'Approved';
             }
             return item;
           });
+
+          // Ensure permanent initial employees exist across all devices/sessions
+          INITIAL_EMPLOYEES.forEach(initEmp => {
+            if (!sanitized.some((e: any) => e.employeeId === initEmp.employeeId || e.email === initEmp.email)) {
+              sanitized.push(initEmp);
+            }
+          });
+
           setEmployees(sanitized);
+        } else {
+          setEmployees(INITIAL_EMPLOYEES);
         }
         if (parsed.attendance) setAttendance(parsed.attendance);
         if (parsed.leaves) {
@@ -377,6 +388,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       logAction('Role Switched', 'Authentication', `Switched active profile to ${found.name} (${found.role})`);
       showToast('Profile Switched', `Now acting as ${found.name} (${found.role})`, 'info');
     }
+  };
+
+  const updateCurrentUser = (updates: Partial<AdminUser>) => {
+    setCurrentUser(prev => (prev ? { ...prev, ...updates } : null));
+    showToast('Profile Updated', 'Profile photo & settings updated.', 'success');
   };
 
   const addClient = (clientData: Omit<Client, 'id' | 'createdAt' | 'documents' | 'paymentHistory'>) => {
@@ -563,7 +579,18 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateEmployee = (id: string, updates: Partial<Employee>) => {
-    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    setEmployees(prev =>
+      prev.map(e => {
+        if (e.id === id) {
+          const updated = { ...e, ...updates };
+          if (currentUser && (currentUser.id === e.id || currentUser.email === e.email)) {
+            setCurrentUser(prevUser => (prevUser ? { ...prevUser, avatar: updated.avatar || prevUser.avatar } : null));
+          }
+          return updated;
+        }
+        return e;
+      })
+    );
     showToast('Employee Updated', 'Employee record updated.', 'success');
   };
 
@@ -852,6 +879,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         login,
         logout,
         switchUser,
+        updateCurrentUser,
         showToast,
         removeToast,
         addClient,

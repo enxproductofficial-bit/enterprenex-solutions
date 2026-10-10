@@ -58,6 +58,21 @@ export const AdminLoginPage: React.FC = () => {
         navigate('/admin');
       }, 400);
     } else if (isEmployee && matchedEmp) {
+      if (matchedEmp.approvalStatus === 'Pending Director Approval') {
+        setTimeout(() => {
+          setIsLoading(false);
+          setError(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} is awaiting approval from Managing Director (Rohit P.).`);
+        }, 400);
+        return;
+      }
+      if (matchedEmp.approvalStatus === 'Rejected') {
+        setTimeout(() => {
+          setIsLoading(false);
+          setError(`Access Denied: This staff account has been disabled by the Managing Director.`);
+        }, 400);
+        return;
+      }
+
       const empUser: AdminUser = {
         id: matchedEmp.id,
         name: matchedEmp.name,

@@ -220,7 +220,28 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joinDate: '2026-01-01',
     salaryMonthly: 150000,
     performanceRating: 5.0,
-    status: 'Active'
+    status: 'Active',
+    approvalStatus: 'Approved'
+  },
+  {
+    id: 'emp-2',
+    employeeId: '202600000002',
+    password: 'Enx_sol_121006',
+    name: 'POLAMREDDY REVANTH REDDY',
+    role: 'Full Stack Developer (Employee)',
+    department: 'Engineering',
+    email: 'polamreddyrevanth.82@gmail.com',
+    phone: '+91-9440829762',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    skills: ['React', 'TypeScript', 'Node.js'],
+    currentProjects: [],
+    workloadPercentage: 50,
+    joinDate: '2026-10-10',
+    salaryMonthly: 100000,
+    performanceRating: 5.0,
+    status: 'Active',
+    approvalStatus: 'Approved',
+    approvedBy: 'Rohit P. (Managing Director)'
   }
 ];
 

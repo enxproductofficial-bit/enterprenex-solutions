@@ -226,6 +226,9 @@ export interface Employee {
   salaryMonthly: number;
   performanceRating: number; // 1-5
   status: 'Active' | 'On Leave' | 'Remote';
+  approvalStatus?: 'Approved' | 'Pending Director Approval' | 'Rejected';
+  approvedBy?: string;
+  approvedAt?: string;
 }
 
 export interface AttendanceRecord {

@@ -113,7 +113,18 @@ export const LoginPage: React.FC = () => {
         );
 
         if (!matchedEmp) {
-          setErrorMessage(`Access Denied: No employee found matching "${email.trim()}". Please enter your assigned Employee ID (e.g. EPX-101) or contact HR.`);
+          setErrorMessage(`Access Denied: No employee found matching "${email.trim()}". Please enter your assigned Employee ID (e.g. 202600000001) or contact HR.`);
+          return;
+        }
+
+        // Director Approval Check
+        if (matchedEmp.approvalStatus === 'Pending Director Approval') {
+          setErrorMessage(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} has been registered by HR and is awaiting approval from the Managing Director (Rohit P.). Login will be enabled as soon as the Director approves.`);
+          return;
+        }
+
+        if (matchedEmp.approvalStatus === 'Rejected') {
+          setErrorMessage(`Access Denied: This employee login account has been disabled or rejected by the Managing Director.`);
           return;
         }
 

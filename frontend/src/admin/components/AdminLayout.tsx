@@ -22,7 +22,8 @@ import {
   Menu,
   ChevronDown,
   LogOut,
-  Sparkles
+  Sparkles,
+  Camera
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
 import { ToastContainer } from './ToastContainer';
@@ -32,7 +33,22 @@ interface AdminLayoutProps {
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const { currentUser, users, switchUser, logout, tickets, invoices, leads, projects, clients, tasks } = useAdmin();
+  const {
+    currentUser,
+    users,
+    switchUser,
+    logout,
+    tickets,
+    invoices,
+    leads,
+    projects,
+    clients,
+    tasks,
+    updateCurrentUser,
+    updateEmployee,
+    employees,
+    showToast
+  } = useAdmin();
   const [collapsed, setCollapsed] = useState(false);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -455,6 +471,51 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                           {currentUser.department}
                         </div>
                       </div>
+
+                      {/* Update Photo Option */}
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 10px',
+                          fontSize: '0.78rem',
+                          color: '#34d399',
+                          background: 'rgba(5, 150, 105, 0.1)',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          marginBottom: '0.85rem',
+                          border: '1px solid rgba(5, 150, 105, 0.25)',
+                          fontWeight: 600
+                        }}
+                      >
+                        <Camera size={13} />
+                        <span>Update My Profile Photo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (file.size > 5 * 1024 * 1024) {
+                              showToast('File Too Large', 'Please select an image smaller than 5MB.', 'error');
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              const dataUrl = reader.result as string;
+                              updateCurrentUser({ avatar: dataUrl });
+                              const matchedEmp = employees.find(emp => emp.id === currentUser?.id || emp.email === currentUser?.email);
+                              if (matchedEmp) {
+                                updateEmployee(matchedEmp.id, { avatar: dataUrl });
+                              }
+                              showToast('Profile Photo Updated', 'Your profile picture has been updated across the suite.', 'success');
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                      </label>
                     </>
                   )}
 

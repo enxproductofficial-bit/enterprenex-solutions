@@ -23,7 +23,12 @@ import {
   Trash2,
   RotateCcw,
   FileSpreadsheet,
-  Calendar
+  Calendar,
+  Camera,
+  Upload,
+  Clock,
+  ShieldAlert,
+  CheckCheck
 } from 'lucide-react';
 import type { Employee, LeaveRequest } from '../types';
 
@@ -42,7 +47,10 @@ export const TeamPage: React.FC = () => {
     showToast
   } = useAdmin();
 
+  const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenexsolution.com';
+
   const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves'>('roster');
+  const [rosterFilter, setRosterFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
 
@@ -55,6 +63,12 @@ export const TeamPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [skills, setSkills] = useState('React, TypeScript, Node.js');
   const [salary, setSalary] = useState(100000);
+  const [avatar, setAvatar] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
+  const [avatarPreview, setAvatarPreview] = useState('');
+
+  // Photo modal for existing members
+  const [photoModalEmp, setPhotoModalEmp] = useState<Employee | null>(null);
+  const [customPhotoInput, setCustomPhotoInput] = useState('');
 
   // Form state - Apply Leave
   const [applicantName, setApplicantName] = useState(currentUser?.name || 'HR Administrator');
@@ -62,6 +76,20 @@ export const TeamPage: React.FC = () => {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [leaveReason, setLeaveReason] = useState('');
+
+  // Photo upload helper
+  const handlePhotoFileChange = (file: File, onDone: (dataUrl: string) => void) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('File Too Large', 'Please select an image smaller than 5MB.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      onDone(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // 12-Digit Guaranteed Unique Employee ID Generator (guaranteed non-repeating across all employees)
   const generateUnique12DigitId = (): string => {
@@ -319,6 +347,8 @@ export const TeamPage: React.FC = () => {
     setEmpId(auto12DigitId);
     setEmpPassword(generateRandomPassword('EPX'));
     setShowEmpPassword(true);
+    setAvatarPreview('');
+    setAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
     setShowAddModal(true);
   };
 
@@ -351,6 +381,11 @@ export const TeamPage: React.FC = () => {
       return;
     }
 
+    const initialApprovalStatus: 'Approved' | 'Pending Director Approval' =
+      governanceRole === 'Director' || isDirector ? 'Approved' : 'Pending Director Approval';
+    const finalAvatar =
+      avatarPreview || avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+
     addEmployee({
       employeeId: finalEmpId,
       password: finalPassword,
@@ -359,20 +394,34 @@ export const TeamPage: React.FC = () => {
       department,
       email: email || `${name.toLowerCase().replace(/\s+/g, '')}@enterprenex.com`,
       phone: phone || '+91-9876543210',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      avatar: finalAvatar,
       skills: skills.split(',').map(s => s.trim()).filter(Boolean),
       currentProjects: [],
       workloadPercentage: 50,
       joinDate: new Date().toISOString().split('T')[0],
       salaryMonthly: Number(salary),
       performanceRating: 5.0,
-      status: 'Active'
+      status: 'Active',
+      approvalStatus: initialApprovalStatus,
+      approvedBy: initialApprovalStatus === 'Approved' ? (currentUser?.name || 'Rohit P. (Managing Director)') : undefined,
+      approvedAt: initialApprovalStatus === 'Approved' ? new Date().toISOString() : undefined
     });
-    showToast('Employee Added', `Assigned Unique 12-Digit Employee ID: ${finalEmpId} with portal access.`, 'success');
+
+    if (initialApprovalStatus === 'Pending Director Approval') {
+      showToast(
+        'Employee Registered - Awaiting Director Approval',
+        `Employee ID ${finalEmpId} added. Awaiting Director Approval (Rohit P. - director@enterprenexsolution.com) before workspace portal login is enabled.`,
+        'info'
+      );
+    } else {
+      showToast('Employee Added', `Assigned Unique 12-Digit Employee ID: ${finalEmpId} with active portal access.`, 'success');
+    }
+
     setShowAddModal(false);
     setName('');
     setRole('');
     setEmpPassword('');
+    setAvatarPreview('');
   };
 
   const handleApplyLeaveSubmit = (e: React.FormEvent) => {
@@ -491,112 +540,401 @@ export const TeamPage: React.FC = () => {
       </div>
 
       {/* ── 1. TEAM ROSTER GRID ── */}
-      {tab === 'roster' && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
-              ORGANIZATION STAFF ROSTER ({employees.length} ACTIVE MEMBERS)
-            </span>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportRosterCsv}>
-                <Download size={13} />
-                <span>Export CSV</span>
-              </button>
-              <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={openAddMemberModal}>
-                <Plus size={14} />
-                <span>Add Member</span>
-              </button>
-            </div>
-          </div>
+      {tab === 'roster' && (() => {
+        const pendingEmployees = employees.filter(e => e.approvalStatus === 'Pending Director Approval');
+        const approvedEmployees = employees.filter(e => e.approvalStatus === 'Approved' || !e.approvalStatus);
 
-          <div className="adm-grid-3">
-            {employees.map(emp => {
-              const displayEmpId = emp.employeeId || (emp.id.startsWith('emp-') ? `EPX-10${emp.id.replace('emp-', '')}` : emp.id);
-              return (
-                <div key={emp.id} className="adm-card adm-card-hover" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1rem' }}>
-                    <img src={emp.avatar} alt={emp.name} className="adm-avatar-lg" />
-                    <div style={{ flex: 1, overflow: 'hidden' }}>
-                      <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>{emp.name}</div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{emp.role}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{emp.department}</div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                      <span className="adm-badge adm-badge-success" style={{ fontSize: '0.65rem' }}>{emp.status}</span>
-                      <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.7rem', fontFamily: 'monospace', fontWeight: 700 }}>
-                        {displayEmpId}
-                      </span>
-                    </div>
+        const displayedEmployees = employees.filter(e => {
+          if (rosterFilter === 'pending') return e.approvalStatus === 'Pending Director Approval';
+          if (rosterFilter === 'approved') return e.approvalStatus === 'Approved' || !e.approvalStatus;
+          return true;
+        });
+
+        return (
+          <div>
+            {/* Director Review Alert Banner */}
+            {pendingEmployees.length > 0 && (
+              <div
+                style={{
+                  background: isDirector ? 'rgba(245, 158, 11, 0.12)' : 'rgba(59, 130, 246, 0.1)',
+                  border: `1px solid ${isDirector ? 'rgba(245, 158, 11, 0.35)' : 'rgba(59, 130, 246, 0.3)'}`,
+                  borderRadius: '12px',
+                  padding: '1rem 1.25rem',
+                  marginBottom: '1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  flexWrap: 'wrap'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: isDirector ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: isDirector ? '#f59e0b' : '#38bdf8'
+                    }}
+                  >
+                    <ShieldAlert size={20} />
                   </div>
-
-                  {/* Workload */}
-                  <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '3px' }}>
-                      <span style={{ color: 'var(--adm-text-dim)' }}>Sprint Workload</span>
-                      <span style={{
-                        fontWeight: 700,
-                        color: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
-                      }}>
-                        {emp.workloadPercentage}%
-                      </span>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#fff' }}>
+                      {isDirector
+                        ? `Director Action Required: ${pendingEmployees.length} Employee Account(s) Awaiting Your Approval`
+                        : `${pendingEmployees.length} Employee Account(s) Submitted & Awaiting Managing Director Approval`}
                     </div>
-                    <div className="adm-progress-bar">
-                      <div
-                        className="adm-progress-fill"
-                        style={{
-                          width: `${emp.workloadPercentage}%`,
-                          background: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
-                        }}
-                      />
+                    <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '2px' }}>
+                      {isDirector
+                        ? 'Employees cannot log into the workspace portal until you approve their 12-digit Employee ID and credentials.'
+                        : 'Credentials registered by HR are awaiting approval from Managing Director (Rohit P. - director@enterprenexsolution.com).'}
                     </div>
-                  </div>
-
-                  {/* Skills */}
-                  <div style={{ marginBottom: '1rem', flex: 1 }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                      {emp.skills.map((sk, idx) => (
-                        <span key={idx} className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>{sk}</span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Contact */}
-                  <div style={{ background: 'var(--adm-bg)', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--adm-border)', fontSize: '0.75rem', color: 'var(--adm-text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Mail size={12} color="var(--adm-primary)" /> {emp.email}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Phone size={12} color="var(--adm-info)" /> {emp.phone}
-                    </div>
-                  </div>
-
-                  {/* Credentials & Access Bar */}
-                  <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span className="adm-badge adm-badge-neutral" style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.72rem' }}>
-                        {displayEmpId}
-                      </span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>Access Active</span>
-                    </div>
-                    <button
-                      className="adm-btn adm-btn-secondary"
-                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
-                      onClick={() => {
-                        setCredentialEmp(emp);
-                        setNewPasswordInput('');
-                        setShowActivePassword(false);
-                      }}
-                    >
-                      <Key size={13} color="#f59e0b" />
-                      <span>Portal Credentials</span>
-                    </button>
                   </div>
                 </div>
-              );
-            })}
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {isDirector && (
+                    <button
+                      className="adm-btn adm-btn-primary"
+                      style={{ fontSize: '0.78rem', padding: '0.45rem 0.85rem' }}
+                      onClick={() => {
+                        pendingEmployees.forEach(emp => {
+                          updateEmployee(emp.id, {
+                            approvalStatus: 'Approved',
+                            approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                            approvedAt: new Date().toISOString()
+                          });
+                        });
+                        showToast(
+                          'All Logins Approved',
+                          `Authorized portal access for all ${pendingEmployees.length} pending employee(s).`,
+                          'success'
+                        );
+                      }}
+                    >
+                      <CheckCheck size={14} />
+                      <span>Approve All ({pendingEmployees.length})</span>
+                    </button>
+                  )}
+                  <button
+                    className="adm-btn adm-btn-secondary"
+                    style={{ fontSize: '0.78rem', padding: '0.45rem 0.85rem' }}
+                    onClick={() => setRosterFilter(rosterFilter === 'pending' ? 'all' : 'pending')}
+                  >
+                    {rosterFilter === 'pending' ? 'Show All Members' : `Filter Pending (${pendingEmployees.length})`}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', fontWeight: 700, marginRight: '4px' }}>
+                  FILTER ROSTER:
+                </span>
+                <button
+                  onClick={() => setRosterFilter('all')}
+                  className={`adm-btn adm-btn-sm ${rosterFilter === 'all' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
+                  style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
+                >
+                  All ({employees.length})
+                </button>
+                <button
+                  onClick={() => setRosterFilter('pending')}
+                  className={`adm-btn adm-btn-sm ${rosterFilter === 'pending' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
+                  style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
+                >
+                  ⏳ Pending Director Review ({pendingEmployees.length})
+                </button>
+                <button
+                  onClick={() => setRosterFilter('approved')}
+                  className={`adm-btn adm-btn-sm ${rosterFilter === 'approved' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
+                  style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
+                >
+                  ✓ Approved ({approvedEmployees.length})
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportRosterCsv}>
+                  <Download size={13} />
+                  <span>Export CSV</span>
+                </button>
+                <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={openAddMemberModal}>
+                  <Plus size={14} />
+                  <span>Add Member</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="adm-grid-3">
+              {displayedEmployees.map(emp => {
+                const displayEmpId = emp.employeeId || (emp.id.startsWith('emp-') ? `EPX-10${emp.id.replace('emp-', '')}` : emp.id);
+                const isPending = emp.approvalStatus === 'Pending Director Approval';
+                const isRejected = emp.approvalStatus === 'Rejected';
+                const isApproved = emp.approvalStatus === 'Approved' || !emp.approvalStatus;
+
+                return (
+                  <div
+                    key={emp.id}
+                    className="adm-card adm-card-hover"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      border: isPending
+                        ? '1px solid rgba(245, 158, 11, 0.45)'
+                        : isRejected
+                        ? '1px solid rgba(239, 68, 68, 0.45)'
+                        : undefined
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1rem' }}>
+                      {/* Avatar with Camera Update Button */}
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <img
+                          src={emp.avatar}
+                          alt={emp.name}
+                          className="adm-avatar-lg"
+                          style={{
+                            objectFit: 'cover',
+                            border: isPending ? '2px solid #f59e0b' : '2px solid rgba(255, 255, 255, 0.1)'
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPhotoModalEmp(emp);
+                            setCustomPhotoInput(emp.avatar || '');
+                          }}
+                          style={{
+                            position: 'absolute',
+                            bottom: '-4px',
+                            right: '-4px',
+                            background: '#059669',
+                            color: '#fff',
+                            border: '2px solid #14171d',
+                            borderRadius: '50%',
+                            width: '24px',
+                            height: '24px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.5)'
+                          }}
+                          title="Change or upload profile photo"
+                        >
+                          <Camera size={12} />
+                        </button>
+                      </div>
+
+                      <div style={{ flex: 1, overflow: 'hidden' }}>
+                        <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>{emp.name}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{emp.role}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{emp.department}</div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                        <span className="adm-badge adm-badge-success" style={{ fontSize: '0.65rem' }}>{emp.status}</span>
+                        <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.7rem', fontFamily: 'monospace', fontWeight: 700 }}>
+                          {displayEmpId}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Approval Workflow Box */}
+                    {isPending && (
+                      <div
+                        style={{
+                          background: 'rgba(245, 158, 11, 0.08)',
+                          border: '1px solid rgba(245, 158, 11, 0.3)',
+                          borderRadius: '8px',
+                          padding: '0.75rem',
+                          marginBottom: '0.85rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#f59e0b', fontWeight: 700, fontSize: '0.78rem' }}>
+                            <Clock size={13} />
+                            <span>Awaiting Director Approval</span>
+                          </div>
+                          <span className="adm-badge adm-badge-warning" style={{ fontSize: '0.65rem' }}>
+                            Login Inactive
+                          </span>
+                        </div>
+                        <p style={{ margin: '0 0 8px 0', fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.4 }}>
+                          {isDirector
+                            ? 'Employee was registered by HR. Click below to approve credentials and enable portal login.'
+                            : 'Waiting for Managing Director (Rohit P. - director@enterprenexsolution.com) to approve login access.'}
+                        </p>
+
+                        {isDirector ? (
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              className="adm-btn adm-btn-primary"
+                              style={{ flex: 1, padding: '0.35rem 0.6rem', fontSize: '0.75rem', justifyContent: 'center' }}
+                              onClick={() => {
+                                updateEmployee(emp.id, {
+                                  approvalStatus: 'Approved',
+                                  approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                                  approvedAt: new Date().toISOString()
+                                });
+                                showToast('Login Approved', `Authorized portal login for ${emp.name} (${displayEmpId}).`, 'success');
+                              }}
+                            >
+                              <Check size={13} />
+                              <span>Approve Login Access</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="adm-btn adm-btn-danger"
+                              style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}
+                              onClick={() => {
+                                updateEmployee(emp.id, { approvalStatus: 'Rejected' });
+                                showToast('Login Rejected', `Disabled access for ${emp.name}.`, 'warning');
+                              }}
+                              title="Reject registration"
+                            >
+                              <X size={13} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="adm-btn adm-btn-secondary"
+                            style={{ width: '100%', padding: '0.35rem 0.6rem', fontSize: '0.72rem', justifyContent: 'center' }}
+                            onClick={() => {
+                              const text =
+                                `*ENTERPRENEX APPROVAL REQUEST*\n\n` +
+                                `Managing Director Rohit P., please approve login for new employee:\n` +
+                                `*Name:* ${emp.name}\n` +
+                                `*Employee ID:* ${displayEmpId}\n` +
+                                `*Official Email:* ${emp.email}\n` +
+                                `*Role:* ${emp.role}\n` +
+                                `*Approval Portal:* https://www.enterprenexsolution.com/admin/team`;
+                              copyToClipboard(text, `req-${emp.id}`);
+                            }}
+                          >
+                            <Share2 size={12} />
+                            <span>{copiedKey === `req-${emp.id}` ? 'Request Copied to Clipboard!' : 'Share Approval Request to Director'}</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {isRejected && (
+                      <div
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.08)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          borderRadius: '8px',
+                          padding: '0.65rem 0.75rem',
+                          marginBottom: '0.85rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between'
+                        }}
+                      >
+                        <div style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 700 }}>
+                          ✕ Login Access Rejected by Director
+                        </div>
+                        {isDirector && (
+                          <button
+                            type="button"
+                            className="adm-btn adm-btn-primary"
+                            style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}
+                            onClick={() => {
+                              updateEmployee(emp.id, {
+                                approvalStatus: 'Approved',
+                                approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                                approvedAt: new Date().toISOString()
+                              });
+                              showToast('Login Approved', `Restored portal login for ${emp.name}.`, 'success');
+                            }}
+                          >
+                            Re-Approve
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Workload */}
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '3px' }}>
+                        <span style={{ color: 'var(--adm-text-dim)' }}>Sprint Workload</span>
+                        <span style={{
+                          fontWeight: 700,
+                          color: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+                        }}>
+                          {emp.workloadPercentage}%
+                        </span>
+                      </div>
+                      <div className="adm-progress-bar">
+                        <div
+                          className="adm-progress-fill"
+                          style={{
+                            width: `${emp.workloadPercentage}%`,
+                            background: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Skills */}
+                    <div style={{ marginBottom: '1rem', flex: 1 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {emp.skills.map((sk, idx) => (
+                          <span key={idx} className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>{sk}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Contact */}
+                    <div style={{ background: 'var(--adm-bg)', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--adm-border)', fontSize: '0.75rem', color: 'var(--adm-text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Mail size={12} color="var(--adm-primary)" /> {emp.email}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Phone size={12} color="var(--adm-info)" /> {emp.phone}
+                      </div>
+                    </div>
+
+                    {/* Credentials & Access Bar */}
+                    <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="adm-badge adm-badge-neutral" style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.72rem' }}>
+                          {displayEmpId}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: isPending ? '#f59e0b' : isRejected ? '#ef4444' : 'var(--adm-success)', fontWeight: 600 }}>
+                          {isPending ? 'Approval Pending' : isRejected ? 'Access Denied' : 'Access Active'}
+                        </span>
+                      </div>
+                      <button
+                        className="adm-btn adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
+                        onClick={() => {
+                          setCredentialEmp(emp);
+                          setNewPasswordInput('');
+                          setShowActivePassword(false);
+                        }}
+                      >
+                        <Key size={13} color="#f59e0b" />
+                        <span>Portal Credentials</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── 2. ATTENDANCE LOGS ── */}
       {tab === 'attendance' && (
@@ -1017,6 +1355,95 @@ export const TeamPage: React.FC = () => {
                 </p>
               </div>
 
+              {/* Profile Photo Upload Box */}
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid var(--adm-border)',
+                  borderRadius: '12px',
+                  padding: '1rem',
+                  marginBottom: '1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}
+              >
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={avatarPreview || avatar}
+                    alt="Profile Avatar"
+                    style={{
+                      width: '70px',
+                      height: '70px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid var(--adm-primary)',
+                      boxShadow: '0 4px 12px rgba(5, 150, 105, 0.25)'
+                    }}
+                  />
+                  {avatarPreview && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: '#10b981',
+                        border: '2px solid #000'
+                      }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <label className="adm-form-label" style={{ margin: '0 0 4px 0', fontSize: '0.8rem', color: '#fff', fontWeight: 700 }}>
+                    Profile Photo (Upload from PC or Mobile)
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <label
+                      className="adm-btn adm-btn-secondary"
+                      style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', cursor: 'pointer', margin: 0, gap: '6px' }}
+                    >
+                      <Camera size={13} color="var(--adm-primary)" />
+                      <span>{avatarPreview ? 'Change Selected Photo' : 'Upload Employee Photo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handlePhotoFileChange(file, url => {
+                              setAvatarPreview(url);
+                              showToast('Photo Loaded', 'Profile photo uploaded successfully.', 'info');
+                            });
+                          }
+                        }}
+                      />
+                    </label>
+
+                    {avatarPreview && (
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.6rem', fontSize: '0.72rem' }}
+                        onClick={() => {
+                          setAvatarPreview('');
+                          setAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
+                        }}
+                      >
+                        Reset to Default
+                      </button>
+                    )}
+                  </div>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.7rem', color: '#94a3b8' }}>
+                    Formats: JPG, PNG, WebP. Custom photo will display across team directory, ID card and workspace.
+                  </p>
+                </div>
+              </div>
+
               <div className="adm-grid-2">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Full Name *</label>
@@ -1069,6 +1496,28 @@ export const TeamPage: React.FC = () => {
               <div className="adm-form-group">
                 <label className="adm-form-label">Skills (Comma separated)</label>
                 <input className="adm-input" value={skills} onChange={e => setSkills(e.target.value)} placeholder="Python, PyTorch, Docker, Kubernetes" />
+              </div>
+
+              {/* Approval Notice */}
+              <div
+                style={{
+                  background: isDirector ? 'rgba(5, 150, 105, 0.08)' : 'rgba(245, 158, 11, 0.08)',
+                  border: `1px solid ${isDirector ? 'rgba(5, 150, 105, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
+                  borderRadius: '8px',
+                  padding: '0.65rem 0.85rem',
+                  fontSize: '0.72rem',
+                  color: '#cbd5e1'
+                }}
+              >
+                {isDirector ? (
+                  <span>
+                    ✓ As Managing Director, this employee will be automatically approved for immediate portal login.
+                  </span>
+                ) : (
+                  <span>
+                    ⏳ <strong>Director Approval Required:</strong> As HR, after adding this team member, login access will be pending until Managing Director (Rohit P. - director@enterprenexsolution.com) reviews and approves the credentials.
+                  </span>
+                )}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
@@ -1133,7 +1582,7 @@ export const TeamPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                   <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>ACTIVE PASSWORD</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#f59e0b', fontSize: '0.9rem' }}>
@@ -1155,6 +1604,43 @@ export const TeamPage: React.FC = () => {
                       {copiedKey === 'pass' ? <Check size={12} color="#10b981" /> : <Copy size={12} />}
                       <span>{copiedKey === 'pass' ? 'Copied' : 'Copy'}</span>
                     </button>
+                  </div>
+                </div>
+
+                {/* Director Approval Status Row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)' }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>DIRECTOR APPROVAL</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      className={`adm-badge ${
+                        credentialEmp.approvalStatus === 'Approved' || !credentialEmp.approvalStatus
+                          ? 'adm-badge-success'
+                          : credentialEmp.approvalStatus === 'Rejected'
+                          ? 'adm-badge-danger'
+                          : 'adm-badge-warning'
+                      }`}
+                      style={{ fontSize: '0.72rem' }}
+                    >
+                      {credentialEmp.approvalStatus || 'Approved'}
+                    </span>
+                    {credentialEmp.approvalStatus === 'Pending Director Approval' && isDirector && (
+                      <button
+                        type="button"
+                        className="adm-btn adm-btn-primary"
+                        style={{ padding: '0.2rem 0.6rem', fontSize: '0.72rem' }}
+                        onClick={() => {
+                          updateEmployee(credentialEmp.id, {
+                            approvalStatus: 'Approved',
+                            approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                            approvedAt: new Date().toISOString()
+                          });
+                          setCredentialEmp(prev => prev ? { ...prev, approvalStatus: 'Approved' } : null);
+                          showToast('Login Approved', `Authorized login for ${credentialEmp.name}.`, 'success');
+                        }}
+                      >
+                        Approve Now
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1202,19 +1688,117 @@ export const TeamPage: React.FC = () => {
                 onClick={() => {
                   const empIdVal = credentialEmp.employeeId || credentialEmp.id;
                   const passVal = credentialEmp.password || 'Enx_sol_121006';
+                  const approvalInfo =
+                    credentialEmp.approvalStatus === 'Pending Director Approval'
+                      ? '⚠️ Status: Pending Director Approval'
+                      : '✓ Status: Director Approved & Active';
                   const packText = `*ENTERPRENEX SOLUTIONS - OFFICIAL WORKSPACE ACCESS*\n\n` +
                     `*Employee Name:* ${credentialEmp.name}\n` +
                     `*Employee ID:* ${empIdVal}\n` +
                     `*Official Email:* ${credentialEmp.email}\n` +
                     `*Portal Password:* ${passVal}\n` +
+                    `${approvalInfo}\n` +
                     `*Login Portal:* https://www.enterprenexsolution.com/login\n\n` +
-                    `_Please log in and keep your credentials confidential._`;
+                    `_Please keep your credentials confidential._`;
                   copyToClipboard(packText, 'pack');
                 }}
               >
                 {copiedKey === 'pack' ? <Check size={15} color="#10b981" /> : <Share2 size={15} />}
                 <span>{copiedKey === 'pack' ? 'Onboarding Pack Copied to Clipboard!' : 'Copy Full WhatsApp / Email Credentials Pack'}</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── UPDATE PROFILE PHOTO MODAL ── */}
+      {photoModalEmp && (
+        <div className="adm-modal-overlay" onClick={() => setPhotoModalEmp(null)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                  Update Profile Photo
+                </h3>
+                <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  {photoModalEmp.name} &bull; {photoModalEmp.employeeId || photoModalEmp.id}
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setPhotoModalEmp(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ textAlign: 'center', margin: '1.5rem 0 1rem' }}>
+              <img
+                src={customPhotoInput || photoModalEmp.avatar}
+                alt={photoModalEmp.name}
+                style={{
+                  width: '110px',
+                  height: '110px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '3px solid var(--adm-primary)',
+                  boxShadow: '0 0 25px rgba(5, 150, 105, 0.35)',
+                  display: 'inline-block'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <label
+                className="adm-btn adm-btn-secondary"
+                style={{ justifyContent: 'center', padding: '0.65rem', cursor: 'pointer', gap: '8px' }}
+              >
+                <Camera size={16} color="var(--adm-primary)" />
+                <span>Upload From Computer / Phone</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handlePhotoFileChange(file, url => {
+                        setCustomPhotoInput(url);
+                        showToast('Photo Ready', 'Click "Save Profile Photo" to apply.', 'info');
+                      });
+                    }
+                  }}
+                />
+              </label>
+
+              <div className="adm-form-group" style={{ margin: 0 }}>
+                <label className="adm-form-label" style={{ fontSize: '0.75rem' }}>Or Paste Image Web URL</label>
+                <input
+                  className="adm-input"
+                  value={customPhotoInput}
+                  onChange={e => setCustomPhotoInput(e.target.value)}
+                  placeholder="https://..."
+                  style={{ fontSize: '0.8rem' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setPhotoModalEmp(null)}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-primary"
+                  onClick={() => {
+                    if (customPhotoInput.trim()) {
+                      updateEmployee(photoModalEmp.id, { avatar: customPhotoInput.trim() });
+                      setPhotoModalEmp(null);
+                      showToast('Profile Photo Updated', `New photo saved for ${photoModalEmp.name}.`, 'success');
+                    } else {
+                      showToast('No Photo Selected', 'Please choose a photo to update.', 'warning');
+                    }
+                  }}
+                >
+                  Save Profile Photo
+                </button>
+              </div>
             </div>
           </div>
         </div>
