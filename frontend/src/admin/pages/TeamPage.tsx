@@ -695,13 +695,19 @@ export const TeamPage: React.FC = () => {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1rem' }}>
                       {/* Avatar with Camera Update Button */}
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <div style={{ position: 'relative', flexShrink: 0, width: '90px', height: '100px' }}>
                         <img
                           src={emp.avatar}
                           alt={emp.name}
                           className="adm-avatar-lg"
                           style={{
+                            width: '90px',
+                            height: '100px',
+                            maxWidth: '90px',
+                            maxHeight: '100px',
+                            borderRadius: '10px',
                             objectFit: 'cover',
+                            display: 'block',
                             border: isPending ? '2px solid #f59e0b' : '2px solid rgba(255, 255, 255, 0.1)'
                           }}
                         />

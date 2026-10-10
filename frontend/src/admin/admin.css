@@ -359,6 +359,15 @@
   border: 1.5px solid var(--adm-primary);
 }
 
+.adm-avatar-lg {
+  width: 90px;
+  height: 100px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
 .adm-user-info {
   display: flex;
   flex-direction: column;
