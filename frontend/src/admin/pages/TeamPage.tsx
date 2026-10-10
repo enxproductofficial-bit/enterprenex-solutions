@@ -915,18 +915,27 @@ export const TeamPage: React.FC = () => {
                           {isPending ? 'Approval Pending' : isRejected ? 'Access Denied' : 'Access Active'}
                         </span>
                       </div>
-                      <button
-                        className="adm-btn adm-btn-secondary"
-                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
-                        onClick={() => {
-                          setCredentialEmp(emp);
-                          setNewPasswordInput('');
-                          setShowActivePassword(false);
-                        }}
-                      >
-                        <Key size={13} color="#f59e0b" />
-                        <span>Portal Credentials</span>
-                      </button>
+
+                      {/* Security RBAC: Director credentials are encrypted and inaccessible to HR */}
+                      {(emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') && !isDirector ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '0.3rem 0.6rem', background: 'rgba(5, 150, 105, 0.1)', border: '1px solid rgba(5, 150, 105, 0.3)', borderRadius: '6px', fontSize: '0.7rem', color: '#34d399', fontWeight: 700 }}>
+                          <ShieldCheck size={13} />
+                          <span>Executive Protected</span>
+                        </div>
+                      ) : (
+                        <button
+                          className="adm-btn adm-btn-secondary"
+                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
+                          onClick={() => {
+                            setCredentialEmp(emp);
+                            setNewPasswordInput('');
+                            setShowActivePassword(false);
+                          }}
+                        >
+                          <Key size={13} color="#f59e0b" />
+                          <span>Portal Credentials</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

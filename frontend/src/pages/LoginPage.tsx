@@ -128,8 +128,15 @@ export const LoginPage: React.FC = () => {
           return;
         }
 
-        const validPassword = matchedEmp.password || REQUIRED_PASSWORD;
-        if (inputPassword !== validPassword && inputPassword !== REQUIRED_PASSWORD) {
+        const empPass = (matchedEmp.password || '').trim();
+        const masterPass = REQUIRED_PASSWORD.trim();
+        const entered = inputPassword.trim();
+        const isPasswordMatch =
+          entered === empPass ||
+          entered === masterPass ||
+          (empPass && entered.toLowerCase() === empPass.toLowerCase());
+
+        if (!isPasswordMatch) {
           setErrorMessage(`Access Denied: Incorrect password for Employee ID ${matchedEmp.employeeId || matchedEmp.name}.`);
           return;
         }
