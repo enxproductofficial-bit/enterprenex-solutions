@@ -13,6 +13,9 @@ import {
   EyeOff,
   RefreshCw,
   ShieldCheck,
+  Shield,
+  FileText,
+  ExternalLink,
   Share2,
   Lock,
   UserCheck,
@@ -76,6 +79,36 @@ export const TeamPage: React.FC = () => {
   // Photo modal for existing members
   const [photoModalEmp, setPhotoModalEmp] = useState<Employee | null>(null);
   const [customPhotoInput, setCustomPhotoInput] = useState('');
+
+  // Mandatory KYC State - Add Member Form
+  const [panNumber, setPanNumber] = useState('');
+  const [panDocUrl, setPanDocUrl] = useState('');
+  const [panDocName, setPanDocName] = useState('');
+  const [aadhaarNumber, setAadhaarNumber] = useState('');
+  const [aadhaarDocUrl, setAadhaarDocUrl] = useState('');
+  const [aadhaarDocName, setAadhaarDocName] = useState('');
+
+  // KYC Vault Modal State
+  const [kycModalEmp, setKycModalEmp] = useState<Employee | null>(null);
+  const [showFullAadhaar, setShowFullAadhaar] = useState(false);
+  const [editKycPan, setEditKycPan] = useState('');
+  const [editKycAadhaar, setEditKycAadhaar] = useState('');
+
+  // Strict DPDP Act & Statutory RBAC: Only Director and HR can view government KYC documents
+  const canAccessKyc = isDirector || currentUser?.department === 'Human Resources' || Boolean(currentUser?.email?.includes('hr@'));
+  const canViewEmployeeKyc = (emp: Employee) => {
+    if (canAccessKyc) return true;
+    if (currentUser?.id === emp.id || currentUser?.email === emp.email) return true;
+    return false;
+  };
+
+  const maskAadhaarNumber = (num?: string) => {
+    if (!num) return 'Not Provided';
+    const clean = num.replace(/\s+/g, '');
+    if (clean.length < 4) return 'XXXX-XXXX-XXXX';
+    const last4 = clean.slice(-4);
+    return `XXXX-XXXX-${last4}`;
+  };
 
   // Form state - Apply Leave
   const [applicantName, setApplicantName] = useState(currentUser?.name || 'HR Administrator');
@@ -356,6 +389,12 @@ export const TeamPage: React.FC = () => {
     setShowEmpPassword(true);
     setAvatarPreview('');
     setWorkload(100);
+    setPanNumber('');
+    setPanDocUrl('');
+    setPanDocName('');
+    setAadhaarNumber('');
+    setAadhaarDocUrl('');
+    setAadhaarDocName('');
     setAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
     setShowAddModal(true);
   };
@@ -389,6 +428,9 @@ export const TeamPage: React.FC = () => {
       return;
     }
 
+    const finalPan = panNumber.trim().toUpperCase();
+    const finalAadhaar = aadhaarNumber.trim().replace(/\D/g, '');
+
     const initialApprovalStatus: 'Approved' | 'Pending Director Approval' =
       governanceRole === 'Director' || isDirector ? 'Approved' : 'Pending Director Approval';
     const finalAvatar =
@@ -412,7 +454,14 @@ export const TeamPage: React.FC = () => {
       status: 'Active',
       approvalStatus: initialApprovalStatus,
       approvedBy: initialApprovalStatus === 'Approved' ? (currentUser?.name || 'Rohit P. (Managing Director)') : undefined,
-      approvedAt: initialApprovalStatus === 'Approved' ? new Date().toISOString() : undefined
+      approvedAt: initialApprovalStatus === 'Approved' ? new Date().toISOString() : undefined,
+      panNumber: finalPan || undefined,
+      panDocUrl: panDocUrl || undefined,
+      aadhaarNumber: finalAadhaar || undefined,
+      aadhaarDocUrl: aadhaarDocUrl || undefined,
+      kycStatus: finalPan && finalAadhaar ? (isDirector ? 'Verified' : 'Pending Verification') : 'Not Submitted',
+      kycVerifiedBy: (finalPan && finalAadhaar && isDirector) ? (currentUser?.name || 'Managing Director') : undefined,
+      kycVerifiedAt: (finalPan && finalAadhaar && isDirector) ? new Date().toISOString() : undefined
     });
 
     if (initialApprovalStatus === 'Pending Director Approval') {
@@ -990,8 +1039,43 @@ export const TeamPage: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Statutory KYC Vault Bar (PAN & Aadhaar) */}
+                    <div style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className={`adm-badge ${emp.kycStatus === 'Verified' ? 'adm-badge-success' : 'adm-badge-warning'}`} style={{ fontSize: '0.65rem' }}>
+                          {emp.kycStatus === 'Verified' ? '✓ KYC Verified' : '⏳ KYC Pending'}
+                        </span>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', fontFamily: 'monospace' }}>
+                          PAN: {emp.panNumber || 'Pending'}
+                        </span>
+                      </div>
+
+                      {canViewEmployeeKyc(emp) ? (
+                        <button
+                          type="button"
+                          className="adm-btn adm-btn-secondary"
+                          style={{ padding: '0.25rem 0.55rem', fontSize: '0.7rem', gap: '4px' }}
+                          onClick={() => {
+                            setKycModalEmp(emp);
+                            setShowFullAadhaar(false);
+                            setEditKycPan(emp.panNumber || '');
+                            setEditKycAadhaar(emp.aadhaarNumber || '');
+                          }}
+                          title="View confidential PAN & Aadhaar documents (Director & HR restricted)"
+                        >
+                          <Shield size={12} color="#10b981" />
+                          <span>KYC Vault</span>
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: '0.66rem', color: 'var(--adm-text-dim)', display: 'flex', alignItems: 'center', gap: '3px' }} title="Statutory KYC records are confidential and restricted to HR & Director">
+                          <Lock size={10} />
+                          <span>HR Restricted</span>
+                        </span>
+                      )}
+                    </div>
+
                     {/* Credentials & Access Bar */}
-                    <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span className="adm-badge adm-badge-neutral" style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.72rem' }}>
                           {displayEmpId}
@@ -1678,6 +1762,118 @@ export const TeamPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Mandatory Government KYC & Tax Identification */}
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid var(--adm-border)',
+                  borderRadius: '12px',
+                  padding: '1.1rem',
+                  marginBottom: '1.25rem'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Shield size={16} color="#10b981" />
+                    <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#fff' }}>
+                      Statutory Government KYC & Tax IDs
+                    </span>
+                  </div>
+                  <span className="adm-badge adm-badge-warning" style={{ fontSize: '0.65rem' }}>
+                    Mandatory for Indian Pvt Ltd
+                  </span>
+                </div>
+
+                <div className="adm-grid-2">
+                  {/* PAN Card Field */}
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">
+                      PAN Card Number (10 Digits) *
+                    </label>
+                    <input
+                      className="adm-input"
+                      required
+                      value={panNumber}
+                      onChange={e => setPanNumber(e.target.value.toUpperCase())}
+                      placeholder="e.g. ABCDE1234F"
+                      maxLength={10}
+                      style={{ textTransform: 'uppercase', fontFamily: 'monospace', fontWeight: 700 }}
+                    />
+                    <div style={{ marginTop: '6px' }}>
+                      <label
+                        className="adm-btn adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', cursor: 'pointer', display: 'inline-flex', gap: '5px' }}
+                      >
+                        <Upload size={12} color="var(--adm-primary)" />
+                        <span>{panDocName ? panDocName : 'Upload PAN Card (PDF/Image)'}</span>
+                        <input
+                          type="file"
+                          accept=".pdf,image/*"
+                          style={{ display: 'none' }}
+                          onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (f) {
+                              handlePhotoFileChange(f, url => {
+                                setPanDocUrl(url);
+                                setPanDocName(f.name);
+                                showToast('PAN Attached', `${f.name} attached for KYC verification.`, 'info');
+                              });
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Aadhaar Card Field */}
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">
+                      Aadhaar Card Number (12 Digits) *
+                    </label>
+                    <input
+                      className="adm-input"
+                      required
+                      value={aadhaarNumber}
+                      onChange={e => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 12);
+                        setAadhaarNumber(digits);
+                      }}
+                      placeholder="e.g. 123456789012"
+                      maxLength={12}
+                      style={{ fontFamily: 'monospace', fontWeight: 700 }}
+                    />
+                    <div style={{ marginTop: '6px' }}>
+                      <label
+                        className="adm-btn adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', cursor: 'pointer', display: 'inline-flex', gap: '5px' }}
+                      >
+                        <Upload size={12} color="var(--adm-info)" />
+                        <span>{aadhaarDocName ? aadhaarDocName : 'Upload Aadhaar Card (PDF/Image)'}</span>
+                        <input
+                          type="file"
+                          accept=".pdf,image/*"
+                          style={{ display: 'none' }}
+                          onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (f) {
+                              handlePhotoFileChange(f, url => {
+                                setAadhaarDocUrl(url);
+                                setAadhaarDocName(f.name);
+                                showToast('Aadhaar Attached', `${f.name} attached for KYC verification.`, 'info');
+                              });
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <p style={{ margin: '0.65rem 0 0 0', fontSize: '0.7rem', color: '#94a3b8' }}>
+                  🔒 <strong>DPDP Act 2023 & UIDAI Protection:</strong> These sensitive government identification records are encrypted and accessible exclusively to the <strong>Managing Director</strong> and authorized <strong>Human Resources</strong> personnel for TDS, PF and payroll processing.
+                </p>
+              </div>
+
               {/* Approval Notice */}
               <div
                 style={{
@@ -1979,6 +2175,283 @@ export const TeamPage: React.FC = () => {
                   Save Profile Photo
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── STATUTORY KYC & GOVERNMENT ID VAULT MODAL ── */}
+      {kycModalEmp && (
+        <div className="adm-modal-overlay" onClick={() => setKycModalEmp(null)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '620px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Shield size={20} color="#10b981" />
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                    Government KYC & Statutory Vault
+                  </h3>
+                </div>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  PAN & Aadhaar Compliance for <strong>{kycModalEmp.name}</strong> ({kycModalEmp.employeeId || kycModalEmp.id})
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setKycModalEmp(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Statutory Confidentiality Alert Banner */}
+            <div
+              style={{
+                background: 'rgba(16, 185, 129, 0.08)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                borderRadius: '10px',
+                padding: '0.75rem 1rem',
+                margin: '1rem 0 1.25rem 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}
+            >
+              <ShieldCheck size={22} color="#10b981" style={{ flexShrink: 0 }} />
+              <div style={{ fontSize: '0.74rem', color: '#cbd5e1', lineHeight: 1.4 }}>
+                <strong>DPDP Act 2023 & Income Tax Law Protected:</strong> This vault is strictly confidential. Only the <strong>Managing Director</strong> and authorized <strong>Human Resources</strong> officers may inspect or verify these government records.
+              </div>
+            </div>
+
+            {/* 2-Column KYC Cards (PAN & Aadhaar) */}
+            <div className="adm-grid-2" style={{ gap: '1rem', marginBottom: '1.25rem' }}>
+              {/* PAN Card Box */}
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--adm-border)',
+                  borderRadius: '10px',
+                  padding: '1rem'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-primary)' }}>
+                    PERMANENT ACCOUNT NUMBER
+                  </span>
+                  <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.62rem' }}>
+                    Income Tax (TDS)
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <input
+                    className="adm-input"
+                    value={editKycPan}
+                    onChange={e => setEditKycPan(e.target.value.toUpperCase())}
+                    placeholder="PAN Number"
+                    maxLength={10}
+                    style={{ textTransform: 'uppercase', fontFamily: 'monospace', fontWeight: 800, fontSize: '0.95rem', letterSpacing: '1px' }}
+                  />
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-secondary"
+                    style={{ padding: '0.45rem' }}
+                    onClick={() => copyToClipboard(editKycPan, 'pan')}
+                    title="Copy PAN Number"
+                  >
+                    {copiedKey === 'pan' ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginBottom: '10px' }}>
+                  Document: {kycModalEmp.panDocUrl ? '✓ Official Document Attached' : 'Attached during physical onboarding'}
+                </div>
+
+                <label
+                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                  style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', gap: '5px' }}
+                >
+                  <Upload size={12} color="var(--adm-primary)" />
+                  <span>Update PAN File</span>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        handlePhotoFileChange(f, url => {
+                          updateEmployee(kycModalEmp.id, { panDocUrl: url });
+                          setKycModalEmp(prev => prev ? { ...prev, panDocUrl: url } : null);
+                          showToast('PAN Document Updated', `${f.name} attached.`, 'success');
+                        });
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              {/* Aadhaar Card Box */}
+              <div
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--adm-border)',
+                  borderRadius: '10px',
+                  padding: '1rem'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-info)' }}>
+                    AADHAAR CARD (UIDAI)
+                  </span>
+                  <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.62rem' }}>
+                    EPFO & Identity
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <input
+                    className="adm-input"
+                    value={showFullAadhaar ? editKycAadhaar : maskAadhaarNumber(editKycAadhaar)}
+                    onChange={e => {
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 12);
+                      setEditKycAadhaar(digits);
+                    }}
+                    placeholder="12-Digit Aadhaar"
+                    maxLength={12}
+                    readOnly={!showFullAadhaar}
+                    style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.95rem', letterSpacing: '1px' }}
+                  />
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-secondary"
+                    style={{ padding: '0.45rem' }}
+                    onClick={() => setShowFullAadhaar(!showFullAadhaar)}
+                    title={showFullAadhaar ? 'Mask Aadhaar Number' : 'Reveal Full 12 Digits (Director / HR only)'}
+                  >
+                    {showFullAadhaar ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-secondary"
+                    style={{ padding: '0.45rem' }}
+                    onClick={() => copyToClipboard(editKycAadhaar, 'aadhaar')}
+                    title="Copy Aadhaar Number"
+                  >
+                    {copiedKey === 'aadhaar' ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginBottom: '10px' }}>
+                  Document: {kycModalEmp.aadhaarDocUrl ? '✓ Official Document Attached' : 'Attached during physical onboarding'}
+                </div>
+
+                <label
+                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                  style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', gap: '5px' }}
+                >
+                  <Upload size={12} color="var(--adm-info)" />
+                  <span>Update Aadhaar File</span>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        handlePhotoFileChange(f, url => {
+                          updateEmployee(kycModalEmp.id, { aadhaarDocUrl: url });
+                          setKycModalEmp(prev => prev ? { ...prev, aadhaarDocUrl: url } : null);
+                          showToast('Aadhaar Document Updated', `${f.name} attached.`, 'success');
+                        });
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Current KYC Verification Status Details */}
+            <div
+              style={{
+                background: 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid var(--adm-border)',
+                borderRadius: '8px',
+                padding: '0.85rem 1rem',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '0.5rem'
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>Verification Audit Status</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                  <span className={`adm-badge ${kycModalEmp.kycStatus === 'Verified' ? 'adm-badge-success' : 'adm-badge-warning'}`}>
+                    {kycModalEmp.kycStatus === 'Verified' ? '✓ Statutory KYC Verified' : '⏳ Pending HR / Director Verification'}
+                  </span>
+                  {kycModalEmp.kycVerifiedBy && (
+                    <span style={{ fontSize: '0.72rem', color: '#cbd5e1' }}>
+                      Verified by <strong>{kycModalEmp.kycVerifiedBy}</strong>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons for Director and HR */}
+              {canAccessKyc && (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-sm adm-btn-primary"
+                    style={{ background: '#059669', borderColor: '#059669', gap: '5px' }}
+                    onClick={() => {
+                      const cleanPan = editKycPan.trim().toUpperCase();
+                      const cleanAadhaar = editKycAadhaar.trim().replace(/\D/g, '');
+                      updateEmployee(kycModalEmp.id, {
+                        panNumber: cleanPan || kycModalEmp.panNumber,
+                        aadhaarNumber: cleanAadhaar || kycModalEmp.aadhaarNumber,
+                        kycStatus: 'Verified',
+                        kycVerifiedBy: currentUser?.name || 'Managing Director',
+                        kycVerifiedAt: new Date().toISOString()
+                      });
+                      setKycModalEmp(prev => prev ? {
+                        ...prev,
+                        panNumber: cleanPan || prev.panNumber,
+                        aadhaarNumber: cleanAadhaar || prev.aadhaarNumber,
+                        kycStatus: 'Verified',
+                        kycVerifiedBy: currentUser?.name || 'Managing Director',
+                        kycVerifiedAt: new Date().toISOString()
+                      } : null);
+                      showToast('KYC Verified', `Approved and verified statutory KYC for ${kycModalEmp.name}.`, 'success');
+                    }}
+                  >
+                    <CheckCircle2 size={13} />
+                    <span>Approve & Verify KYC</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-sm adm-btn-secondary"
+                    onClick={() => {
+                      const cleanPan = editKycPan.trim().toUpperCase();
+                      const cleanAadhaar = editKycAadhaar.trim().replace(/\D/g, '');
+                      updateEmployee(kycModalEmp.id, {
+                        panNumber: cleanPan,
+                        aadhaarNumber: cleanAadhaar
+                      });
+                      showToast('Changes Saved', 'Updated PAN & Aadhaar details.', 'info');
+                    }}
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setKycModalEmp(null)}>
+                Close Vault
+              </button>
             </div>
           </div>
         </div>

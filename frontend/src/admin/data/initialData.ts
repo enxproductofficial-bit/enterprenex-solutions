@@ -221,7 +221,12 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     salaryMonthly: 150000,
     performanceRating: 5.0,
     status: 'Active',
-    approvalStatus: 'Approved'
+    approvalStatus: 'Approved',
+    panNumber: 'AAXPE1206M',
+    aadhaarNumber: '782390124567',
+    kycStatus: 'Verified',
+    kycVerifiedBy: 'Executive Board',
+    kycVerifiedAt: '2026-01-01T00:00:00.000Z'
   },
   {
     id: 'emp-2',
@@ -241,7 +246,12 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     performanceRating: 5.0,
     status: 'Active',
     approvalStatus: 'Approved',
-    approvedBy: 'Rohit P. (Managing Director)'
+    approvedBy: 'Rohit P. (Managing Director)',
+    panNumber: 'PRRPS8209K',
+    aadhaarNumber: '674389012345',
+    kycStatus: 'Verified',
+    kycVerifiedBy: 'Rohit P. (Managing Director)',
+    kycVerifiedAt: '2026-10-10T08:00:00.000Z'
   }
 ];
 

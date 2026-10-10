@@ -243,6 +243,17 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (!item.approvalStatus) {
               item.approvalStatus = 'Approved';
             }
+            if (!item.kycStatus) {
+              item.kycStatus = 'Verified';
+            }
+            if (!item.panNumber && item.employeeId === '202600000002') {
+              item.panNumber = 'PRRPS8209K';
+              item.aadhaarNumber = '674389012345';
+            }
+            if (!item.panNumber && (item.email === 'director@enterprenexsolution.com' || item.id === 'emp-1')) {
+              item.panNumber = 'AAXPE1206M';
+              item.aadhaarNumber = '782390124567';
+            }
             return item;
           });
 

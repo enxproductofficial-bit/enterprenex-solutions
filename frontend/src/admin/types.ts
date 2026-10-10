@@ -229,6 +229,13 @@ export interface Employee {
   approvalStatus?: 'Approved' | 'Pending Director Approval' | 'Rejected';
   approvedBy?: string;
   approvedAt?: string;
+  panNumber?: string;
+  panDocUrl?: string;
+  aadhaarNumber?: string;
+  aadhaarDocUrl?: string;
+  kycStatus?: 'Verified' | 'Pending Verification' | 'Not Submitted';
+  kycVerifiedBy?: string;
+  kycVerifiedAt?: string;
 }
 
 export interface AttendanceRecord {
