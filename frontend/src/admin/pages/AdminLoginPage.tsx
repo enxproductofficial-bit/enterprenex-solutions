@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { Lock, Mail, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import type { AdminUser } from '../types';
@@ -209,6 +209,15 @@ export const AdminLoginPage: React.FC = () => {
             {!isLoading && <ArrowRight size={16} />}
           </button>
         </form>
+
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.25rem' }}>
+          <Link to="/login" style={{ fontSize: '0.82rem', color: '#34d399', textDecoration: 'none', fontWeight: 600 }}>
+            ← Go to Main Workspace Portal (Director / Employee / HR)
+          </Link>
+          <Link to="/" style={{ fontSize: '0.78rem', color: '#64748b', textDecoration: 'none' }}>
+            Back to Public Website
+          </Link>
+        </div>
       </div>
     </div>
   );

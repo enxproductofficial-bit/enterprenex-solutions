@@ -221,7 +221,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </div>
             </div>
             <button
-              onClick={() => { logout(); navigate('/admin/login'); }}
+              onClick={() => { logout(); navigate('/login'); }}
               title="Logout"
               style={{ background: 'transparent', border: 'none', color: 'var(--adm-text-dim)', cursor: 'pointer' }}
             >
@@ -521,7 +521,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
                   <div style={{ borderTop: '1px solid var(--adm-border)', paddingTop: '0.5rem' }}>
                     <button
-                      onClick={() => { logout(); navigate('/admin/login'); }}
+                      onClick={() => { logout(); navigate('/login'); }}
                       style={{
                         width: '100%',
                         padding: '6px 8px',

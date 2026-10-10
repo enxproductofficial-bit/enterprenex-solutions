@@ -60,7 +60,7 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
   const location = useLocation();
 
   if (!currentUser) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // If user is Employee (Team Member / Developer) attempting to access Executive Dashboard (/admin),
