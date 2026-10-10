@@ -128,7 +128,9 @@ interface AdminContextType {
   // Team actions
   addEmployee: (employee: Omit<Employee, 'id'>) => void;
   updateEmployee: (id: string, updates: Partial<Employee>) => void;
+  addLeaveRequest: (leave: Omit<LeaveRequest, 'id' | 'status'>) => void;
   updateLeaveStatus: (id: string, status: 'Approved' | 'Rejected') => void;
+  deleteLeaveRequest: (id: string) => void;
   markAttendanceToday: (status: 'Present' | 'Late' | 'Half Day' | 'Absent') => void;
 
   // Task actions
@@ -245,7 +247,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setEmployees(sanitized);
         }
         if (parsed.attendance) setAttendance(parsed.attendance);
-        if (parsed.leaves) setLeaves(parsed.leaves);
+        if (parsed.leaves) {
+          setLeaves(parsed.leaves.length > 0 ? parsed.leaves : INITIAL_LEAVES);
+        }
         if (parsed.tasks) setTasks(parsed.tasks);
         if (parsed.tickets) setTickets(parsed.tickets);
         if (parsed.documents) setDocuments(parsed.documents);
@@ -563,10 +567,26 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Employee Updated', 'Employee record updated.', 'success');
   };
 
+  const addLeaveRequest = (leaveData: Omit<LeaveRequest, 'id' | 'status'>) => {
+    const newLeave: LeaveRequest = {
+      ...leaveData,
+      id: 'lv-' + Date.now(),
+      status: 'Pending'
+    };
+    setLeaves(prev => [newLeave, ...prev]);
+    logAction('Leave Requested', 'Team Management', `${newLeave.employeeName} applied for ${newLeave.type} (${newLeave.startDate} to ${newLeave.endDate})`);
+    showToast('Leave Submitted', `Leave request for ${newLeave.employeeName} has been submitted.`, 'success');
+  };
+
   const updateLeaveStatus = (id: string, status: 'Approved' | 'Rejected') => {
     setLeaves(prev => prev.map(l => l.id === id ? { ...l, status } : l));
     logAction('Leave Request Processed', 'Team Management', `Leave ID ${id} set to ${status}`);
     showToast('Leave Request', `Leave request has been ${status}.`, 'info');
+  };
+
+  const deleteLeaveRequest = (id: string) => {
+    setLeaves(prev => prev.filter(l => l.id !== id));
+    showToast('Leave Record Removed', 'Leave entry has been removed.', 'info');
   };
 
   const markAttendanceToday = (status: 'Present' | 'Late' | 'Half Day' | 'Absent') => {
@@ -857,7 +877,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addExpense,
         addEmployee,
         updateEmployee,
+        addLeaveRequest,
         updateLeaveStatus,
+        deleteLeaveRequest,
         markAttendanceToday,
         addTask,
         updateTask,

@@ -16,16 +16,37 @@ import {
   Share2,
   Lock,
   UserCheck,
-  AlertCircle
+  AlertCircle,
+  Download,
+  Printer,
+  CalendarPlus,
+  Trash2,
+  RotateCcw,
+  FileSpreadsheet,
+  Calendar
 } from 'lucide-react';
-import type { Employee } from '../types';
+import type { Employee, LeaveRequest } from '../types';
 
 export const TeamPage: React.FC = () => {
-  const { employees, attendance, leaves, addEmployee, updateEmployee, updateLeaveStatus, markAttendanceToday, showToast } = useAdmin();
+  const {
+    employees,
+    attendance,
+    leaves,
+    addEmployee,
+    updateEmployee,
+    addLeaveRequest,
+    updateLeaveStatus,
+    deleteLeaveRequest,
+    markAttendanceToday,
+    currentUser,
+    showToast
+  } = useAdmin();
+
   const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves'>('roster');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
 
-  // Form state
+  // Form state - Add Member
   const [name, setName] = useState('');
   const [governanceRole, setGovernanceRole] = useState<'Director' | 'Manager (HR)' | 'Employee'>('Employee');
   const [role, setRole] = useState('');
@@ -34,6 +55,13 @@ export const TeamPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [skills, setSkills] = useState('React, TypeScript, Node.js');
   const [salary, setSalary] = useState(100000);
+
+  // Form state - Apply Leave
+  const [applicantName, setApplicantName] = useState(currentUser?.name || 'HR Administrator');
+  const [leaveType, setLeaveType] = useState<LeaveRequest['type']>('Casual Leave');
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [leaveReason, setLeaveReason] = useState('');
 
   // 12-Digit Guaranteed Unique Employee ID Generator (guaranteed non-repeating across all employees)
   const generateUnique12DigitId = (): string => {
@@ -99,12 +127,209 @@ export const TeamPage: React.FC = () => {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
+  // CSV Export utility
+  const exportToCsv = (filename: string, headers: string[], rows: (string | number)[][]) => {
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row =>
+        row
+          .map(field => {
+            const str = String(field ?? '').replace(/"/g, '""');
+            return `"${str}"`;
+          })
+          .join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Download Complete', `Exported ${filename}`, 'success');
+  };
+
+  // Print Report utility
+  const printReport = (title: string, tableHtml: string) => {
+    const win = window.open('', '_blank');
+    if (!win) {
+      showToast('Popup Blocked', 'Please allow popups to generate printable report.', 'warning');
+      return;
+    }
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${title} - Enterprenex Solutions</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2rem; color: #0f172a; margin: 0; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #059669; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+            .brand-name { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin: 0; }
+            .brand-name span { color: #059669; }
+            .report-title { font-size: 1.1rem; font-weight: 700; color: #334155; margin-top: 4px; }
+            .meta { font-size: 0.8rem; color: #64748b; text-align: right; }
+            table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
+            th, td { border: 1px solid #cbd5e1; padding: 0.6rem 0.75rem; text-align: left; }
+            th { background: #f8fafc; color: #1e293b; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+            tr:nth-child(even) { background: #f8fafc; }
+            .badge { padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; display: inline-block; }
+            .badge-success { background: #dcfce7; color: #15803d; }
+            .badge-warning { background: #fef3c7; color: #b45309; }
+            .badge-danger { background: #fee2e2; color: #b91c1c; }
+            .badge-info { background: #e0f2fe; color: #0369a1; }
+            .footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; }
+            @media print {
+              body { padding: 0.5cm; }
+              button { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="brand-name">Enterpre<span>nex</span> Solutions Pvt Ltd</div>
+              <div class="report-title">${title}</div>
+            </div>
+            <div class="meta">
+              <div><strong>Generated by:</strong> ${currentUser?.name || 'Administrator'}</div>
+              <div><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+            </div>
+          </div>
+          ${tableHtml}
+          <div class="footer">
+            <div>Confidential &bull; Enterprenex Solutions Official HR Management Record</div>
+            <div>Authorized Corporate Document</div>
+          </div>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+      </html>
+    `);
+    win.document.close();
+  };
+
+  const handleExportAttendanceCsv = () => {
+    const headers = ['Team Member', 'Date', 'Check In Time', 'Check Out Time', 'Attendance Status'];
+    const rows = attendance.map(a => [
+      a.employeeName,
+      a.date,
+      a.checkIn || '-',
+      a.checkOut || '-',
+      a.status
+    ]);
+    exportToCsv(`enterprenex-attendance-${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+  };
+
+  const handlePrintAttendance = () => {
+    const rowsHtml = attendance.map(a => `
+      <tr>
+        <td><strong>${a.employeeName}</strong></td>
+        <td>${a.date}</td>
+        <td>${a.checkIn || '-'}</td>
+        <td>${a.checkOut || '-'}</td>
+        <td><span class="badge ${a.status === 'Present' ? 'badge-success' : a.status === 'Late' ? 'badge-warning' : 'badge-danger'}">${a.status}</span></td>
+      </tr>
+    `).join('');
+
+    const tableHtml = `
+      <table>
+        <thead>
+          <tr>
+            <th>Team Member</th>
+            <th>Date</th>
+            <th>Check In Time</th>
+            <th>Check Out Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml || '<tr><td colspan="5" style="text-align:center;">No attendance records found.</td></tr>'}
+        </tbody>
+      </table>
+    `;
+    printReport('Daily Biometric Attendance Report', tableHtml);
+  };
+
+  const handleExportLeavesCsv = () => {
+    const headers = ['Applicant', 'Leave Type', 'Start Date', 'End Date', 'Reason', 'Approval Status'];
+    const rows = leaves.map(l => [
+      l.employeeName,
+      l.type,
+      l.startDate,
+      l.endDate,
+      l.reason,
+      l.status
+    ]);
+    exportToCsv(`enterprenex-leave-records-${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+  };
+
+  const handlePrintLeaves = () => {
+    const rowsHtml = leaves.map(l => `
+      <tr>
+        <td><strong>${l.employeeName}</strong></td>
+        <td><span class="badge badge-info">${l.type}</span></td>
+        <td>${l.startDate} to ${l.endDate}</td>
+        <td>${l.reason}</td>
+        <td><span class="badge ${l.status === 'Approved' ? 'badge-success' : l.status === 'Rejected' ? 'badge-danger' : 'badge-warning'}">${l.status}</span></td>
+      </tr>
+    `).join('');
+
+    const tableHtml = `
+      <table>
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Leave Type</th>
+            <th>Period</th>
+            <th>Reason</th>
+            <th>Approval Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml || '<tr><td colspan="5" style="text-align:center;">No leave applications on record.</td></tr>'}
+        </tbody>
+      </table>
+    `;
+    printReport('Employee Leave Approvals & Records', tableHtml);
+  };
+
+  const handleExportRosterCsv = () => {
+    const headers = ['Employee ID', 'Name', 'Role', 'Department', 'Email', 'Phone', 'Monthly Salary (INR)', 'Rating', 'Status'];
+    const rows = employees.map(e => [
+      e.employeeId || e.id,
+      e.name,
+      e.role,
+      e.department,
+      e.email,
+      e.phone,
+      e.salaryMonthly,
+      e.performanceRating,
+      e.status
+    ]);
+    exportToCsv(`enterprenex-employee-directory-${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+  };
+
   const openAddMemberModal = () => {
     const auto12DigitId = generateUnique12DigitId();
     setEmpId(auto12DigitId);
     setEmpPassword(generateRandomPassword('EPX'));
     setShowEmpPassword(true);
     setShowAddModal(true);
+  };
+
+  const openApplyLeaveModal = () => {
+    setApplicantName(currentUser?.name || (employees[0]?.name ?? 'HR Administrator'));
+    setLeaveType('Casual Leave');
+    const today = new Date().toISOString().split('T')[0];
+    setStartDate(today);
+    setEndDate(today);
+    setLeaveReason('');
+    setShowApplyLeaveModal(true);
   };
 
   const handleCreateEmployee = (e: React.FormEvent) => {
@@ -150,6 +375,30 @@ export const TeamPage: React.FC = () => {
     setEmpPassword('');
   };
 
+  const handleApplyLeaveSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!applicantName.trim()) {
+      showToast('Validation Error', 'Please specify the applicant name.', 'error');
+      return;
+    }
+    if (!leaveReason.trim()) {
+      showToast('Validation Error', 'Please provide a reason for the leave.', 'error');
+      return;
+    }
+
+    addLeaveRequest({
+      employeeName: applicantName.trim(),
+      type: leaveType,
+      startDate,
+      endDate,
+      reason: leaveReason.trim()
+    });
+
+    setShowApplyLeaveModal(false);
+    setLeaveReason('');
+    setTab('leaves');
+  };
+
   const handleUpdatePassword = (emp: Employee) => {
     if (!newPasswordInput.trim()) {
       showToast('Validation Error', 'Please enter or generate a new password.', 'error');
@@ -161,6 +410,8 @@ export const TeamPage: React.FC = () => {
     showToast('Password Updated', `Updated portal password for ${emp.name} (${emp.employeeId || emp.id}).`, 'success');
   };
 
+  const pendingLeavesCount = leaves.filter(l => l.status === 'Pending').length;
+
   return (
     <div>
       {/* Page Header */}
@@ -169,15 +420,53 @@ export const TeamPage: React.FC = () => {
           <h1>Team, Attendance & Workforce Ops</h1>
           <p>Employee capacity roster, daily biometric check-ins, leave approvals & payroll rates</p>
         </div>
-        <div className="adm-page-actions">
-          <button className="adm-btn adm-btn-secondary" onClick={() => markAttendanceToday('Present')}>
-            <CheckCircle2 size={15} />
-            <span>Mark My Attendance Today</span>
-          </button>
-          <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal}>
-            <Plus size={16} />
-            <span>Add Team Member</span>
-          </button>
+        <div className="adm-page-actions" style={{ flexWrap: 'wrap' }}>
+          {tab === 'roster' && (
+            <>
+              <button className="adm-btn adm-btn-secondary" onClick={handleExportRosterCsv} title="Download Team Directory as CSV">
+                <Download size={15} />
+                <span>Export Roster CSV</span>
+              </button>
+              <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal}>
+                <Plus size={16} />
+                <span>Add Team Member</span>
+              </button>
+            </>
+          )}
+
+          {tab === 'attendance' && (
+            <>
+              <button className="adm-btn adm-btn-secondary" onClick={handleExportAttendanceCsv} title="Download Attendance Records as CSV">
+                <Download size={15} />
+                <span>Export CSV</span>
+              </button>
+              <button className="adm-btn adm-btn-secondary" onClick={handlePrintAttendance} title="Print or Save as PDF Report">
+                <Printer size={15} />
+                <span>Print / PDF</span>
+              </button>
+              <button className="adm-btn adm-btn-primary" onClick={() => markAttendanceToday('Present')}>
+                <CheckCircle2 size={15} />
+                <span>Mark My Attendance Today</span>
+              </button>
+            </>
+          )}
+
+          {tab === 'leaves' && (
+            <>
+              <button className="adm-btn adm-btn-secondary" onClick={handleExportLeavesCsv} title="Download Leave Records as CSV">
+                <Download size={15} />
+                <span>Export CSV</span>
+              </button>
+              <button className="adm-btn adm-btn-secondary" onClick={handlePrintLeaves} title="Print Official Leave Report">
+                <Printer size={15} />
+                <span>Print / PDF</span>
+              </button>
+              <button className="adm-btn adm-btn-primary" onClick={openApplyLeaveModal}>
+                <CalendarPlus size={16} />
+                <span>Apply for Leave</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -192,180 +481,427 @@ export const TeamPage: React.FC = () => {
           </button>
           <button className={`adm-tab-btn ${tab === 'leaves' ? 'active' : ''}`} onClick={() => setTab('leaves')}>
             Leave Approvals ({leaves.length})
+            {pendingLeavesCount > 0 && (
+              <span className="adm-badge adm-badge-warning" style={{ marginLeft: '6px', fontSize: '0.65rem' }}>
+                {pendingLeavesCount} Pending
+              </span>
+            )}
           </button>
         </div>
       </div>
 
       {/* ── 1. TEAM ROSTER GRID ── */}
       {tab === 'roster' && (
-        <div className="adm-grid-3">
-          {employees.map(emp => {
-            const displayEmpId = emp.employeeId || (emp.id.startsWith('emp-') ? `EPX-10${emp.id.replace('emp-', '')}` : emp.id);
-            return (
-              <div key={emp.id} className="adm-card adm-card-hover" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1rem' }}>
-                  <img src={emp.avatar} alt={emp.name} className="adm-avatar-lg" />
-                  <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>{emp.name}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{emp.role}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{emp.department}</div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                    <span className="adm-badge adm-badge-success" style={{ fontSize: '0.65rem' }}>{emp.status}</span>
-                    <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.7rem', fontFamily: 'monospace', fontWeight: 700 }}>
-                      {displayEmpId}
-                    </span>
-                  </div>
-                </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
+              ORGANIZATION STAFF ROSTER ({employees.length} ACTIVE MEMBERS)
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportRosterCsv}>
+                <Download size={13} />
+                <span>Export CSV</span>
+              </button>
+              <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={openAddMemberModal}>
+                <Plus size={14} />
+                <span>Add Member</span>
+              </button>
+            </div>
+          </div>
 
-                {/* Workload */}
-                <div style={{ marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '3px' }}>
-                    <span style={{ color: 'var(--adm-text-dim)' }}>Sprint Workload</span>
-                    <span style={{
-                      fontWeight: 700,
-                      color: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
-                    }}>
-                      {emp.workloadPercentage}%
-                    </span>
+          <div className="adm-grid-3">
+            {employees.map(emp => {
+              const displayEmpId = emp.employeeId || (emp.id.startsWith('emp-') ? `EPX-10${emp.id.replace('emp-', '')}` : emp.id);
+              return (
+                <div key={emp.id} className="adm-card adm-card-hover" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1rem' }}>
+                    <img src={emp.avatar} alt={emp.name} className="adm-avatar-lg" />
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>{emp.name}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{emp.role}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{emp.department}</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                      <span className="adm-badge adm-badge-success" style={{ fontSize: '0.65rem' }}>{emp.status}</span>
+                      <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.7rem', fontFamily: 'monospace', fontWeight: 700 }}>
+                        {displayEmpId}
+                      </span>
+                    </div>
                   </div>
-                  <div className="adm-progress-bar">
-                    <div
-                      className="adm-progress-fill"
-                      style={{
-                        width: `${emp.workloadPercentage}%`,
-                        background: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+
+                  {/* Workload */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '3px' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Sprint Workload</span>
+                      <span style={{
+                        fontWeight: 700,
+                        color: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+                      }}>
+                        {emp.workloadPercentage}%
+                      </span>
+                    </div>
+                    <div className="adm-progress-bar">
+                      <div
+                        className="adm-progress-fill"
+                        style={{
+                          width: `${emp.workloadPercentage}%`,
+                          background: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Skills */}
+                  <div style={{ marginBottom: '1rem', flex: 1 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {emp.skills.map((sk, idx) => (
+                        <span key={idx} className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>{sk}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Contact */}
+                  <div style={{ background: 'var(--adm-bg)', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--adm-border)', fontSize: '0.75rem', color: 'var(--adm-text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Mail size={12} color="var(--adm-primary)" /> {emp.email}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Phone size={12} color="var(--adm-info)" /> {emp.phone}
+                    </div>
+                  </div>
+
+                  {/* Credentials & Access Bar */}
+                  <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span className="adm-badge adm-badge-neutral" style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.72rem' }}>
+                        {displayEmpId}
+                      </span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>Access Active</span>
+                    </div>
+                    <button
+                      className="adm-btn adm-btn-secondary"
+                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
+                      onClick={() => {
+                        setCredentialEmp(emp);
+                        setNewPasswordInput('');
+                        setShowActivePassword(false);
                       }}
-                    />
+                    >
+                      <Key size={13} color="#f59e0b" />
+                      <span>Portal Credentials</span>
+                    </button>
                   </div>
                 </div>
-
-                {/* Skills */}
-                <div style={{ marginBottom: '1rem', flex: 1 }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                    {emp.skills.map((sk, idx) => (
-                      <span key={idx} className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>{sk}</span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Contact */}
-                <div style={{ background: 'var(--adm-bg)', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--adm-border)', fontSize: '0.75rem', color: 'var(--adm-text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Mail size={12} color="var(--adm-primary)" /> {emp.email}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Phone size={12} color="var(--adm-info)" /> {emp.phone}
-                  </div>
-                </div>
-
-                {/* Credentials & Access Bar */}
-                <div style={{ marginTop: '0.85rem', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="adm-badge adm-badge-neutral" style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.72rem' }}>
-                      {displayEmpId}
-                    </span>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>Access Active</span>
-                  </div>
-                  <button
-                    className="adm-btn adm-btn-secondary"
-                    style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
-                    onClick={() => {
-                      setCredentialEmp(emp);
-                      setNewPasswordInput('');
-                      setShowActivePassword(false);
-                    }}
-                  >
-                    <Key size={13} color="#f59e0b" />
-                    <span>Portal Credentials</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* ── 2. ATTENDANCE LOGS ── */}
       {tab === 'attendance' && (
-        <div className="adm-table-container">
-          <table className="adm-table">
-            <thead>
-              <tr>
-                <th>Team Member</th>
-                <th>Date</th>
-                <th>Check In Time</th>
-                <th>Check Out Time</th>
-                <th>Attendance Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {attendance.map(att => (
-                <tr key={att.id}>
-                  <td style={{ fontWeight: 700, color: '#fff' }}>{att.employeeName}</td>
-                  <td>{att.date}</td>
-                  <td>{att.checkIn}</td>
-                  <td>{att.checkOut}</td>
-                  <td>
-                    <span className={`adm-badge ${
-                      att.status === 'Present' ? 'adm-badge-success' :
-                      att.status === 'Late' ? 'adm-badge-warning' : 'adm-badge-danger'
-                    }`}>
-                      {att.status}
-                    </span>
-                  </td>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
+              DAILY BIOMETRIC ATTENDANCE LOGS ({attendance.length} RECORDS)
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportAttendanceCsv}>
+                <Download size={13} />
+                <span>Export CSV</span>
+              </button>
+              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handlePrintAttendance}>
+                <Printer size={13} />
+                <span>Print / PDF</span>
+              </button>
+              <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => markAttendanceToday('Present')}>
+                <CheckCircle2 size={13} />
+                <span>Mark Attendance</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="adm-table-container">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th>Team Member</th>
+                  <th>Date</th>
+                  <th>Check In Time</th>
+                  <th>Check Out Time</th>
+                  <th>Attendance Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {attendance.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--adm-text-dim)' }}>
+                      No attendance logged for today. Click "Mark Attendance" above to record your entry.
+                    </td>
+                  </tr>
+                ) : (
+                  attendance.map(att => (
+                    <tr key={att.id}>
+                      <td style={{ fontWeight: 700, color: '#fff' }}>{att.employeeName}</td>
+                      <td>{att.date}</td>
+                      <td>{att.checkIn || '-'}</td>
+                      <td>{att.checkOut || '-'}</td>
+                      <td>
+                        <span className={`adm-badge ${
+                          att.status === 'Present' ? 'adm-badge-success' :
+                          att.status === 'Late' ? 'adm-badge-warning' : 'adm-badge-danger'
+                        }`}>
+                          {att.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* ── 3. LEAVE APPROVALS ── */}
       {tab === 'leaves' && (
-        <div className="adm-table-container">
-          <table className="adm-table">
-            <thead>
-              <tr>
-                <th>Applicant</th>
-                <th>Leave Type</th>
-                <th>Dates</th>
-                <th>Reason</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaves.map(lv => (
-                <tr key={lv.id}>
-                  <td style={{ fontWeight: 700, color: '#fff' }}>{lv.employeeName}</td>
-                  <td><span className="adm-badge adm-badge-neutral">{lv.type}</span></td>
-                  <td>{lv.startDate} to {lv.endDate}</td>
-                  <td style={{ color: 'var(--adm-text-muted)' }}>{lv.reason}</td>
-                  <td>
-                    <span className={`adm-badge ${
-                      lv.status === 'Approved' ? 'adm-badge-success' :
-                      lv.status === 'Rejected' ? 'adm-badge-danger' : 'adm-badge-warning'
-                    }`}>
-                      {lv.status}
-                    </span>
-                  </td>
-                  <td>
-                    {lv.status === 'Pending' && (
-                      <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => updateLeaveStatus(lv.id, 'Approved')}>
-                          Approve
-                        </button>
-                        <button className="adm-btn adm-btn-sm adm-btn-danger" onClick={() => updateLeaveStatus(lv.id, 'Rejected')}>
-                          Reject
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
+                LEAVE APPLICATIONS & APPROVALS ({leaves.length} TOTAL)
+              </span>
+              {pendingLeavesCount > 0 ? (
+                <span className="adm-badge adm-badge-warning">{pendingLeavesCount} Pending Review</span>
+              ) : (
+                <span className="adm-badge adm-badge-success">All Reviewed</span>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportLeavesCsv}>
+                <Download size={13} />
+                <span>Export CSV</span>
+              </button>
+              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handlePrintLeaves}>
+                <Printer size={13} />
+                <span>Print / PDF</span>
+              </button>
+              <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={openApplyLeaveModal}>
+                <CalendarPlus size={14} />
+                <span>Apply for Leave</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="adm-table-container">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th>Applicant</th>
+                  <th>Leave Type</th>
+                  <th>Dates Requested</th>
+                  <th>Reason</th>
+                  <th>Approval Status</th>
+                  <th>Actions / Decision</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaves.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                        <CalendarPlus size={36} color="var(--adm-primary)" />
+                        <div style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>No Leave Requests on Record</div>
+                        <p style={{ color: 'var(--adm-text-dim)', fontSize: '0.82rem', margin: 0, maxWidth: '400px' }}>
+                          Employees and staff can submit Sick, Casual, or Paid leave requests. Click below to submit a new leave request.
+                        </p>
+                        <button className="adm-btn adm-btn-primary" style={{ marginTop: '0.5rem' }} onClick={openApplyLeaveModal}>
+                          <CalendarPlus size={15} />
+                          <span>Submit Leave Request</span>
                         </button>
                       </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                ) : (
+                  leaves.map(lv => (
+                    <tr key={lv.id}>
+                      <td style={{ fontWeight: 700, color: '#fff' }}>{lv.employeeName}</td>
+                      <td>
+                        <span className="adm-badge adm-badge-neutral" style={{ fontWeight: 600 }}>{lv.type}</span>
+                      </td>
+                      <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                        {lv.startDate} {lv.startDate !== lv.endDate ? `to ${lv.endDate}` : ''}
+                      </td>
+                      <td style={{ color: '#cbd5e1', maxWidth: '280px' }}>{lv.reason}</td>
+                      <td>
+                        <span className={`adm-badge ${
+                          lv.status === 'Approved' ? 'adm-badge-success' :
+                          lv.status === 'Rejected' ? 'adm-badge-danger' : 'adm-badge-warning'
+                        }`}>
+                          {lv.status}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          {lv.status === 'Pending' ? (
+                            <>
+                              <button
+                                className="adm-btn adm-btn-sm adm-btn-primary"
+                                style={{ padding: '0.3rem 0.65rem', background: '#059669', borderColor: '#059669' }}
+                                onClick={() => updateLeaveStatus(lv.id, 'Approved')}
+                              >
+                                <Check size={13} />
+                                <span>Approve</span>
+                              </button>
+                              <button
+                                className="adm-btn adm-btn-sm adm-btn-danger"
+                                style={{ padding: '0.3rem 0.65rem' }}
+                                onClick={() => updateLeaveStatus(lv.id, 'Rejected')}
+                              >
+                                <X size={13} />
+                                <span>Reject</span>
+                              </button>
+                            </>
+                          ) : lv.status === 'Approved' ? (
+                            <>
+                              <button
+                                className="adm-btn adm-btn-sm adm-btn-secondary"
+                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
+                                onClick={() => updateLeaveStatus(lv.id, 'Rejected')}
+                                title="Change decision to Rejected"
+                              >
+                                Reject
+                              </button>
+                              <button
+                                className="adm-btn adm-btn-sm adm-btn-secondary"
+                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
+                                onClick={() => deleteLeaveRequest(lv.id)}
+                                title="Delete this record"
+                              >
+                                <Trash2 size={12} color="#ef4444" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                className="adm-btn adm-btn-sm adm-btn-primary"
+                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
+                                onClick={() => updateLeaveStatus(lv.id, 'Approved')}
+                                title="Re-approve this leave"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                className="adm-btn adm-btn-sm adm-btn-secondary"
+                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
+                                onClick={() => deleteLeaveRequest(lv.id)}
+                                title="Delete this record"
+                              >
+                                <Trash2 size={12} color="#ef4444" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── APPLY FOR LEAVE MODAL ── */}
+      {showApplyLeaveModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowApplyLeaveModal(false)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                  Submit Leave Application
+                </h3>
+                <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  Request sick leave, casual time off, or personal days for review
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setShowApplyLeaveModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleApplyLeaveSubmit} style={{ marginTop: '1rem' }}>
+              <div className="adm-form-group">
+                <label className="adm-form-label">Applicant Name *</label>
+                <input
+                  className="adm-input"
+                  required
+                  value={applicantName}
+                  onChange={e => setApplicantName(e.target.value)}
+                  placeholder="Enter employee or staff name"
+                />
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-form-label">Leave Category *</label>
+                <select
+                  className="adm-select"
+                  value={leaveType}
+                  onChange={e => setLeaveType(e.target.value as any)}
+                >
+                  <option value="Casual Leave">Casual Leave (Personal / Festival)</option>
+                  <option value="Sick Leave">Sick Leave (Medical / Doctor Visit)</option>
+                  <option value="Paid Leave">Paid Annual Leave</option>
+                  <option value="Unpaid">Unpaid Leave</option>
+                </select>
+              </div>
+
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Start Date *</label>
+                  <input
+                    className="adm-input"
+                    type="date"
+                    required
+                    value={startDate}
+                    onChange={e => setStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">End Date *</label>
+                  <input
+                    className="adm-input"
+                    type="date"
+                    required
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-form-label">Reason & Justification *</label>
+                <textarea
+                  className="adm-textarea"
+                  required
+                  rows={3}
+                  value={leaveReason}
+                  onChange={e => setLeaveReason(e.target.value)}
+                  placeholder="Provide concise details for Director / HR review..."
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowApplyLeaveModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="adm-btn adm-btn-primary">
+                  <CalendarPlus size={15} />
+                  <span>Submit Leave Request</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

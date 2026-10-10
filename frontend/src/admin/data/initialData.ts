@@ -226,7 +226,26 @@ export const INITIAL_EMPLOYEES: Employee[] = [
 
 export const INITIAL_ATTENDANCE: AttendanceRecord[] = [];
 
-export const INITIAL_LEAVES: LeaveRequest[] = [];
+export const INITIAL_LEAVES: LeaveRequest[] = [
+  {
+    id: 'lv-1',
+    employeeName: 'Rohit P.',
+    type: 'Casual Leave',
+    startDate: '2026-10-15',
+    endDate: '2026-10-16',
+    reason: 'Client technical architecture review & summit',
+    status: 'Pending'
+  },
+  {
+    id: 'lv-2',
+    employeeName: 'HR Administrator',
+    type: 'Casual Leave',
+    startDate: '2026-10-20',
+    endDate: '2026-10-21',
+    reason: 'Personal family engagement & festival',
+    status: 'Pending'
+  }
+];
 
 export const INITIAL_TASKS: Task[] = [];
 
