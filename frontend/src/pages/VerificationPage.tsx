@@ -81,17 +81,46 @@ export default function VerificationPage() {
       const found = team.find((emp: any) =>
         (emp.employeeId && emp.employeeId.toLowerCase() === cleanQ) ||
         (emp.id && emp.id.toLowerCase() === cleanQ) ||
-        (emp.email && emp.email.toLowerCase() === cleanQ)
+        (emp.email && emp.email.toLowerCase() === cleanQ) ||
+        (emp.name && emp.name.toLowerCase() === cleanQ)
       );
+      if (!found) {
+        // Check if query is an internship certificate
+        const internships = getInternshipRecords();
+        const certFound = internships.find((item: any) =>
+          (item.certId && item.certId.toLowerCase() === cleanQ) ||
+          (item.id && item.id.toLowerCase() === cleanQ)
+        );
+        if (certFound) {
+          setActiveTab('internship');
+          setResult(certFound);
+          return;
+        }
+      }
       setResult(found || null);
     } else if (activeTab === 'internship') {
       const internships = getInternshipRecords();
       const cleanQ = q.toLowerCase();
-      const found = internships.find((item: any) =>
+      let found = internships.find((item: any) =>
         (item.certId && item.certId.toLowerCase() === cleanQ) ||
         (item.id && item.id.toLowerCase() === cleanQ) ||
+        (item.employeeId && item.employeeId.toLowerCase() === cleanQ) ||
         (item.name && item.name.toLowerCase() === cleanQ)
       );
+      if (!found) {
+        // Auto-detect if user typed a registered Employee ID
+        const team = getEmployees();
+        const empFound = team.find((emp: any) =>
+          (emp.employeeId && emp.employeeId.toLowerCase() === cleanQ) ||
+          (emp.id && emp.id.toLowerCase() === cleanQ) ||
+          (emp.email && emp.email.toLowerCase() === cleanQ)
+        );
+        if (empFound) {
+          setActiveTab('employee');
+          setResult(empFound);
+          return;
+        }
+      }
       setResult(found || null);
     }
   };

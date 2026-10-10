@@ -31,7 +31,8 @@ import {
   Upload,
   Clock,
   ShieldAlert,
-  CheckCheck
+  CheckCheck,
+  Award
 } from 'lucide-react';
 import type { Employee, LeaveRequest } from '../types';
 
@@ -226,6 +227,199 @@ export const TeamPage: React.FC = () => {
   // Employee Offboard & Permanent Deletion modal state
   const [offboardModalEmp, setOffboardModalEmp] = useState<Employee | null>(null);
   const [purgeDocsOnDelete, setPurgeDocsOnDelete] = useState(false);
+
+  // Certificate Issuance Modal State
+  const [showCertModal, setShowCertModal] = useState(false);
+  const [certRecipientName, setCertRecipientName] = useState('');
+  const [certRecipientEmpId, setCertRecipientEmpId] = useState('');
+  const [certType, setCertType] = useState('Internship Completion Certificate');
+  const [certDomain, setCertDomain] = useState('Full Stack Software Engineering & Cloud Systems');
+  const [certDuration, setCertDuration] = useState('6 Months');
+  const [certStartDate, setCertStartDate] = useState('');
+  const [certEndDate, setCertEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [certGrade, setCertGrade] = useState('Grade A+ (Outstanding Performance)');
+  const [certIdInput, setCertIdInput] = useState('');
+  const [issuedCertSuccess, setIssuedCertSuccess] = useState<any | null>(null);
+
+  const openIssueCertModal = (emp?: Employee) => {
+    if (emp) {
+      setCertRecipientName(emp.name);
+      setCertRecipientEmpId(emp.employeeId || emp.id);
+      const isIntern = emp.role.toLowerCase().includes('intern') || emp.role.toLowerCase().includes('trainee');
+      setCertType(isIntern ? 'Internship Completion Certificate' : 'Relieving & Experience Certificate');
+      setCertDomain(emp.department === 'Engineering' ? 'Full Stack Software Engineering & Cloud Systems' : `${emp.department} Operations`);
+      setCertDuration(isIntern ? '6 Months' : '1 Year');
+      setCertStartDate(emp.joinDate || '');
+    } else {
+      setCertRecipientName('');
+      setCertRecipientEmpId('');
+      setCertType('Internship Completion Certificate');
+      setCertDomain('Full Stack Software Engineering & Cloud Systems');
+      setCertDuration('6 Months');
+      setCertStartDate('');
+    }
+    const yr = new Date().getFullYear();
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    setCertIdInput(`ENX-INT-${yr}-${rand}`);
+    setCertEndDate(new Date().toISOString().split('T')[0]);
+    setCertGrade('Grade A+ (Outstanding Performance)');
+    setIssuedCertSuccess(null);
+    setShowCertModal(true);
+  };
+
+  const handleIssueCertificateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certRecipientName.trim()) {
+      showToast('Validation Error', 'Candidate name is required.', 'error');
+      return;
+    }
+    const finalId = certIdInput.trim() || `ENX-INT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newCertRecord = {
+      certId: finalId,
+      name: certRecipientName.trim(),
+      employeeId: certRecipientEmpId.trim() || undefined,
+      certType,
+      domain: certDomain.trim() || 'Software Engineering',
+      duration: certDuration.trim() || '6 Months',
+      startDate: certStartDate,
+      completionDate: certEndDate,
+      grade: certGrade,
+      mentor: 'Rohit P. (Managing Director)',
+      issuedBy: currentUser?.name || 'Managing Director',
+      issuedAt: new Date().toISOString(),
+    };
+
+    try {
+      const stored = localStorage.getItem('ewms_internships');
+      const list = stored ? JSON.parse(stored) : [];
+      const updated = [newCertRecord, ...list.filter((c: any) => c.certId !== finalId)];
+      localStorage.setItem('ewms_internships', JSON.stringify(updated));
+    } catch (err) {
+      console.error(err);
+    }
+
+    uploadDocument({
+      title: `${certType} - ${certRecipientName.trim()}`,
+      category: 'Employee Docs',
+      version: 'v1.0',
+      fileFormat: 'PDF',
+      fileSize: '180 KB',
+      accessPermission: 'Internal',
+      tags: [finalId, 'Certificate', certType],
+      url: '#',
+      employeeId: certRecipientEmpId.trim() || undefined,
+      verificationStatus: 'Verified',
+      verifiedBy: 'Rohit P. (Managing Director)',
+      verifiedAt: new Date().toISOString()
+    });
+
+    setIssuedCertSuccess(newCertRecord);
+    showToast(
+      'Certificate Issued!',
+      `Certificate ${finalId} is now active and immediately verifiable at /verification!`,
+      'success'
+    );
+  };
+
+  const printOfficialCertificate = (cert: any) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const idBadge = cert.employeeId
+      ? `REGISTRATION / EMPLOYEE ID: ${cert.employeeId}`
+      : `CANDIDATE ID: ${cert.certId}`;
+
+    const certHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${cert.certType} - ${cert.name}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+          @page { size: landscape; margin: 0; }
+          body { margin: 0; padding: 25px; background: #0c1017; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+          .cert-container { width: 1000px; height: 680px; background: #ffffff; border: 12px double #b48530; border-radius: 8px; padding: 40px; box-sizing: border-box; position: relative; text-align: center; color: #1e293b; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+          .corner-ornament { position: absolute; width: 40px; height: 40px; border: 3px solid #b48530; }
+          .tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+          .tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+          .bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+          .br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+          .header-title { font-family: 'Cinzel', serif; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: 2px; margin: 0; }
+          .header-sub { font-size: 11px; color: #64748b; letter-spacing: 1px; margin-top: 4px; text-transform: uppercase; }
+          .cert-type { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 800; color: #b48530; margin: 25px 0 10px; letter-spacing: 3px; text-transform: uppercase; }
+          .cert-intro { font-size: 14px; color: #475569; margin: 0; font-style: italic; }
+          .recipient-name { font-family: 'Cinzel', serif; font-size: 32px; font-weight: 800; color: #0f172a; margin: 15px 0 5px; border-bottom: 2px solid #e2e8f0; display: inline-block; padding: 0 40px 8px; }
+          .emp-id-badge { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 15px; font-family: monospace; }
+          .cert-body { font-size: 14px; line-height: 1.7; color: #334155; max-width: 820px; margin: 0 auto; }
+          .highlight { font-weight: 700; color: #0f172a; }
+          .footer-section { position: absolute; bottom: 35px; left: 50px; right: 50px; display: flex; justify-content: space-between; align-items: flex-end; }
+          .sig-block { text-align: center; width: 220px; }
+          .sig-line { border-top: 1px solid #94a3b8; padding-top: 6px; font-size: 12px; font-weight: 700; color: #1e293b; }
+          .sig-role { font-size: 10px; color: #64748b; }
+          .gold-seal { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #b48530; background: #fffdf5; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(180,133,48,0.25); }
+          .gold-seal span { font-size: 9px; font-weight: 800; color: #b48530; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; }
+          .verify-stamp { font-size: 10px; color: #64748b; font-family: monospace; margin-top: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="cert-container">
+          <div class="corner-ornament tl"></div>
+          <div class="corner-ornament tr"></div>
+          <div class="corner-ornament bl"></div>
+          <div class="corner-ornament br"></div>
+
+          <h1 class="header-title">ENTERPRENEX SOLUTIONS PRIVATE LIMITED</h1>
+          <div class="header-sub">Corporate Identity: U72900MH2026PTC000000 &bull; ISO 9001:2015 Registered Entity</div>
+
+          <div class="cert-type">${cert.certType}</div>
+          <p class="cert-intro">This certificate is proudly awarded to</p>
+
+          <div class="recipient-name">${cert.name}</div>
+          <div class="emp-id-badge">${idBadge}</div>
+
+          <p class="cert-body">
+            in recognition of exemplary commitment and successful completion of a 
+            <span class="highlight">${cert.duration}</span> professional assignment in 
+            <span class="highlight">${cert.domain}</span>. Throughout the tenure, 
+            the candidate demonstrated engineering acumen, disciplined delivery, and professional collaboration,
+            achieving a performance rating of <span class="highlight">${cert.grade}</span>.
+          </p>
+
+          <div class="verify-stamp">
+            VERIFICATION ID: <strong>${cert.certId}</strong> &bull; VERIFY ONLINE: enterprenexsolution.com/verification
+          </div>
+
+          <div class="footer-section">
+            <div class="sig-block">
+              <div style="font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Rohit P.</div>
+              <div class="sig-line">MANAGING DIRECTOR</div>
+              <div class="sig-role">Enterprenex Solutions Pvt Ltd</div>
+            </div>
+
+            <div class="gold-seal">
+              <span>★ OFFICIAL ★</span>
+              <span style="font-size: 14px; margin: 2px 0;">🛡️</span>
+              <span>CORPORATE SEAL</span>
+            </div>
+
+            <div class="sig-block">
+              <div style="font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Head of HR</div>
+              <div class="sig-line">HEAD OF HUMAN RESOURCES</div>
+              <div class="sig-role">Executive Board &bull; MH, India</div>
+            </div>
+          </div>
+        </div>
+        <script>
+          window.onload = function() { window.print(); };
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(certHtml);
+    printWindow.document.close();
+  };
 
   const generateRandomPassword = (prefix = 'EPX') => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
@@ -608,10 +802,16 @@ export const TeamPage: React.FC = () => {
                 <span>Export Roster CSV</span>
               </button>
               {canManageTeam && (
-                <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal}>
-                  <Plus size={16} />
-                  <span>Add Team Member</span>
-                </button>
+                <>
+                  <button className="adm-btn adm-btn-secondary" onClick={() => openIssueCertModal()} title="Issue Official Internship or Experience Certificate">
+                    <Award size={15} color="#10b981" />
+                    <span>Issue Certificate</span>
+                  </button>
+                  <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal}>
+                    <Plus size={16} />
+                    <span>Add Team Member</span>
+                  </button>
+                </>
               )}
             </>
           )}
@@ -1182,6 +1382,16 @@ export const TeamPage: React.FC = () => {
                         </div>
                       ) : canManageTeam ? (
                         <div style={{ display: 'flex', gap: '5px' }}>
+                          <button
+                            className="adm-btn adm-btn-secondary"
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
+                            onClick={() => openIssueCertModal(emp)}
+                            title="Issue Official Certificate for this Member"
+                          >
+                            <Award size={13} color="#10b981" />
+                            <span>Certificate</span>
+                          </button>
+
                           <button
                             className="adm-btn adm-btn-secondary"
                             style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
@@ -2967,6 +3177,191 @@ export const TeamPage: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ISSUE CERTIFICATE MODAL ── */}
+      {showCertModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowCertModal(false)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Award size={20} color="#10b981" />
+                  Issue Official Corporate Certificate
+                </h3>
+                <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  Generates an authentic certificate registered in the Central Vault and verifiable at /verification
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setShowCertModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {issuedCertSuccess ? (
+              <div style={{ marginTop: '1.5rem', textAlign: 'center', padding: '1rem 0' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', border: '2px solid rgba(16, 185, 129, 0.4)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', marginBottom: '1rem' }}>
+                  <CheckCircle2 size={36} />
+                </div>
+                <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '0 0 0.5rem' }}>
+                  Certificate Issued Successfully!
+                </h4>
+                <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '1.25rem', maxWidth: '480px', margin: '0 auto 1.5rem', textAlign: 'left' }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)' }}>RECIPIENT: <strong style={{ color: '#fff' }}>{issuedCertSuccess.name}</strong></div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>TYPE: <strong style={{ color: '#38bdf8' }}>{issuedCertSuccess.certType}</strong></div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>CERTIFICATE ID: <strong style={{ color: '#10b981', fontFamily: 'monospace' }}>{issuedCertSuccess.certId}</strong></div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>DURATION: <strong style={{ color: '#fff' }}>{issuedCertSuccess.duration}</strong> ({issuedCertSuccess.completionDate})</div>
+                  <div style={{ fontSize: '0.78rem', color: '#10b981', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    ✓ Registered in Central Vault & immediately verifiable at enterprenexsolution.com/verification
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-primary"
+                    style={{ gap: '0.5rem', padding: '0.65rem 1.4rem' }}
+                    onClick={() => printOfficialCertificate(issuedCertSuccess)}
+                  >
+                    <Printer size={16} />
+                    <span>Print Official Certificate</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-secondary"
+                    onClick={() => setShowCertModal(false)}
+                  >
+                    Done / Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleIssueCertificateSubmit} style={{ marginTop: '1.25rem' }}>
+                <div className="adm-grid-2">
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Recipient / Candidate Name *</label>
+                    <input
+                      className="adm-input"
+                      required
+                      value={certRecipientName}
+                      onChange={e => setCertRecipientName(e.target.value)}
+                      placeholder="e.g. Polamreddy Revanth Reddy"
+                    />
+                  </div>
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Employee / Intern ID (Optional)</label>
+                    <input
+                      className="adm-input"
+                      value={certRecipientEmpId}
+                      onChange={e => setCertRecipientEmpId(e.target.value)}
+                      placeholder="e.g. 202600000002"
+                    />
+                  </div>
+                </div>
+
+                <div className="adm-grid-2">
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Certificate Type *</label>
+                    <select
+                      className="adm-select"
+                      value={certType}
+                      onChange={e => setCertType(e.target.value)}
+                    >
+                      <option value="Internship Completion Certificate">Internship Completion Certificate</option>
+                      <option value="Relieving & Experience Certificate">Relieving & Experience Certificate</option>
+                      <option value="Letter of Recommendation & Merit">Letter of Recommendation & Merit</option>
+                    </select>
+                  </div>
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Tenure Duration *</label>
+                    <select
+                      className="adm-select"
+                      value={certDuration}
+                      onChange={e => setCertDuration(e.target.value)}
+                    >
+                      <option value="6 Months">6 Months</option>
+                      <option value="3 Months">3 Months</option>
+                      <option value="1 Year">1 Year</option>
+                      <option value="4 Months">4 Months</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Domain & Technology Track *</label>
+                  <input
+                    className="adm-input"
+                    required
+                    value={certDomain}
+                    onChange={e => setCertDomain(e.target.value)}
+                    placeholder="e.g. Full Stack Web Development & Cloud Systems"
+                  />
+                </div>
+
+                <div className="adm-grid-2">
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Joining / Start Date</label>
+                    <input
+                      className="adm-input"
+                      type="date"
+                      value={certStartDate}
+                      onChange={e => setCertStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Completion Date *</label>
+                    <input
+                      className="adm-input"
+                      type="date"
+                      required
+                      value={certEndDate}
+                      onChange={e => setCertEndDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="adm-grid-2">
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Performance Evaluation *</label>
+                    <select
+                      className="adm-select"
+                      value={certGrade}
+                      onChange={e => setCertGrade(e.target.value)}
+                    >
+                      <option value="Grade A+ (Outstanding Performance)">Grade A+ (Outstanding Performance)</option>
+                      <option value="Grade A (Excellent Performance)">Grade A (Excellent Performance)</option>
+                      <option value="Grade B+ (Good Performance)">Grade B+ (Good Performance)</option>
+                    </select>
+                  </div>
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Certificate ID (Auto-Generated)</label>
+                    <input
+                      className="adm-input"
+                      value={certIdInput}
+                      onChange={e => setCertIdInput(e.target.value)}
+                      placeholder="e.g. ENX-INT-2026-0001"
+                      style={{ fontFamily: 'monospace', color: '#10b981', fontWeight: 700 }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--adm-border)', borderRadius: '8px', padding: '0.75rem', fontSize: '0.75rem', color: 'var(--adm-text-dim)', marginBottom: '1.25rem' }}>
+                  🛡️ <strong>Statutory Authority:</strong> Authorized by Managing Director (Rohit P.) & HR Governance. Once issued, this credential will be verifiable worldwide on the Enterprenex public portal.
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                  <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowCertModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="adm-btn adm-btn-primary">
+                    <Award size={16} />
+                    <span>Issue & Save Certificate</span>
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
