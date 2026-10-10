@@ -193,7 +193,7 @@ export default function VerificationPage() {
         }}>
           <form onSubmit={handleSearch}>
             <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.65rem' }}>
-              {activeTab === 'employee' && 'Enter 12-Digit Employee ID (e.g. 202600000001):'}
+              {activeTab === 'employee' && 'Enter 12-Digit Employee ID:'}
               {activeTab === 'internship' && 'Enter Internship Certificate ID:'}
             </label>
 
