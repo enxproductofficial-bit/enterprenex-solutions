@@ -208,7 +208,6 @@ function MainAppRoutes() {
         <Route path="/about" element={<PublicWebsiteLayout><AboutPage /></PublicWebsiteLayout>} />
         <Route path="/verification" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
         <Route path="/verification/internship" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
-        <Route path="/verification/soc" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
         <Route path="/verification/employee" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
 
         {/* ── STAFF AUTH PORTAL (Approach A: Internal Onboarding Only) ── */}

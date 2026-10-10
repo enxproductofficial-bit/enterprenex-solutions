@@ -42,7 +42,6 @@ const NAV_ITEMS = [
     hasIndicator: true,
     items: [
       { label: 'Internship Verification', to: '/verification/internship' },
-      { label: 'SOC Verification', to: '/verification/soc' },
       { label: 'Employee Verification', to: '/verification/employee' },
     ],
   },

@@ -8,103 +8,26 @@ import {
   Search,
   CheckCircle2,
   XCircle,
-  FileCheck,
   Building2,
-  Calendar,
   Lock,
   Printer,
-  ExternalLink,
-  Sparkles,
-  HelpCircle
+  HelpCircle,
+  FileCheck2
 } from 'lucide-react';
 import { INITIAL_EMPLOYEES } from '../admin/data/initialData';
-
-// Preset sample verified internship records for testing and verification
-const SAMPLE_INTERNSHIPS: Record<string, {
-  certId: string;
-  name: string;
-  domain: string;
-  duration: string;
-  completionDate: string;
-  grade: string;
-  college?: string;
-  mentor: string;
-}> = {
-  'ENX-INT-2026-1042': {
-    certId: 'ENX-INT-2026-1042',
-    name: 'Siddharth Deshmukh',
-    domain: 'Full Stack Web Development & Cloud Systems',
-    duration: '3 Months (June 2026 – August 2026)',
-    completionDate: '28 Aug 2026',
-    grade: 'A+ (Outstanding Performance)',
-    college: 'Government College of Engineering',
-    mentor: 'Rohit P. (Managing Director)',
-  },
-  'ENX-INT-2026-0819': {
-    certId: 'ENX-INT-2026-0819',
-    name: 'Pooja Kulkarni',
-    domain: 'Artificial Intelligence & Large Language Models',
-    duration: '6 Months (Jan 2026 – June 2026)',
-    completionDate: '30 Jun 2026',
-    grade: 'A (Excellent Performance)',
-    college: 'MIT School of Engineering',
-    mentor: 'Rohit P. (Managing Director)',
-  },
-  'ENX-INT-2026-0512': {
-    certId: 'ENX-INT-2026-0512',
-    name: 'Aniket Shinde',
-    domain: 'DevOps & Enterprise Cloud Infrastructure',
-    duration: '3 Months (March 2026 – May 2026)',
-    completionDate: '31 May 2026',
-    grade: 'A+ (Outstanding Performance)',
-    college: 'Deogiri Institute of Engineering',
-    mentor: 'Rohit P. (Managing Director)',
-  },
-};
-
-// Preset sample verified SOC (Statement of Completion / Scope of Certification) records
-const SAMPLE_SOC: Record<string, {
-  socId: string;
-  recipientName: string;
-  program: string;
-  track: string;
-  completionDate: string;
-  authorizedBy: string;
-  credentialScore: string;
-}> = {
-  'ENX-SOC-99041': {
-    socId: 'ENX-SOC-99041',
-    recipientName: 'Gaurav Patil',
-    program: 'Enterprise Full-Stack Software Engineering',
-    track: 'React, Node.js & Scalable Microservices',
-    completionDate: '15 July 2026',
-    authorizedBy: 'Enterprenex Solutions Technical Board',
-    credentialScore: '98% Capstone Distinction',
-  },
-  'ENX-SOC-99042': {
-    socId: 'ENX-SOC-99042',
-    recipientName: 'Sneha More',
-    program: 'Applied Machine Learning & Neural Networks',
-    track: 'Python, PyTorch & Cloud ML Pipelines',
-    completionDate: '20 August 2026',
-    authorizedBy: 'Enterprenex Solutions AI Research Lab',
-    credentialScore: '96% Capstone Distinction',
-  },
-};
 
 export default function VerificationPage() {
   const location = useLocation();
 
-  // Determine active verification mode from URL or query
-  const getInitialTab = (): 'internship' | 'soc' | 'employee' => {
+  // Determine active verification mode from URL or query (Default: employee)
+  const getInitialTab = (): 'employee' | 'internship' => {
     const path = location.pathname.toLowerCase();
     const query = new URLSearchParams(location.search).get('type')?.toLowerCase();
-    if (path.includes('employee') || query === 'employee') return 'employee';
-    if (path.includes('soc') || query === 'soc') return 'soc';
-    return 'internship';
+    if (path.includes('internship') || query === 'internship') return 'internship';
+    return 'employee';
   };
 
-  const [activeTab, setActiveTab] = useState<'internship' | 'soc' | 'employee'>(getInitialTab);
+  const [activeTab, setActiveTab] = useState<'employee' | 'internship'>(getInitialTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [searched, setSearched] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -117,7 +40,7 @@ export default function VerificationPage() {
     setResult(null);
   }, [location.pathname, location.search]);
 
-  // Load live employees from localStorage if available, or initialData
+  // Load live employees from localStorage (EWMS team database) or fallback to initial data
   const getEmployees = () => {
     try {
       const stored = localStorage.getItem('ewms_team_members');
@@ -126,9 +49,23 @@ export default function VerificationPage() {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch {
-      // ignore fallback
+      // fallback
     }
     return INITIAL_EMPLOYEES;
+  };
+
+  // Load live certificates or vault documents from localStorage
+  const getInternshipRecords = () => {
+    try {
+      const stored = localStorage.getItem('ewms_internships');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return [];
   };
 
   const handleSearch = (e?: React.FormEvent) => {
@@ -138,47 +75,25 @@ export default function VerificationPage() {
 
     setSearched(true);
 
-    if (activeTab === 'internship') {
-      const found = SAMPLE_INTERNSHIPS[q.toUpperCase()] ||
-        Object.values(SAMPLE_INTERNSHIPS).find(
-          item => item.name.toLowerCase() === q.toLowerCase() || item.certId.toLowerCase() === q.toLowerCase()
-        );
-      setResult(found || null);
-    } else if (activeTab === 'soc') {
-      const found = SAMPLE_SOC[q.toUpperCase()] ||
-        Object.values(SAMPLE_SOC).find(
-          item => item.recipientName.toLowerCase() === q.toLowerCase() || item.socId.toLowerCase() === q.toLowerCase()
-        );
-      setResult(found || null);
-    } else if (activeTab === 'employee') {
+    if (activeTab === 'employee') {
       const team = getEmployees();
       const cleanQ = q.toLowerCase();
       const found = team.find((emp: any) =>
         (emp.employeeId && emp.employeeId.toLowerCase() === cleanQ) ||
-        (emp.email && emp.email.toLowerCase() === cleanQ) ||
         (emp.id && emp.id.toLowerCase() === cleanQ) ||
-        (emp.name && emp.name.toLowerCase() === cleanQ)
+        (emp.email && emp.email.toLowerCase() === cleanQ)
+      );
+      setResult(found || null);
+    } else if (activeTab === 'internship') {
+      const internships = getInternshipRecords();
+      const cleanQ = q.toLowerCase();
+      const found = internships.find((item: any) =>
+        (item.certId && item.certId.toLowerCase() === cleanQ) ||
+        (item.id && item.id.toLowerCase() === cleanQ) ||
+        (item.name && item.name.toLowerCase() === cleanQ)
       );
       setResult(found || null);
     }
-  };
-
-  const handleSelectSample = (sampleId: string) => {
-    setSearchQuery(sampleId);
-    setTimeout(() => {
-      // Trigger search
-      const q = sampleId.trim();
-      setSearched(true);
-      if (activeTab === 'internship') {
-        setResult(SAMPLE_INTERNSHIPS[q] || null);
-      } else if (activeTab === 'soc') {
-        setResult(SAMPLE_SOC[q] || null);
-      } else if (activeTab === 'employee') {
-        const team = getEmployees();
-        const found = team.find((emp: any) => (emp.employeeId || emp.id) === q);
-        setResult(found || null);
-      }
-    }, 50);
   };
 
   const printVerification = () => {
@@ -210,14 +125,14 @@ export default function VerificationPage() {
             marginBottom: '1rem'
           }}>
             <ShieldCheck size={16} />
-            Official Verification Portal • Enterprenex Solutions Pvt Ltd
+            Official Statutory Verification Portal • Enterprenex Solutions Pvt Ltd
           </div>
 
           <h1 style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 800, letterSpacing: '-0.03em', margin: '0 0 0.85rem', color: '#ffffff' }}>
             Instant Credential & Identity Verification
           </h1>
           <p style={{ fontSize: '1.05rem', color: '#94a3b8', maxWidth: '680px', margin: '0 auto', lineHeight: 1.6 }}>
-            Verify the authenticity of Internship Certificates, Statements of Completion (SOC), and Registered Employee credentials issued by Enterprenex Solutions Pvt Ltd.
+            Verify the authenticity of Registered Employee IDs and official Internship Certificates issued by Enterprenex Solutions Pvt Ltd.
           </p>
         </div>
 
@@ -225,14 +140,13 @@ export default function VerificationPage() {
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: '0.5rem',
+          gap: '0.65rem',
           marginBottom: '2rem',
           flexWrap: 'wrap'
         }}>
           {[
-            { id: 'internship', label: 'Internship Verification', icon: <Award size={18} /> },
-            { id: 'soc', label: 'SOC Verification', icon: <FileCheck size={18} /> },
             { id: 'employee', label: 'Employee Verification', icon: <UserCheck size={18} /> },
+            { id: 'internship', label: 'Internship Verification', icon: <Award size={18} /> },
           ].map(tab => {
             const isSelected = activeTab === tab.id;
             return (
@@ -248,7 +162,7 @@ export default function VerificationPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.55rem',
-                  padding: '0.75rem 1.4rem',
+                  padding: '0.75rem 1.6rem',
                   borderRadius: '12px',
                   fontWeight: 600,
                   fontSize: '0.92rem',
@@ -279,9 +193,8 @@ export default function VerificationPage() {
         }}>
           <form onSubmit={handleSearch}>
             <label style={{ display: 'block', fontSize: '0.88rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.65rem' }}>
-              {activeTab === 'internship' && 'Enter Internship Certificate ID (or Full Name):'}
-              {activeTab === 'soc' && 'Enter Statement of Completion (SOC) ID:'}
-              {activeTab === 'employee' && 'Enter 12-Digit Employee ID (or Official Email):'}
+              {activeTab === 'employee' && 'Enter 12-Digit Employee ID (e.g. 202600000001):'}
+              {activeTab === 'internship' && 'Enter Internship Certificate ID:'}
             </label>
 
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -292,11 +205,9 @@ export default function VerificationPage() {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder={
-                    activeTab === 'internship'
-                      ? 'e.g. ENX-INT-2026-1042'
-                      : activeTab === 'soc'
-                      ? 'e.g. ENX-SOC-99041'
-                      : 'e.g. 202610090001 or emp-1'
+                    activeTab === 'employee'
+                      ? 'Enter 12-Digit Employee ID'
+                      : 'Enter Certificate ID'
                   }
                   style={{
                     width: '100%',
@@ -339,67 +250,6 @@ export default function VerificationPage() {
               </button>
             </div>
           </form>
-
-          {/* Sample quick test IDs */}
-          <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.82rem', color: '#94a3b8' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Sparkles size={14} color="#F66135" /> Quick Demo Test IDs:
-            </span>
-            {activeTab === 'internship' && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleSelectSample('ENX-INT-2026-1042')}
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#38bdf8', padding: '0.2rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem' }}
-                >
-                  ENX-INT-2026-1042
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSelectSample('ENX-INT-2026-0819')}
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#38bdf8', padding: '0.2rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem' }}
-                >
-                  ENX-INT-2026-0819
-                </button>
-              </>
-            )}
-            {activeTab === 'soc' && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleSelectSample('ENX-SOC-99041')}
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#38bdf8', padding: '0.2rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem' }}
-                >
-                  ENX-SOC-99041
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSelectSample('ENX-SOC-99042')}
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#38bdf8', padding: '0.2rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem' }}
-                >
-                  ENX-SOC-99042
-                </button>
-              </>
-            )}
-            {activeTab === 'employee' && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleSelectSample('202600000001')}
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#38bdf8', padding: '0.2rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem' }}
-                >
-                  202600000001 (Rohit P. - Director)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSelectSample('202600000002')}
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#38bdf8', padding: '0.2rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem' }}
-                >
-                  202600000002 (Revanth Reddy)
-                </button>
-              </>
-            )}
-          </div>
         </div>
 
         {/* ── Results Display Card ── */}
@@ -446,12 +296,10 @@ export default function VerificationPage() {
                           <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#10b981', background: 'rgba(16, 185, 129, 0.15)', padding: '0.2rem 0.55rem', borderRadius: '4px' }}>
                             ✓ 100% Verified Authentic
                           </span>
-                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>• Security Hash Validated</span>
+                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>• Central Vault Validated</span>
                         </div>
                         <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                          {activeTab === 'internship' && result.name}
-                          {activeTab === 'soc' && result.recipientName}
-                          {activeTab === 'employee' && (result.name || 'Registered Employee')}
+                          {activeTab === 'employee' ? (result.name || 'Registered Employee') : result.name}
                         </h2>
                       </div>
                     </div>
@@ -480,79 +328,21 @@ export default function VerificationPage() {
                   {/* Verification Record Grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
                     
-                    {activeTab === 'internship' && (
-                      <>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Certificate ID</div>
-                          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#38bdf8', marginTop: '0.25rem', fontFamily: 'monospace' }}>{result.certId}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Specialization Track</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.domain}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Tenure Duration</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.duration}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Completion Date</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.completionDate}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Performance Assessment</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#10b981', marginTop: '0.25rem' }}>{result.grade}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Authorized Signatory</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.mentor}</div>
-                        </div>
-                      </>
-                    )}
-
-                    {activeTab === 'soc' && (
-                      <>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>SOC Credential ID</div>
-                          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#38bdf8', marginTop: '0.25rem', fontFamily: 'monospace' }}>{result.socId}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Program Credential</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.program}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Technical Curriculum</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.track}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Issue Date</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.completionDate}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Capstone Distinction</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#10b981', marginTop: '0.25rem' }}>{result.credentialScore}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Accreditation Board</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.authorizedBy}</div>
-                        </div>
-                      </>
-                    )}
-
                     {activeTab === 'employee' && (
                       <>
                         <div>
                           <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>12-Digit Employee ID</div>
                           <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#38bdf8', marginTop: '0.25rem', fontFamily: 'monospace' }}>
-                            {result.employeeId || '202610090001'}
+                            {result.employeeId || result.id || 'N/A'}
                           </div>
                         </div>
                         <div>
                           <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Designation / Role</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.role || 'Senior Officer'}</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.role || 'Staff Member'}</div>
                         </div>
                         <div>
                           <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Department</div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.department || 'Executive & Management'}</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.department || 'Engineering & Operations'}</div>
                         </div>
                         <div>
                           <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Employment Status</div>
@@ -571,6 +361,35 @@ export default function VerificationPage() {
                           <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>
                             Enterprenex Solutions Pvt Ltd
                           </div>
+                        </div>
+                      </>
+                    )}
+
+                    {activeTab === 'internship' && (
+                      <>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Certificate ID</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 700, color: '#38bdf8', marginTop: '0.25rem', fontFamily: 'monospace' }}>{result.certId || result.id}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Specialization Track</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.domain || result.title}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Tenure Duration</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.duration || 'Full Tenure'}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Completion Date</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>{result.completionDate || result.date || 'N/A'}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Verification Status</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#10b981', marginTop: '0.25rem' }}>VERIFIED & ISSUED</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600 }}>Authorized Signatory</div>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#ffffff', marginTop: '0.25rem' }}>Enterprenex Solutions Executive Board</div>
                         </div>
                       </>
                     )}
@@ -618,7 +437,9 @@ export default function VerificationPage() {
                     No Record Found For "{searchQuery}"
                   </h3>
                   <p style={{ color: '#94a3b8', fontSize: '0.95rem', maxWidth: '520px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
-                    Please verify the Certificate ID or 12-Digit Employee ID carefully. If this credential was issued recently, it may take up to 24 business hours to reflect in the statutory registry.
+                    {activeTab === 'employee' 
+                      ? 'Please verify the 12-Digit Employee ID carefully. If this employee was registered recently, ensure the credentials have been approved by HR.'
+                      : 'Please verify the Certificate ID carefully. If this certificate was issued recently, it may take up to 24 business hours to reflect in the registry.'}
                   </p>
                   <a
                     href="mailto:contact@enterprenex.solutions"
@@ -659,7 +480,7 @@ export default function VerificationPage() {
               Tamper-Proof Architecture
             </div>
             <p style={{ fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6, margin: 0 }}>
-              Every certificate and employee profile is backed by our centralized immutable audit trail, ensuring zero duplicate IDs and safeguarding student credentials.
+              Every employee profile is backed by our centralized immutable audit trail, ensuring unique 12-digit Employee IDs and protecting corporate identity.
             </p>
           </div>
 
