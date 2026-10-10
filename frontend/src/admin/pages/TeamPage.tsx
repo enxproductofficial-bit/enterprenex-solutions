@@ -69,6 +69,7 @@ export const TeamPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [skills, setSkills] = useState('React, TypeScript, Node.js');
   const [salary, setSalary] = useState(100000);
+  const [workload, setWorkload] = useState(100);
   const [avatar, setAvatar] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
   const [avatarPreview, setAvatarPreview] = useState('');
 
@@ -354,6 +355,7 @@ export const TeamPage: React.FC = () => {
     setEmpPassword(generateRandomPassword('EPX'));
     setShowEmpPassword(true);
     setAvatarPreview('');
+    setWorkload(100);
     setAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
     setShowAddModal(true);
   };
@@ -403,7 +405,7 @@ export const TeamPage: React.FC = () => {
       avatar: finalAvatar,
       skills: skills.split(',').map(s => s.trim()).filter(Boolean),
       currentProjects: [],
-      workloadPercentage: 50,
+      workloadPercentage: Number(workload || 100),
       joinDate: new Date().toISOString().split('T')[0],
       salaryMonthly: Number(salary),
       performanceRating: 5.0,
@@ -882,24 +884,91 @@ export const TeamPage: React.FC = () => {
 
                     {/* Workload */}
                     <div style={{ marginBottom: '1rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '3px' }}>
-                        <span style={{ color: 'var(--adm-text-dim)' }}>Sprint Workload</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', marginBottom: '4px' }}>
+                        <span style={{ color: 'var(--adm-text-dim)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          Sprint Workload
+                          {emp.workloadPercentage >= 100 && (
+                            <span className="adm-badge adm-badge-warning" style={{ fontSize: '0.62rem', padding: '1px 5px' }}>
+                              Full Capacity
+                            </span>
+                          )}
+                        </span>
                         <span style={{
-                          fontWeight: 700,
-                          color: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+                          fontWeight: 800,
+                          fontSize: '0.82rem',
+                          fontFamily: 'monospace',
+                          color: emp.workloadPercentage >= 100 ? '#ef4444' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
                         }}>
                           {emp.workloadPercentage}%
                         </span>
                       </div>
-                      <div className="adm-progress-bar">
+
+                      <div className="adm-progress-bar" style={{ height: '7px', background: 'rgba(255,255,255,0.08)' }}>
                         <div
                           className="adm-progress-fill"
                           style={{
-                            width: `${emp.workloadPercentage}%`,
-                            background: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+                            width: `${Math.min(100, Math.max(0, emp.workloadPercentage))}%`,
+                            background: emp.workloadPercentage >= 100
+                              ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
+                              : emp.workloadPercentage > 70
+                              ? 'var(--adm-warning)'
+                              : 'var(--adm-success)',
+                            transition: 'width 0.3s ease, background 0.3s ease'
                           }}
                         />
                       </div>
+
+                      {/* Capacity Quick Fill for Managers & Director */}
+                      {canManageTeam && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', gap: '4px' }}>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--adm-text-dim)' }}>Fill Capacity:</span>
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                            {[20, 50, 75].map(pct => (
+                              <button
+                                key={pct}
+                                type="button"
+                                onClick={() => {
+                                  updateEmployee(emp.id, { workloadPercentage: pct });
+                                  showToast('Workload Adjusted', `${emp.name} capacity set to ${pct}%.`, 'info');
+                                }}
+                                className="adm-btn"
+                                style={{
+                                  padding: '2px 6px',
+                                  fontSize: '0.65rem',
+                                  borderRadius: '4px',
+                                  lineHeight: 1.2,
+                                  background: emp.workloadPercentage === pct ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.05)',
+                                  color: emp.workloadPercentage === pct ? '#fff' : 'var(--adm-text-muted)',
+                                  border: emp.workloadPercentage === pct ? '1px solid rgba(255,255,255,0.3)' : '1px solid var(--adm-border)'
+                                }}
+                              >
+                                {pct}%
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateEmployee(emp.id, { workloadPercentage: 100 });
+                                showToast('Capacity Full (100%)', `${emp.name}'s sprint workload filled to 100% (Full Capacity).`, 'success');
+                              }}
+                              className="adm-btn"
+                              style={{
+                                padding: '2px 8px',
+                                fontSize: '0.65rem',
+                                fontWeight: 700,
+                                borderRadius: '4px',
+                                lineHeight: 1.2,
+                                background: emp.workloadPercentage === 100 ? '#ef4444' : 'rgba(239, 68, 68, 0.15)',
+                                color: emp.workloadPercentage === 100 ? '#fff' : '#f87171',
+                                border: '1px solid rgba(239, 68, 68, 0.4)'
+                              }}
+                              title="Fill Sprint Workload to 100% Full Capacity"
+                            >
+                              100% Fill
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Skills */}
@@ -1548,6 +1617,65 @@ export const TeamPage: React.FC = () => {
               <div className="adm-form-group">
                 <label className="adm-form-label">Skills (Comma separated)</label>
                 <input className="adm-input" value={skills} onChange={e => setSkills(e.target.value)} placeholder="Python, PyTorch, Docker, Kubernetes" />
+              </div>
+
+              {/* Sprint Workload Allocation */}
+              <div className="adm-form-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label className="adm-form-label" style={{ margin: 0 }}>Sprint Workload Capacity Allocation (%)</label>
+                  <span style={{
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    fontFamily: 'monospace',
+                    color: workload >= 100 ? '#ef4444' : 'var(--adm-primary)'
+                  }}>
+                    {workload}% {workload >= 100 ? '(Full Capacity)' : ''}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="range"
+                    min="10"
+                    max="100"
+                    step="5"
+                    value={workload}
+                    onChange={e => setWorkload(Number(e.target.value))}
+                    style={{ flex: 1, accentColor: 'var(--adm-primary)' }}
+                  />
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[25, 50, 75].map(pct => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setWorkload(pct)}
+                        className="adm-btn adm-btn-sm"
+                        style={{
+                          padding: '3px 8px',
+                          fontSize: '0.7rem',
+                          background: workload === pct ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.06)',
+                          color: workload === pct ? '#fff' : 'var(--adm-text-muted)'
+                        }}
+                      >
+                        {pct}%
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setWorkload(100)}
+                      className="adm-btn adm-btn-sm"
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        background: workload === 100 ? '#ef4444' : 'rgba(239, 68, 68, 0.15)',
+                        color: workload === 100 ? '#fff' : '#f87171',
+                        border: '1px solid rgba(239, 68, 68, 0.3)'
+                      }}
+                    >
+                      100% Max
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Approval Notice */}
