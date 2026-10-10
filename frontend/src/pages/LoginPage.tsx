@@ -13,6 +13,7 @@ import {
   Home,
   CheckCircle2,
   AlertCircle,
+  User,
 } from 'lucide-react';
 import { useAdmin } from '../admin/context/AdminContext';
 import './register/register.css';
@@ -99,21 +100,21 @@ export const LoginPage: React.FC = () => {
         });
         setTimeout(() => navigate('/admin'), 600);
       } else {
-        // Employee portal - individual unique Employee ID / Email + unique Password
+        // Employee portal - individual unique 12-Digit Employee ID
         if (!inputEmail) {
-          setErrorMessage('Please enter your Employee ID (e.g. EPX-101) or Official Email.');
+          setErrorMessage('Please enter your Employee ID (e.g. 202600000002).');
           return;
         }
 
         const matchedEmp = employees.find(
           (emp) =>
             (emp.employeeId && emp.employeeId.toLowerCase() === inputEmail) ||
-            (emp.email && emp.email.toLowerCase() === inputEmail) ||
-            emp.id.toLowerCase() === inputEmail
+            emp.id.toLowerCase() === inputEmail ||
+            (emp.email && emp.email.toLowerCase() === inputEmail)
         );
 
         if (!matchedEmp) {
-          setErrorMessage(`Access Denied: No employee found matching "${email.trim()}". Please enter your assigned Employee ID (e.g. 202600000001) or contact HR.`);
+          setErrorMessage(`Access Denied: No employee found with Employee ID "${email.trim()}". Please enter your valid Employee ID (e.g. 202600000002) or contact HR.`);
           return;
         }
 
@@ -291,19 +292,23 @@ export const LoginPage: React.FC = () => {
           {/* Form */}
           <form onSubmit={handleLoginSubmit}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
-              {/* Email or Employee ID */}
+              {/* Employee ID (for Employee) or Official Registered Email (for Director/Manager) */}
               <div className="reg-field-group">
                 <label className="reg-label">
-                  {role === 'employee' ? 'Employee ID or Official Email' : 'Official Registered Email'}
+                  {role === 'employee' ? 'Employee ID' : 'Official Registered Email'}
                 </label>
                 <div className="reg-input-wrap">
-                  <Mail size={16} className="reg-input-icon" />
+                  {role === 'employee' ? (
+                    <User size={16} className="reg-input-icon" />
+                  ) : (
+                    <Mail size={16} className="reg-input-icon" />
+                  )}
                   <input
                     type="text"
                     required
                     placeholder={
                       role === 'employee'
-                        ? 'e.g. 202600000001 or employee@enterprenex.com'
+                        ? 'e.g. 202600000002 (12-Digit Employee ID)'
                         : role === 'director'
                         ? 'director@enterprenexsolution.com'
                         : 'hr@enterprenexsolution.com'
