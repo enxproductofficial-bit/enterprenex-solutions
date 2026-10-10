@@ -207,29 +207,44 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
 
   const handleCreateDocument = (e: React.FormEvent) => {
     e.preventDefault();
-    let docUrl = '#';
     let fFormat = 'PDF';
     let fSize = '1.0 MB';
 
     if (dFile) {
-      docUrl = URL.createObjectURL(dFile);
       fFormat = dFile.name.split('.').pop()?.toUpperCase() || 'PDF';
       const sizeMb = (dFile.size / (1024 * 1024)).toFixed(1);
       const sizeKb = (dFile.size / 1024).toFixed(0);
       fSize = dFile.size > 1024 * 1024 ? `${sizeMb} MB` : `${sizeKb} KB`;
-    }
 
-    uploadDocument({
-      title: dTitle || (dFile ? dFile.name : 'Untitled Document'),
-      category: dCategory,
-      version: 'v1.0',
-      fileFormat: fFormat,
-      fileSize: fSize,
-      accessPermission: dPermission,
-      tags: ['Vault', 'Uploaded'],
-      url: docUrl
-    });
-    onClose();
+      const reader = new FileReader();
+      reader.onload = () => {
+        const docUrl = (reader.result as string) || '#';
+        uploadDocument({
+          title: dTitle || dFile.name,
+          category: dCategory,
+          version: 'v1.0',
+          fileFormat: fFormat,
+          fileSize: fSize,
+          accessPermission: dPermission,
+          tags: ['Vault', 'Uploaded', fFormat],
+          url: docUrl
+        });
+        onClose();
+      };
+      reader.readAsDataURL(dFile);
+    } else {
+      uploadDocument({
+        title: dTitle || 'Untitled Document',
+        category: dCategory,
+        version: 'v1.0',
+        fileFormat: fFormat,
+        fileSize: fSize,
+        accessPermission: dPermission,
+        tags: ['Vault', 'Created'],
+        url: '#'
+      });
+      onClose();
+    }
   };
 
   return (

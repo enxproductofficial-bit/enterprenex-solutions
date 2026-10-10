@@ -505,6 +505,32 @@ export const TeamPage: React.FC = () => {
       kycVerifiedAt: (finalPan && finalAadhaar && isDirector) ? new Date().toISOString() : undefined
     });
 
+    if (panDocUrl) {
+      uploadDocument({
+        title: `PAN Card - ${name} (${finalPan || finalEmpId})`,
+        category: 'Employee Docs',
+        fileFormat: panDocName?.toLowerCase().endsWith('.pdf') ? 'PDF' : 'JPG',
+        fileSize: '1.2 MB',
+        version: 'v1.0',
+        accessPermission: 'Executive',
+        tags: ['KYC', 'PAN', 'IncomeTax', finalEmpId],
+        url: panDocUrl
+      });
+    }
+
+    if (aadhaarDocUrl) {
+      uploadDocument({
+        title: `Aadhaar Card - ${name} (${finalEmpId})`,
+        category: 'Employee Docs',
+        fileFormat: aadhaarDocName?.toLowerCase().endsWith('.pdf') ? 'PDF' : 'JPG',
+        fileSize: '1.2 MB',
+        version: 'v1.0',
+        accessPermission: 'Executive',
+        tags: ['KYC', 'Aadhaar', 'UIDAI', finalEmpId],
+        url: aadhaarDocUrl
+      });
+    }
+
     if (initialApprovalStatus === 'Pending Director Approval') {
       showToast(
         'Employee Registered - Awaiting Director Approval',
@@ -2382,11 +2408,12 @@ export const TeamPage: React.FC = () => {
                           uploadDocument({
                             title: `PAN Card - ${kycModalEmp.name} (${editKycPan || kycModalEmp.panNumber || kycModalEmp.employeeId})`,
                             category: 'Employee Docs',
-                            format: f.name.endsWith('.pdf') ? 'PDF' : 'JPG',
+                            fileFormat: f.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'JPG',
                             fileSize: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
                             version: 'v1.0',
                             accessPermission: 'Executive',
-                            tags: ['KYC', 'PAN', 'IncomeTax', kycModalEmp.employeeId || kycModalEmp.id]
+                            tags: ['KYC', 'PAN', 'IncomeTax', kycModalEmp.employeeId || kycModalEmp.id],
+                            url: url
                           });
                           showToast('PAN Document Uploaded', `${f.name} attached and secured in Document Vault. Click "View Document" to inspect.`, 'success');
                         });
@@ -2529,11 +2556,12 @@ export const TeamPage: React.FC = () => {
                           uploadDocument({
                             title: `Aadhaar Card - ${kycModalEmp.name} (${kycModalEmp.employeeId || kycModalEmp.id})`,
                             category: 'Employee Docs',
-                            format: f.name.endsWith('.pdf') ? 'PDF' : 'JPG',
+                            fileFormat: f.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'JPG',
                             fileSize: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
                             version: 'v1.0',
                             accessPermission: 'Executive',
-                            tags: ['KYC', 'Aadhaar', 'UIDAI', kycModalEmp.employeeId || kycModalEmp.id]
+                            tags: ['KYC', 'Aadhaar', 'UIDAI', kycModalEmp.employeeId || kycModalEmp.id],
+                            url: url
                           });
                           showToast('Aadhaar Document Uploaded', `${f.name} attached and secured in Document Vault. Click "View Document" to inspect.`, 'success');
                         });

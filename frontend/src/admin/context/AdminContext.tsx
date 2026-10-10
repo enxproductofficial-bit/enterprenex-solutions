@@ -150,6 +150,7 @@ interface AdminContextType {
 
   // Document actions
   uploadDocument: (doc: Omit<VaultDocument, 'id' | 'uploadDate' | 'uploadedBy'>) => void;
+  updateDocument: (id: string, updates: Partial<VaultDocument>) => void;
   deleteDocument: (id: string) => void;
 
   // Calendar actions
@@ -741,6 +742,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Document Uploaded', `${newDoc.title} secured in central vault.`, 'success');
   };
 
+  const updateDocument = (id: string, updates: Partial<VaultDocument>) => {
+    setDocuments(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
+  };
+
   const deleteDocument = (id: string) => {
     setDocuments(prev => prev.filter(d => d.id !== id));
     showToast('Document Deleted', 'File deleted from vault.', 'warning');
@@ -931,6 +936,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateTicketStatus,
         addTicketReply,
         uploadDocument,
+        updateDocument,
         deleteDocument,
         addMeeting,
         deleteMeeting,
