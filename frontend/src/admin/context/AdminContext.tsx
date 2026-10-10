@@ -129,6 +129,7 @@ interface AdminContextType {
   // Team actions
   addEmployee: (employee: Omit<Employee, 'id'>) => void;
   updateEmployee: (id: string, updates: Partial<Employee>) => void;
+  deleteEmployee: (id: string, purgeDocuments?: boolean) => void;
   addLeaveRequest: (leave: Omit<LeaveRequest, 'id' | 'status'>) => void;
   updateLeaveStatus: (id: string, status: 'Approved' | 'Rejected') => void;
   deleteLeaveRequest: (id: string) => void;
@@ -606,6 +607,29 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Employee Updated', 'Employee record updated.', 'success');
   };
 
+  const deleteEmployee = (id: string, purgeDocuments = false) => {
+    const emp = employees.find(e => e.id === id);
+    if (!emp) return;
+
+    if (emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') {
+      showToast('Protected Account', 'The Managing Director account cannot be deleted.', 'error');
+      return;
+    }
+
+    setEmployees(prev => prev.filter(e => e.id !== id));
+
+    if (purgeDocuments) {
+      setDocuments(prev => prev.filter(d =>
+        d.employeeId !== emp.employeeId &&
+        !d.tags.includes(emp.employeeId) &&
+        !d.tags.includes(emp.id)
+      ));
+    }
+
+    logAction('Deleted Employee', 'Team Management', `Permanently removed employee ${emp.name} (${emp.employeeId || emp.id})`);
+    showToast('Employee Deleted', `${emp.name} (${emp.employeeId || emp.id}) permanently removed from company roster.`, 'warning');
+  };
+
   const addLeaveRequest = (leaveData: Omit<LeaveRequest, 'id' | 'status'>) => {
     const newLeave: LeaveRequest = {
       ...leaveData,
@@ -921,6 +945,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addExpense,
         addEmployee,
         updateEmployee,
+        deleteEmployee,
         addLeaveRequest,
         updateLeaveStatus,
         deleteLeaveRequest,

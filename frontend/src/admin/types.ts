@@ -225,7 +225,7 @@ export interface Employee {
   joinDate: string;
   salaryMonthly: number;
   performanceRating: number; // 1-5
-  status: 'Active' | 'On Leave' | 'Remote';
+  status: 'Active' | 'On Leave' | 'Remote' | 'Resigned' | 'Terminated' | 'Inactive';
   approvalStatus?: 'Approved' | 'Pending Director Approval' | 'Rejected';
   approvedBy?: string;
   approvedAt?: string;

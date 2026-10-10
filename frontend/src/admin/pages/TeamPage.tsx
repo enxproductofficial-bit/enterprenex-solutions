@@ -42,6 +42,7 @@ export const TeamPage: React.FC = () => {
     leaves,
     addEmployee,
     updateEmployee,
+    deleteEmployee,
     addLeaveRequest,
     updateLeaveStatus,
     deleteLeaveRequest,
@@ -221,6 +222,10 @@ export const TeamPage: React.FC = () => {
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [showActivePassword, setShowActivePassword] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // Employee Offboard & Permanent Deletion modal state
+  const [offboardModalEmp, setOffboardModalEmp] = useState<Employee | null>(null);
+  const [purgeDocsOnDelete, setPurgeDocsOnDelete] = useState(false);
 
   const generateRandomPassword = (prefix = 'EPX') => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
@@ -876,7 +881,22 @@ export const TeamPage: React.FC = () => {
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                        <span className="adm-badge adm-badge-success" style={{ fontSize: '0.65rem' }}>{emp.status}</span>
+                        <span
+                          className={`adm-badge ${
+                            emp.status === 'Active'
+                              ? 'adm-badge-success'
+                              : emp.status === 'Resigned'
+                              ? 'adm-badge-warning'
+                              : emp.status === 'Terminated'
+                              ? 'adm-badge-danger'
+                              : emp.status === 'On Leave'
+                              ? 'adm-badge-info'
+                              : 'adm-badge-neutral'
+                          }`}
+                          style={{ fontSize: '0.65rem' }}
+                        >
+                          {emp.status}
+                        </span>
                         <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.7rem', fontFamily: 'monospace', fontWeight: 700 }}>
                           {displayEmpId}
                         </span>
@@ -1161,18 +1181,35 @@ export const TeamPage: React.FC = () => {
                           <span>Executive Protected</span>
                         </div>
                       ) : canManageTeam ? (
-                        <button
-                          className="adm-btn adm-btn-secondary"
-                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
-                          onClick={() => {
-                            setCredentialEmp(emp);
-                            setNewPasswordInput('');
-                            setShowActivePassword(false);
-                          }}
-                        >
-                          <Key size={13} color="#f59e0b" />
-                          <span>Portal Credentials</span>
-                        </button>
+                        <div style={{ display: 'flex', gap: '5px' }}>
+                          <button
+                            className="adm-btn adm-btn-secondary"
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
+                            onClick={() => {
+                              setCredentialEmp(emp);
+                              setNewPasswordInput('');
+                              setShowActivePassword(false);
+                            }}
+                          >
+                            <Key size={13} color="#f59e0b" />
+                            <span>Portal Credentials</span>
+                          </button>
+
+                          {!(emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') && (
+                            <button
+                              type="button"
+                              className="adm-btn adm-btn-danger"
+                              style={{ padding: '0.35rem 0.55rem', fontSize: '0.72rem' }}
+                              onClick={() => {
+                                setOffboardModalEmp(emp);
+                                setPurgeDocsOnDelete(false);
+                              }}
+                              title="Resign, Offboard or Permanently Delete Employee"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
                       ) : null}
                     </div>
                   </div>
@@ -2150,6 +2187,161 @@ export const TeamPage: React.FC = () => {
               >
                 {copiedKey === 'pack' ? <Check size={15} color="#10b981" /> : <Share2 size={15} />}
                 <span>{copiedKey === 'pack' ? 'Onboarding Pack Copied to Clipboard!' : 'Copy Full WhatsApp / Email Credentials Pack'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EMPLOYEE EXIT, RESIGNATION & PERMANENT DELETION MODAL ── */}
+      {offboardModalEmp && (
+        <div className="adm-modal-overlay" onClick={() => setOffboardModalEmp(null)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '540px' }}>
+            <div className="adm-modal-header" style={{ borderBottom: '1px solid var(--adm-border)', paddingBottom: '0.85rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                  Employee Exit & Offboarding
+                </h3>
+                <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  Managing Director & HR Administrative Console
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setOffboardModalEmp(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Target Employee Info */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.85rem',
+                padding: '0.85rem 1rem',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '8px',
+                border: '1px solid var(--adm-border)',
+                margin: '1.25rem 0'
+              }}
+            >
+              <img
+                src={offboardModalEmp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                alt={offboardModalEmp.name}
+                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 800, color: '#fff', fontSize: '1rem' }}>{offboardModalEmp.name}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{offboardModalEmp.role}</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', fontFamily: 'monospace' }}>
+                  ID: {offboardModalEmp.employeeId || offboardModalEmp.id} &bull; {offboardModalEmp.email}
+                </div>
+              </div>
+              <span
+                className={`adm-badge ${
+                  offboardModalEmp.status === 'Active'
+                    ? 'adm-badge-success'
+                    : offboardModalEmp.status === 'Resigned'
+                    ? 'adm-badge-warning'
+                    : offboardModalEmp.status === 'Terminated'
+                    ? 'adm-badge-danger'
+                    : 'adm-badge-neutral'
+                }`}
+              >
+                {offboardModalEmp.status}
+              </span>
+            </div>
+
+            {/* Option 1: Mark as Resigned & Revoke Portal Login */}
+            <div
+              style={{
+                background: 'rgba(245, 158, 11, 0.05)',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                borderRadius: '10px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f59e0b' }}>
+                  Option 1: Mark as Resigned & Revoke Login (Recommended)
+                </span>
+              </div>
+              <p style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', margin: '0 0 0.85rem 0', lineHeight: 1.5 }}>
+                Immediately cuts off all portal login and password access. Preserves their 6-month work records, task history, and past salary/TDS data for mandatory statutory audits, Form 16, and relieving letters.
+              </p>
+              <button
+                type="button"
+                className="adm-btn adm-btn-primary"
+                style={{ width: '100%', justifyContent: 'center', padding: '0.6rem', background: '#d97706', borderColor: '#d97706' }}
+                onClick={() => {
+                  updateEmployee(offboardModalEmp.id, {
+                    status: 'Resigned',
+                    approvalStatus: 'Rejected'
+                  });
+                  if (documents && updateDocument) {
+                    documents.forEach(d => {
+                      if (d.employeeId === offboardModalEmp.employeeId || d.tags.includes(offboardModalEmp.employeeId)) {
+                        updateDocument(d.id, { accessPermission: 'Admin Only' });
+                      }
+                    });
+                  }
+                  showToast('Employee Resigned', `${offboardModalEmp.name} marked as Resigned. Portal login revoked immediately.`, 'warning');
+                  setOffboardModalEmp(null);
+                }}
+              >
+                <span>Resign & Revoke Login Access</span>
+              </button>
+            </div>
+
+            {/* Option 2: Permanently Delete from Database */}
+            <div
+              style={{
+                background: 'rgba(239, 68, 68, 0.05)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '10px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#ef4444' }}>
+                  Option 2: Permanently Delete Employee (Full Wipe)
+                </span>
+              </div>
+              <p style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', margin: '0 0 0.85rem 0', lineHeight: 1.5 }}>
+                Completely and irreversibly removes this employee profile, credentials, and records from the company database.
+              </p>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem', color: '#cbd5e1', marginBottom: '0.85rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={purgeDocsOnDelete}
+                  onChange={e => setPurgeDocsOnDelete(e.target.checked)}
+                />
+                <span>Also permanently delete all uploaded PAN, Aadhaar, and Vault files</span>
+              </label>
+
+              <button
+                type="button"
+                className="adm-btn adm-btn-danger"
+                style={{ width: '100%', justifyContent: 'center', padding: '0.6rem' }}
+                onClick={() => {
+                  deleteEmployee(offboardModalEmp.id, purgeDocsOnDelete);
+                  setOffboardModalEmp(null);
+                }}
+              >
+                <Trash2 size={15} />
+                <span>Permanently Delete All Records</span>
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <button
+                type="button"
+                className="adm-btn adm-btn-secondary"
+                onClick={() => setOffboardModalEmp(null)}
+              >
+                Cancel
               </button>
             </div>
           </div>
