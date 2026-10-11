@@ -15,18 +15,13 @@ import {
   ShieldCheck,
   Shield,
   FileText,
-  ExternalLink,
   Share2,
   Lock,
-  UserCheck,
   AlertCircle,
   Download,
   Printer,
   CalendarPlus,
   Trash2,
-  RotateCcw,
-  FileSpreadsheet,
-  Calendar,
   Camera,
   Upload,
   Clock,
@@ -1043,7 +1038,6 @@ export const TeamPage: React.FC = () => {
                 const displayEmpId = emp.employeeId || (emp.id.startsWith('emp-') ? `EPX-10${emp.id.replace('emp-', '')}` : emp.id);
                 const isPending = emp.approvalStatus === 'Pending Director Approval';
                 const isRejected = emp.approvalStatus === 'Rejected';
-                const isApproved = emp.approvalStatus === 'Approved' || !emp.approvalStatus;
 
                 return (
                   <div

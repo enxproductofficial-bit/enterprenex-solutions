@@ -12,6 +12,7 @@ export interface AdminUser {
   status: 'Active' | 'Inactive';
   lastLogin: string;
   phone?: string;
+  employeeId?: string;
 }
 
 // 1. Dashboard Metrics
@@ -233,7 +234,7 @@ export interface Employee {
   panDocUrl?: string;
   aadhaarNumber?: string;
   aadhaarDocUrl?: string;
-  kycStatus?: 'Verified' | 'Pending Verification' | 'Not Submitted';
+  kycStatus?: 'Verified' | 'Pending Verification' | 'Rejected' | 'Not Submitted';
   kycVerifiedBy?: string;
   kycVerifiedAt?: string;
 }

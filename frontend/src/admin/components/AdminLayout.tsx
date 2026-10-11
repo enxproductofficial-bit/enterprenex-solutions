@@ -22,7 +22,6 @@ import {
   Menu,
   ChevronDown,
   LogOut,
-  Sparkles,
   Camera
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
@@ -35,8 +34,6 @@ interface AdminLayoutProps {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const {
     currentUser,
-    users,
-    switchUser,
     logout,
     tickets,
     invoices,

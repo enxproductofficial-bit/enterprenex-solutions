@@ -13,19 +13,13 @@ import {
   Plus,
   Printer,
   Mail,
-  Share2,
-  ExternalLink,
   CheckCircle2,
   Clock,
   XCircle,
   Lock,
-  FileSpreadsheet,
-  AlertCircle,
-  Sparkles,
   Send,
   Building,
   UserCheck,
-  BadgeCheck,
   Filter
 } from 'lucide-react';
 import type { VaultDocument, Employee } from '../types';
@@ -128,7 +122,7 @@ export const DocumentsPage: React.FC = () => {
         needsUpdate = true;
       }
 
-      const { empId, emp, verificationStatus } = getDocEmployeeInfo(doc);
+      const { empId, emp } = getDocEmployeeInfo(doc);
 
       if (empId && doc.employeeId !== empId) {
         updates.employeeId = empId;

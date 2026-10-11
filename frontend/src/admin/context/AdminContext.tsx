@@ -172,6 +172,7 @@ interface AdminContextType {
   addAllowedIp: (ip: string, label: string) => void;
   removeAllowedIp: (id: string) => void;
   toggleEnforceIpRestriction: () => void;
+  logAction?: (action: string, moduleName: string, details: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -998,7 +999,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         resetAllData,
         addAllowedIp,
         removeAllowedIp,
-        toggleEnforceIpRestriction
+        toggleEnforceIpRestriction,
+        logAction
       }}
     >
       {children}

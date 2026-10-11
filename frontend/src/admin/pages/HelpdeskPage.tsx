@@ -9,13 +9,7 @@ import {
   X,
   MessageCircle,
   Mail,
-  ExternalLink,
   LifeBuoy,
-  Sparkles,
-  ShieldCheck,
-  Check,
-  Copy,
-  AlertCircle,
   FileQuestion,
   User
 } from 'lucide-react';
@@ -57,7 +51,6 @@ export const HelpdeskPage: React.FC = () => {
     emailUrl: string;
   } | null>(null);
 
-  const [copiedLink, setCopiedLink] = useState(false);
 
   // Filter tickets for current user view
   const filteredTickets = tickets.filter(t => {
