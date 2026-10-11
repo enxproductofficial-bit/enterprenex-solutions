@@ -73,15 +73,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   // Navigation Items strictly filtered according to EWMS Permissions Matrix
   const getNavItems = () => {
-    // 1. Employee / Staff Portal
+    // 1. Employee / Staff Portal (Customized specifically for Enterprenex Team)
     if (isEmployee) {
       return [
         { section: 'My Work Portal' },
-        { to: '/admin/tasks', label: 'My Tasks & Kanban', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done').length },
         { to: '/admin/team', label: 'My Attendance & Leave', icon: UserCheck },
-        { to: '/admin/support', label: 'Helpdesk & Support', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
-        { to: '/admin/documents', label: 'Document Vault', icon: FileText },
-        { to: '/admin/calendar', label: 'Calendar & Schedule', icon: Calendar }
+        { to: '/admin/tasks', label: 'My Tasks', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
+        { to: '/admin/support', label: 'Raise a Ticket', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/documents', label: 'My Documents & Certificate', icon: FileText }
       ];
     }
 
@@ -157,7 +156,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <aside className={`adm-sidebar ${collapsed ? 'collapsed' : ''}`}>
         {/* Sidebar Brand Header */}
         <div className="adm-sidebar-header">
-          <NavLink to={isEmployee ? '/admin/tasks' : '/admin'} className="adm-brand-link">
+          <NavLink to={isEmployee ? '/admin/team' : '/admin'} className="adm-brand-link">
             <div className="adm-brand-logo" style={{ background: 'transparent', boxShadow: 'none', padding: '2px' }}>
               <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
             </div>

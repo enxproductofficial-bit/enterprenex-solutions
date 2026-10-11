@@ -88,7 +88,7 @@ export const AdminLoginPage: React.FC = () => {
       setTimeout(() => {
         login(empUser);
         setIsLoading(false);
-        navigate('/admin/tasks');
+        navigate('/admin/team');
       }, 400);
     } else {
       setTimeout(() => {

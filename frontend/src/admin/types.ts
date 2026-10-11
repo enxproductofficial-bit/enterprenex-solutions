@@ -298,7 +298,7 @@ export interface SupportTicket {
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   status: 'Open' | 'In Progress' | 'Waiting on Client' | 'Resolved' | 'Closed';
   assignedTo: string;
-  category: 'Bug Fix' | 'Feature Request' | 'Server Issue' | 'Billing' | 'General Query';
+  category: 'Bug Fix' | 'Feature Request' | 'Server Issue' | 'Billing' | 'General Query' | 'Attendance Correction' | 'Certificate Request' | 'Leave & Permission' | 'HR & Stipend' | 'IT & Setup';
   slaHoursRemaining: number;
   createdAt: string;
   messages: {

@@ -64,7 +64,7 @@ export const TeamPage: React.FC = () => {
   const canManageTeam = isDirector || isManagerOrHr;
   const isRegularEmployee = !canManageTeam;
 
-  const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves'>('roster');
+  const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves'>(isRegularEmployee ? 'attendance' : 'roster');
   const [rosterFilter, setRosterFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
@@ -810,8 +810,12 @@ export const TeamPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Team, Attendance & Workforce Ops</h1>
-          <p>Employee capacity roster, daily biometric check-ins, leave approvals & payroll rates</p>
+          <h1>{isRegularEmployee ? 'My Attendance & Leave' : 'Team, Attendance & Workforce Ops'}</h1>
+          <p>
+            {isRegularEmployee
+              ? 'Daily biometric check-in, attendance history, leave balances & time-off applications'
+              : 'Employee capacity roster, daily biometric check-ins, leave approvals & payroll rates'}
+          </p>
         </div>
         <div className="adm-page-actions" style={{ flexWrap: 'wrap' }}>
           {tab === 'roster' && (
@@ -849,6 +853,12 @@ export const TeamPage: React.FC = () => {
                 <CheckCircle2 size={15} />
                 <span>Mark My Attendance Today</span>
               </button>
+              {isRegularEmployee && (
+                <button className="adm-btn adm-btn-secondary" onClick={openApplyLeaveModal}>
+                  <CalendarPlus size={15} color="var(--adm-primary)" />
+                  <span>Apply for Leave</span>
+                </button>
+              )}
             </>
           )}
 
@@ -874,14 +884,16 @@ export const TeamPage: React.FC = () => {
       {/* Tabs */}
       <div className="adm-card" style={{ padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
         <div className="adm-tabs" style={{ margin: 0, border: 'none' }}>
-          <button className={`adm-tab-btn ${tab === 'roster' ? 'active' : ''}`} onClick={() => setTab('roster')}>
-            Team Directory ({employees.length})
-          </button>
+          {canManageTeam && (
+            <button className={`adm-tab-btn ${tab === 'roster' ? 'active' : ''}`} onClick={() => setTab('roster')}>
+              Team Directory ({employees.length})
+            </button>
+          )}
           <button className={`adm-tab-btn ${tab === 'attendance' ? 'active' : ''}`} onClick={() => setTab('attendance')}>
-            Daily Attendance ({attendance.length})
+            {isRegularEmployee ? '📅 My Attendance & Check-In' : `Daily Attendance (${attendance.length})`}
           </button>
           <button className={`adm-tab-btn ${tab === 'leaves' ? 'active' : ''}`} onClick={() => setTab('leaves')}>
-            {canManageTeam ? 'Leave Approvals' : 'Leave Status & Applications'} ({leaves.length})
+            {canManageTeam ? `Leave Approvals (${leaves.length})` : '🌴 My Leave Applications'}
             {canManageTeam && pendingLeavesCount > 0 && (
               <span className="adm-badge adm-badge-warning" style={{ marginLeft: '6px', fontSize: '0.65rem' }}>
                 {pendingLeavesCount} Pending
@@ -1450,142 +1462,219 @@ export const TeamPage: React.FC = () => {
       })()}
 
       {/* ── 2. ATTENDANCE LOGS ── */}
-      {tab === 'attendance' && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
-              DAILY BIOMETRIC ATTENDANCE LOGS ({attendance.length} RECORDS)
-            </span>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportAttendanceCsv}>
-                <Download size={13} />
-                <span>Export CSV</span>
-              </button>
-              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handlePrintAttendance}>
-                <Printer size={13} />
-                <span>Print / PDF</span>
-              </button>
-              <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => markAttendanceToday('Present')}>
-                <CheckCircle2 size={13} />
-                <span>Mark Attendance</span>
-              </button>
-            </div>
-          </div>
+      {tab === 'attendance' && (() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const myTodayAtt = attendance.find(
+          a => a.date === todayStr && (
+            (currentUser?.name && a.employeeName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
+            (currentUser?.id && (a as any).employeeId === currentUser.id)
+          )
+        );
+        const displayedAttendance = isRegularEmployee
+          ? attendance.filter(a => a.employeeName.toLowerCase().includes((currentUser?.name || '').toLowerCase()))
+          : attendance;
 
-          <div className="adm-table-container">
-            <table className="adm-table">
-              <thead>
-                <tr>
-                  <th>Team Member</th>
-                  <th>Date</th>
-                  <th>Check In Time</th>
-                  <th>Check Out Time</th>
-                  <th>Attendance Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attendance.length === 0 ? (
+        return (
+          <div>
+            {/* Employee Check-In Quick Hero Card */}
+            {isRegularEmployee && (
+              <div
+                className="adm-card"
+                style={{
+                  padding: '1.25rem 1.5rem',
+                  marginBottom: '1.5rem',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(246, 97, 53, 0.08) 100%)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '1.25rem'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <img
+                    src={currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                    alt="Employee Avatar"
+                    style={{ width: '54px', height: '54px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #10b981' }}
+                  />
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff' }}>
+                        {currentUser?.name || 'Staff Member'}
+                      </span>
+                      <span className="adm-badge adm-badge-primary" style={{ fontFamily: 'monospace', fontWeight: 700 }}>
+                        {currentUser?.employeeId || currentUser?.id || 'Staff ID'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', marginTop: '3px' }}>
+                      Today: <strong style={{ color: '#fff' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong> • Status: {myTodayAtt ? <span style={{ color: '#10b981', fontWeight: 700 }}>✓ Present ({myTodayAtt.checkIn || 'Checked In'})</span> : <span style={{ color: '#f59e0b', fontWeight: 700 }}>⏳ Not Checked In Yet</span>}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <button
+                    className="adm-btn adm-btn-primary"
+                    style={{ padding: '0.65rem 1.35rem', fontSize: '0.88rem', fontWeight: 700 }}
+                    onClick={() => markAttendanceToday('Present')}
+                  >
+                    <CheckCircle2 size={17} />
+                    <span>{myTodayAtt ? 'Checked In Today ✓' : 'Punch In / Check In Now'}</span>
+                  </button>
+                  <button
+                    className="adm-btn adm-btn-secondary"
+                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.88rem', fontWeight: 700 }}
+                    onClick={openApplyLeaveModal}
+                  >
+                    <CalendarPlus size={17} color="var(--adm-primary)" />
+                    <span>Apply for Leave</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
+                {isRegularEmployee ? 'MY ATTENDANCE HISTORY' : 'DAILY BIOMETRIC ATTENDANCE LOGS'} ({displayedAttendance.length} RECORDS)
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportAttendanceCsv}>
+                  <Download size={13} />
+                  <span>Export CSV</span>
+                </button>
+                <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handlePrintAttendance}>
+                  <Printer size={13} />
+                  <span>Print / PDF</span>
+                </button>
+                <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => markAttendanceToday('Present')}>
+                  <CheckCircle2 size={13} />
+                  <span>Mark Attendance</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="adm-table-container">
+              <table className="adm-table">
+                <thead>
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--adm-text-dim)' }}>
-                      No attendance logged for today. Click "Mark Attendance" above to record your entry.
-                    </td>
+                    <th>Team Member</th>
+                    <th>Date</th>
+                    <th>Check In Time</th>
+                    <th>Check Out Time</th>
+                    <th>Attendance Status</th>
                   </tr>
-                ) : (
-                  attendance.map(att => (
-                    <tr key={att.id}>
-                      <td style={{ fontWeight: 700, color: '#fff' }}>{att.employeeName}</td>
-                      <td>{att.date}</td>
-                      <td>{att.checkIn || '-'}</td>
-                      <td>{att.checkOut || '-'}</td>
-                      <td>
-                        <span className={`adm-badge ${
-                          att.status === 'Present' ? 'adm-badge-success' :
-                          att.status === 'Late' ? 'adm-badge-warning' : 'adm-badge-danger'
-                        }`}>
-                          {att.status}
-                        </span>
+                </thead>
+                <tbody>
+                  {displayedAttendance.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--adm-text-dim)' }}>
+                        No attendance logged yet. Click "Punch In / Check In Now" above to record your entry.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    displayedAttendance.map(att => (
+                      <tr key={att.id}>
+                        <td style={{ fontWeight: 700, color: '#fff' }}>{att.employeeName}</td>
+                        <td>{att.date}</td>
+                        <td>{att.checkIn || '-'}</td>
+                        <td>{att.checkOut || '-'}</td>
+                        <td>
+                          <span className={`adm-badge ${
+                            att.status === 'Present' ? 'adm-badge-success' :
+                            att.status === 'Late' ? 'adm-badge-warning' : 'adm-badge-danger'
+                          }`}>
+                            {att.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── 3. LEAVE APPROVALS ── */}
-      {tab === 'leaves' && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
-                {canManageTeam ? 'LEAVE APPLICATIONS & APPROVALS' : 'LEAVE APPLICATIONS & STATUS'} ({leaves.length} TOTAL)
-              </span>
-              {canManageTeam && (
-                pendingLeavesCount > 0 ? (
-                  <span className="adm-badge adm-badge-warning">{pendingLeavesCount} Pending Review</span>
-                ) : (
-                  <span className="adm-badge adm-badge-success">All Reviewed</span>
-                )
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportLeavesCsv}>
-                <Download size={13} />
-                <span>Export CSV</span>
-              </button>
-              <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handlePrintLeaves}>
-                <Printer size={13} />
-                <span>Print / PDF</span>
-              </button>
-              <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={openApplyLeaveModal}>
-                <CalendarPlus size={14} />
-                <span>Apply for Leave</span>
-              </button>
-            </div>
-          </div>
+      {tab === 'leaves' && (() => {
+        const displayedLeaves = isRegularEmployee
+          ? leaves.filter(l => l.employeeName.toLowerCase().includes((currentUser?.name || '').toLowerCase()))
+          : leaves;
 
-          <div className="adm-table-container">
-            <table className="adm-table">
-              <thead>
-                <tr>
-                  <th>Applicant</th>
-                  <th>Leave Type</th>
-                  <th>Dates Requested</th>
-                  <th>Reason</th>
-                  <th>Approval Status</th>
-                  <th>{canManageTeam ? 'Actions / Decision' : 'Action / Status'}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaves.length === 0 ? (
+        return (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
+                  {canManageTeam ? 'LEAVE APPLICATIONS & APPROVALS' : 'MY LEAVE APPLICATIONS & STATUS'} ({displayedLeaves.length} TOTAL)
+                </span>
+                {canManageTeam && (
+                  pendingLeavesCount > 0 ? (
+                    <span className="adm-badge adm-badge-warning">{pendingLeavesCount} Pending Review</span>
+                  ) : (
+                    <span className="adm-badge adm-badge-success">All Reviewed</span>
+                  )
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportLeavesCsv}>
+                  <Download size={13} />
+                  <span>Export CSV</span>
+                </button>
+                <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handlePrintLeaves}>
+                  <Printer size={13} />
+                  <span>Print / PDF</span>
+                </button>
+                <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={openApplyLeaveModal}>
+                  <CalendarPlus size={14} />
+                  <span>Apply for Leave</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="adm-table-container">
+              <table className="adm-table">
+                <thead>
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-                        <CalendarPlus size={36} color="var(--adm-primary)" />
-                        <div style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>No Leave Requests on Record</div>
-                        <p style={{ color: 'var(--adm-text-dim)', fontSize: '0.82rem', margin: 0, maxWidth: '400px' }}>
-                          Employees and staff can submit Sick, Casual, or Paid leave requests. Click below to submit a new leave request.
-                        </p>
-                        <button className="adm-btn adm-btn-primary" style={{ marginTop: '0.5rem' }} onClick={openApplyLeaveModal}>
-                          <CalendarPlus size={15} />
-                          <span>Submit Leave Request</span>
-                        </button>
-                      </div>
-                    </td>
+                    <th>Applicant</th>
+                    <th>Leave Type</th>
+                    <th>Dates Requested</th>
+                    <th>Reason</th>
+                    <th>Approval Status</th>
+                    <th>{canManageTeam ? 'Actions / Decision' : 'Action / Status'}</th>
                   </tr>
-                ) : (
-                  leaves.map(lv => (
-                    <tr key={lv.id}>
-                      <td style={{ fontWeight: 700, color: '#fff' }}>{lv.employeeName}</td>
-                      <td>
-                        <span className="adm-badge adm-badge-neutral" style={{ fontWeight: 600 }}>{lv.type}</span>
+                </thead>
+                <tbody>
+                  {displayedLeaves.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                          <CalendarPlus size={36} color="var(--adm-primary)" />
+                          <div style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>No Leave Requests on Record</div>
+                          <p style={{ color: 'var(--adm-text-dim)', fontSize: '0.82rem', margin: 0, maxWidth: '400px' }}>
+                            Employees and staff can submit Sick, Casual, or Paid leave requests. Click below to submit a new leave request.
+                          </p>
+                          <button className="adm-btn adm-btn-primary" style={{ marginTop: '0.5rem' }} onClick={openApplyLeaveModal}>
+                            <CalendarPlus size={15} />
+                            <span>Submit Leave Request</span>
+                          </button>
+                        </div>
                       </td>
-                      <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                        {lv.startDate} {lv.startDate !== lv.endDate ? `to ${lv.endDate}` : ''}
-                      </td>
-                      <td style={{ color: '#cbd5e1', maxWidth: '280px' }}>{lv.reason}</td>
+                    </tr>
+                  ) : (
+                    displayedLeaves.map(lv => (
+                      <tr key={lv.id}>
+                        <td style={{ fontWeight: 700, color: '#fff' }}>{lv.employeeName}</td>
+                        <td>
+                          <span className="adm-badge adm-badge-neutral" style={{ fontWeight: 600 }}>{lv.type}</span>
+                        </td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                          {lv.startDate} {lv.startDate !== lv.endDate ? `to ${lv.endDate}` : ''}
+                        </td>
+                        <td style={{ color: '#cbd5e1', maxWidth: '280px' }}>{lv.reason}</td>
                       <td>
                         <span className={`adm-badge ${
                           lv.status === 'Approved' ? 'adm-badge-success' :
@@ -1616,34 +1705,15 @@ export const TeamPage: React.FC = () => {
                                   <span>Reject</span>
                                 </button>
                               </>
-                            ) : lv.status === 'Approved' ? (
-                              <>
-                                <button
-                                  className="adm-btn adm-btn-sm adm-btn-secondary"
-                                  style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
-                                  onClick={() => updateLeaveStatus(lv.id, 'Rejected')}
-                                  title="Change decision to Rejected"
-                                >
-                                  Reject
-                                </button>
-                                <button
-                                  className="adm-btn adm-btn-sm adm-btn-secondary"
-                                  style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
-                                  onClick={() => deleteLeaveRequest(lv.id)}
-                                  title="Delete this record"
-                                >
-                                  <Trash2 size={12} color="#ef4444" />
-                                </button>
-                              </>
                             ) : (
                               <>
                                 <button
-                                  className="adm-btn adm-btn-sm adm-btn-primary"
+                                  className="adm-btn adm-btn-sm adm-btn-secondary"
                                   style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem' }}
-                                  onClick={() => updateLeaveStatus(lv.id, 'Approved')}
-                                  title="Re-approve this leave"
+                                  onClick={() => updateLeaveStatus(lv.id, lv.status === 'Approved' ? 'Rejected' : 'Approved')}
+                                  title="Change Decision"
                                 >
-                                  Approve
+                                  {lv.status === 'Approved' ? 'Reject' : 'Approve'}
                                 </button>
                                 <button
                                   className="adm-btn adm-btn-sm adm-btn-secondary"
@@ -1656,26 +1726,19 @@ export const TeamPage: React.FC = () => {
                               </>
                             )
                           ) : (
-                            // Regular employee view: Cannot approve/reject leaves
-                            lv.employeeName.trim().toLowerCase() === (currentUser?.name || '').trim().toLowerCase() ? (
-                              lv.status === 'Pending' ? (
-                                <button
-                                  className="adm-btn adm-btn-sm adm-btn-secondary"
-                                  style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem', color: '#ef4444', gap: '4px' }}
-                                  onClick={() => deleteLeaveRequest(lv.id)}
-                                  title="Withdraw your leave application"
-                                >
-                                  <X size={12} />
-                                  <span>Withdraw</span>
-                                </button>
-                              ) : (
-                                <span style={{ fontSize: '0.72rem', color: lv.status === 'Approved' ? '#10b981' : '#ef4444', fontWeight: 600 }}>
-                                  {lv.status === 'Approved' ? '✓ Approved' : '✕ Declined'}
-                                </span>
-                              )
+                            lv.status === 'Pending' ? (
+                              <button
+                                className="adm-btn adm-btn-sm adm-btn-secondary"
+                                style={{ padding: '0.3rem 0.5rem', fontSize: '0.72rem', color: '#ef4444', gap: '4px' }}
+                                onClick={() => deleteLeaveRequest(lv.id)}
+                                title="Withdraw your leave application"
+                              >
+                                <X size={12} />
+                                <span>Withdraw</span>
+                              </button>
                             ) : (
-                              <span style={{ fontSize: '0.72rem', color: lv.status === 'Approved' ? '#10b981' : lv.status === 'Rejected' ? '#ef4444' : 'var(--adm-text-dim)', fontStyle: 'italic' }}>
-                                {lv.status === 'Pending' ? 'Pending HR Review' : lv.status === 'Approved' ? '✓ Approved' : '✕ Declined'}
+                              <span style={{ fontSize: '0.72rem', color: lv.status === 'Approved' ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+                                {lv.status === 'Approved' ? '✓ Approved' : '✕ Declined'}
                               </span>
                             )
                           )}
@@ -1688,7 +1751,8 @@ export const TeamPage: React.FC = () => {
             </table>
           </div>
         </div>
-      )}
+      );
+    })()}
 
       {/* ── APPLY FOR LEAVE MODAL ── */}
       {showApplyLeaveModal && (

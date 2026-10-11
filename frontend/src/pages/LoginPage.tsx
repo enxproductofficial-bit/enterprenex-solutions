@@ -154,7 +154,7 @@ export const LoginPage: React.FC = () => {
           lastLogin: 'Just now',
           phone: matchedEmp.phone || '+91-9226860060'
         });
-        setTimeout(() => navigate('/admin/tasks'), 600);
+        setTimeout(() => navigate('/admin/team'), 600);
       }
     }, 400);
   };

@@ -65,9 +65,9 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
   }
 
   // If user is Employee (Team Member / Developer) attempting to access Executive Dashboard (/admin),
-  // redirect them directly to their primary workspace (/admin/tasks)
+  // redirect them directly to their primary workspace (My Attendance & Leave: /admin/team)
   if ((currentUser.role === 'Team Member' || currentUser.role === 'Developer') && location.pathname === '/admin') {
-    return <Navigate to="/admin/tasks" replace />;
+    return <Navigate to="/admin/team" replace />;
   }
 
   // If role is not authorized for this specific module
@@ -121,7 +121,7 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
           </p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             <Link
-              to={isEmployeeRole ? '/admin/tasks' : '/admin'}
+              to={isEmployeeRole ? '/admin/team' : '/admin'}
               className="adm-btn adm-btn-primary"
               style={{ textDecoration: 'none', padding: '0.65rem 1.4rem' }}
             >
@@ -309,10 +309,10 @@ function MainAppRoutes() {
           </IpRestrictionGuard>
         } />
 
-        {/* 11. Calendar & Meetings: All Roles */}
+        {/* 11. Calendar & Meetings: Director & Managers */}
         <Route path="/admin/calendar" element={
           <IpRestrictionGuard>
-            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'Team Member', 'Developer']} moduleName="Calendar & Meetings">
+            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager']} moduleName="Calendar & Meetings">
               <CalendarPage />
             </AdminRouteGuard>
           </IpRestrictionGuard>
