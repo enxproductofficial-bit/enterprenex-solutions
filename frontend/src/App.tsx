@@ -206,6 +206,7 @@ function MainAppRoutes() {
         <Route path="/services/:serviceId" element={<PublicWebsiteLayout><ServicePage /></PublicWebsiteLayout>} />
         <Route path="/contact" element={<PublicWebsiteLayout><ContactPage /></PublicWebsiteLayout>} />
         <Route path="/about" element={<PublicWebsiteLayout><AboutPage /></PublicWebsiteLayout>} />
+        <Route path="/verify" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
         <Route path="/verification" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
         <Route path="/verification/internship" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
         <Route path="/verification/employee" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />

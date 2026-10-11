@@ -36,15 +36,6 @@ const NAV_ITEMS = [
       },
     ],
   },
-  {
-    label: 'Verification',
-    href: '/verification',
-    hasIndicator: true,
-    items: [
-      { label: 'Internship Verification', to: '/verification/internship' },
-      { label: 'Employee Verification', to: '/verification/employee' },
-    ],
-  },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];

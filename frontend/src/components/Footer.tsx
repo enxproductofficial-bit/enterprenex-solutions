@@ -37,6 +37,7 @@ const COMPANY_LINKS = [
   { label: 'About Us', to: '/about' },
   { label: 'All Services', to: '/services' },
   { label: 'Contact Us', to: '/contact' },
+  { label: 'Verify Credentials', to: '/verification' },
   { label: 'Staff Login', to: '/login' },
 ];
 
