@@ -242,6 +242,16 @@ export const DocumentsPage: React.FC = () => {
   };
 
   const filteredDocs = documents.filter(d => {
+    // If ordinary employee (cannot manage verification), restrict view strictly to their own documents
+    if (!canManageVerification) {
+      const { empId } = getDocEmployeeInfo(d);
+      const isMine =
+        (empId && (empId === currentUser?.employeeId || empId === currentUser?.id)) ||
+        (currentUser?.name && (d.title.toLowerCase().includes(currentUser.name.toLowerCase()) || d.tags.some(t => t.toLowerCase().includes(currentUser.name.toLowerCase())))) ||
+        (d.uploadedBy && currentUser?.name && d.uploadedBy.toLowerCase() === currentUser.name.toLowerCase());
+      if (!isMine) return false;
+    }
+
     const matchCat = selectedCat === 'All' || d.category === selectedCat;
     const { empId, verificationStatus } = getDocEmployeeInfo(d);
     const matchStatus = selectedStatus === 'All' || verificationStatus === selectedStatus;
@@ -285,30 +295,33 @@ export const DocumentsPage: React.FC = () => {
     e.preventDefault();
 
     const saveDoc = (docUrl: string) => {
+      const assignedEmpId = !canManageVerification ? (currentUser?.employeeId || currentUser?.id || '') : fEmployeeId;
+      const effectiveVerificationStatus = !canManageVerification ? 'Pending Verification' : (fCategory === 'Employee Docs' ? fVerificationStatus : 'Verified');
+
       const tagList = fTags.split(',').map(s => s.trim()).filter(Boolean);
-      if (fEmployeeId && !tagList.includes(fEmployeeId)) {
-        tagList.push(fEmployeeId);
+      if (assignedEmpId && !tagList.includes(assignedEmpId)) {
+        tagList.push(assignedEmpId);
       }
 
       uploadDocument({
         title: fTitle || (selectedFile ? selectedFile.name : 'Untitled Document'),
-        category: fCategory,
+        category: !canManageVerification ? 'Employee Docs' : fCategory,
         version: fVersion,
         fileFormat: fFormat,
         fileSize: fSize,
-        accessPermission: fPermission,
+        accessPermission: !canManageVerification ? 'Internal' : fPermission,
         tags: tagList,
         url: docUrl,
-        employeeId: fEmployeeId || undefined,
-        verificationStatus: fCategory === 'Employee Docs' ? fVerificationStatus : 'Verified',
-        verifiedBy: fVerificationStatus === 'Verified' ? (currentUser?.name || 'Managing Director') : undefined,
-        verifiedAt: fVerificationStatus === 'Verified' ? new Date().toISOString() : undefined
+        employeeId: assignedEmpId || undefined,
+        verificationStatus: effectiveVerificationStatus,
+        verifiedBy: effectiveVerificationStatus === 'Verified' ? (currentUser?.name || 'Managing Director') : undefined,
+        verifiedAt: effectiveVerificationStatus === 'Verified' ? new Date().toISOString() : undefined
       });
 
       // If tied to an existing employee, sync their KYC status
-      if (fEmployeeId && fCategory === 'Employee Docs') {
-        const emp = employees.find(e => e.employeeId === fEmployeeId || e.id === fEmployeeId);
-        if (emp && fVerificationStatus === 'Verified') {
+      if (assignedEmpId && (fCategory === 'Employee Docs' || !canManageVerification)) {
+        const emp = employees.find(e => e.employeeId === assignedEmpId || e.id === assignedEmpId);
+        if (emp && effectiveVerificationStatus === 'Verified') {
           updateEmployee(emp.id, {
             kycStatus: 'Verified',
             kycVerifiedBy: currentUser?.name || 'Managing Director',
@@ -321,7 +334,13 @@ export const DocumentsPage: React.FC = () => {
       setSelectedFile(null);
       setFTitle('');
       setFEmployeeId('');
-      showToast('Upload Successful', `${fTitle || 'Document'} secured with Employee ID status tracking.`, 'success');
+      showToast(
+        'Upload Successful',
+        !canManageVerification
+          ? 'Your document has been uploaded and queued for HR & Executive verification.'
+          : `${fTitle || 'Document'} secured with Employee ID status tracking.`,
+        'success'
+      );
     };
 
     if (selectedFile) {
@@ -650,13 +669,17 @@ export const DocumentsPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Central Document Vault & IP Repository</h1>
-          <p>Encrypted vault for client NDAs, master service agreements, employee KYC and statutory records</p>
+          <h1>{canManageVerification ? 'Central Document Vault & IP Repository' : 'My Documents & Certificate'}</h1>
+          <p>
+            {canManageVerification
+              ? 'Encrypted vault for client NDAs, master service agreements, employee KYC and statutory records'
+              : 'Your verified internship and experience certificates, official credentials, and KYC verification records'}
+          </p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={() => setShowUploadModal(true)}>
             <UploadCloud size={16} />
-            <span>Upload Document</span>
+            <span>{canManageVerification ? 'Upload Document' : 'Upload My KYC / File'}</span>
           </button>
         </div>
       </div>
@@ -693,10 +716,14 @@ export const DocumentsPage: React.FC = () => {
           </div>
           <div>
             <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.88rem' }}>
-              Vault Clearance & KYC Management: Active for {currentUser?.name} &bull; {currentUser?.role}
+              {canManageVerification
+                ? `Vault Clearance & KYC Management: Active for ${currentUser?.name} \u2022 ${currentUser?.role}`
+                : `Verified Document Vault: ${currentUser?.name} \u2022 ${currentUser?.employeeId || 'Staff ID'}`}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
-              Verification Status tracked by Employee ID &bull; Director & HR can Verify, Approve, Download & Print all records
+              {canManageVerification
+                ? 'Verification Status tracked by Employee ID \u2022 Director & HR can Verify, Approve, Download & Print all records'
+                : 'All certificates include verifiable QR codes and executive digital signatures under Enterprenex verification policy.'}
             </div>
           </div>
         </div>
@@ -721,7 +748,7 @@ export const DocumentsPage: React.FC = () => {
               type="text"
               className="adm-input"
               style={{ paddingLeft: '2.4rem' }}
-              placeholder="Search by title, tags, or 12-digit Employee ID..."
+              placeholder={canManageVerification ? "Search by title, tags, or 12-digit Employee ID..." : "Search your documents, certificates..."}
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -758,7 +785,7 @@ export const DocumentsPage: React.FC = () => {
 
         {/* Category buttons */}
         <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-          {CATEGORIES.map(cat => (
+          {(canManageVerification ? CATEGORIES : ['All', 'Employee Docs', 'Contracts']).map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCat(cat)}
@@ -1534,31 +1561,46 @@ export const DocumentsPage: React.FC = () => {
               <div className="adm-grid-2">
                 <div className="adm-form-group">
                   <label className="adm-form-label">Assign to Employee ID</label>
-                  <select
-                    className="adm-select"
-                    value={fEmployeeId}
-                    onChange={e => setFEmployeeId(e.target.value)}
-                  >
-                    <option value="">-- None (Company Corporate Document) --</option>
-                    {employees.map(emp => (
-                      <option key={emp.id} value={emp.employeeId || emp.id}>
-                        {emp.employeeId || emp.id} - {emp.name} ({emp.role})
-                      </option>
-                    ))}
-                  </select>
+                  {canManageVerification ? (
+                    <select
+                      className="adm-select"
+                      value={fEmployeeId}
+                      onChange={e => setFEmployeeId(e.target.value)}
+                    >
+                      <option value="">-- None (Company Corporate Document) --</option>
+                      {employees.map(emp => (
+                        <option key={emp.id} value={emp.employeeId || emp.id}>
+                          {emp.employeeId || emp.id} - {emp.name} ({emp.role})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      className="adm-input"
+                      readOnly
+                      value={`${currentUser?.employeeId || currentUser?.id || 'Staff'} - ${currentUser?.name}`}
+                      style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--adm-text-muted)', cursor: 'not-allowed' }}
+                    />
+                  )}
                 </div>
 
                 <div className="adm-form-group">
                   <label className="adm-form-label">Verification Status</label>
-                  <select
-                    className="adm-select"
-                    value={fVerificationStatus}
-                    onChange={e => setFVerificationStatus(e.target.value as any)}
-                  >
-                    <option value="Verified">✓ Verified</option>
-                    <option value="Pending Verification">⏳ Pending Verification</option>
-                    <option value="Rejected">✕ Rejected</option>
-                  </select>
+                  {canManageVerification ? (
+                    <select
+                      className="adm-select"
+                      value={fVerificationStatus}
+                      onChange={e => setFVerificationStatus(e.target.value as any)}
+                    >
+                      <option value="Verified">✓ Verified</option>
+                      <option value="Pending Verification">⏳ Pending Verification</option>
+                      <option value="Rejected">✕ Rejected</option>
+                    </select>
+                  ) : (
+                    <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '6px', color: '#f59e0b', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', height: '42px', boxSizing: 'border-box' }}>
+                      <Clock size={14} /> Pending HR Verification
+                    </div>
+                  )}
                 </div>
               </div>
 

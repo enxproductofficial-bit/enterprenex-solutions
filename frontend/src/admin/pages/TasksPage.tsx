@@ -10,7 +10,8 @@ import {
   X,
   Play,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  MessageCircle
 } from 'lucide-react';
 import type { Task, TaskColumn, TaskPriority } from '../types';
 
@@ -25,6 +26,10 @@ export const TasksPage: React.FC = () => {
   const [commentInput, setCommentInput] = useState('');
   const [loggedHoursInput, setLoggedHoursInput] = useState(2);
 
+  // Role detection and view filter
+  const isEmployee = currentUser?.role === 'Team Member' || currentUser?.role === 'Developer';
+  const [taskViewFilter, setTaskViewFilter] = useState<'my' | 'all'>(isEmployee ? 'my' : 'all');
+
   // Form State
   const [fTitle, setFTitle] = useState('');
   const [fProjectId, setFProjectId] = useState(projects[0]?.id || '');
@@ -34,7 +39,19 @@ export const TasksPage: React.FC = () => {
   const [fDesc, setFDesc] = useState('');
   const [fHours, setFHours] = useState(8);
 
+  const myTasks = tasks.filter(t => 
+    (currentUser?.name && t.assignedTo.toLowerCase().includes(currentUser.name.toLowerCase())) ||
+    (currentUser?.employeeId && t.assignedTo.includes(currentUser.employeeId))
+  );
+
   const filteredTasks = tasks.filter(t => {
+    if (taskViewFilter === 'my') {
+      const isMine = 
+        (currentUser?.name && t.assignedTo.toLowerCase().includes(currentUser.name.toLowerCase())) ||
+        (currentUser?.employeeId && t.assignedTo.includes(currentUser.employeeId));
+      if (!isMine) return false;
+    }
+
     const matchSearch = t.title.toLowerCase().includes(search.toLowerCase()) ||
       t.assignedTo.toLowerCase().includes(search.toLowerCase()) ||
       t.projectName.toLowerCase().includes(search.toLowerCase());
@@ -87,8 +104,12 @@ export const TasksPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Sprint Tasks & Kanban Board</h1>
-          <p>Scrum agile task tracking, subtasks, stopwatch time tracking & team collaboration comments</p>
+          <h1>{isEmployee ? 'My Assigned Tasks & Sprints' : 'Sprint Tasks & Kanban Board'}</h1>
+          <p>
+            {isEmployee
+              ? 'Sprint tasks assigned to you, subtask progress, time tracking & sprint delivery'
+              : 'Scrum agile task tracking, subtasks, stopwatch time tracking & team collaboration comments'}
+          </p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
@@ -100,16 +121,54 @@ export const TasksPage: React.FC = () => {
 
       {/* Filter & Search */}
       <div className="adm-card" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ position: 'relative', width: '320px' }}>
-          <Search size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }} />
-          <input
-            type="text"
-            className="adm-input"
-            style={{ paddingLeft: '2.4rem' }}
-            placeholder="Search tasks, assignees, projects..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', width: '300px' }}>
+            <Search size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }} />
+            <input
+              type="text"
+              className="adm-input"
+              style={{ paddingLeft: '2.4rem' }}
+              placeholder={isEmployee ? "Search your tasks, projects..." : "Search tasks, assignees, projects..."}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Quick View Filter: Assigned to Me vs All Tasks */}
+          <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--adm-bg)', padding: '3px', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
+            <button
+              type="button"
+              onClick={() => setTaskViewFilter('my')}
+              style={{
+                background: taskViewFilter === 'my' ? 'var(--adm-primary)' : 'transparent',
+                color: taskViewFilter === 'my' ? '#fff' : 'var(--adm-text-muted)',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '0.35rem 0.75rem',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Assigned to Me ({myTasks.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setTaskViewFilter('all')}
+              style={{
+                background: taskViewFilter === 'all' ? 'var(--adm-primary)' : 'transparent',
+                color: taskViewFilter === 'all' ? '#fff' : 'var(--adm-text-muted)',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '0.35rem 0.75rem',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              All Tasks ({tasks.length})
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -365,12 +424,29 @@ export const TasksPage: React.FC = () => {
             </div>
 
             {/* Modal Actions */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--adm-border)' }}>
-              <button className="adm-btn adm-btn-danger adm-btn-sm" onClick={() => { deleteTask(selectedTask.id); setSelectedTask(null); }}>
-                <Trash2 size={13} />
-                <span>Delete Task</span>
-              </button>
-              <button className="adm-btn adm-btn-secondary" onClick={() => setSelectedTask(null)}>Close</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--adm-border)' }}>
+              <a
+                href={`https://wa.me/919226860060?text=${encodeURIComponent(
+                  `*ENTERPRENEX TASK STATUS UPDATE*\n\n*Task:* ${selectedTask.title}\n*Assignee:* ${selectedTask.assignedTo}\n*Status:* ${selectedTask.status}\n*Project:* ${selectedTask.projectName}\n*Logged Time:* ${selectedTask.loggedHours}h / ${selectedTask.estimatedHours}h\n*Due Date:* ${selectedTask.dueDate}\n\n*Portal Link:* https://www.enterprenexsolution.com/admin/tasks`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="adm-btn adm-btn-sm"
+                style={{ background: '#25D366', color: '#fff', border: 'none', textDecoration: 'none', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <MessageCircle size={14} />
+                <span>Share Update on WhatsApp</span>
+              </a>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {!isEmployee && (
+                  <button className="adm-btn adm-btn-danger adm-btn-sm" onClick={() => { deleteTask(selectedTask.id); setSelectedTask(null); }}>
+                    <Trash2 size={13} />
+                    <span>Delete Task</span>
+                  </button>
+                )}
+                <button className="adm-btn adm-btn-secondary" onClick={() => setSelectedTask(null)}>Close</button>
+              </div>
             </div>
 
           </div>

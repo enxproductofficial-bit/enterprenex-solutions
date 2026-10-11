@@ -1509,7 +1509,15 @@ export const TeamPage: React.FC = () => {
                       </span>
                     </div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', marginTop: '3px' }}>
-                      Today: <strong style={{ color: '#fff' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong> • Status: {myTodayAtt ? <span style={{ color: '#10b981', fontWeight: 700 }}>✓ Present ({myTodayAtt.checkIn || 'Checked In'})</span> : <span style={{ color: '#f59e0b', fontWeight: 700 }}>⏳ Not Checked In Yet</span>}
+                      Today: <strong style={{ color: '#fff' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong> • Status: {
+                        !myTodayAtt ? (
+                          <span style={{ color: '#f59e0b', fontWeight: 700 }}>⏳ Not Checked In Yet</span>
+                        ) : myTodayAtt.checkOut && myTodayAtt.checkOut !== '-' ? (
+                          <span style={{ color: '#10b981', fontWeight: 700 }}>✓ Completed (In: {myTodayAtt.checkIn} &bull; Out: {myTodayAtt.checkOut})</span>
+                        ) : (
+                          <span style={{ color: '#38bdf8', fontWeight: 700 }}>⚡ Working (In: {myTodayAtt.checkIn})</span>
+                        )
+                      }
                     </div>
                   </div>
                 </div>
@@ -1517,11 +1525,29 @@ export const TeamPage: React.FC = () => {
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <button
                     className="adm-btn adm-btn-primary"
-                    style={{ padding: '0.65rem 1.35rem', fontSize: '0.88rem', fontWeight: 700 }}
-                    onClick={() => markAttendanceToday('Present')}
+                    style={{
+                      padding: '0.65rem 1.35rem',
+                      fontSize: '0.88rem',
+                      fontWeight: 700,
+                      background: (!myTodayAtt) ? '#059669' : (myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') ? 'rgba(255,255,255,0.1)' : '#f59e0b',
+                      borderColor: (!myTodayAtt) ? '#059669' : (myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') ? 'rgba(255,255,255,0.2)' : '#f59e0b'
+                    }}
+                    onClick={() => {
+                      if (myTodayAtt && myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') {
+                        showToast('Attendance Logged', 'You have already checked in and out for today.', 'info');
+                        return;
+                      }
+                      markAttendanceToday('Present');
+                    }}
                   >
                     <CheckCircle2 size={17} />
-                    <span>{myTodayAtt ? 'Checked In Today ✓' : 'Punch In / Check In Now'}</span>
+                    <span>
+                      {!myTodayAtt
+                        ? 'Punch In / Check In Now'
+                        : (!myTodayAtt.checkOut || myTodayAtt.checkOut === '-')
+                        ? 'Punch Out (Check-Out)'
+                        : 'Day Completed ✓'}
+                    </span>
                   </button>
                   <button
                     className="adm-btn adm-btn-secondary"

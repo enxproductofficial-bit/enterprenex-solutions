@@ -652,11 +652,36 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Leave Record Removed', 'Leave entry has been removed.', 'info');
   };
 
-  const markAttendanceToday = (status: 'Present' | 'Late' | 'Half Day' | 'Absent') => {
+  const markAttendanceToday = (status: 'Present' | 'Late' | 'Half Day' | 'Absent' = 'Present') => {
     if (!currentUser) return;
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const dateStr = now.toISOString().split('T')[0];
+
+    const existingIndex = attendance.findIndex(
+      a => a.date === dateStr && (
+        a.employeeId === currentUser.id ||
+        (currentUser.name && a.employeeName.toLowerCase() === currentUser.name.toLowerCase())
+      )
+    );
+
+    if (existingIndex >= 0) {
+      const existing = attendance[existingIndex];
+      if (!existing.checkOut || existing.checkOut === '-') {
+        const updated = [...attendance];
+        updated[existingIndex] = {
+          ...existing,
+          checkOut: timeStr
+        };
+        setAttendance(updated);
+        showToast('Punch Out Recorded', `Checked out at ${timeStr}. Great work today!`, 'success');
+        return;
+      } else {
+        showToast('Attendance Complete', `You have already checked in at ${existing.checkIn} and checked out at ${existing.checkOut} today.`, 'info');
+        return;
+      }
+    }
+
     const newAtt: AttendanceRecord = {
       id: 'att-' + Date.now(),
       employeeId: currentUser.id,
