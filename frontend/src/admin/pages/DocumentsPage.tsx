@@ -89,6 +89,7 @@ export const DocumentsPage: React.FC = () => {
   const [fTags, setFTags] = useState('Legal, Enterprise, 2026');
   const [fEmployeeId, setFEmployeeId] = useState('');
   const [fVerificationStatus, setFVerificationStatus] = useState<'Verified' | 'Pending Verification' | 'Rejected'>('Pending Verification');
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
 
   // Helper to extract or resolve Employee ID and Verification Status for any document
   const getDocEmployeeInfo = (doc: VaultDocument): {
@@ -267,6 +268,16 @@ export const DocumentsPage: React.FC = () => {
       const sizeInMb = (file.size / (1024 * 1024)).toFixed(2);
       const sizeInKb = (file.size / 1024).toFixed(0);
       setFSize(file.size > 1024 * 1024 ? `${sizeInMb} MB` : `${sizeInKb} KB`);
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (loadEvt) => {
+          setFilePreviewUrl(loadEvt.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setFilePreviewUrl(null);
+      }
     }
   };
 
@@ -1457,12 +1468,21 @@ export const DocumentsPage: React.FC = () => {
                 }}
               >
                 {selectedFile ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-                    <FileCheck size={32} color="var(--adm-success)" />
-                    <div style={{ textAlign: 'left' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                    {filePreviewUrl ? (
+                      <div style={{ width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '2px solid #10b981', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
+                        <img src={filePreviewUrl} alt="Document Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    ) : (
+                      <FileCheck size={36} color="var(--adm-success)" />
+                    )}
+                    <div>
                       <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>{selectedFile.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
-                        {fSize} &bull; {fFormat} Document (Click to change file)
+                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
+                        {fSize} &bull; {fFormat} Record &bull; <span style={{ color: '#10b981', fontWeight: 700 }}>✓ Verified for Upload</span>
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--adm-primary)', marginTop: '4px' }}>
+                        Click to change file
                       </div>
                     </div>
                   </div>
