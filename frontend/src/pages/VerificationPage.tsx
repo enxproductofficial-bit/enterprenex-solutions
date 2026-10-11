@@ -32,12 +32,50 @@ export default function VerificationPage() {
   const [searched, setSearched] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  // Update tab if URL changes
+  // Update tab and auto-lookup credential if QR code param is present (e.g. ?id=ENX-INT-2026-...)
   useEffect(() => {
-    setActiveTab(getInitialTab());
-    setSearchQuery('');
-    setSearched(false);
-    setResult(null);
+    const params = new URLSearchParams(location.search);
+    const queryId = params.get('id') || params.get('cert') || params.get('q');
+
+    if (queryId) {
+      const cleanQ = queryId.trim();
+      setSearchQuery(cleanQ);
+      setSearched(true);
+
+      // Auto-lookup internships / certificates
+      const internships = getInternshipRecords();
+      const matchCert = internships.find((item: any) =>
+        (item.certId && item.certId.toLowerCase() === cleanQ.toLowerCase()) ||
+        (item.id && item.id.toLowerCase() === cleanQ.toLowerCase()) ||
+        (item.employeeId && item.employeeId.toLowerCase() === cleanQ.toLowerCase())
+      );
+
+      if (matchCert) {
+        setActiveTab('internship');
+        setResult(matchCert);
+        return;
+      }
+
+      // Auto-lookup employees
+      const team = getEmployees();
+      const matchEmp = team.find((emp: any) =>
+        (emp.employeeId && emp.employeeId.toLowerCase() === cleanQ.toLowerCase()) ||
+        (emp.id && emp.id.toLowerCase() === cleanQ.toLowerCase())
+      );
+
+      if (matchEmp) {
+        setActiveTab('employee');
+        setResult(matchEmp);
+        return;
+      }
+
+      setResult(null);
+    } else {
+      setActiveTab(getInitialTab());
+      setSearchQuery('');
+      setSearched(false);
+      setResult(null);
+    }
   }, [location.pathname, location.search]);
 
   // Load live employees from localStorage (EWMS team database) or fallback to initial data

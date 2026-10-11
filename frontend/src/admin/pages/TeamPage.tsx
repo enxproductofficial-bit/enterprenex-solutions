@@ -34,6 +34,7 @@ import {
   CheckCheck,
   Award
 } from 'lucide-react';
+import { COMPANY_LOGO_BASE64 } from '../data/companyLogo';
 import type { Employee, LeaveRequest } from '../types';
 
 export const TeamPage: React.FC = () => {
@@ -335,10 +336,10 @@ export const TeamPage: React.FC = () => {
       <head>
         <title>${cert.certType} - ${cert.name}</title>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
           @page { size: landscape; margin: 0; }
           body { margin: 0; padding: 25px; background: #0c1017; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
-          .cert-container { width: 1000px; height: 680px; background: #ffffff; border: 12px double #b48530; border-radius: 8px; padding: 32px 40px; box-sizing: border-box; position: relative; text-align: center; color: #1e293b; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; }
+          .cert-container { width: 1000px; height: 680px; background: #ffffff; border: 12px double #b48530; border-radius: 8px; padding: 30px 40px; box-sizing: border-box; position: relative; text-align: center; color: #1e293b; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; }
           .corner-ornament { position: absolute; width: 40px; height: 40px; border: 3px solid #b48530; z-index: 2; }
           .tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
           .tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
@@ -346,25 +347,25 @@ export const TeamPage: React.FC = () => {
           .br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
           .header-title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: 2px; margin: 0; }
           .header-sub { font-size: 10.5px; color: #64748b; letter-spacing: 1px; margin-top: 3px; text-transform: uppercase; }
-          .cert-type { font-family: 'Cinzel', serif; font-size: 28px; font-weight: 800; color: #b48530; margin: 16px 0 8px; letter-spacing: 2.5px; text-transform: uppercase; position: relative; z-index: 1; }
-          .cert-intro { font-size: 13.5px; color: #475569; margin: 0; font-style: italic; position: relative; z-index: 1; }
-          .recipient-name { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 800; color: #0f172a; margin: 12px 0 4px; border-bottom: 2px solid #e2e8f0; display: inline-block; padding: 0 35px 6px; position: relative; z-index: 1; }
-          .emp-id-badge { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 12px; font-family: monospace; position: relative; z-index: 1; }
-          .cert-body { font-size: 13.5px; line-height: 1.65; color: #334155; max-width: 820px; margin: 0 auto; position: relative; z-index: 1; }
+          .cert-type { font-family: 'Cinzel', serif; font-size: 27px; font-weight: 800; color: #b48530; margin: 14px 0 6px; letter-spacing: 2.5px; text-transform: uppercase; position: relative; z-index: 1; }
+          .cert-intro { font-size: 13px; color: #475569; margin: 0; font-style: italic; position: relative; z-index: 1; }
+          .recipient-name { font-family: 'Cinzel', serif; font-size: 29px; font-weight: 800; color: #0f172a; margin: 10px 0 4px; border-bottom: 2px solid #e2e8f0; display: inline-block; padding: 0 35px 5px; position: relative; z-index: 1; }
+          .emp-id-badge { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 10px; font-family: monospace; position: relative; z-index: 1; }
+          .cert-body { font-size: 13.5px; line-height: 1.6; color: #334155; max-width: 820px; margin: 0 auto; position: relative; z-index: 1; }
           .highlight { font-weight: 700; color: #0f172a; }
-          .footer-section { position: absolute; bottom: 30px; left: 50px; right: 50px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; }
-          .sig-block { text-align: center; width: 220px; }
-          .sig-line { border-top: 1px solid #94a3b8; padding-top: 6px; font-size: 12px; font-weight: 700; color: #1e293b; }
+          .footer-section { position: absolute; bottom: 25px; left: 45px; right: 45px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 1; }
+          .sig-block { text-align: center; width: 210px; }
+          .sig-line { border-top: 1px solid #94a3b8; padding-top: 5px; font-size: 11.5px; font-weight: 700; color: #1e293b; }
           .sig-role { font-size: 10px; color: #64748b; }
-          .gold-seal { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #b48530; background: #fffdf5; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(180,133,48,0.25); }
-          .gold-seal span { font-size: 9px; font-weight: 800; color: #b48530; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; }
-          .verify-stamp { font-size: 10px; color: #64748b; font-family: monospace; margin-top: 12px; position: relative; z-index: 1; }
+          .gold-seal { width: 84px; height: 84px; border-radius: 50%; border: 3px solid #b48530; background: #fffdf5; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(180,133,48,0.25); }
+          .gold-seal span { font-size: 8.5px; font-weight: 800; color: #b48530; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; }
+          .verify-stamp { font-size: 10px; color: #64748b; font-family: monospace; margin-top: 10px; position: relative; z-index: 1; }
         </style>
       </head>
       <body>
         <div class="cert-container">
           <!-- Subtle Security Watermark in Center Background -->
-          <img src="/images/company-logo.jpg" alt="Security Watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; opacity: 0.04; pointer-events: none; z-index: 0; filter: grayscale(10%);" />
+          <img src="${COMPANY_LOGO_BASE64}" alt="Security Watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 440px; opacity: 0.04; pointer-events: none; z-index: 0; filter: grayscale(10%);" />
 
           <div class="corner-ornament tl"></div>
           <div class="corner-ornament tr"></div>
@@ -372,9 +373,9 @@ export const TeamPage: React.FC = () => {
           <div class="corner-ornament br"></div>
 
           <!-- Official Company Logo & Identity Header -->
-          <div style="position: relative; z-index: 1; margin-bottom: 4px;">
-            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 8px;">
-              <img src="/images/company-logo.jpg" alt="Enterprenex Solutions" style="height: 52px; max-width: 260px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));" />
+          <div style="position: relative; z-index: 1; margin-bottom: 2px;">
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 6px;">
+              <img src="${COMPANY_LOGO_BASE64}" alt="Enterprenex Solutions" style="height: 54px; max-width: 270px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));" />
             </div>
             <h1 class="header-title">ENTERPRENEX SOLUTIONS PRIVATE LIMITED</h1>
             <div class="header-sub">Corporate Identity: U72900MH2026PTC000000 &bull; ISO 9001:2015 Registered Entity</div>
@@ -399,20 +400,31 @@ export const TeamPage: React.FC = () => {
           </div>
 
           <div class="footer-section">
+            <!-- Managing Director Signature Block -->
             <div class="sig-block">
-              <div style="font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Rohit P.</div>
+              <div style="font-family: 'Dancing Script', cursive; font-size: 26px; font-weight: 700; color: #1e3a8a; transform: rotate(-3deg); margin-bottom: 2px;">Rohit P.</div>
+              <div style="font-size: 8px; color: #0284c7; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px;">✓ Digitally Certified</div>
               <div class="sig-line">MANAGING DIRECTOR</div>
               <div class="sig-role">Enterprenex Solutions Pvt Ltd</div>
             </div>
 
+            <!-- Official Gold Corporate Seal -->
             <div class="gold-seal">
               <span>★ OFFICIAL ★</span>
               <span style="font-size: 14px; margin: 2px 0;">🛡️</span>
               <span>CORPORATE SEAL</span>
             </div>
 
+            <!-- Instant Phone Scannable QR Code -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 84px;">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=${encodeURIComponent(`https://www.enterprenexsolution.com/verification?id=${cert.certId}`)}" alt="Verify QR Code" style="width: 68px; height: 68px; border: 2px solid #b48530; border-radius: 6px; padding: 2px; background: #ffffff;" />
+              <span style="font-size: 8px; font-weight: 800; color: #b48530; margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase;">Scan To Verify</span>
+            </div>
+
+            <!-- Head of HR Signature Block -->
             <div class="sig-block">
-              <div style="font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Head of HR</div>
+              <div style="font-family: 'Dancing Script', cursive; font-size: 24px; font-weight: 700; color: #1e3a8a; transform: rotate(-2deg); margin-bottom: 2px;">A. Sharma</div>
+              <div style="font-size: 8px; color: #0284c7; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px;">✓ Digitally Certified</div>
               <div class="sig-line">HEAD OF HUMAN RESOURCES</div>
               <div class="sig-role">Executive Board &bull; MH, India</div>
             </div>
