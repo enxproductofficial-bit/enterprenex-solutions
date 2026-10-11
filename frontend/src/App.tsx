@@ -6,7 +6,7 @@ import './index.css';
 import './admin/admin.css';
 
 // Public Components & Pages
-import Header from './components/Header';
+import Header from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ServicePage from './pages/ServicePage';
