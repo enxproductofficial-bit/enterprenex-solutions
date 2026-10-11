@@ -34,7 +34,7 @@ import {
   CheckCheck,
   Award
 } from 'lucide-react';
-import { COMPANY_LOGO_BASE64 } from '../data/companyLogo';
+import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64 } from '../data/companyLogo';
 import type { Employee, LeaveRequest } from '../types';
 
 export const TeamPage: React.FC = () => {
@@ -365,7 +365,7 @@ export const TeamPage: React.FC = () => {
       <body>
         <div class="cert-container">
           <!-- Subtle Security Watermark in Center Background -->
-          <img src="${COMPANY_LOGO_BASE64}" alt="Security Watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 440px; opacity: 0.04; pointer-events: none; z-index: 0; filter: grayscale(10%);" />
+          <img src="${COMPANY_SEAL_BASE64}" alt="Security Watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; opacity: 0.05; pointer-events: none; z-index: 0;" />
 
           <div class="corner-ornament tl"></div>
           <div class="corner-ornament tr"></div>
@@ -408,11 +408,9 @@ export const TeamPage: React.FC = () => {
               <div class="sig-role">Enterprenex Solutions Pvt Ltd</div>
             </div>
 
-            <!-- Official Gold Corporate Seal -->
-            <div class="gold-seal">
-              <span>★ OFFICIAL ★</span>
-              <span style="font-size: 14px; margin: 2px 0;">🛡️</span>
-              <span>CORPORATE SEAL</span>
+            <!-- Official Circular Corporate Seal Emblem -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 88px;">
+              <img src="${COMPANY_SEAL_BASE64}" alt="Official Corporate Seal" style="width: 82px; height: 82px; border-radius: 50%; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.18)); object-fit: contain;" />
             </div>
 
             <!-- Instant Phone Scannable QR Code -->
