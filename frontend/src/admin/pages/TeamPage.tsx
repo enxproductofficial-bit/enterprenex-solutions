@@ -34,7 +34,7 @@ import {
   CheckCheck,
   Award
 } from 'lucide-react';
-import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64 } from '../data/companyLogo';
+import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64 } from '../data/companyLogo';
 import type { Employee, LeaveRequest } from '../types';
 
 export const TeamPage: React.FC = () => {
@@ -364,8 +364,8 @@ export const TeamPage: React.FC = () => {
       </head>
       <body>
         <div class="cert-container">
-          <!-- Subtle Security Watermark in Center Background -->
-          <img src="${COMPANY_SEAL_BASE64}" alt="Security Watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; opacity: 0.05; pointer-events: none; z-index: 0;" />
+          <!-- Clearly Visible Official Company Logo Watermark Behind Text -->
+          <img src="${COMPANY_WATERMARK_BASE64}" alt="Enterprenex Watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 560px; opacity: 0.12; pointer-events: none; z-index: 0;" />
 
           <div class="corner-ornament tl"></div>
           <div class="corner-ornament tr"></div>
