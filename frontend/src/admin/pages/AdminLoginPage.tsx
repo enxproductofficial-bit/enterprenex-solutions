@@ -21,9 +21,14 @@ export const AdminLoginPage: React.FC = () => {
     const inputPassword = password.trim();
 
     const isPasswordValid = inputPassword === 'Enx_sol_121006';
-    const isDirector = (inputEmail === 'director@enterprenexsolution.com' || inputEmail === 'rohit@enterprenexsolution.com') && isPasswordValid;
-    const isHr = inputEmail === 'hr@enterprenexsolution.com' && isPasswordValid;
-    const isManager = inputEmail === 'manager@enterprenexsolution.com' && isPasswordValid;
+    const isDirector = (
+      inputEmail === 'director@enterprenex.solutions' ||
+      inputEmail === 'rohit@enterprenex.solutions' ||
+      inputEmail === 'director@enterprenexsolution.com' ||
+      inputEmail === 'rohit@enterprenexsolution.com'
+    ) && isPasswordValid;
+    const isHr = (inputEmail === 'hr@enterprenex.solutions' || inputEmail === 'hr@enterprenexsolution.com') && isPasswordValid;
+    const isManager = (inputEmail === 'manager@enterprenex.solutions' || inputEmail === 'manager@enterprenexsolution.com') && isPasswordValid;
 
     // Check Employee match by Employee ID or Email
     const matchedEmp = employees.find(

@@ -40,10 +40,14 @@ export const LoginPage: React.FC = () => {
 
     const REQUIRED_PASSWORD = 'Enx_sol_121006';
     const DIRECTOR_EMAILS = [
+      'director@enterprenex.solutions',
+      'rohit@enterprenex.solutions',
       'director@enterprenexsolution.com',
       'rohit@enterprenexsolution.com'
     ];
     const MANAGER_HR_EMAILS = [
+      'hr@enterprenex.solutions',
+      'manager@enterprenex.solutions',
       'hr@enterprenexsolution.com',
       'manager@enterprenexsolution.com'
     ];
@@ -220,7 +224,13 @@ export const LoginPage: React.FC = () => {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => setRole(item.id)}
+                    onClick={() => {
+                      setRole(item.id);
+                      setEmail('');
+                      setPassword('');
+                      setErrorMessage(null);
+                      setStatusMessage(null);
+                    }}
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
@@ -309,12 +319,13 @@ export const LoginPage: React.FC = () => {
                       role === 'employee'
                         ? 'e.g. 202600000002 (12-Digit Employee ID)'
                         : role === 'director'
-                        ? 'director@enterprenexsolution.com'
-                        : 'hr@enterprenexsolution.com'
+                        ? 'e.g. director@enterprenex.solutions'
+                        : 'e.g. hr@enterprenex.solutions'
                     }
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="reg-input"
+                    autoComplete="off"
                   />
                 </div>
               </div>

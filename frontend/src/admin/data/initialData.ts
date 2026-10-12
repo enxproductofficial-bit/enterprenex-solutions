@@ -23,7 +23,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-1',
     name: 'Rohit P.',
-    email: 'director@enterprenexsolution.com',
+    email: 'director@enterprenex.solutions',
     role: 'Super Admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     department: 'Executive Board',
@@ -34,7 +34,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-2',
     name: 'Operations & HR Lead',
-    email: 'manager@enterprenexsolution.com',
+    email: 'hr@enterprenex.solutions',
     role: 'Project Manager',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     department: 'Operations & HR Management',
@@ -45,7 +45,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-3',
     name: 'Engineering Staff (EPX-101)',
-    email: 'employee@enterprenexsolution.com',
+    email: 'employee@enterprenex.solutions',
     role: 'Team Member',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
     department: 'Engineering & Operations',
@@ -211,7 +211,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     name: 'Rohit P.',
     role: 'Managing Director & Lead Architect',
     department: 'Engineering',
-    email: 'director@enterprenexsolution.com',
+    email: 'director@enterprenex.solutions',
     phone: '+91-9226860060',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Cloud Architecture', 'AI Systems'],
@@ -369,7 +369,7 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
     module: 'Admin & Security',
     ipAddress: '10.206.229.155',
     timestamp: 'Just now',
-    details: 'Zero-trust enterprise governance active for director@enterprenexsolution.com'
+    details: 'Zero-trust enterprise governance active for director@enterprenex.solutions'
   }
 ];
 

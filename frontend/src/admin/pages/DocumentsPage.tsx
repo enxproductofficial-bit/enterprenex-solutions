@@ -56,7 +56,7 @@ export const DocumentsPage: React.FC = () => {
     logAction
   } = useAdmin();
 
-  const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenexsolution.com';
+  const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenex.solutions' || currentUser?.email === 'director@enterprenexsolution.com';
   const isManagerOrHr =
     currentUser?.role === 'Project Manager' ||
     currentUser?.role === 'HR Manager' ||
@@ -1370,36 +1370,36 @@ export const DocumentsPage: React.FC = () => {
                 <button
                   className="adm-btn adm-btn-secondary"
                   style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
-                  onClick={() => handleEmailDocument(emailModalDoc, 'director@enterprenexsolution.com')}
+                  onClick={() => handleEmailDocument(emailModalDoc, 'director@enterprenex.solutions')}
                 >
                   <Building size={16} color="var(--adm-primary)" />
                   <div style={{ textAlign: 'left', marginLeft: '6px' }}>
                     <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Managing Director</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>director@enterprenexsolution.com</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>director@enterprenex.solutions</div>
                   </div>
                 </button>
 
                 <button
                   className="adm-btn adm-btn-secondary"
                   style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
-                  onClick={() => handleEmailDocument(emailModalDoc, 'hr@enterprenexsolution.com')}
+                  onClick={() => handleEmailDocument(emailModalDoc, 'hr@enterprenex.solutions')}
                 >
                   <UserCheck size={16} color="var(--adm-info)" />
                   <div style={{ textAlign: 'left', marginLeft: '6px' }}>
                     <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>HR Operations & Compliance</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>hr@enterprenexsolution.com</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>hr@enterprenex.solutions</div>
                   </div>
                 </button>
 
                 <button
                   className="adm-btn adm-btn-secondary"
                   style={{ justifyContent: 'flex-start', padding: '0.65rem 0.85rem' }}
-                  onClick={() => handleEmailDocument(emailModalDoc, 'manager@enterprenexsolution.com')}
+                  onClick={() => handleEmailDocument(emailModalDoc, 'manager@enterprenex.solutions')}
                 >
                   <Shield size={16} color="var(--adm-warning)" />
                   <div style={{ textAlign: 'left', marginLeft: '6px' }}>
                     <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Project & Operations Manager</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>manager@enterprenexsolution.com</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>manager@enterprenex.solutions</div>
                   </div>
                 </button>
 

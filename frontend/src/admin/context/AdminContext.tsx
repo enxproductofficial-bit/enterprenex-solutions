@@ -236,7 +236,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               item = {
                 ...item,
                 name: 'Rohit P.',
-                email: 'director@enterprenexsolution.com',
+                email: 'director@enterprenex.solutions',
                 phone: '+91-9226860060'
               };
             }
@@ -253,7 +253,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               item.panNumber = 'PRRPS8209K';
               item.aadhaarNumber = '674389012345';
             }
-            if (!item.panNumber && (item.email === 'director@enterprenexsolution.com' || item.id === 'emp-1')) {
+            if (!item.panNumber && (item.email === 'director@enterprenex.solutions' || item.email === 'director@enterprenexsolution.com' || item.id === 'emp-1')) {
               item.panNumber = 'AAXPE1206M';
               item.aadhaarNumber = '782390124567';
             }
@@ -288,7 +288,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setCurrentUser({
               ...cur,
               name: 'Company Director',
-              email: 'director@enterprenexsolution.com',
+              email: 'director@enterprenex.solutions',
               phone: '+91-9226860060'
             });
           } else {
@@ -612,7 +612,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const emp = employees.find(e => e.id === id);
     if (!emp) return;
 
-    if (emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') {
+    if (emp.email === 'director@enterprenex.solutions' || emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') {
       showToast('Protected Account', 'The Managing Director account cannot be deleted.', 'error');
       return;
     }

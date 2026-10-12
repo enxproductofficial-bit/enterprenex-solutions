@@ -51,7 +51,7 @@ export const TeamPage: React.FC = () => {
     showToast
   } = useAdmin();
 
-  const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenexsolution.com';
+  const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenex.solutions' || currentUser?.email === 'director@enterprenexsolution.com';
   const isManagerOrHr =
     currentUser?.role === 'Project Manager' ||
     currentUser?.department === 'Human Resources' ||
@@ -749,7 +749,7 @@ export const TeamPage: React.FC = () => {
     if (initialApprovalStatus === 'Pending Director Approval') {
       showToast(
         'Employee Registered - Awaiting Director Approval',
-        `Employee ID ${finalEmpId} added. Awaiting Director Approval (Rohit P. - director@enterprenexsolution.com) before workspace portal login is enabled.`,
+        `Employee ID ${finalEmpId} added. Awaiting Director Approval (Rohit P. - director@enterprenex.solutions) before workspace portal login is enabled.`,
         'info'
       );
     } else {
@@ -951,7 +951,7 @@ export const TeamPage: React.FC = () => {
                     <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '2px' }}>
                       {isDirector
                         ? 'Employees cannot log into the workspace portal until you approve their 12-digit Employee ID and credentials.'
-                        : 'Credentials registered by HR are awaiting approval from Managing Director (Rohit P. - director@enterprenexsolution.com).'}
+                        : 'Credentials registered by HR are awaiting approval from Managing Director (Rohit P. - director@enterprenex.solutions).'}
                     </div>
                   </div>
                 </div>
@@ -1151,7 +1151,7 @@ export const TeamPage: React.FC = () => {
                         <p style={{ margin: '0 0 8px 0', fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.4 }}>
                           {isDirector
                             ? 'Employee was registered by HR. Click below to approve credentials and enable portal login.'
-                            : 'Waiting for Managing Director (Rohit P. - director@enterprenexsolution.com) to approve login access.'}
+                            : 'Waiting for Managing Director (Rohit P. - director@enterprenex.solutions) to approve login access.'}
                         </p>
 
                         {isDirector ? (
@@ -1400,7 +1400,7 @@ export const TeamPage: React.FC = () => {
                       </div>
 
                       {/* Security RBAC: Director credentials protected from HR, and employee credentials only manageable by HR/Director */}
-                      {(emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') && !isDirector ? (
+                      {(emp.email === 'director@enterprenex.solutions' || emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') && !isDirector ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '0.3rem 0.6rem', background: 'rgba(5, 150, 105, 0.1)', border: '1px solid rgba(5, 150, 105, 0.3)', borderRadius: '6px', fontSize: '0.7rem', color: '#34d399', fontWeight: 700 }}>
                           <ShieldCheck size={13} />
                           <span>Executive Protected</span>
@@ -1430,7 +1430,7 @@ export const TeamPage: React.FC = () => {
                             <span>Portal Credentials</span>
                           </button>
 
-                          {!(emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') && (
+                          {!(emp.email === 'director@enterprenex.solutions' || emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') && (
                             <button
                               type="button"
                               className="adm-btn adm-btn-danger"
@@ -2310,7 +2310,7 @@ export const TeamPage: React.FC = () => {
                   </span>
                 ) : (
                   <span>
-                    ⏳ <strong>Director Approval Required:</strong> As HR, after adding this team member, login access will be pending until Managing Director (Rohit P. - director@enterprenexsolution.com) reviews and approves the credentials.
+                    ⏳ <strong>Director Approval Required:</strong> As HR, after adding this team member, login access will be pending until Managing Director (Rohit P. - director@enterprenex.solutions) reviews and approves the credentials.
                   </span>
                 )}
               </div>
