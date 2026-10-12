@@ -49,6 +49,7 @@ import {
   INITIAL_KPIS,
   INITIAL_OKRS
 } from '../data/initialData';
+import { api } from '../api/client';
 
 export interface ToastNotification {
   id: string;
@@ -232,6 +233,44 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .catch(() => {
         setDetectedIp('10.206.229.155');
       });
+  }, []);
+
+  // Sync live EWMS data from backend API server (Port 5000)
+  useEffect(() => {
+    const syncFromBackend = async () => {
+      try {
+        const isOnline = await api.checkBackendHealth();
+        if (!isOnline) return;
+
+        const [tRes, eRes, aRes, kRes, oRes] = await Promise.allSettled([
+          api.getTasks(),
+          api.getEmployees(),
+          api.getAttendance(),
+          api.getKpis(),
+          api.getOkrs()
+        ]);
+
+        if (tRes.status === 'fulfilled' && tRes.value.tasks?.length > 0) {
+          setTasks(tRes.value.tasks);
+        }
+        if (eRes.status === 'fulfilled' && eRes.value.employees?.length > 0) {
+          setEmployees(eRes.value.employees);
+        }
+        if (aRes.status === 'fulfilled' && aRes.value.attendance?.length > 0) {
+          setAttendance(aRes.value.attendance);
+        }
+        if (kRes.status === 'fulfilled' && kRes.value.kpis?.length > 0) {
+          setKpis(kRes.value.kpis);
+        }
+        if (oRes.status === 'fulfilled' && oRes.value.okrs?.length > 0) {
+          setOkrs(oRes.value.okrs);
+        }
+      } catch (err) {
+        console.warn('Backend live sync fallback to local cache:', err);
+      }
+    };
+
+    syncFromBackend();
   }, []);
 
   useEffect(() => {
@@ -765,6 +804,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const logTaskTime = (taskId: string, hours: number) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, loggedHours: t.loggedHours + hours } : t));
+    api.logTaskTime(taskId, hours).catch(() => {});
     showToast('Time Logged', `Logged +${hours} hours on task.`, 'success');
   };
 
@@ -777,6 +817,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reviewNotes: notes || t.reviewNotes
       };
     }));
+    api.reviewTask(taskId, 'submit', notes).catch(() => {});
     logAction('Submitted Task for Review', 'Task Workflow', `Task ID ${taskId} submitted for Lead review.`);
     showToast('Submitted for Review', 'Task submitted to Team Lead/Director for review approval.', 'info');
   };
@@ -790,6 +831,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reviewNotes: notes || t.reviewNotes
       };
     }));
+    api.reviewTask(taskId, decision === 'Approved' ? 'approve' : 'rework', notes).catch(() => {});
     logAction('Task Reviewed', 'Task Workflow', `Task ID ${taskId} was marked as ${decision}.`);
     showToast(
       decision === 'Approved' ? 'Task Approved' : 'Changes Requested',
