@@ -10,6 +10,8 @@ import type {
   AttendanceRecord,
   LeaveRequest,
   Task,
+  EmployeeKpiScorecard,
+  ObjectiveKeyResult,
   SupportTicket,
   VaultDocument,
   CalendarMeeting,
@@ -216,7 +218,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Cloud Architecture', 'AI Systems'],
     currentProjects: [],
-    workloadPercentage: 20,
+    workloadPercentage: 45,
     joinDate: '2026-01-01',
     salaryMonthly: 150000,
     performanceRating: 5.0,
@@ -226,7 +228,21 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     aadhaarNumber: '782390124567',
     kycStatus: 'Verified',
     kycVerifiedBy: 'Executive Board',
-    kycVerifiedAt: '2026-01-01T00:00:00.000Z'
+    kycVerifiedAt: '2026-01-01T00:00:00.000Z',
+    employmentType: 'Full Time',
+    workMode: 'Hybrid',
+    kpiScore: 96.0,
+    okrScore: 95.0,
+    skillsMatrix: [
+      { name: 'System Architecture', category: 'Architecture', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' },
+      { name: 'Cloud Infrastructure (AWS)', category: 'Cloud', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' },
+      { name: 'AI & Machine Learning', category: 'AI/ML', level: 'Advanced', rating: 4, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' },
+      { name: 'React / Next.js', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' },
+      { name: 'Node.js & Microservices', category: 'Backend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' }
+    ],
+    education: [
+      { degree: 'Master of Technology in Computer Systems', institute: 'Premier Institute of Technology', specialization: 'Cloud & Distributed Systems', startYear: '2016', endYear: '2018', score: '9.2 CGPA' }
+    ]
   },
   {
     id: 'emp-2',
@@ -238,9 +254,9 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     email: 'polamreddyrevanth.82@gmail.com',
     phone: '+91-9440829762',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    skills: ['React', 'TypeScript', 'Node.js'],
+    skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Tailwind CSS', 'Vite'],
     currentProjects: [],
-    workloadPercentage: 50,
+    workloadPercentage: 75,
     joinDate: '2026-10-10',
     salaryMonthly: 100000,
     performanceRating: 5.0,
@@ -251,7 +267,22 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     aadhaarNumber: '674389012345',
     kycStatus: 'Verified',
     kycVerifiedBy: 'Rohit P. (Managing Director)',
-    kycVerifiedAt: '2026-10-10T08:00:00.000Z'
+    kycVerifiedAt: '2026-10-10T08:00:00.000Z',
+    employmentType: 'Full Time',
+    workMode: 'Hybrid',
+    kpiScore: 91.5,
+    okrScore: 88.0,
+    skillsMatrix: [
+      { name: 'React & Next.js', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' },
+      { name: 'TypeScript & JavaScript', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' },
+      { name: 'Node.js & Express', category: 'Backend', level: 'Intermediate', rating: 4, verifiedRating: 3, isVerified: true, verifiedBy: 'Rohit P.' },
+      { name: 'PostgreSQL & Database Architecture', category: 'Database', level: 'Intermediate', rating: 3, verifiedRating: 3, isVerified: true, verifiedBy: 'Rohit P.' },
+      { name: 'Tailwind CSS & Minimalist Design', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P.' },
+      { name: 'Cloud Deployment & Vercel', category: 'DevOps', level: 'Intermediate', rating: 3, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' }
+    ],
+    education: [
+      { degree: 'B.Tech in Computer Science & Engineering', institute: 'Engineering Institute of Technology', specialization: 'Software Systems & AI', startYear: '2022', endYear: '2026', score: '8.4 CGPA' }
+    ]
   }
 ];
 
@@ -278,7 +309,162 @@ export const INITIAL_LEAVES: LeaveRequest[] = [
   }
 ];
 
-export const INITIAL_TASKS: Task[] = [];
+export const INITIAL_TASKS: Task[] = [
+  {
+    id: 'tsk-101',
+    title: 'Live Task Stopwatch & Time Tracker',
+    description: 'Implement real-time start/pause/stop stopwatch controls on active task cards with automatic session logging.',
+    projectId: 'prj-1',
+    projectName: 'Enterprise Web & AI Systems',
+    assignedTo: 'POLAMREDDY REVANTH REDDY',
+    reviewer: 'Rohit P.',
+    priority: 'High',
+    status: 'In Progress',
+    dueDate: '2026-10-14',
+    loggedHours: 6.5,
+    estimatedHours: 10,
+    tags: ['Timer', 'Stopwatch', 'EWMS'],
+    createdAt: '2026-10-11',
+    subtasks: [
+      { id: 'st-1', title: 'Start/Pause state machine with localStorage persistence', completed: true },
+      { id: 'st-2', title: 'Real-time elapsed seconds counter & display', completed: true },
+      { id: 'st-3', title: 'Auto-logging into cumulative task hours', completed: false }
+    ],
+    comments: [
+      { id: 'tc-1', author: 'Rohit P.', authorAvatar: '', text: 'Ensure the timer interface stays clean and minimalist without distracting the developer.', createdAt: 'Yesterday' }
+    ]
+  },
+  {
+    id: 'tsk-102',
+    title: 'Workload & Capacity Redistribution Engine',
+    description: 'Calculate weekly capacity 40h vs assigned tasks. Display Available (<70%), Healthy (70-100%), and Overloaded (>100%) badges.',
+    projectId: 'prj-1',
+    projectName: 'Enterprise Web & AI Systems',
+    assignedTo: 'POLAMREDDY REVANTH REDDY',
+    reviewer: 'Rohit P.',
+    priority: 'Urgent',
+    status: 'To Do',
+    dueDate: '2026-10-15',
+    loggedHours: 2.0,
+    estimatedHours: 8,
+    tags: ['Capacity', 'Planning', 'Workload'],
+    createdAt: '2026-10-11',
+    subtasks: [
+      { id: 'st-4', title: 'Calculate employee capacity percentage', completed: true },
+      { id: 'st-5', title: 'Visual capacity meter on Directory & Task modal', completed: false }
+    ],
+    comments: []
+  },
+  {
+    id: 'tsk-103',
+    title: 'IT Skill Matrix & Manager Verification Flow',
+    description: 'Add skill matrix table comparing team competencies across stacks with Beginner to Expert badges and Manager ratings.',
+    projectId: 'prj-1',
+    projectName: 'Enterprise Web & AI Systems',
+    assignedTo: 'POLAMREDDY REVANTH REDDY',
+    reviewer: 'Rohit P.',
+    priority: 'Medium',
+    status: 'In Review',
+    dueDate: '2026-10-16',
+    loggedHours: 12.0,
+    estimatedHours: 12,
+    tags: ['Skills', 'Matrix', 'Verification'],
+    createdAt: '2026-10-10',
+    subtasks: [
+      { id: 'st-6', title: 'Interactive skills grid with self-rating', completed: true },
+      { id: 'st-7', title: 'Manager verification badge and score', completed: true }
+    ],
+    comments: [
+      { id: 'tc-2', author: 'POLAMREDDY REVANTH REDDY', authorAvatar: '', text: 'Submitted for Lead review approval.', createdAt: 'Just now' }
+    ]
+  },
+  {
+    id: 'tsk-104',
+    title: 'Role-Specific Weighted KPI & OKR Engine',
+    description: 'Implement weighted KPI formula (On-Time Delivery 25%, Quality 25%, Bug Rate 15%, Documentation 10%, etc.) out of 100.',
+    projectId: 'prj-1',
+    projectName: 'Enterprise Web & AI Systems',
+    assignedTo: 'Rohit P.',
+    reviewer: 'Rohit P.',
+    priority: 'High',
+    status: 'Approved',
+    dueDate: '2026-10-18',
+    loggedHours: 14.0,
+    estimatedHours: 14,
+    tags: ['KPI', 'OKR', 'Analytics'],
+    createdAt: '2026-10-09',
+    subtasks: [
+      { id: 'st-8', title: 'Weighted formula computation', completed: true },
+      { id: 'st-9', title: 'Objective key results tracking bars', completed: true }
+    ],
+    comments: [
+      { id: 'tc-3', author: 'Rohit P.', authorAvatar: '', text: 'Architecture approved. Meets Section 15-17 EWMS blueprint.', createdAt: '2 days ago' }
+    ]
+  }
+];
+
+export const INITIAL_KPIS: EmployeeKpiScorecard[] = [
+  {
+    employeeId: '202600000002',
+    employeeName: 'POLAMREDDY REVANTH REDDY',
+    roleTemplate: 'Software Developer',
+    period: 'October 2026',
+    updatedAt: '2026-10-12',
+    finalKpiScore: 91.5,
+    metrics: [
+      { id: 'kpi-1', name: 'On-time Task Delivery', weight: 25, target: '90%', actual: '94%', score: 94 },
+      { id: 'kpi-2', name: 'Code Quality & Architecture', weight: 25, target: '85%', actual: '92%', score: 92 },
+      { id: 'kpi-3', name: 'Low Defect / Bug Escape Rate', weight: 15, target: '<5%', actual: '3.2%', score: 90 },
+      { id: 'kpi-4', name: 'Technical Contribution & Design', weight: 15, target: '80%', actual: '88%', score: 88 },
+      { id: 'kpi-5', name: 'Technical Documentation & SOPs', weight: 10, target: '85%', actual: '86%', score: 86 },
+      { id: 'kpi-6', name: 'Team Collaboration & Reviews', weight: 10, target: '90%', actual: '95%', score: 95 }
+    ]
+  },
+  {
+    employeeId: '202600000001',
+    employeeName: 'Rohit P.',
+    roleTemplate: 'Software Developer',
+    period: 'October 2026',
+    updatedAt: '2026-10-12',
+    finalKpiScore: 96.0,
+    metrics: [
+      { id: 'kpi-1', name: 'On-time Task Delivery', weight: 25, target: '95%', actual: '98%', score: 98 },
+      { id: 'kpi-2', name: 'Code Quality & Architecture', weight: 25, target: '90%', actual: '96%', score: 96 },
+      { id: 'kpi-3', name: 'Low Defect / Bug Escape Rate', weight: 15, target: '<3%', actual: '1.5%', score: 96 },
+      { id: 'kpi-4', name: 'Technical Contribution & Design', weight: 15, target: '90%', actual: '95%', score: 95 },
+      { id: 'kpi-5', name: 'Technical Documentation & SOPs', weight: 10, target: '90%', actual: '92%', score: 92 },
+      { id: 'kpi-6', name: 'Team Collaboration & Reviews', weight: 10, target: '95%', actual: '98%', score: 98 }
+    ]
+  }
+];
+
+export const INITIAL_OKRS: ObjectiveKeyResult[] = [
+  {
+    id: 'okr-1',
+    objectiveTitle: 'Deliver Enterprise EWMS Operations Platform (Q4 2026)',
+    department: 'Engineering & Operations',
+    ownerName: 'POLAMREDDY REVANTH REDDY',
+    period: 'Q4 2026',
+    progressPercent: 88,
+    keyResults: [
+      { id: 'kr-1', title: 'Deploy Live Task Stopwatch & Real-Time Session Tracker', target: '100%', current: '100%', progressPercent: 100 },
+      { id: 'kr-2', title: 'Implement Workload Capacity Engine (Healthy vs Overloaded)', target: '100%', current: '85%', progressPercent: 85 },
+      { id: 'kr-3', title: 'Roll out IT Skill Matrix & Role-Based Weighted KPI Engine', target: '100%', current: '80%', progressPercent: 80 }
+    ]
+  },
+  {
+    id: 'okr-2',
+    objectiveTitle: 'Scale Enterprise Cloud Infrastructure & 99.9% High Availability',
+    department: 'DevOps & Architecture',
+    ownerName: 'Rohit P.',
+    period: 'Q4 2026',
+    progressPercent: 92,
+    keyResults: [
+      { id: 'kr-4', title: 'Sub-second API response time (<200ms latency)', target: '200ms', current: '145ms', progressPercent: 95 },
+      { id: 'kr-5', title: 'Enforce Zero-Trust IP Whitelisting & RBAC across modules', target: '100%', current: '90%', progressPercent: 90 }
+    ]
+  }
+];
 
 export const INITIAL_TICKETS: SupportTicket[] = [];
 

@@ -22,7 +22,10 @@ import type {
   ApiKeyItem,
   UserSession,
   IpSecuritySettings,
-  IpWhitelistEntry
+  IpWhitelistEntry,
+  EmployeeKpiScorecard,
+  ObjectiveKeyResult,
+  KpiMetricItem
 } from '../types';
 import {
   INITIAL_ADMIN_USERS,
@@ -42,7 +45,9 @@ import {
   INITIAL_CMS,
   INITIAL_AUDIT_LOGS,
   INITIAL_API_KEYS,
-  INITIAL_SESSIONS
+  INITIAL_SESSIONS,
+  INITIAL_KPIS,
+  INITIAL_OKRS
 } from '../data/initialData';
 
 export interface ToastNotification {
@@ -84,6 +89,8 @@ interface AdminContextType {
   toasts: ToastNotification[];
   ipSettings: IpSecuritySettings;
   detectedIp: string;
+  kpis: EmployeeKpiScorecard[];
+  okrs: ObjectiveKeyResult[];
 
   // Auth & Session
   login: (user: AdminUser) => void;
@@ -135,14 +142,21 @@ interface AdminContextType {
   deleteLeaveRequest: (id: string) => void;
   markAttendanceToday: (status: 'Present' | 'Late' | 'Half Day' | 'Absent') => void;
 
-  // Task actions
+  // Task actions (EWMS Review Flow & Stopwatch)
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'comments' | 'loggedHours'>) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   updateTaskStatus: (id: string, status: TaskColumn) => void;
+  submitTaskForReview: (taskId: string, notes?: string) => void;
+  reviewTask: (taskId: string, decision: 'Approved' | 'Changes Required', notes?: string) => void;
   toggleSubtask: (taskId: string, subtaskId: string) => void;
   addTaskComment: (taskId: string, text: string) => void;
   logTaskTime: (taskId: string, hours: number) => void;
   deleteTask: (id: string) => void;
+
+  // EWMS Performance, Skills & OKR actions
+  updateKpiMetric: (employeeId: string, metricId: string, actual: string, score: number) => void;
+  updateOkrProgress: (okrId: string, krId: string, current: string, percent: number) => void;
+  verifyEmployeeSkill: (employeeId: string, skillName: string, verifiedRating: number) => void;
 
   // Helpdesk actions
   addTicket: (ticket: Omit<SupportTicket, 'id' | 'createdAt' | 'messages'>) => void;
@@ -203,6 +217,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [ipSettings, setIpSettings] = useState<IpSecuritySettings>(INITIAL_IP_SETTINGS);
   const [detectedIp, setDetectedIp] = useState<string>('10.206.229.155');
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
+  const [kpis, setKpis] = useState<EmployeeKpiScorecard[]>(INITIAL_KPIS);
+  const [okrs, setOkrs] = useState<ObjectiveKeyResult[]>(INITIAL_OKRS);
 
   // Detect client public IP on mount
   useEffect(() => {
@@ -746,9 +762,91 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Time Logged', `Logged +${hours} hours on task.`, 'success');
   };
 
+  const submitTaskForReview = (taskId: string, notes?: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id !== taskId) return t;
+      return {
+        ...t,
+        status: 'In Review',
+        reviewNotes: notes || t.reviewNotes
+      };
+    }));
+    logAction('Submitted Task for Review', 'Task Workflow', `Task ID ${taskId} submitted for Lead review.`);
+    showToast('Submitted for Review', 'Task submitted to Team Lead/Director for review approval.', 'info');
+  };
+
+  const reviewTask = (taskId: string, decision: 'Approved' | 'Changes Required', notes?: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id !== taskId) return t;
+      return {
+        ...t,
+        status: decision === 'Approved' ? 'Done' : 'Changes Required',
+        reviewNotes: notes || t.reviewNotes
+      };
+    }));
+    logAction('Task Reviewed', 'Task Workflow', `Task ID ${taskId} was marked as ${decision}.`);
+    showToast(
+      decision === 'Approved' ? 'Task Approved' : 'Changes Requested',
+      decision === 'Approved' ? 'Task marked as Approved & Completed.' : 'Task returned with rework notes.',
+      decision === 'Approved' ? 'success' : 'warning'
+    );
+  };
+
   const deleteTask = (id: string) => {
     setTasks(prev => prev.filter(t => t.id !== id));
     showToast('Task Deleted', 'Task removed.', 'warning');
+  };
+
+  // EWMS KPI, OKR & Skills Handlers
+  const updateKpiMetric = (employeeId: string, metricId: string, actual: string, score: number) => {
+    setKpis(prev => prev.map(kpi => {
+      if (kpi.employeeId !== employeeId) return kpi;
+      const updatedMetrics = kpi.metrics.map(m => m.id === metricId ? { ...m, actual, score } : m);
+      const newFinal = Math.round(updatedMetrics.reduce((sum, m) => sum + (m.score * (m.weight / 100)), 0) * 10) / 10;
+      return {
+        ...kpi,
+        metrics: updatedMetrics,
+        finalKpiScore: newFinal,
+        updatedAt: new Date().toISOString().split('T')[0]
+      };
+    }));
+    showToast('KPI Updated', 'Performance metric recalculation saved.', 'success');
+  };
+
+  const updateOkrProgress = (okrId: string, krId: string, current: string, percent: number) => {
+    setOkrs(prev => prev.map(okr => {
+      if (okr.id !== okrId) return okr;
+      const updatedKrs = okr.keyResults.map(kr => kr.id === krId ? { ...kr, current, progressPercent: percent } : kr);
+      const overall = Math.round(updatedKrs.reduce((sum, kr) => sum + kr.progressPercent, 0) / updatedKrs.length);
+      return {
+        ...okr,
+        keyResults: updatedKrs,
+        progressPercent: overall
+      };
+    }));
+    showToast('OKR Updated', 'Key Result milestone progress logged.', 'success');
+  };
+
+  const verifyEmployeeSkill = (employeeId: string, skillName: string, verifiedRating: number) => {
+    setEmployees(prev => prev.map(emp => {
+      if (emp.employeeId !== employeeId && emp.id !== employeeId) return emp;
+      const updatedMatrix = (emp.skillsMatrix || []).map(sk => {
+        if (sk.name.toLowerCase() === skillName.toLowerCase()) {
+          return {
+            ...sk,
+            verifiedRating,
+            isVerified: true,
+            verifiedBy: currentUser?.name || 'Managing Director'
+          };
+        }
+        return sk;
+      });
+      return {
+        ...emp,
+        skillsMatrix: updatedMatrix
+      };
+    }));
+    showToast('Skill Verified', `${skillName} verified at ${verifiedRating}/5 score by Management.`, 'success');
   };
 
   const addTicket = (tktData: Omit<SupportTicket, 'id' | 'createdAt' | 'messages'>) => {
@@ -1000,7 +1098,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addAllowedIp,
         removeAllowedIp,
         toggleEnforceIpRestriction,
-        logAction
+        logAction,
+        kpis,
+        okrs,
+        submitTaskForReview,
+        reviewTask,
+        updateKpiMetric,
+        updateOkrProgress,
+        verifyEmployeeSkill
       }}
     >
       {children}

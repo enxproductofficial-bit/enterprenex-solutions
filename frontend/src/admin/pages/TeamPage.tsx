@@ -27,10 +27,20 @@ import {
   Clock,
   ShieldAlert,
   CheckCheck,
-  Award
+  Award,
+  BarChart3,
+  Star,
+  Target,
+  TrendingUp,
+  Cpu,
+  Server,
+  Database,
+  Code,
+  Sliders,
+  CheckCircle
 } from 'lucide-react';
 import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64 } from '../data/companyLogo';
-import type { Employee, LeaveRequest } from '../types';
+import type { Employee, LeaveRequest, KpiMetricItem, ObjectiveKeyResult } from '../types';
 
 export const TeamPage: React.FC = () => {
   const {
@@ -48,7 +58,13 @@ export const TeamPage: React.FC = () => {
     uploadDocument,
     updateDocument,
     documents,
-    showToast
+    showToast,
+    tasks,
+    kpis,
+    okrs,
+    verifyEmployeeSkill,
+    updateKpiMetric,
+    updateOkrProgress
   } = useAdmin();
 
   const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenex.solutions' || currentUser?.email === 'director@enterprenexsolution.com';
@@ -59,7 +75,12 @@ export const TeamPage: React.FC = () => {
   const canManageTeam = isDirector || isManagerOrHr;
   const isRegularEmployee = !canManageTeam;
 
-  const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves'>(isRegularEmployee ? 'attendance' : 'roster');
+  const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves' | 'workload' | 'skills' | 'kpis'>(isRegularEmployee ? 'attendance' : 'roster');
+  const [selectedKpiEmpId, setSelectedKpiEmpId] = useState<string>(kpis[0]?.employeeId || 'EPX-DIR-001');
+  const [skillCategoryFilter, setSkillCategoryFilter] = useState<string>('All');
+  const [editingMetricId, setEditingMetricId] = useState<string | null>(null);
+  const [editMetricActual, setEditMetricActual] = useState<string>('');
+  const [editMetricScore, setEditMetricScore] = useState<number>(90);
   const [rosterFilter, setRosterFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
@@ -878,12 +899,21 @@ export const TeamPage: React.FC = () => {
 
       {/* Tabs */}
       <div className="adm-card" style={{ padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
-        <div className="adm-tabs" style={{ margin: 0, border: 'none' }}>
+        <div className="adm-tabs" style={{ margin: 0, border: 'none', flexWrap: 'wrap', gap: '0.35rem' }}>
           {canManageTeam && (
             <button className={`adm-tab-btn ${tab === 'roster' ? 'active' : ''}`} onClick={() => setTab('roster')}>
               Team Directory ({employees.length})
             </button>
           )}
+          <button className={`adm-tab-btn ${tab === 'workload' ? 'active' : ''}`} onClick={() => setTab('workload')}>
+            📊 Workload & Capacity
+          </button>
+          <button className={`adm-tab-btn ${tab === 'skills' ? 'active' : ''}`} onClick={() => setTab('skills')}>
+            🛠 IT Skill Matrix
+          </button>
+          <button className={`adm-tab-btn ${tab === 'kpis' ? 'active' : ''}`} onClick={() => setTab('kpis')}>
+            🎯 KPI & OKR Engine
+          </button>
           <button className={`adm-tab-btn ${tab === 'attendance' ? 'active' : ''}`} onClick={() => setTab('attendance')}>
             {isRegularEmployee ? '📅 My Attendance & Check-In' : `Daily Attendance (${attendance.length})`}
           </button>
@@ -1773,6 +1803,650 @@ export const TeamPage: React.FC = () => {
         </div>
       );
     })()}
+
+      {/* ── 4. WORKLOAD & CAPACITY ENGINE ── */}
+      {tab === 'workload' && (() => {
+        const totalCapacityHours = employees.length * 40;
+        const totalAssignedHours = tasks
+          .filter(t => t.status !== 'Done')
+          .reduce((sum, t) => sum + (t.estimatedHours || 8), 0);
+        const overallUtilization = Math.round((totalAssignedHours / (totalCapacityHours || 1)) * 100);
+
+        const availableCount = employees.filter(e => (e.workloadPercentage || 75) < 70).length;
+        const healthyCount = employees.filter(e => (e.workloadPercentage || 75) >= 70 && (e.workloadPercentage || 75) <= 100).length;
+        const overloadedCount = employees.filter(e => (e.workloadPercentage || 75) > 100).length;
+
+        return (
+          <div>
+            {/* Overview Metric Cards */}
+            <div className="adm-grid-4" style={{ marginBottom: '1.5rem' }}>
+              <div className="adm-stat-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>Total Weekly Capacity</span>
+                  <BarChart3 size={16} color="var(--adm-primary)" />
+                </div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', marginTop: '0.35rem' }}>
+                  {totalCapacityHours} <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)' }}>Hours</span>
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
+                  Across {employees.length} engineering members (40h/wk)
+                </div>
+              </div>
+
+              <div className="adm-stat-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>Active Sprint Load</span>
+                  <Activity size={16} color="#38bdf8" />
+                </div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#38bdf8', marginTop: '0.35rem' }}>
+                  {overallUtilization}%
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
+                  {totalAssignedHours}h scheduled in active sprints
+                </div>
+              </div>
+
+              <div className="adm-stat-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>Available Capacity</span>
+                  <CheckCircle size={16} color="#10b981" />
+                </div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#10b981', marginTop: '0.35rem' }}>
+                  {availableCount} <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)' }}>Staff</span>
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#10b981', marginTop: '2px' }}>
+                  &lt;70% load &bull; Ready for new tasks
+                </div>
+              </div>
+
+              <div className="adm-stat-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>Overloaded / Crunch</span>
+                  <AlertCircle size={16} color="#f43f5e" />
+                </div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f43f5e', marginTop: '0.35rem' }}>
+                  {overloadedCount} <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)' }}>Staff</span>
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#f43f5e', marginTop: '2px' }}>
+                  &gt;100% load &bull; Needs sprint rebalancing
+                </div>
+              </div>
+            </div>
+
+            {/* Capacity Roster Table */}
+            <div className="adm-card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                    Team Workload & Weekly Capacity Distribution
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>
+                    Monitors weekly burnout thresholds based on standard 40-hour engineering sprint capacity
+                  </p>
+                </div>
+              </div>
+
+              <div className="adm-table-wrapper">
+                <table className="adm-table">
+                  <thead>
+                    <tr>
+                      <th>Team Member</th>
+                      <th>Weekly Standard</th>
+                      <th>Sprint Load (Hours)</th>
+                      <th>Capacity Utilization</th>
+                      <th>Workload Status</th>
+                      <th>Active Tasks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {employees.map(emp => {
+                      const empTasks = tasks.filter(t =>
+                        t.status !== 'Done' &&
+                        (t.assignedTo.toLowerCase().includes(emp.name.toLowerCase()) || (emp.employeeId && t.assignedTo.includes(emp.employeeId)))
+                      );
+                      const assignedHours = empTasks.reduce((sum, t) => sum + (t.estimatedHours || 8), 0);
+                      const loadPct = emp.workloadPercentage || Math.min(130, Math.round((assignedHours / 40) * 100));
+
+                      const statusBadge =
+                        loadPct < 70 ? (
+                          <span className="adm-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+                            Available (&lt;70%)
+                          </span>
+                        ) : loadPct <= 100 ? (
+                          <span className="adm-badge" style={{ background: 'rgba(2, 132, 199, 0.15)', color: '#38bdf8' }}>
+                            Healthy (70-100%)
+                          </span>
+                        ) : (
+                          <span className="adm-badge" style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#f43f5e' }}>
+                            Overloaded (&gt;100%)
+                          </span>
+                        );
+
+                      const barColor = loadPct < 70 ? '#10b981' : loadPct <= 100 ? '#38bdf8' : '#f43f5e';
+
+                      return (
+                        <tr key={emp.id}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <img
+                                src={emp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                                alt={emp.name}
+                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
+                              />
+                              <div>
+                                <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.88rem' }}>{emp.name}</div>
+                                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                                  {emp.role} &bull; <span style={{ fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)' }}>
+                            40 Hours / wk
+                          </td>
+                          <td style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>
+                            {Math.round((loadPct / 100) * 40)}h <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', fontWeight: 400 }}>allocated</span>
+                          </td>
+                          <td style={{ width: '220px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '4px' }}>
+                              <span style={{ color: barColor, fontWeight: 700 }}>{loadPct}%</span>
+                              <span style={{ color: 'var(--adm-text-dim)' }}>Threshold: 100%</span>
+                            </div>
+                            <div className="adm-progress-bar" style={{ height: '6px' }}>
+                              <div
+                                className="adm-progress-fill"
+                                style={{ width: `${Math.min(100, loadPct)}%`, background: barColor }}
+                              />
+                            </div>
+                          </td>
+                          <td>{statusBadge}</td>
+                          <td>
+                            <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.75rem' }}>
+                              {empTasks.length} Task(s)
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── 5. IT SKILL MATRIX ── */}
+      {tab === 'skills' && (() => {
+        const categories = ['All', 'Frontend', 'Backend', 'Cloud & DevOps', 'Database & AI', 'Architecture'];
+
+        return (
+          <div>
+            {/* Filter Pills */}
+            <div className="adm-card" style={{ padding: '0.85rem 1rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSkillCategoryFilter(cat)}
+                    style={{
+                      background: skillCategoryFilter === cat ? 'var(--adm-primary)' : 'var(--adm-bg)',
+                      color: skillCategoryFilter === cat ? '#fff' : 'var(--adm-text-muted)',
+                      border: '1px solid var(--adm-border)',
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.85rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>
+                Beginner (1/5) &bull; Intermediate (2-3/5) &bull; Advanced (4/5) &bull; Expert (5/5)
+              </div>
+            </div>
+
+            {/* Employee Skill Matrix Cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {employees.map(emp => {
+                const matrix = emp.skillsMatrix || [
+                  { name: 'React 19 & Next.js', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' },
+                  { name: 'TypeScript & Node.js', category: 'Backend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' },
+                  { name: 'Docker & Kubernetes', category: 'Cloud & DevOps', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' },
+                  { name: 'PostgreSQL & Redis', category: 'Database & AI', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' }
+                ];
+
+                const filteredSkills = matrix.filter(s => {
+                  if (skillCategoryFilter === 'All') return true;
+                  return s.category.toLowerCase().includes(skillCategoryFilter.toLowerCase());
+                });
+
+                return (
+                  <div key={emp.id} className="adm-card" style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '1px solid var(--adm-border)', paddingBottom: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img
+                          src={emp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                          alt={emp.name}
+                          style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                        <div>
+                          <div style={{ fontWeight: 800, color: '#fff', fontSize: '1rem' }}>{emp.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
+                            {emp.role} &bull; <span style={{ color: 'var(--adm-text-dim)', fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.72rem' }}>
+                          Verified Skills: {matrix.filter(s => s.isVerified).length} / {matrix.length}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Skill Cards Grid */}
+                    <div className="adm-grid-3" style={{ gap: '0.85rem' }}>
+                      {filteredSkills.map(sk => {
+                        const levelBadgeColor =
+                          sk.level === 'Expert'
+                            ? '#10b981'
+                            : sk.level === 'Advanced'
+                            ? '#38bdf8'
+                            : sk.level === 'Intermediate'
+                            ? '#f59e0b'
+                            : '#94a3b8';
+
+                        return (
+                          <div
+                            key={sk.name}
+                            style={{
+                              background: 'var(--adm-bg)',
+                              border: '1px solid var(--adm-border)',
+                              borderRadius: '8px',
+                              padding: '0.85rem',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between'
+                            }}
+                          >
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
+                                  {sk.category}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: '0.65rem',
+                                    fontWeight: 700,
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    background: `${levelBadgeColor}20`,
+                                    color: levelBadgeColor
+                                  }}
+                                >
+                                  {sk.level}
+                                </span>
+                              </div>
+
+                              <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem', marginBottom: '8px' }}>
+                                {sk.name}
+                              </div>
+
+                              {/* Self Rating Bar */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
+                                {[1, 2, 3, 4, 5].map(star => (
+                                  <Star
+                                    key={star}
+                                    size={13}
+                                    fill={star <= sk.rating ? '#f59e0b' : 'transparent'}
+                                    color={star <= sk.rating ? '#f59e0b' : '#475569'}
+                                  />
+                                ))}
+                                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginLeft: '4px' }}>
+                                  {sk.rating}/5
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Verification Badge / Action */}
+                            <div style={{ paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              {sk.isVerified ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981', fontSize: '0.7rem', fontWeight: 600 }}>
+                                  <ShieldCheck size={12} />
+                                  <span>Verified ({sk.verifiedRating || sk.rating}/5)</span>
+                                </div>
+                              ) : canManageTeam ? (
+                                <button
+                                  type="button"
+                                  onClick={() => verifyEmployeeSkill(emp.employeeId || emp.id, sk.name, Math.min(5, sk.rating))}
+                                  style={{
+                                    background: 'rgba(16, 185, 129, 0.15)',
+                                    border: '1px solid rgba(16, 185, 129, 0.35)',
+                                    color: '#10b981',
+                                    borderRadius: '4px',
+                                    padding: '2px 8px',
+                                    fontSize: '0.68rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  ✓ Verify Skill ({sk.rating}/5)
+                                </button>
+                              ) : (
+                                <span style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)' }}>
+                                  Pending Manager Review
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── 6. ROLE-SPECIFIC WEIGHTED KPI & OKR ENGINE ── */}
+      {tab === 'kpis' && (() => {
+        const selectedKpi = kpis.find(k => k.employeeId === selectedKpiEmpId) || kpis[0];
+
+        return (
+          <div>
+            {/* Header / Employee Selector */}
+            <div className="adm-card" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                  Role-Specific Weighted KPI Scorecards & OKR Milestones
+                </h3>
+                <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
+                  Mathematical formula: Final Score = &Sigma;(Metric Score &times; Weight) / 100
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontWeight: 600 }}>Select Employee:</span>
+                <select
+                  className="adm-select"
+                  style={{ width: '240px' }}
+                  value={selectedKpi?.employeeId}
+                  onChange={e => setSelectedKpiEmpId(e.target.value)}
+                >
+                  {kpis.map(k => (
+                    <option key={k.employeeId} value={k.employeeId}>
+                      {k.employeeName} ({k.roleTemplate})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {selectedKpi && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {/* Scorecard Hero Banner */}
+                <div
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.15) 0%, rgba(2, 132, 199, 0.15) 100%)',
+                    border: '1px solid rgba(5, 150, 105, 0.3)',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '1.25rem'
+                  }}
+                >
+                  <div>
+                    <span className="adm-badge adm-badge-primary" style={{ marginBottom: '6px' }}>
+                      {selectedKpi.roleTemplate} &bull; {selectedKpi.period}
+                    </span>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '2px 0' }}>
+                      {selectedKpi.employeeName}
+                    </h2>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
+                      Weighted Mathematical Performance Evaluation &bull; Updated: {selectedKpi.updatedAt}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
+                        Weighted KPI Score
+                      </div>
+                      <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#10b981', lineHeight: 1 }}>
+                        {selectedKpi.finalKpiScore}{' '}
+                        <span style={{ fontSize: '1rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>/ 100</span>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        padding: '0.5rem 0.85rem',
+                        borderRadius: '8px',
+                        background: selectedKpi.finalKpiScore >= 90 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(2, 132, 199, 0.2)',
+                        border: '1px solid rgba(16, 185, 129, 0.4)',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Performance Tier</div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                        {selectedKpi.finalKpiScore >= 90 ? 'Grade A+ (Top)' : selectedKpi.finalKpiScore >= 80 ? 'Grade A (Strong)' : 'Grade B'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Weighted Metrics Breakdown Table */}
+                <div className="adm-card" style={{ padding: 0, overflow: 'hidden' }}>
+                  <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--adm-border)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                      Role-Specific Weighted Metrics Breakdown
+                    </h3>
+                  </div>
+
+                  <div className="adm-table-wrapper">
+                    <table className="adm-table">
+                      <thead>
+                        <tr>
+                          <th>KPI Metric Item</th>
+                          <th>Weight (%)</th>
+                          <th>Target Benchmark</th>
+                          <th>Actual Performance</th>
+                          <th>Metric Score (0-100)</th>
+                          <th>Weighted Contribution</th>
+                          {canManageTeam && <th>Action</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedKpi.metrics.map(m => {
+                          const weightedVal = Math.round((m.score * (m.weight / 100)) * 10) / 10;
+                          const isEditing = editingMetricId === m.id;
+
+                          return (
+                            <tr key={m.id}>
+                              <td style={{ fontWeight: 700, color: '#fff' }}>{m.name}</td>
+                              <td style={{ fontWeight: 700, color: 'var(--adm-primary)' }}>{m.weight}%</td>
+                              <td style={{ color: 'var(--adm-text-muted)' }}>{m.target}</td>
+                              <td>
+                                {isEditing ? (
+                                  <input
+                                    className="adm-input"
+                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', width: '130px' }}
+                                    value={editMetricActual}
+                                    onChange={e => setEditMetricActual(e.target.value)}
+                                  />
+                                ) : (
+                                  <strong style={{ color: '#fff' }}>{m.actual}</strong>
+                                )}
+                              </td>
+                              <td>
+                                {isEditing ? (
+                                  <input
+                                    type="number"
+                                    className="adm-input"
+                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', width: '80px' }}
+                                    value={editMetricScore}
+                                    onChange={e => setEditMetricScore(Number(e.target.value))}
+                                  />
+                                ) : (
+                                  <span style={{ fontWeight: 800, color: m.score >= 90 ? '#10b981' : '#38bdf8' }}>
+                                    {m.score} / 100
+                                  </span>
+                                )}
+                              </td>
+                              <td style={{ fontWeight: 700, color: '#10b981' }}>
+                                +{weightedVal} pts
+                              </td>
+                              {canManageTeam && (
+                                <td>
+                                  {isEditing ? (
+                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                      <button
+                                        type="button"
+                                        className="adm-btn adm-btn-primary adm-btn-sm"
+                                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem' }}
+                                        onClick={() => {
+                                          updateKpiMetric(selectedKpi.employeeId, m.id, editMetricActual, editMetricScore);
+                                          setEditingMetricId(null);
+                                        }}
+                                      >
+                                        Save
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="adm-btn adm-btn-secondary adm-btn-sm"
+                                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem' }}
+                                        onClick={() => setEditingMetricId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="adm-btn adm-btn-secondary adm-btn-sm"
+                                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem' }}
+                                      onClick={() => {
+                                        setEditingMetricId(m.id);
+                                        setEditMetricActual(m.actual);
+                                        setEditMetricScore(m.score);
+                                      }}
+                                    >
+                                      Edit Metric
+                                    </button>
+                                  )}
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Company OKRs Section */}
+                <div className="adm-card" style={{ padding: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                        Company Objectives & Key Results (OKRs)
+                      </h3>
+                      <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>
+                        Top-level enterprise strategic goals and quantitative delivery key results
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {okrs.map(okr => (
+                      <div
+                        key={okr.id}
+                        style={{
+                          background: 'var(--adm-bg)',
+                          border: '1px solid var(--adm-border)',
+                          borderRadius: '8px',
+                          padding: '1rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div>
+                            <span className="adm-badge adm-badge-primary" style={{ marginRight: '6px' }}>{okr.department}</span>
+                            <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>Lead: {okr.ownerName} &bull; {okr.period}</span>
+                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '4px 0 0' }}>
+                              {okr.objectiveTitle}
+                            </h4>
+                          </div>
+
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#10b981' }}>
+                              {okr.progressPercent}% Completed
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Objective Progress Bar */}
+                        <div className="adm-progress-bar" style={{ height: '7px', marginBottom: '12px' }}>
+                          <div className="adm-progress-fill" style={{ width: `${okr.progressPercent}%` }} />
+                        </div>
+
+                        {/* Key Results Checklist */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {okr.keyResults.map(kr => (
+                            <div
+                              key={kr.id}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: '0.5rem 0.75rem',
+                                background: 'rgba(255,255,255,0.02)',
+                                borderRadius: '6px',
+                                border: '1px solid var(--adm-border)',
+                                fontSize: '0.78rem'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <CheckCircle size={14} color={kr.progressPercent >= 100 ? '#10b981' : '#38bdf8'} />
+                                <span style={{ color: '#fff', fontWeight: 600 }}>{kr.title}</span>
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <span style={{ color: 'var(--adm-text-dim)' }}>
+                                  Target: {kr.target} &bull; Current: <strong style={{ color: '#fff' }}>{kr.current}</strong>
+                                </span>
+                                <span
+                                  className="adm-badge"
+                                  style={{
+                                    background: kr.progressPercent >= 100 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(2, 132, 199, 0.15)',
+                                    color: kr.progressPercent >= 100 ? '#10b981' : '#38bdf8',
+                                    fontWeight: 700
+                                  }}
+                                >
+                                  {kr.progressPercent}%
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── APPLY FOR LEAVE MODAL ── */}
       {showApplyLeaveModal && (

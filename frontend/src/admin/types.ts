@@ -237,6 +237,27 @@ export interface Employee {
   kycStatus?: 'Verified' | 'Pending Verification' | 'Rejected' | 'Not Submitted';
   kycVerifiedBy?: string;
   kycVerifiedAt?: string;
+  employmentType?: 'Full Time' | 'Part Time' | 'Intern' | 'Contract' | 'Freelancer';
+  workMode?: 'Office' | 'Remote' | 'Hybrid';
+  kpiScore?: number;
+  okrScore?: number;
+  skillsMatrix?: {
+    name: string;
+    category: string;
+    level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+    rating: number; // 1-5
+    verifiedRating?: number;
+    isVerified?: boolean;
+    verifiedBy?: string;
+  }[];
+  education?: {
+    degree: string;
+    institute: string;
+    specialization: string;
+    startYear: string;
+    endYear: string;
+    score: string;
+  }[];
 }
 
 export interface AttendanceRecord {
@@ -259,9 +280,9 @@ export interface LeaveRequest {
   status: 'Pending' | 'Approved' | 'Rejected';
 }
 
-// 8. Tasks
+// 8. Tasks (EWMS Workflow)
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
-export type TaskColumn = 'To Do' | 'In Progress' | 'In Review' | 'Testing' | 'Done' | 'Blocked';
+export type TaskColumn = 'To Do' | 'In Progress' | 'In Review' | 'Changes Required' | 'Approved' | 'Testing' | 'Done' | 'Blocked';
 
 export interface TaskComment {
   id: string;
@@ -271,6 +292,14 @@ export interface TaskComment {
   createdAt: string;
 }
 
+export interface TaskTimeSession {
+  id: string;
+  startedAt: string;
+  endedAt: string;
+  durationMinutes: number;
+  activityNote?: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -278,6 +307,7 @@ export interface Task {
   projectId: string;
   projectName: string;
   assignedTo: string; // Employee name
+  reviewer?: string;
   priority: TaskPriority;
   status: TaskColumn;
   dueDate: string;
@@ -287,6 +317,60 @@ export interface Task {
   estimatedHours: number;
   tags: string[];
   createdAt: string;
+  reviewNotes?: string;
+  timeSessions?: TaskTimeSession[];
+}
+
+// 8b. EWMS KPI & Performance Interfaces
+export interface KpiMetricItem {
+  id: string;
+  name: string;
+  weight: number; // Percentage, e.g. 25
+  target: string;
+  actual: string;
+  score: number; // 0 - 100
+}
+
+export interface EmployeeKpiScorecard {
+  employeeId: string;
+  employeeName: string;
+  roleTemplate: 'Software Developer' | 'UI/UX Designer' | 'QA Engineer' | 'DevOps Engineer' | 'Intern';
+  period: string;
+  metrics: KpiMetricItem[];
+  finalKpiScore: number; // calculated weighted sum
+  updatedAt: string;
+}
+
+export interface ObjectiveKeyResult {
+  id: string;
+  objectiveTitle: string;
+  department: string;
+  ownerName: string;
+  period: string;
+  progressPercent: number;
+  keyResults: {
+    id: string;
+    title: string;
+    target: string;
+    current: string;
+    progressPercent: number;
+  }[];
+}
+
+export interface SelfAssessmentRecord {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  period: string;
+  accomplishments: string;
+  challenges: string;
+  skillsImproved: string;
+  supportNeeded: string;
+  nextPeriodGoals: string;
+  submittedAt: string;
+  managerRating?: number;
+  managerFeedback?: string;
+  status: 'Draft' | 'Submitted' | 'Reviewed';
 }
 
 // 9. Support & Helpdesk
