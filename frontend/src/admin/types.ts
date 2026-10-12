@@ -268,6 +268,11 @@ export interface AttendanceRecord {
   checkIn: string;
   checkOut: string;
   status: 'Present' | 'Late' | 'Half Day' | 'Absent';
+  absenceReason?: string;
+  absenceNotes?: string;
+  notifiedVia?: string[];
+  recordedBy?: string;
+  recordedAt?: string;
 }
 
 export interface LeaveRequest {

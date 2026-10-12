@@ -139,8 +139,8 @@ interface AdminContextType {
   deleteEmployee: (id: string, purgeDocuments?: boolean) => void;
   addLeaveRequest: (leave: Omit<LeaveRequest, 'id' | 'status'>) => void;
   updateLeaveStatus: (id: string, status: 'Approved' | 'Rejected') => void;
-  deleteLeaveRequest: (id: string) => void;
   markAttendanceToday: (status: 'Present' | 'Late' | 'Half Day' | 'Absent') => void;
+  updateAttendanceRecord: (recordId: string, updates: Partial<AttendanceRecord>) => void;
 
   // Task actions (EWMS Review Flow & Stopwatch)
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'comments' | 'loggedHours'>) => void;
@@ -712,6 +712,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Attendance Checked In', `Marked as ${status} at ${timeStr}.`, 'success');
   };
 
+  const updateAttendanceRecord = (recordId: string, updates: Partial<AttendanceRecord>) => {
+    setAttendance(prev => prev.map(a => a.id === recordId ? { ...a, ...updates } : a));
+    logAction('Attendance Record Updated', 'Workforce Ops', `Updated attendance record ID ${recordId}`);
+    showToast('Attendance Updated', 'Absence incident notes and audit details saved.', 'success');
+  };
+
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'comments' | 'loggedHours'>) => {
     const newTask: Task = {
       ...taskData,
@@ -1105,7 +1111,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reviewTask,
         updateKpiMetric,
         updateOkrProgress,
-        verifyEmployeeSkill
+        verifyEmployeeSkill,
+        updateAttendanceRecord
       }}
     >
       {children}

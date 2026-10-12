@@ -37,10 +37,12 @@ import {
   Database,
   Code,
   Sliders,
-  CheckCircle
+  CheckCircle,
+  MessageSquare,
+  MessageCircle
 } from 'lucide-react';
 import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64 } from '../data/companyLogo';
-import type { Employee, LeaveRequest, KpiMetricItem, ObjectiveKeyResult } from '../types';
+import type { Employee, LeaveRequest, KpiMetricItem, ObjectiveKeyResult, AttendanceRecord } from '../types';
 
 export const TeamPage: React.FC = () => {
   const {
@@ -64,7 +66,8 @@ export const TeamPage: React.FC = () => {
     okrs,
     verifyEmployeeSkill,
     updateKpiMetric,
-    updateOkrProgress
+    updateOkrProgress,
+    updateAttendanceRecord
   } = useAdmin();
 
   const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenex.solutions' || currentUser?.email === 'director@enterprenexsolution.com';
@@ -84,6 +87,11 @@ export const TeamPage: React.FC = () => {
   const [rosterFilter, setRosterFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
+
+  // Absence Incident & Outreach Modal State (RBAC Restricted to Director & HR)
+  const [absenceModalAtt, setAbsenceModalAtt] = useState<AttendanceRecord | null>(null);
+  const [absenceReasonInput, setAbsenceReasonInput] = useState('No Intimation Provided');
+  const [absenceNotesInput, setAbsenceNotesInput] = useState('');
 
   // Form state - Add Member
   const [name, setName] = useState('');
@@ -1614,32 +1622,144 @@ export const TeamPage: React.FC = () => {
                     <th>Check In Time</th>
                     <th>Check Out Time</th>
                     <th>Attendance Status</th>
+                    <th>Absence Note / Reason</th>
+                    {canManageTeam && <th>Outreach & Action (RBAC)</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {displayedAttendance.length === 0 ? (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--adm-text-dim)' }}>
+                      <td colSpan={canManageTeam ? 7 : 6} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--adm-text-dim)' }}>
                         No attendance logged yet. Click "Punch In / Check In Now" above to record your entry.
                       </td>
                     </tr>
                   ) : (
-                    displayedAttendance.map(att => (
-                      <tr key={att.id}>
-                        <td style={{ fontWeight: 700, color: '#fff' }}>{att.employeeName}</td>
-                        <td>{att.date}</td>
-                        <td>{att.checkIn || '-'}</td>
-                        <td>{att.checkOut || '-'}</td>
-                        <td>
-                          <span className={`adm-badge ${
-                            att.status === 'Present' ? 'adm-badge-success' :
-                            att.status === 'Late' ? 'adm-badge-warning' : 'adm-badge-danger'
-                          }`}>
-                            {att.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
+                    displayedAttendance.map(att => {
+                      const emp = employees.find(
+                        e =>
+                          (e.employeeId && e.employeeId === att.employeeId) ||
+                          (e.name && att.employeeName && e.name.toLowerCase() === att.employeeName.toLowerCase())
+                      );
+                      const cleanPhone = emp?.phone?.replace(/[^\d+]/g, '') || '+919226860060';
+                      const cleanPhoneNoPlus = cleanPhone.replace(/\+/g, '');
+                      const empEmail = emp?.email || 'hr@enterprenex.solutions';
+
+                      return (
+                        <tr key={att.id}>
+                          <td style={{ fontWeight: 700, color: '#fff' }}>{att.employeeName}</td>
+                          <td>{att.date}</td>
+                          <td>{att.checkIn || '-'}</td>
+                          <td>{att.checkOut || '-'}</td>
+                          <td>
+                            <span className={`adm-badge ${
+                              att.status === 'Present' ? 'adm-badge-success' :
+                              att.status === 'Late' ? 'adm-badge-warning' : 'adm-badge-danger'
+                            }`}>
+                              {att.status}
+                            </span>
+                          </td>
+                          <td style={{ maxWidth: '240px' }}>
+                            {att.absenceReason || att.absenceNotes ? (
+                              <div style={{ fontSize: '0.75rem' }}>
+                                <div style={{ color: '#f59e0b', fontWeight: 700 }}>{att.absenceReason || 'Unexcused'}</div>
+                                {att.absenceNotes && (
+                                  <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.7rem', marginTop: '2px', lineHeight: 1.3 }}>
+                                    {att.absenceNotes}
+                                  </div>
+                                )}
+                                {att.recordedBy && (
+                                  <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.65rem', marginTop: '2px' }}>
+                                    Logged by: {att.recordedBy}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>-</span>
+                            )}
+                          </td>
+                          {canManageTeam && (
+                            <td>
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                {/* Direct Phone Calling */}
+                                <a
+                                  href={`tel:${cleanPhone}`}
+                                  className="adm-btn adm-btn-secondary"
+                                  style={{ padding: '0.22rem 0.5rem', fontSize: '0.7rem', gap: '3px' }}
+                                  title={`Call ${att.employeeName} (${cleanPhone})`}
+                                >
+                                  <Phone size={11} color="#38bdf8" />
+                                  <span>Call</span>
+                                </a>
+
+                                {/* Direct WhatsApp Redirection */}
+                                <a
+                                  href={`https://wa.me/${cleanPhoneNoPlus}?text=${encodeURIComponent(
+                                    `*ENTERPRENEX SOLUTIONS - ATTENDANCE CHECK-IN*\n\n` +
+                                    `Dear ${att.employeeName},\n` +
+                                    `Our workforce management portal shows you are marked *${att.status}* for today (${att.date}) without approved leave on file.\n\n` +
+                                    `Please contact HR / your Project Manager immediately with your status.\n\n` +
+                                    `HR Desk: +91-9226860060\nEnterprenex Solutions Pvt Ltd`
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="adm-btn"
+                                  style={{ background: '#25D366', color: '#fff', border: 'none', padding: '0.22rem 0.55rem', fontSize: '0.7rem', fontWeight: 700, gap: '3px' }}
+                                  title="Send WhatsApp Absence Check-In Message"
+                                >
+                                  <MessageSquare size={11} />
+                                  <span>WhatsApp</span>
+                                </a>
+
+                                {/* Direct Email Redirection */}
+                                <a
+                                  href={`mailto:${empEmail}?subject=${encodeURIComponent(`Absence Inquiry - Enterprenex Solutions Attendance (${att.date})`)}&body=${encodeURIComponent(
+                                    `Dear ${att.employeeName},\n\n` +
+                                    `Our official biometric/attendance system shows you have not checked in for duty on ${att.date} without prior approved leave.\n\n` +
+                                    `Please reply to this email or contact HR at director@enterprenex.solutions with your justification.\n\n` +
+                                    `Regards,\nHuman Resources & Operations\nEnterprenex Solutions Private Limited`
+                                  )}`}
+                                  className="adm-btn adm-btn-secondary"
+                                  style={{ padding: '0.22rem 0.5rem', fontSize: '0.7rem', gap: '3px' }}
+                                  title={`Send Email to ${empEmail}`}
+                                >
+                                  <Mail size={11} color="#f59e0b" />
+                                  <span>Email</span>
+                                </a>
+
+                                {/* Direct SMS Redirection */}
+                                <a
+                                  href={`sms:${cleanPhone}?body=${encodeURIComponent(
+                                    `Enterprenex HR: You are marked Absent on ${att.date}. Please report your status to your manager immediately.`
+                                  )}`}
+                                  className="adm-btn adm-btn-secondary"
+                                  style={{ padding: '0.22rem 0.5rem', fontSize: '0.7rem', gap: '3px' }}
+                                  title={`Send SMS to ${cleanPhone}`}
+                                >
+                                  <MessageCircle size={11} color="#10b981" />
+                                  <span>SMS</span>
+                                </a>
+
+                                {/* Take / Edit Absence Note Modal Trigger */}
+                                <button
+                                  type="button"
+                                  className="adm-btn adm-btn-primary"
+                                  style={{ padding: '0.22rem 0.55rem', fontSize: '0.7rem', gap: '3px' }}
+                                  onClick={() => {
+                                    setAbsenceModalAtt(att);
+                                    setAbsenceReasonInput(att.absenceReason || 'No Intimation Provided (Unexcused)');
+                                    setAbsenceNotesInput(att.absenceNotes || '');
+                                  }}
+                                  title="Record or update official management explanation for this absence"
+                                >
+                                  <FileText size={11} />
+                                  <span>Note</span>
+                                </button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -4139,6 +4259,89 @@ export const TeamPage: React.FC = () => {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── ABSENCE INCIDENT NOTE & AUDIT MODAL (RBAC: DIRECTOR & HR) ── */}
+      {absenceModalAtt && canManageTeam && (
+        <div className="adm-modal-overlay" onClick={() => setAbsenceModalAtt(null)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                  Absence Incident & Audit Note
+                </h3>
+                <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  Record official management explanation for unexcused or sudden absence
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setAbsenceModalAtt(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Target Attendance Info */}
+            <div style={{ background: 'var(--adm-bg)', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid var(--adm-border)', margin: '1rem 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>{absenceModalAtt.employeeName}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
+                  Date: <strong style={{ color: '#fff' }}>{absenceModalAtt.date}</strong> &bull; Status: <span style={{ color: '#ef4444', fontWeight: 700 }}>{absenceModalAtt.status}</span>
+                </div>
+              </div>
+              <span className="adm-badge adm-badge-danger" style={{ fontSize: '0.72rem' }}>
+                {absenceModalAtt.status}
+              </span>
+            </div>
+
+            <form onSubmit={e => {
+              e.preventDefault();
+              updateAttendanceRecord(absenceModalAtt.id, {
+                absenceReason: absenceReasonInput,
+                absenceNotes: absenceNotesInput,
+                recordedBy: currentUser?.name || 'Managing Director',
+                recordedAt: new Date().toISOString()
+              });
+              setAbsenceModalAtt(null);
+            }}>
+              <div className="adm-form-group">
+                <label className="adm-form-label">Absence Reason / Classification *</label>
+                <select
+                  className="adm-select"
+                  value={absenceReasonInput}
+                  onChange={e => setAbsenceReasonInput(e.target.value)}
+                >
+                  <option value="No Intimation Provided (Unexcused)">No Intimation Provided (Unexcused)</option>
+                  <option value="Medical Emergency (Verbal Intimation)">Medical Emergency (Verbal Intimation)</option>
+                  <option value="Personal / Family Emergency">Personal / Family Emergency</option>
+                  <option value="Travel / Commute Disruption">Travel / Commute Disruption</option>
+                  <option value="Client On-Site Deployment">Client On-Site Deployment</option>
+                  <option value="Leave Applied Post-Facto">Leave Applied Post-Facto</option>
+                </select>
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-form-label">Official Investigation / Action Notes *</label>
+                <textarea
+                  className="adm-textarea"
+                  rows={4}
+                  required
+                  placeholder="Record call attempts, WhatsApp response status, or explanation provided by staff member..."
+                  value={absenceNotesInput}
+                  onChange={e => setAbsenceNotesInput(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.25rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setAbsenceModalAtt(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="adm-btn adm-btn-primary">
+                  <CheckCircle2 size={15} />
+                  <span>Save Absence Audit Note</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

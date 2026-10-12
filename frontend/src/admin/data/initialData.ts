@@ -286,7 +286,40 @@ export const INITIAL_EMPLOYEES: Employee[] = [
   }
 ];
 
-export const INITIAL_ATTENDANCE: AttendanceRecord[] = [];
+export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
+  {
+    id: 'att-1',
+    employeeId: '202600000001',
+    employeeName: 'Rohit P.',
+    date: '2026-10-12',
+    checkIn: '09:05 AM',
+    checkOut: '-',
+    status: 'Present'
+  },
+  {
+    id: 'att-2',
+    employeeId: '202600000002',
+    employeeName: 'POLAMREDDY REVANTH REDDY',
+    date: '2026-10-12',
+    checkIn: '09:20 AM',
+    checkOut: '-',
+    status: 'Present'
+  },
+  {
+    id: 'att-3',
+    employeeId: '202600000003',
+    employeeName: 'Ananya Sharma',
+    date: '2026-10-12',
+    checkIn: '-',
+    checkOut: '-',
+    status: 'Absent',
+    absenceReason: 'No Intimation Provided',
+    absenceNotes: 'Awaiting check-in intimation. Direct outreach pending from HR Lead.',
+    notifiedVia: ['WhatsApp'],
+    recordedBy: 'Rohit P. (Managing Director)',
+    recordedAt: '2026-10-12T10:15:00.000Z'
+  }
+];
 
 export const INITIAL_LEAVES: LeaveRequest[] = [
   {
