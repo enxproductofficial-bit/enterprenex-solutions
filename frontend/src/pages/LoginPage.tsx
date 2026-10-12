@@ -317,10 +317,8 @@ export const LoginPage: React.FC = () => {
                     required
                     placeholder={
                       role === 'employee'
-                        ? 'e.g. 202600000002 (12-Digit Employee ID)'
-                        : role === 'director'
-                        ? 'e.g. director@enterprenex.solutions'
-                        : 'e.g. hr@enterprenex.solutions'
+                        ? 'Enter your 12-digit Employee ID'
+                        : 'Enter your official registered email'
                     }
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
