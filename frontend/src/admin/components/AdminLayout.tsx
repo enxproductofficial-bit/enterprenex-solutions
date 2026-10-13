@@ -22,7 +22,9 @@ import {
   Menu,
   ChevronDown,
   LogOut,
-  Camera
+  Camera,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
 import { ToastContainer } from './ToastContainer';
@@ -52,6 +54,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Live Portal Theme (Default to clean Light minimalism, with instant toggle)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('ewms_portal_theme') as 'light' | 'dark') || 'light';
+  });
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(nextTheme);
+    localStorage.setItem('ewms_portal_theme', nextTheme);
+  };
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -142,7 +155,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const hasSearchResults = matchingProjects.length > 0 || matchingClients.length > 0 || matchingTasks.length > 0 || matchingLeads.length > 0;
 
   return (
-    <div className="adm-app">
+    <div className={`adm-app theme-${theme}`}>
       {/* Toast Notifications */}
       <ToastContainer />
 
@@ -351,6 +364,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
 
           <div className="adm-topbar-right">
+            {/* Live Minimalist Theme Toggle (Light / Dark) */}
+            <button
+              className="adm-topbar-btn"
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Clean Light Minimalism'}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} color="#f59e0b" />}
+            </button>
+
             {/* Quick Action Button */}
             <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowQuickCreate(true)}>
               <Plus size={15} />
