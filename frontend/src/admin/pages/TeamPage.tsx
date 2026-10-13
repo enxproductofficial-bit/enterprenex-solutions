@@ -96,7 +96,7 @@ export const TeamPage: React.FC = () => {
 
   // Form state - Add Member
   const [name, setName] = useState('');
-  const [governanceRole, setGovernanceRole] = useState<'Director' | 'Manager (HR)' | 'Employee'>('Employee');
+  const [governanceRole, setGovernanceRole] = useState<'Manager (HR)' | 'Employee' | 'Intern'>('Employee');
   const [role, setRole] = useState('');
   const [department, setDepartment] = useState<Employee['department']>('Engineering');
   const [email, setEmail] = useState('');
@@ -718,7 +718,7 @@ export const TeamPage: React.FC = () => {
     const finalAadhaar = aadhaarNumber.trim().replace(/\D/g, '');
 
     const initialApprovalStatus: 'Approved' | 'Pending Director Approval' =
-      governanceRole === 'Director' || isDirector ? 'Approved' : 'Pending Director Approval';
+      isDirector ? 'Approved' : 'Pending Director Approval';
     const finalAvatar =
       avatarPreview || avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
 
@@ -2850,7 +2850,7 @@ export const TeamPage: React.FC = () => {
                   <select className="adm-select" value={governanceRole} onChange={e => setGovernanceRole(e.target.value as any)}>
                     <option value="Employee">Employee (Engineering / Delivery)</option>
                     <option value="Manager (HR)">Manager (Includes HR & Ops)</option>
-                    <option value="Director">Director (Executive Board)</option>
+                    <option value="Intern">Intern / Trainee</option>
                   </select>
                 </div>
               </div>
