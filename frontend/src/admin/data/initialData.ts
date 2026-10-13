@@ -757,7 +757,7 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
     userRole: 'Super Admin',
     action: 'Platform Active',
     module: 'Admin & Security',
-    ipAddress: '10.206.229.155',
+    ipAddress: '10.228.245.155',
     timestamp: 'Just now',
     details: 'Zero-trust enterprise governance active for director@enterprenex.solutions'
   }
@@ -780,7 +780,7 @@ export const INITIAL_SESSIONS: UserSession[] = [
     id: 'sess-1',
     userName: 'Rohit P. (Director)',
     device: 'Authorized Executive Workstation',
-    ipAddress: '10.206.229.155',
+    ipAddress: '10.228.245.155',
     location: 'India',
     loginTime: 'Just now',
     isCurrent: true

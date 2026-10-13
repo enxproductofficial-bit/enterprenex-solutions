@@ -60,6 +60,7 @@ export interface ToastNotification {
 const INITIAL_IP_SETTINGS: IpSecuritySettings = {
   enforceIpRestriction: false,
   allowedIps: [
+    { id: 'ip-admin-2', ip: '10.228.245.155', label: 'Director Station (10.228.245.155)', addedBy: 'Managing Director', addedAt: '2026-01-01' },
     { id: 'ip-admin-1', ip: '10.206.229.155', label: 'Primary Admin Station (10.206.229.155)', addedBy: 'Security Policy', addedAt: '2026-01-01' },
     { id: 'ip-local-1', ip: '127.0.0.1', label: 'Local Development IPv4', addedBy: 'System', addedAt: '2026-01-01' },
     { id: 'ip-local-2', ip: '::1', label: 'Localhost IPv6', addedBy: 'System', addedAt: '2026-01-01' }
@@ -216,7 +217,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>(INITIAL_API_KEYS);
   const [sessions, setSessions] = useState<UserSession[]>(INITIAL_SESSIONS);
   const [ipSettings, setIpSettings] = useState<IpSecuritySettings>(INITIAL_IP_SETTINGS);
-  const [detectedIp, setDetectedIp] = useState<string>('10.206.229.155');
+  const [detectedIp, setDetectedIp] = useState<string>('10.228.245.155');
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [kpis, setKpis] = useState<EmployeeKpiScorecard[]>(INITIAL_KPIS);
   const [okrs, setOkrs] = useState<ObjectiveKeyResult[]>(INITIAL_OKRS);
@@ -231,7 +232,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       })
       .catch(() => {
-        setDetectedIp('10.206.229.155');
+        setDetectedIp('10.228.245.155');
       });
   }, []);
 
@@ -437,7 +438,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       userRole: currentUser?.role || 'Super Admin',
       action,
       module: moduleName,
-      ipAddress: detectedIp || '10.206.229.155',
+      ipAddress: detectedIp || '10.228.245.155',
       timestamp: 'Just now',
       details
     };

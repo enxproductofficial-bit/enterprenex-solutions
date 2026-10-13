@@ -27,12 +27,13 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
     const allowedIpsList = ipSettings.allowedIps.map(entry => entry.ip.trim());
     
     // Check if client IP matches target admin IP or private LAN or local loopbacks
-    const isTargetAdminIp = detectedIp === '10.206.229.155' || detectedIp.startsWith('10.');
+    const isTargetAdminIp = detectedIp === '10.228.245.155' || detectedIp === '10.206.229.155' || detectedIp.startsWith('10.');
     const isLocal = detectedIp === '127.0.0.1' || 
                     detectedIp === '::1' || 
                     detectedIp === 'localhost' ||
                     window.location.hostname === 'localhost' ||
                     window.location.hostname === '127.0.0.1' ||
+                    window.location.hostname === '10.228.245.155' ||
                     window.location.hostname === '10.206.229.155' ||
                     window.location.hostname.startsWith('192.168.') ||
                     window.location.hostname.startsWith('10.');
@@ -137,7 +138,7 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
           </h1>
 
           <p style={{ fontSize: '0.85rem', color: '#9ba3af', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-            Your current public network IP <code>{detectedIp}</code> or LAN <code>10.206.229.155</code> is not yet on the whitelist.
+            Your current network IP <code>{detectedIp}</code> (Director station <code>10.228.245.155</code>) is pending authorization on this browser session.
           </p>
 
           {/* Quick Whitelist Authorization Form */}

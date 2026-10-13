@@ -13,8 +13,8 @@ export default async function handler(req: any, res: any) {
   const realIp = req.headers['x-real-ip'];
   const clientIp = (forwardedFor ? forwardedFor.split(',')[0].trim() : null) || realIp || req.socket?.remoteAddress || '127.0.0.1';
 
-  // Environment variable allowed IPs (comma separated), e.g. "10.206.229.155, 103.21.124.50"
-  const defaultAllowed = ['10.206.229.155', '127.0.0.1', '::1'];
+  // Environment variable allowed IPs (comma separated), e.g. "10.228.245.155, 10.206.229.155, 103.21.124.50"
+  const defaultAllowed = ['10.228.245.155', '10.206.229.155', '127.0.0.1', '::1'];
   const envAllowedIps = (process.env.ALLOWED_ADMIN_IPS || '').split(',').map((ip: string) => ip.trim()).filter(Boolean);
   const combinedAllowed = [...defaultAllowed, ...envAllowedIps];
 
