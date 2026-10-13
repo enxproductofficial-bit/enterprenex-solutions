@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import {
   Plus,
@@ -12,9 +12,34 @@ import {
   LifeBuoy,
   FileQuestion,
   User,
-  Eye
+  Eye,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import type { SupportTicket } from '../types';
+
+// React.lazy Loaded Preview Drawer
+const TicketPreviewDrawer = lazy(() => import('../components/TicketPreviewDrawer'));
+
+// Shimmer Skeleton Fallback while Drawer component loads
+const TicketDrawerSkeleton: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+  <div className="adm-drawer-overlay" onClick={onClose}>
+    <div className="adm-preview-drawer" onClick={e => e.stopPropagation()}>
+      <div className="adm-drawer-header">
+        <div style={{ flex: 1 }}>
+          <div className="adm-skeleton-bar" style={{ width: '120px', height: '14px', marginBottom: '8px' }} />
+          <div className="adm-skeleton-bar" style={{ width: '85%', height: '22px' }} />
+        </div>
+        <button className="adm-modal-close" onClick={onClose}><X size={18} /></button>
+      </div>
+      <div className="adm-drawer-body">
+        <div className="adm-skeleton-bar" style={{ height: '70px', borderRadius: '10px' }} />
+        <div className="adm-skeleton-bar" style={{ height: '80px', borderRadius: '10px' }} />
+        <div className="adm-skeleton-bar" style={{ height: '200px', borderRadius: '10px' }} />
+      </div>
+    </div>
+  </div>
+);
 
 export const HelpdeskPage: React.FC = () => {
   const { tickets, clients, employees, addTicket, updateTicketStatus, addTicketReply, currentUser, showToast } = useAdmin();
@@ -24,6 +49,7 @@ export const HelpdeskPage: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [isLazyLoading, setIsLazyLoading] = useState(false);
+  const [expandedSubjects, setExpandedSubjects] = useState<Record<string, boolean>>({});
 
   const handleStatusFilterChange = (st: string) => {
     setIsLazyLoading(true);
@@ -427,8 +453,33 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                 >
                   <td>
                     <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>{tkt.ticketNumber}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', maxWidth: '280px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                      {tkt.subject}
+                    <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', lineHeight: 1.4, maxWidth: '300px' }}>
+                      <span>
+                        {tkt.subject && tkt.subject.length > 46 && !expandedSubjects[tkt.id]
+                          ? `${tkt.subject.slice(0, 44)}...`
+                          : tkt.subject}
+                      </span>
+                      {tkt.subject && tkt.subject.length > 46 && (
+                        <button
+                          type="button"
+                          onClick={e => {
+                            e.stopPropagation();
+                            setExpandedSubjects(prev => ({ ...prev, [tkt.id]: !prev[tkt.id] }));
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#12c990',
+                            fontSize: '0.72rem',
+                            cursor: 'pointer',
+                            padding: '0 4px',
+                            fontWeight: 700,
+                            textDecoration: 'underline'
+                          }}
+                        >
+                          {expandedSubjects[tkt.id] ? 'less' : 'more'}
+                        </button>
+                      )}
                     </div>
                   </td>
                   <td>
@@ -517,200 +568,22 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
         </table>
       </div>
 
-      {/* ── SCREEN-ADAPTIVE SLIDING PREVIEW DRAWER ── */}
+      {/* ── LAZY-LOADED SCREEN-ADAPTIVE SLIDING PREVIEW DRAWER ── */}
       {selectedTicket && (
-        <div className="adm-drawer-overlay" onClick={() => setSelectedTicket(null)}>
-          <div className="adm-preview-drawer" onClick={e => e.stopPropagation()}>
-            <div className="adm-drawer-header">
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
-                  <span className="adm-badge adm-badge-primary">{selectedTicket.ticketNumber}</span>
-                  <span className="adm-badge adm-badge-neutral">{selectedTicket.category}</span>
-                  <span className={`adm-badge ${selectedTicket.priority === 'Critical' ? 'adm-badge-danger' : 'adm-badge-warning'}`}>
-                    {selectedTicket.priority} Priority
-                  </span>
-                  <span className="adm-badge adm-badge-success">{selectedTicket.status}</span>
-                </div>
-                <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)', margin: 0, wordBreak: 'break-word', lineHeight: 1.35 }}>
-                  {selectedTicket.subject}
-                </h2>
-                <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
-                  From: <strong style={{ color: 'var(--adm-text, #1a1a1a)' }}>{selectedTicket.clientName}</strong> &bull; {selectedTicket.createdAt}
-                </div>
-              </div>
-              <button className="adm-modal-close" onClick={() => setSelectedTicket(null)} title="Close Preview">
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="adm-drawer-body">
-              {/* Direct Enterprise Dispatch Actions */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  padding: '0.75rem',
-                  background: 'var(--adm-bg, #f8f8f9)',
-                  borderRadius: '10px',
-                  border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.06))',
-                  flexDirection: 'column'
-                }}
-              >
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Instant Communication
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <a
-                    href={getTicketWhatsAppUrl(selectedTicket)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="adm-btn adm-btn-sm"
-                    style={{ background: '#25D366', color: '#fff', border: 'none', textDecoration: 'none', fontWeight: 600, flex: 1, minWidth: '180px', justifyContent: 'center' }}
-                  >
-                    <MessageCircle size={14} />
-                    <span>WhatsApp (+91-9226860060)</span>
-                  </a>
-                  <a
-                    href={getTicketEmailUrl(selectedTicket)}
-                    className="adm-btn adm-btn-sm adm-btn-secondary"
-                    style={{ textDecoration: 'none', fontWeight: 600, flex: 1, minWidth: '180px', justifyContent: 'center' }}
-                  >
-                    <Mail size={14} color="var(--adm-primary)" />
-                    <span>Email Support</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* Requester & SLA Details Panel */}
-              <div
-                style={{
-                  padding: '0.85rem 1rem',
-                  background: 'var(--adm-bg, #f8f8f9)',
-                  borderRadius: '10px',
-                  border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.06))',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                  gap: '0.75rem'
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
-                    Official Email
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--adm-text, #1a1a1a)', wordBreak: 'break-all' }}>
-                    {selectedTicket.clientEmail || 'N/A'}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
-                    Assigned Staff
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--adm-text, #1a1a1a)' }}>
-                    {selectedTicket.assignedTo || 'Unassigned'}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
-                    SLA Countdown
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: selectedTicket.status === 'Resolved' ? '#12c990' : '#f59e0b' }}>
-                    {selectedTicket.status === 'Resolved' ? '✓ Resolved in SLA' : `${selectedTicket.slaHoursRemaining}h remaining`}
-                  </div>
-                </div>
-              </div>
-
-              {/* Conversation / Discussion Stream */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Conversation History
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    minHeight: '180px',
-                    maxHeight: '320px',
-                    overflowY: 'auto',
-                    background: 'var(--adm-bg, #f8f8f9)',
-                    padding: '0.85rem',
-                    borderRadius: '10px',
-                    border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.06))',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.75rem'
-                  }}
-                >
-                  {selectedTicket.messages.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--adm-text-dim)', fontSize: '0.82rem' }}>
-                      No replies logged yet. Use the message box below to post an update.
-                    </div>
-                  ) : (
-                    selectedTicket.messages.map(msg => (
-                      <div
-                        key={msg.id}
-                        style={{
-                          alignSelf: msg.isClient ? 'flex-start' : 'flex-end',
-                          maxWidth: '85%',
-                          background: msg.isClient ? 'var(--adm-surface, #ffffff)' : '#1a1a1a',
-                          color: msg.isClient ? 'var(--adm-text, #1a1a1a)' : '#ffffff',
-                          border: msg.isClient ? '1px solid var(--adm-border, rgba(0,0,0,0.06))' : 'none',
-                          borderRadius: '12px',
-                          padding: '0.65rem 0.85rem',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: msg.isClient ? 'var(--adm-text-dim)' : 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: '3px', gap: '1rem' }}>
-                          <span>{msg.sender}</span>
-                          <span>{msg.timestamp}</span>
-                        </div>
-                        <p style={{ fontSize: '0.82rem', margin: 0, lineHeight: 1.45, wordBreak: 'break-word' }}>
-                          {msg.text}
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Instant Reply Input */}
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
-                <input
-                  type="text"
-                  className="adm-input"
-                  placeholder={isEmployee ? "Write message for HR / Support..." : "Type reply to ticket requester..."}
-                  value={replyText}
-                  onChange={e => setReplyText(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleSendReply(selectedTicket.id); }}
-                />
-                <button className="adm-btn adm-btn-primary" onClick={() => handleSendReply(selectedTicket.id)}>
-                  <Send size={14} />
-                  <span>Send</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="adm-drawer-footer">
-              {!isEmployee && (
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    className="adm-btn adm-btn-sm adm-btn-secondary"
-                    onClick={() => {
-                      updateTicketStatus(selectedTicket.id, 'Resolved');
-                      setSelectedTicket({ ...selectedTicket, status: 'Resolved' });
-                    }}
-                  >
-                    <CheckCircle2 size={13} color="var(--adm-success)" />
-                    <span>Mark Resolved</span>
-                  </button>
-                </div>
-              )}
-              <div style={{ marginLeft: 'auto' }}>
-                <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => setSelectedTicket(null)}>
-                  Close Preview
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Suspense fallback={<TicketDrawerSkeleton onClose={() => setSelectedTicket(null)} />}>
+          <TicketPreviewDrawer
+            ticket={selectedTicket}
+            onClose={() => setSelectedTicket(null)}
+            onReply={handleSendReply}
+            onUpdateStatus={(tId, st) => {
+              updateTicketStatus(tId, st);
+              setSelectedTicket(prev => prev ? { ...prev, status: st } : null);
+            }}
+            isEmployee={isEmployee}
+            getWhatsAppUrl={getTicketWhatsAppUrl}
+            getEmailUrl={getTicketEmailUrl}
+          />
+        </Suspense>
       )}
 
       {/* ── RAISE TICKET MODAL ── */}
