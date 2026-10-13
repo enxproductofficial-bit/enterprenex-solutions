@@ -29,6 +29,7 @@ import {
   CheckCheck,
   Award,
   BarChart3,
+  Activity,
   Star,
   Target,
   TrendingUp,
@@ -2019,12 +2020,16 @@ export const TeamPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {employees.map(emp => {
-                      const empTasks = tasks.filter(t =>
-                        t.status !== 'Done' &&
-                        (t.assignedTo.toLowerCase().includes(emp.name.toLowerCase()) || (emp.employeeId && t.assignedTo.includes(emp.employeeId)))
-                      );
-                      const assignedHours = empTasks.reduce((sum, t) => sum + (t.estimatedHours || 8), 0);
+                    {(employees || []).map(emp => {
+                      if (!emp) return null;
+                      const empNameLower = (emp.name || '').toLowerCase();
+                      const empId = emp.employeeId || emp.id || '';
+                      const empTasks = (tasks || []).filter(t => {
+                        if (!t || t.status === 'Done') return false;
+                        const assignedLower = (t.assignedTo || '').toLowerCase();
+                        return (empNameLower && assignedLower.includes(empNameLower)) || (empId && (t.assignedTo || '').includes(empId));
+                      });
+                      const assignedHours = empTasks.reduce((sum, t) => sum + (t?.estimatedHours || 8), 0);
                       const loadPct = emp.workloadPercentage || Math.min(130, Math.round((assignedHours / 40) * 100));
 
                       const statusBadge =
@@ -2133,13 +2138,31 @@ export const TeamPage: React.FC = () => {
 
             {/* Employee Skill Matrix Cards */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {employees.map(emp => {
-                const matrix = emp.skillsMatrix || [
-                  { name: 'React 19 & Next.js', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' },
-                  { name: 'TypeScript & Node.js', category: 'Backend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' },
-                  { name: 'Docker & Kubernetes', category: 'Cloud & DevOps', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' },
-                  { name: 'PostgreSQL & Redis', category: 'Database & AI', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' }
-                ];
+              {(employees || [])
+                .filter((emp, idx, arr) => 
+                  emp && arr.findIndex(e => (e.employeeId && e.employeeId === emp.employeeId) || (e.email && e.email === emp.email)) === idx
+                )
+                .sort((a, b) => {
+                  if (a.email === currentUser?.email || a.id === currentUser?.id) return -1;
+                  if (b.email === currentUser?.email || b.id === currentUser?.id) return 1;
+                  return 0;
+                })
+                .map(emp => {
+                const matrix = (emp.skillsMatrix && emp.skillsMatrix.length > 0)
+                  ? emp.skillsMatrix
+                  : (emp.skills && emp.skills.length > 0)
+                  ? emp.skills.map((skName, i) => ({
+                      name: skName,
+                      category: i % 2 === 0 ? 'Frontend & UI' : 'Backend & Core',
+                      level: 'Expert' as const,
+                      rating: 5,
+                      verifiedRating: 5,
+                      isVerified: true,
+                      verifiedBy: 'Rohit P. (Managing Director)'
+                    }))
+                  : [
+                      { name: 'Full-Stack Development', category: 'Core Tech', level: 'Expert' as const, rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' }
+                    ];
 
                 const filteredSkills = matrix.filter(s => {
                   if (skillCategoryFilter === 'All') return true;
