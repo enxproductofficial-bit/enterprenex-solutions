@@ -3,45 +3,45 @@
    ========================================================================== */
 
 :root {
-  --adm-bg: #0d0f12;
-  --adm-surface: #14171d;
-  --adm-surface-hover: #1b2028;
-  --adm-surface-active: #222933;
-  --adm-border: rgba(255, 255, 255, 0.08);
-  --adm-border-light: rgba(255, 255, 255, 0.14);
+  --adm-bg: #090a0d;
+  --adm-surface: #101216;
+  --adm-surface-hover: #15181f;
+  --adm-surface-active: #1b1e27;
+  --adm-border: rgba(255, 255, 255, 0.07);
+  --adm-border-light: rgba(255, 255, 255, 0.12);
   
-  --adm-primary: #F66135;
-  --adm-primary-hover: #ff784e;
-  --adm-primary-soft: rgba(246, 97, 53, 0.12);
-  --adm-primary-border: rgba(246, 97, 53, 0.3);
+  --adm-primary: #ea580c;
+  --adm-primary-hover: #f97316;
+  --adm-primary-soft: rgba(234, 88, 12, 0.09);
+  --adm-primary-border: rgba(234, 88, 12, 0.22);
   
   --adm-text: #ffffff;
-  --adm-text-muted: #9ba3af;
+  --adm-text-muted: #94a3b8;
   --adm-text-dim: #64748b;
   
   --adm-success: #10b981;
-  --adm-success-soft: rgba(16, 185, 129, 0.14);
+  --adm-success-soft: rgba(16, 185, 129, 0.10);
   --adm-warning: #f59e0b;
-  --adm-warning-soft: rgba(245, 158, 11, 0.14);
+  --adm-warning-soft: rgba(245, 158, 11, 0.10);
   --adm-danger: #ef4444;
-  --adm-danger-soft: rgba(239, 68, 68, 0.14);
+  --adm-danger-soft: rgba(239, 68, 68, 0.10);
   --adm-info: #3b82f6;
-  --adm-info-soft: rgba(59, 130, 246, 0.14);
+  --adm-info-soft: rgba(59, 130, 246, 0.10);
   --adm-purple: #8b5cf6;
-  --adm-purple-soft: rgba(139, 92, 246, 0.14);
+  --adm-purple-soft: rgba(139, 92, 246, 0.10);
 
-  --adm-radius-sm: 6px;
-  --adm-radius: 10px;
-  --adm-radius-lg: 16px;
-  --adm-radius-xl: 20px;
+  --adm-radius-sm: 4px;
+  --adm-radius: 8px;
+  --adm-radius-lg: 10px;
+  --adm-radius-xl: 12px;
   
-  --adm-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --adm-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --adm-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --adm-shadow-sm: none;
+  --adm-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --adm-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.35);
   
-  --adm-sidebar-width: 270px;
-  --adm-sidebar-collapsed: 78px;
-  --adm-topbar-height: 70px;
+  --adm-sidebar-width: 256px;
+  --adm-sidebar-collapsed: 72px;
+  --adm-topbar-height: 64px;
 }
 
 /* Reset for Admin scope */
@@ -593,13 +593,13 @@
 .adm-btn-primary {
   background: var(--adm-primary);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(246, 97, 53, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
 }
 
 .adm-btn-primary:hover {
   background: var(--adm-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(246, 97, 53, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .adm-btn-secondary {
@@ -616,7 +616,7 @@
 .adm-btn-danger {
   background: var(--adm-danger-soft);
   color: var(--adm-danger);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .adm-btn-danger:hover {
@@ -625,8 +625,8 @@
 }
 
 .adm-btn-sm {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.78rem;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
   border-radius: var(--adm-radius-sm);
 }
 
@@ -635,21 +635,20 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 9999px;
-  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 600;
-  text-transform: capitalize;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
-.adm-badge-success { background: var(--adm-success-soft); color: var(--adm-success); border: 1px solid rgba(16, 185, 129, 0.3); }
-.adm-badge-warning { background: var(--adm-warning-soft); color: var(--adm-warning); border: 1px solid rgba(245, 158, 11, 0.3); }
-.adm-badge-danger { background: var(--adm-danger-soft); color: var(--adm-danger); border: 1px solid rgba(239, 68, 68, 0.3); }
-.adm-badge-info { background: var(--adm-info-soft); color: var(--adm-info); border: 1px solid rgba(59, 130, 246, 0.3); }
+.adm-badge-success { background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.adm-badge-warning { background: rgba(245, 158, 11, 0.08); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+.adm-badge-danger { background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.adm-badge-info { background: rgba(59, 130, 246, 0.08); color: #38bdf8; border: 1px solid rgba(59, 130, 246, 0.2); }
 .adm-badge-primary { background: var(--adm-primary-soft); color: var(--adm-primary); border: 1px solid var(--adm-primary-border); }
-.adm-badge-purple { background: var(--adm-purple-soft); color: var(--adm-purple); border: 1px solid rgba(139, 92, 246, 0.3); }
-.adm-badge-neutral { background: rgba(255, 255, 255, 0.08); color: var(--adm-text-muted); border: 1px solid var(--adm-border); }
+.adm-badge-purple { background: rgba(139, 92, 246, 0.08); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.2); }
+.adm-badge-neutral { background: rgba(255, 255, 255, 0.05); color: var(--adm-text-muted); border: 1px solid var(--adm-border); }
 
 /* ── Table Styling ── */
 .adm-table-container {

@@ -244,38 +244,35 @@ export const TasksPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── LIVE ACTIVE STOPWATCH NOTIFICATION BAR ── */}
+      {/* ── LIVE ACTIVE STOPWATCH BAR (MINIMALISM) ── */}
       {activeTimerTaskId && activeTimerTask && (
         <div
+          className="adm-card"
           style={{
-            background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(2, 132, 199, 0.12) 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.35)',
-            borderRadius: '12px',
-            padding: '0.85rem 1.25rem',
+            padding: '0.75rem 1.15rem',
             marginBottom: '1.25rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: '1rem',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+            gap: '1rem'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div
               style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '8px',
-                background: isTimerRunning ? '#10b981' : '#f59e0b',
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                background: isTimerRunning ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid ' + (isTimerRunning ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fff',
-                boxShadow: isTimerRunning ? '0 0 14px rgba(16, 185, 129, 0.5)' : 'none'
+                color: isTimerRunning ? '#10b981' : '#f59e0b'
               }}
             >
-              <Clock size={18} className={isTimerRunning ? 'spin-subtle' : ''} />
+              <Clock size={16} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -1509,21 +1509,18 @@ export const TeamPage: React.FC = () => {
 
         return (
           <div>
-            {/* Employee Check-In Quick Hero Card */}
+            {/* Employee Check-In Quick Card (Minimalist) */}
             {isRegularEmployee && (
               <div
                 className="adm-card"
                 style={{
-                  padding: '1.25rem 1.5rem',
-                  marginBottom: '1.5rem',
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(246, 97, 53, 0.08) 100%)',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  borderRadius: '12px',
+                  padding: '1rem 1.25rem',
+                  marginBottom: '1.25rem',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   flexWrap: 'wrap',
-                  gap: '1.25rem'
+                  gap: '1rem'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -1939,70 +1936,52 @@ export const TeamPage: React.FC = () => {
 
         return (
           <div>
-            {/* Overview Metric Cards */}
-            <div className="adm-grid-4" style={{ marginBottom: '1.5rem' }}>
-              <div className="adm-stat-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>Total Weekly Capacity</span>
-                  <BarChart3 size={16} color="var(--adm-primary)" />
+            {/* Minimalist Capacity Summary Strip */}
+            <div className="adm-card" style={{ padding: '1.1rem 1.35rem', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Weekly Engineering Capacity</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                    {totalCapacityHours} <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 400 }}>Hours</span>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>Across {employees.length} members &bull; 40h standard</div>
                 </div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff', marginTop: '0.35rem' }}>
-                  {totalCapacityHours} <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)' }}>Hours</span>
-                </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
-                  Across {employees.length} engineering members (40h/wk)
-                </div>
-              </div>
 
-              <div className="adm-stat-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>Active Sprint Load</span>
-                  <Activity size={16} color="#38bdf8" />
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Sprint Load Allocation</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                    {overallUtilization}%
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{totalAssignedHours}h scheduled in active sprints</div>
                 </div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#38bdf8', marginTop: '0.35rem' }}>
-                  {overallUtilization}%
-                </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
-                  {totalAssignedHours}h scheduled in active sprints
-                </div>
-              </div>
 
-              <div className="adm-stat-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>Available Capacity</span>
-                  <CheckCircle size={16} color="#10b981" />
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Available Capacity</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#10b981', marginTop: '2px' }}>
+                    {availableCount} <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 400 }}>Staff</span>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>&lt;70% sprint load threshold</div>
                 </div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#10b981', marginTop: '0.35rem' }}>
-                  {availableCount} <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)' }}>Staff</span>
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#10b981', marginTop: '2px' }}>
-                  &lt;70% load &bull; Ready for new tasks
-                </div>
-              </div>
 
-              <div className="adm-stat-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>Overloaded / Crunch</span>
-                  <AlertCircle size={16} color="#f43f5e" />
-                </div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f43f5e', marginTop: '0.35rem' }}>
-                  {overloadedCount} <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)' }}>Staff</span>
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#f43f5e', marginTop: '2px' }}>
-                  &gt;100% load &bull; Needs sprint rebalancing
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Overloaded / Crunch</div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: overloadedCount > 0 ? '#ef4444' : '#fff', marginTop: '2px' }}>
+                    {overloadedCount} <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 400 }}>Staff</span>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>&gt;100% threshold alert</div>
                 </div>
               </div>
             </div>
 
             {/* Capacity Roster Table */}
             <div className="adm-card" style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-                    Team Workload & Weekly Capacity Distribution
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', margin: 0 }}>
+                    Team Workload & Weekly Capacity
                   </h3>
-                  <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>
-                    Monitors weekly burnout thresholds based on standard 40-hour engineering sprint capacity
+                  <p style={{ margin: '1px 0 0', fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                    Burnout and capacity monitoring based on standard 40h engineering sprints
                   </p>
                 </div>
               </div>
@@ -2013,9 +1992,9 @@ export const TeamPage: React.FC = () => {
                     <tr>
                       <th>Team Member</th>
                       <th>Weekly Standard</th>
-                      <th>Sprint Load (Hours)</th>
+                      <th>Sprint Load</th>
                       <th>Capacity Utilization</th>
-                      <th>Workload Status</th>
+                      <th>Status</th>
                       <th>Active Tasks</th>
                     </tr>
                   </thead>
@@ -2034,50 +2013,50 @@ export const TeamPage: React.FC = () => {
 
                       const statusBadge =
                         loadPct < 70 ? (
-                          <span className="adm-badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+                          <span className="adm-badge adm-badge-success">
                             Available (&lt;70%)
                           </span>
                         ) : loadPct <= 100 ? (
-                          <span className="adm-badge" style={{ background: 'rgba(2, 132, 199, 0.15)', color: '#38bdf8' }}>
+                          <span className="adm-badge adm-badge-info">
                             Healthy (70-100%)
                           </span>
                         ) : (
-                          <span className="adm-badge" style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#f43f5e' }}>
+                          <span className="adm-badge adm-badge-danger">
                             Overloaded (&gt;100%)
                           </span>
                         );
 
-                      const barColor = loadPct < 70 ? '#10b981' : loadPct <= 100 ? '#38bdf8' : '#f43f5e';
+                      const barColor = loadPct < 70 ? '#10b981' : loadPct <= 100 ? '#38bdf8' : '#ef4444';
 
                       return (
                         <tr key={emp.id}>
                           <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <img
                                 src={emp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
                                 alt={emp.name}
-                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
+                                style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover' }}
                               />
                               <div>
-                                <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.88rem' }}>{emp.name}</div>
-                                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                                <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.85rem' }}>{emp.name}</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
                                   {emp.role} &bull; <span style={{ fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
                                 </div>
                               </div>
                             </div>
                           </td>
-                          <td style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)' }}>
-                            40 Hours / wk
+                          <td style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
+                            40h / wk
                           </td>
-                          <td style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>
-                            {Math.round((loadPct / 100) * 40)}h <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', fontWeight: 400 }}>allocated</span>
+                          <td style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff' }}>
+                            {Math.round((loadPct / 100) * 40)}h <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)', fontWeight: 400 }}>allocated</span>
                           </td>
-                          <td style={{ width: '220px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '4px' }}>
+                          <td style={{ width: '200px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: '3px' }}>
                               <span style={{ color: barColor, fontWeight: 700 }}>{loadPct}%</span>
-                              <span style={{ color: 'var(--adm-text-dim)' }}>Threshold: 100%</span>
+                              <span style={{ color: 'var(--adm-text-dim)' }}>Limit: 100%</span>
                             </div>
-                            <div className="adm-progress-bar" style={{ height: '6px' }}>
+                            <div className="adm-progress-bar" style={{ height: '4px' }}>
                               <div
                                 className="adm-progress-fill"
                                 style={{ width: `${Math.min(100, loadPct)}%`, background: barColor }}
@@ -2086,7 +2065,7 @@ export const TeamPage: React.FC = () => {
                           </td>
                           <td>{statusBadge}</td>
                           <td>
-                            <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.75rem' }}>
+                            <span className="adm-badge adm-badge-neutral">
                               {empTasks.length} Task(s)
                             </span>
                           </td>
@@ -2101,27 +2080,27 @@ export const TeamPage: React.FC = () => {
         );
       })()}
 
-      {/* ── 5. IT SKILL MATRIX ── */}
+      {/* ── 5. IT SKILL MATRIX (MINIMALISM) ── */}
       {tab === 'skills' && (() => {
         const categories = ['All', 'Frontend', 'Backend', 'Cloud & DevOps', 'Database & AI', 'Architecture'];
 
         return (
           <div>
             {/* Filter Pills */}
-            <div className="adm-card" style={{ padding: '0.85rem 1rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div className="adm-card" style={{ padding: '0.75rem 1rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 {categories.map(cat => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setSkillCategoryFilter(cat)}
                     style={{
-                      background: skillCategoryFilter === cat ? 'var(--adm-primary)' : 'var(--adm-bg)',
+                      background: skillCategoryFilter === cat ? 'var(--adm-primary)' : 'transparent',
                       color: skillCategoryFilter === cat ? '#fff' : 'var(--adm-text-muted)',
-                      border: '1px solid var(--adm-border)',
-                      borderRadius: '6px',
-                      padding: '0.35rem 0.85rem',
-                      fontSize: '0.78rem',
+                      border: '1px solid ' + (skillCategoryFilter === cat ? 'var(--adm-primary)' : 'var(--adm-border)'),
+                      borderRadius: '4px',
+                      padding: '0.3rem 0.75rem',
+                      fontSize: '0.75rem',
                       fontWeight: 600,
                       cursor: 'pointer'
                     }}
@@ -2131,12 +2110,12 @@ export const TeamPage: React.FC = () => {
                 ))}
               </div>
 
-              <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>
-                Beginner (1/5) &bull; Intermediate (2-3/5) &bull; Advanced (4/5) &bull; Expert (5/5)
+              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                Scale: 1 (Beginner) &bull; 2-3 (Intermediate) &bull; 4 (Advanced) &bull; 5 (Expert)
               </div>
             </div>
 
-            {/* Employee Skill Matrix Cards */}
+            {/* Employee Skill Matrix (Minimalist Table Layout) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {(employees || [])
                 .filter((emp, idx, arr) => 
@@ -2153,7 +2132,7 @@ export const TeamPage: React.FC = () => {
                   : (emp.skills && emp.skills.length > 0)
                   ? emp.skills.map((skName, i) => ({
                       name: skName,
-                      category: i % 2 === 0 ? 'Frontend & UI' : 'Backend & Core',
+                      category: i % 2 === 0 ? 'Frontend' : 'Backend',
                       level: 'Expert' as const,
                       rating: 5,
                       verifiedRating: 5,
@@ -2161,7 +2140,7 @@ export const TeamPage: React.FC = () => {
                       verifiedBy: 'Rohit P. (Managing Director)'
                     }))
                   : [
-                      { name: 'Full-Stack Development', category: 'Core Tech', level: 'Expert' as const, rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' }
+                      { name: 'Full-Stack Development', category: 'Backend', level: 'Expert' as const, rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' }
                     ];
 
                 const filteredSkills = matrix.filter(s => {
@@ -2170,126 +2149,104 @@ export const TeamPage: React.FC = () => {
                 });
 
                 return (
-                  <div key={emp.id} className="adm-card" style={{ padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '1px solid var(--adm-border)', paddingBottom: '0.75rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div key={emp.id} className="adm-card" style={{ padding: 0, overflow: 'hidden' }}>
+                    {/* Minimalist Member Header */}
+                    <div style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <img
                           src={emp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
                           alt={emp.name}
-                          style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }}
+                          style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
                         />
                         <div>
-                          <div style={{ fontWeight: 800, color: '#fff', fontSize: '1rem' }}>{emp.name}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
-                            {emp.role} &bull; <span style={{ color: 'var(--adm-text-dim)', fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
+                          <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem' }}>{emp.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
+                            {emp.role} &bull; <span style={{ fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
                           </div>
                         </div>
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.72rem' }}>
-                          Verified Skills: {matrix.filter(s => s.isVerified).length} / {matrix.length}
+                        <span className="adm-badge adm-badge-success" style={{ fontSize: '0.7rem' }}>
+                          Verified: {matrix.filter(s => s.isVerified).length} / {matrix.length}
                         </span>
                       </div>
                     </div>
 
-                    {/* Skill Cards Grid */}
-                    <div className="adm-grid-3" style={{ gap: '0.85rem' }}>
-                      {filteredSkills.map(sk => {
-                        const levelBadgeColor =
-                          sk.level === 'Expert'
-                            ? '#10b981'
-                            : sk.level === 'Advanced'
-                            ? '#38bdf8'
-                            : sk.level === 'Intermediate'
-                            ? '#f59e0b'
-                            : '#94a3b8';
+                    {/* Minimalist Skill Table */}
+                    <div className="adm-table-wrapper">
+                      <table className="adm-table">
+                        <thead>
+                          <tr>
+                            <th>Technology / Skill</th>
+                            <th>Domain</th>
+                            <th>Proficiency</th>
+                            <th>Verification Status</th>
+                            {canManageTeam && <th>Manager Action</th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredSkills.map(sk => {
+                            const levelBadge =
+                              sk.level === 'Expert' ? 'adm-badge-success' :
+                              sk.level === 'Advanced' ? 'adm-badge-info' :
+                              sk.level === 'Intermediate' ? 'adm-badge-warning' : 'adm-badge-neutral';
 
-                        return (
-                          <div
-                            key={sk.name}
-                            style={{
-                              background: 'var(--adm-bg)',
-                              border: '1px solid var(--adm-border)',
-                              borderRadius: '8px',
-                              padding: '0.85rem',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              justifyContent: 'space-between'
-                            }}
-                          >
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                <span style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
-                                  {sk.category}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: '0.65rem',
-                                    fontWeight: 700,
-                                    padding: '2px 6px',
-                                    borderRadius: '4px',
-                                    background: `${levelBadgeColor}20`,
-                                    color: levelBadgeColor
-                                  }}
-                                >
-                                  {sk.level}
-                                </span>
-                              </div>
-
-                              <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem', marginBottom: '8px' }}>
-                                {sk.name}
-                              </div>
-
-                              {/* Self Rating Bar */}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
-                                {[1, 2, 3, 4, 5].map(star => (
-                                  <Star
-                                    key={star}
-                                    size={13}
-                                    fill={star <= sk.rating ? '#f59e0b' : 'transparent'}
-                                    color={star <= sk.rating ? '#f59e0b' : '#475569'}
-                                  />
-                                ))}
-                                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginLeft: '4px' }}>
-                                  {sk.rating}/5
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Verification Badge / Action */}
-                            <div style={{ paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              {sk.isVerified ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981', fontSize: '0.7rem', fontWeight: 600 }}>
-                                  <ShieldCheck size={12} />
-                                  <span>Verified ({sk.verifiedRating || sk.rating}/5)</span>
-                                </div>
-                              ) : canManageTeam ? (
-                                <button
-                                  type="button"
-                                  onClick={() => verifyEmployeeSkill(emp.employeeId || emp.id, sk.name, Math.min(5, sk.rating))}
-                                  style={{
-                                    background: 'rgba(16, 185, 129, 0.15)',
-                                    border: '1px solid rgba(16, 185, 129, 0.35)',
-                                    color: '#10b981',
-                                    borderRadius: '4px',
-                                    padding: '2px 8px',
-                                    fontSize: '0.68rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  ✓ Verify Skill ({sk.rating}/5)
-                                </button>
-                              ) : (
-                                <span style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)' }}>
-                                  Pending Manager Review
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                            return (
+                              <tr key={sk.name}>
+                                <td style={{ fontWeight: 600, color: '#fff' }}>
+                                  {sk.name}
+                                </td>
+                                <td>
+                                  <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>
+                                    {sk.category}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span className={`adm-badge ${levelBadge}`} style={{ fontSize: '0.68rem' }}>
+                                      {sk.level}
+                                    </span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
+                                      {sk.rating}/5
+                                    </span>
+                                  </div>
+                                </td>
+                                <td>
+                                  {sk.isVerified ? (
+                                    <span style={{ fontSize: '0.72rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                                      <ShieldCheck size={12} />
+                                      Verified ({sk.verifiedRating || sk.rating}/5)
+                                    </span>
+                                  ) : (
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                                      Pending Review
+                                    </span>
+                                  )}
+                                </td>
+                                {canManageTeam && (
+                                  <td>
+                                    {!sk.isVerified ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => verifyEmployeeSkill(emp.employeeId || emp.id, sk.name, Math.min(5, sk.rating))}
+                                        className="adm-btn adm-btn-secondary adm-btn-sm"
+                                        style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}
+                                      >
+                                        ✓ Verify ({sk.rating}/5)
+                                      </button>
+                                    ) : (
+                                      <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
+                                        Audited
+                                      </span>
+                                    )}
+                                  </td>
+                                )}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 );
@@ -2337,11 +2294,9 @@ export const TeamPage: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {/* Scorecard Hero Banner */}
                 <div
+                  className="adm-card"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.15) 0%, rgba(2, 132, 199, 0.15) 100%)',
-                    border: '1px solid rgba(5, 150, 105, 0.3)',
-                    borderRadius: '12px',
-                    padding: '1.25rem 1.5rem',
+                    padding: '1.2rem 1.5rem',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
