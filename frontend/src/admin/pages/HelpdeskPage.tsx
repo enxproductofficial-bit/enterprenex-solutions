@@ -5,16 +5,13 @@ import {
   Search,
   CheckCircle2,
   Clock,
-  Send,
   X,
   MessageCircle,
   Mail,
   LifeBuoy,
   FileQuestion,
   User,
-  Eye,
-  ChevronDown,
-  ChevronUp
+  Eye
 } from 'lucide-react';
 import type { SupportTicket } from '../types';
 
