@@ -24,8 +24,7 @@ import type {
   IpSecuritySettings,
   IpWhitelistEntry,
   EmployeeKpiScorecard,
-  ObjectiveKeyResult,
-  KpiMetricItem
+  ObjectiveKeyResult
 } from '../types';
 import {
   INITIAL_ADMIN_USERS,
@@ -140,6 +139,7 @@ interface AdminContextType {
   deleteEmployee: (id: string, purgeDocuments?: boolean) => void;
   addLeaveRequest: (leave: Omit<LeaveRequest, 'id' | 'status'>) => void;
   updateLeaveStatus: (id: string, status: 'Approved' | 'Rejected') => void;
+  deleteLeaveRequest: (id: string) => void;
   markAttendanceToday: (status: 'Present' | 'Late' | 'Half Day' | 'Absent') => void;
   updateAttendanceRecord: (recordId: string, updates: Partial<AttendanceRecord>) => void;
 
