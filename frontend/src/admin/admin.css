@@ -949,231 +949,324 @@
 }
 
 /* ==========================================================================
-   ENTERPRISE LIGHT MINIMALISM THEME (White & Slate like Stripe / Linear)
+   FASTX STUDIO DESIGN SYSTEM (fastxstudio.com Reference)
+   Warm Studio Off-White #fafafa, Pure Card #ffffff, Matte Black #1a1a1a,
+   Mint Emerald #12c990, Syne & Inter Typography, Luxury Pill Elements
    ========================================================================== */
 .adm-app.theme-light {
-  --adm-bg: #f8fafc;
+  --adm-bg: #fafafa;
   --adm-surface: #ffffff;
-  --adm-surface-hover: #f1f5f9;
-  --adm-surface-active: #e2e8f0;
-  --adm-border: #e2e8f0;
-  --adm-border-light: #cbd5e1;
+  --adm-surface-hover: #f4f4f5;
+  --adm-surface-active: #e4e4e7;
+  --adm-border: rgba(0, 0, 0, 0.06);
+  --adm-border-light: rgba(0, 0, 0, 0.12);
   
-  --adm-primary: #ea580c;
-  --adm-primary-hover: #c2410c;
-  --adm-primary-soft: rgba(234, 88, 12, 0.08);
-  --adm-primary-border: rgba(234, 88, 12, 0.22);
+  --adm-primary: #1a1a1a;
+  --adm-primary-hover: #000000;
+  --adm-primary-soft: rgba(0, 0, 0, 0.05);
+  --adm-primary-border: rgba(0, 0, 0, 0.12);
   
-  --adm-text: #0f172a;
-  --adm-text-muted: #475569;
-  --adm-text-dim: #64748b;
+  --adm-text: #1a1a1a;
+  --adm-text-muted: #5a5a5a;
+  --adm-text-dim: #8a8a8a;
   
-  --adm-success: #16a34a;
-  --adm-success-soft: rgba(22, 163, 74, 0.08);
-  --adm-warning: #d97706;
-  --adm-warning-soft: rgba(217, 119, 6, 0.08);
-  --adm-danger: #dc2626;
-  --adm-danger-soft: rgba(220, 38, 38, 0.08);
+  --adm-success: #12c990;
+  --adm-success-soft: rgba(18, 201, 144, 0.08);
+  --adm-warning: #f59e0b;
+  --adm-warning-soft: rgba(245, 158, 11, 0.08);
+  --adm-danger: #ef4444;
+  --adm-danger-soft: rgba(239, 68, 68, 0.08);
   --adm-info: #0284c7;
   --adm-info-soft: rgba(2, 132, 199, 0.08);
   --adm-purple: #7c3aed;
   --adm-purple-soft: rgba(124, 58, 237, 0.08);
 
-  --adm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --adm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --adm-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.08);
+  --adm-radius-sm: 9999px;
+  --adm-radius: 9999px;
+  --adm-radius-lg: 14px;
+  --adm-radius-xl: 18px;
 
-  background-color: #f8fafc;
-  color: #0f172a;
+  --adm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.02);
+  --adm-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.035);
+  --adm-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.05);
+
+  background-color: #fafafa;
+  color: #1a1a1a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.adm-app.theme-light h1,
+.adm-app.theme-light h2,
+.adm-app.theme-light h3,
+.adm-app.theme-light .adm-page-title-group h1,
+.adm-app.theme-light .adm-card-title,
+.adm-app.theme-light .adm-brand-title {
+  font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #1a1a1a !important;
 }
 
 .adm-app.theme-light .adm-sidebar {
   background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .adm-app.theme-light .adm-sidebar-header {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .adm-app.theme-light .adm-topbar {
   background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.adm-app.theme-light .adm-brand-link,
-.adm-app.theme-light .adm-brand-title {
-  color: #0f172a;
+.adm-app.theme-light .adm-brand-link {
+  color: #1a1a1a;
 }
 
 .adm-app.theme-light .adm-brand-sub {
-  color: #ea580c;
+  color: #12c990;
+  font-weight: 700;
 }
 
 .adm-app.theme-light .adm-nav-link {
-  color: #475569;
+  color: #5a5a5a;
+  border-radius: 9999px;
+  margin: 2px 0;
+  font-weight: 500;
 }
 
 .adm-app.theme-light .adm-nav-link:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: #f4f4f5;
+  color: #1a1a1a;
 }
 
 .adm-app.theme-light .adm-nav-link.active {
-  background: rgba(234, 88, 12, 0.08);
-  color: #ea580c;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .adm-app.theme-light .adm-search-input {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #0f172a;
+  background: #f4f4f5;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 9999px;
+  color: #1a1a1a;
 }
 
 .adm-app.theme-light .adm-search-input:focus {
   background: #ffffff;
-  border-color: #ea580c;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }
 
 .adm-app.theme-light .adm-topbar-btn {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #475569;
+  background: #f4f4f5;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 9999px;
+  color: #5a5a5a;
 }
 
 .adm-app.theme-light .adm-topbar-btn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-  border-color: #cbd5e1;
+  background: #e4e4e7;
+  color: #1a1a1a;
 }
 
 .adm-app.theme-light .adm-user-profile-btn {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #f4f4f5;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 9999px;
 }
 
 .adm-app.theme-light .adm-user-name {
-  color: #0f172a;
+  color: #1a1a1a;
 }
 
+/* FastX Studio Premium Cards */
 .adm-app.theme-light .adm-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035);
 }
 
 .adm-app.theme-light .adm-kpi-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035);
 }
 
 .adm-app.theme-light .adm-kpi-value {
-  color: #0f172a;
+  color: #1a1a1a;
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700;
 }
 
-.adm-app.theme-light .adm-table-container {
+/* FastX Studio Pill Buttons */
+.adm-app.theme-light .adm-btn {
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.adm-app.theme-light .adm-btn-primary {
+  background: #1a1a1a;
+  color: #ffffff !important;
+  border: 1px solid #1a1a1a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.adm-app.theme-light .adm-btn-primary:hover {
+  background: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.adm-app.theme-light .adm-btn-secondary {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+
+.adm-app.theme-light .adm-btn-secondary:hover {
+  background: #f4f4f5;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* FastX Studio Pill Badges */
+.adm-app.theme-light .adm-badge {
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.65rem;
+}
+
+.adm-app.theme-light .adm-badge-success {
+  background: rgba(18, 201, 144, 0.1);
+  color: #0b9e71;
+  border: 1px solid rgba(18, 201, 144, 0.25);
+}
+
+.adm-app.theme-light .adm-badge-neutral {
+  background: #f4f4f5;
+  color: #5a5a5a;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.adm-app.theme-light .adm-badge-primary {
+  background: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid #1a1a1a;
+}
+
+/* FastX Studio Minimalist Tables */
+.adm-app.theme-light .adm-table-container,
+.adm-app.theme-light .adm-table-wrapper {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
 }
 
 .adm-app.theme-light .adm-table th {
-  background: #f8fafc;
-  color: #64748b;
-  border-bottom: 1px solid #e2e8f0;
+  background: #f8f8f9;
+  color: #8a8a8a;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .adm-app.theme-light .adm-table td {
-  border-bottom: 1px solid #e2e8f0;
-  color: #0f172a;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  color: #1a1a1a;
 }
 
 .adm-app.theme-light .adm-table tbody tr:hover {
-  background-color: #f8fafc;
+  background-color: #fafafa;
 }
 
+/* FastX Studio Tabs */
+.adm-app.theme-light .adm-tab-btn {
+  color: #8a8a8a;
+  font-weight: 500;
+  border-radius: 9999px;
+  border: none;
+  padding: 0.45rem 1rem;
+}
+
+.adm-app.theme-light .adm-tab-btn:hover {
+  color: #1a1a1a;
+  background: #f4f4f5;
+}
+
+.adm-app.theme-light .adm-tab-btn.active {
+  color: #ffffff;
+  background: #1a1a1a;
+  border-bottom-color: transparent;
+}
+
+/* FastX Studio Inputs */
 .adm-app.theme-light .adm-input,
 .adm-app.theme-light .adm-select,
 .adm-app.theme-light .adm-textarea {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  color: #0f172a;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  color: #1a1a1a;
 }
 
 .adm-app.theme-light .adm-input:focus,
 .adm-app.theme-light .adm-select:focus,
 .adm-app.theme-light .adm-textarea:focus {
-  background: #ffffff;
-  border-color: #ea580c;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }
 
-.adm-app.theme-light .adm-btn-secondary {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  color: #0f172a;
-}
-
-.adm-app.theme-light .adm-btn-secondary:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-}
-
-.adm-app.theme-light .adm-kanban-column {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-
-.adm-app.theme-light .adm-kanban-column-header {
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.adm-app.theme-light .adm-kanban-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.adm-app.theme-light .adm-kanban-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.adm-app.theme-light .adm-modal-content {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-.adm-app.theme-light .adm-tab-btn {
-  color: #64748b;
-}
-
-.adm-app.theme-light .adm-tab-btn:hover {
-  color: #0f172a;
-}
-
-.adm-app.theme-light .adm-tab-btn.active {
-  color: #ea580c;
-  border-bottom-color: #ea580c;
-}
-
-.adm-app.theme-light .adm-page-title-group h1,
-.adm-app.theme-light .adm-card-title,
-.adm-app.theme-light h1,
-.adm-app.theme-light h2,
-.adm-app.theme-light h3,
-.adm-app.theme-light h4 {
-  color: #0f172a !important;
-}
-
+/* Clean Overrides for Hardcoded Inline Styles */
 .adm-app.theme-light strong,
 .adm-app.theme-light [style*="color: #fff"],
 .adm-app.theme-light [style*="color: rgb(255, 255, 255)"],
 .adm-app.theme-light [style*="color:#fff"] {
-  color: #0f172a !important;
+  color: #1a1a1a !important;
 }
 
 .adm-app.theme-light .adm-btn-primary strong,
 .adm-app.theme-light .adm-btn-primary [style*="color: #fff"],
-.adm-app.theme-light .adm-btn-primary [style*="color:#fff"] {
+.adm-app.theme-light .adm-btn-primary [style*="color:#fff"],
+.adm-app.theme-light .adm-tab-btn.active [style*="color: #fff"],
+.adm-app.theme-light .adm-tab-btn.active [style*="color:#fff"],
+.adm-app.theme-light .adm-badge-primary,
+.adm-app.theme-light .adm-btn-primary {
   color: #ffffff !important;
+}
+
+.adm-app.theme-light [style*="background: #111419"],
+.adm-app.theme-light [style*="background: #1a1e27"],
+.adm-app.theme-light [style*="background: var(--adm-bg)"] {
+  background: #f8f8f9 !important;
+}
+
+.adm-app.theme-light .adm-kanban-column {
+  background: #f8f8f9;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+}
+
+.adm-app.theme-light .adm-kanban-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.adm-app.theme-light .adm-progress-bar {
+  background: #e4e4e7;
+  border-radius: 9999px;
+}
+
+.adm-app.theme-light .adm-progress-fill {
+  background: #1a1a1a;
 }
