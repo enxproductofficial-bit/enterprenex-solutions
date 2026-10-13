@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import type { VaultDocument, Employee } from '../types';
 
+const DocumentPreviewDrawer = React.lazy(() => import('../components/DocumentPreviewDrawer'));
+
 const CATEGORIES = [
   'All',
   'Contracts',
@@ -779,33 +781,37 @@ export const DocumentsPage: React.FC = () => {
 
         {/* Category buttons */}
         <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-          {(canManageVerification ? CATEGORIES : ['All', 'Employee Docs', 'Contracts']).map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCat(cat)}
-              style={{
-                background: selectedCat === cat ? 'var(--adm-primary)' : 'var(--adm-bg)',
-                color: selectedCat === cat ? '#fff' : 'var(--adm-text-muted)',
-                border: '1px solid var(--adm-border)',
-                borderRadius: '6px',
-                padding: '0.4rem 0.85rem',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              {cat}
-            </button>
-          ))}
+          {(canManageVerification ? CATEGORIES : ['All', 'Employee Docs', 'Contracts']).map(cat => {
+            const isSelected = selectedCat === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCat(cat)}
+                style={{
+                  background: isSelected ? 'var(--adm-primary, #1a1a1a)' : 'var(--adm-surface, #ffffff)',
+                  color: isSelected ? '#ffffff' : 'var(--adm-text-muted, #64748b)',
+                  border: isSelected ? '1px solid var(--adm-primary, #1a1a1a)' : '1px solid var(--adm-border)',
+                  borderRadius: '20px',
+                  padding: '0.45rem 1rem',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {cat === 'All' ? 'All Documents' : cat}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Documents Grid / Table */}
       {filteredDocs.length > 0 ? (
-        <div className="adm-table-container">
-          <table className="adm-table">
+        <div className="adm-table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <table className="adm-table" style={{ minWidth: '1080px' }}>
             <thead>
               <tr>
                 <th>Document Title & Format</th>
@@ -816,7 +822,7 @@ export const DocumentsPage: React.FC = () => {
                 <th>Access Level</th>
                 <th>File Size</th>
                 <th>Uploaded Date & By</th>
-                <th style={{ textAlign: 'center' }}>Actions</th>
+                <th className="adm-table-sticky-right" style={{ textAlign: 'center', minWidth: '150px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -826,7 +832,11 @@ export const DocumentsPage: React.FC = () => {
                 const { empId, emp, verificationStatus } = getDocEmployeeInfo(doc);
 
                 return (
-                  <tr key={doc.id}>
+                  <tr
+                    key={doc.id}
+                    className={previewDoc?.id === doc.id ? 'adm-table-row-active adm-table-row-clickable' : 'adm-table-row-clickable'}
+                    onClick={() => setPreviewDoc(doc)}
+                  >
                     {/* Document Title & Format */}
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -846,7 +856,7 @@ export const DocumentsPage: React.FC = () => {
                           <FileText size={18} />
                         </div>
                         <div>
-                          <div style={{ fontWeight: 700, color: '#fff' }}>{doc.title}</div>
+                          <div style={{ fontWeight: 700, color: 'var(--adm-text, #fff)' }}>{doc.title}</div>
                           <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)', display: 'flex', gap: '4px', marginTop: '2px', flexWrap: 'wrap' }}>
                             {doc.tags.map((t, idx) => (
                               <span key={idx} className="adm-badge adm-badge-neutral" style={{ padding: '1px 5px', fontSize: '0.65rem' }}>
@@ -871,12 +881,12 @@ export const DocumentsPage: React.FC = () => {
                             style={{
                               fontFamily: 'monospace',
                               fontWeight: 800,
-                              color: '#38bdf8',
-                              background: 'rgba(56, 189, 248, 0.08)',
+                              color: '#0284c7',
+                              background: 'rgba(2, 132, 199, 0.08)',
                               padding: '2px 6px',
                               borderRadius: '4px',
                               fontSize: '0.76rem',
-                              border: '1px solid rgba(56, 189, 248, 0.2)'
+                              border: '1px solid rgba(2, 132, 199, 0.2)'
                             }}
                           >
                             {empId}
@@ -919,22 +929,25 @@ export const DocumentsPage: React.FC = () => {
 
                         {/* Interactive Status Switcher for Director & HR */}
                         {canManageVerification && (
-                          <div style={{ display: 'flex', gap: '3px', marginTop: '2px' }}>
+                          <div style={{ display: 'flex', gap: '3px', marginTop: '2px' }} onClick={e => e.stopPropagation()}>
                             {verificationStatus !== 'Verified' && (
                               <button
                                 className="adm-btn adm-btn-sm"
                                 style={{
                                   background: 'rgba(16, 185, 129, 0.15)',
-                                  color: '#10b981',
+                                  color: '#059669',
                                   borderColor: 'rgba(16, 185, 129, 0.3)',
                                   fontSize: '0.65rem',
                                   padding: '1px 5px',
-                                  height: '19px'
+                                  height: '20px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px'
                                 }}
                                 onClick={() => handleSetVerificationStatus(doc, 'Verified')}
                                 title="Approve & Mark as Verified"
                               >
-                                &check; Verify
+                                <CheckCircle2 size={10} /> Verify
                               </button>
                             )}
 
@@ -943,16 +956,19 @@ export const DocumentsPage: React.FC = () => {
                                 className="adm-btn adm-btn-sm"
                                 style={{
                                   background: 'rgba(245, 158, 11, 0.15)',
-                                  color: '#f59e0b',
+                                  color: '#d97706',
                                   borderColor: 'rgba(245, 158, 11, 0.3)',
                                   fontSize: '0.65rem',
                                   padding: '1px 5px',
-                                  height: '19px'
+                                  height: '20px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px'
                                 }}
                                 onClick={() => handleSetVerificationStatus(doc, 'Pending Verification')}
                                 title="Mark as Pending"
                               >
-                                ⏳ Pending
+                                <Clock size={10} /> Pending
                               </button>
                             )}
 
@@ -961,16 +977,19 @@ export const DocumentsPage: React.FC = () => {
                                 className="adm-btn adm-btn-sm"
                                 style={{
                                   background: 'rgba(239, 68, 68, 0.15)',
-                                  color: '#ef4444',
+                                  color: '#dc2626',
                                   borderColor: 'rgba(239, 68, 68, 0.3)',
                                   fontSize: '0.65rem',
                                   padding: '1px 5px',
-                                  height: '19px'
+                                  height: '20px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px'
                                 }}
                                 onClick={() => handleSetVerificationStatus(doc, 'Rejected')}
                                 title="Reject Document"
                               >
-                                &cross; Reject
+                                <XCircle size={10} /> Reject
                               </button>
                             )}
                           </div>
@@ -1011,13 +1030,13 @@ export const DocumentsPage: React.FC = () => {
 
                     {/* Upload Date & By */}
                     <td>
-                      <div style={{ fontSize: '0.8rem', color: '#fff' }}>{doc.uploadDate}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--adm-text, #fff)' }}>{doc.uploadDate}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>by {doc.uploadedBy}</div>
                     </td>
 
                     {/* Actions */}
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                    <td className="adm-table-sticky-right" onClick={e => e.stopPropagation()}>
+                      <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', minWidth: '150px' }}>
                         <button
                           className="adm-btn adm-btn-sm adm-btn-secondary"
                           onClick={() => setPreviewDoc(doc)}
@@ -1100,241 +1119,49 @@ export const DocumentsPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── PREVIEW DOCUMENT READER MODAL ── */}
-      {previewDoc && (() => {
-        const effectiveUrl = getEffectiveDocUrl(previewDoc);
-        const { empId, emp, verificationStatus } = getDocEmployeeInfo(previewDoc);
-        const isImage = effectiveUrl && effectiveUrl.startsWith('data:image');
-        const isPdf = effectiveUrl && (effectiveUrl.startsWith('data:application/pdf') || effectiveUrl.endsWith('.pdf'));
-
-        return (
-          <div className="adm-modal-overlay" onClick={() => setPreviewDoc(null)}>
-            <div
-              className="adm-modal-content adm-modal-xl"
-              style={{ maxWidth: '920px', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="adm-modal-header" style={{ paddingBottom: '0.85rem', borderBottom: '1px solid var(--adm-border)' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-                      {previewDoc.title}
-                    </h3>
-                    <span className="adm-badge adm-badge-primary">{previewDoc.version}</span>
-                    <span className="adm-badge adm-badge-neutral">{previewDoc.category}</span>
-                    {empId && (
-                      <span className="adm-badge adm-badge-info" style={{ fontFamily: 'monospace', fontWeight: 700 }}>
-                        ID: {empId}
-                      </span>
-                    )}
-                    <span
-                      className={`adm-badge ${
-                        verificationStatus === 'Verified'
-                          ? 'adm-badge-success'
-                          : verificationStatus === 'Rejected'
-                          ? 'adm-badge-danger'
-                          : 'adm-badge-warning'
-                      }`}
-                    >
-                      {verificationStatus === 'Verified' ? <CheckCircle2 size={11} /> : <Clock size={11} />}
-                      {verificationStatus}
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', margin: '4px 0 0 0' }}>
-                    Uploaded on {previewDoc.uploadDate} by {previewDoc.uploadedBy} &bull; Classification: {previewDoc.accessPermission}
-                    {previewDoc.verifiedBy && ` &bull; Verified by ${previewDoc.verifiedBy}`}
-                  </p>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <button
-                    className="adm-btn adm-btn-sm adm-btn-secondary"
-                    onClick={() => handlePrintPdf(previewDoc)}
-                    title="Print / Save as PDF"
-                  >
-                    <Printer size={14} />
-                    <span>Print / PDF</span>
-                  </button>
-                  <button
-                    className="adm-btn adm-btn-sm adm-btn-primary"
-                    onClick={() => handleDownload(previewDoc)}
-                    title="Download File"
-                  >
-                    <Download size={14} />
-                    <span>Download</span>
-                  </button>
-                  <button
-                    className="adm-modal-close"
-                    onClick={() => setPreviewDoc(null)}
-                    style={{ marginLeft: '6px' }}
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Status Update Control Bar for Authorized Roles */}
-              {canManageVerification && (
-                <div
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    borderBottom: '1px solid var(--adm-border)',
-                    padding: '0.65rem 1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem'
-                  }}
-                >
-                  <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)' }}>
-                    <span>Verification Controls for Employee ID: </span>
-                    <strong style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{empId || 'N/A'}</strong>
-                    {emp && <span> ({emp.name})</span>}
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button
-                      className="adm-btn adm-btn-sm"
-                      style={{
-                        background: verificationStatus === 'Verified' ? '#059669' : 'rgba(16, 185, 129, 0.15)',
-                        color: verificationStatus === 'Verified' ? '#fff' : '#10b981',
-                        border: '1px solid #059669',
-                        fontSize: '0.72rem'
-                      }}
-                      onClick={() => handleSetVerificationStatus(previewDoc, 'Verified')}
-                    >
-                      &check; Mark as Verified
-                    </button>
-
-                    <button
-                      className="adm-btn adm-btn-sm"
-                      style={{
-                        background: verificationStatus === 'Pending Verification' ? '#d97706' : 'rgba(245, 158, 11, 0.15)',
-                        color: verificationStatus === 'Pending Verification' ? '#fff' : '#f59e0b',
-                        border: '1px solid #d97706',
-                        fontSize: '0.72rem'
-                      }}
-                      onClick={() => handleSetVerificationStatus(previewDoc, 'Pending Verification')}
-                    >
-                      ⏳ Mark as Pending
-                    </button>
-
-                    <button
-                      className="adm-btn adm-btn-sm"
-                      style={{
-                        background: verificationStatus === 'Rejected' ? '#dc2626' : 'rgba(239, 68, 68, 0.15)',
-                        color: verificationStatus === 'Rejected' ? '#fff' : '#ef4444',
-                        border: '1px solid #dc2626',
-                        fontSize: '0.72rem'
-                      }}
-                      onClick={() => handleSetVerificationStatus(previewDoc, 'Rejected')}
-                    >
-                      &cross; Reject
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Reader Body */}
+      {/* ── SCREEN-ADAPTIVE SLIDING DOCUMENT PREVIEW DRAWER (LAZY LOADED) ── */}
+      {previewDoc && (
+        <React.Suspense
+          fallback={
+            <div className="adm-drawer-overlay">
               <div
-                style={{
-                  flex: 1,
-                  overflowY: 'auto',
-                  padding: '1.25rem 0',
-                  maxHeight: '60vh'
-                }}
-              >
-                {/* 1. Image Viewer */}
-                {isImage && (
-                  <div style={{ textAlign: 'center', padding: '1rem', background: '#090d16', borderRadius: '10px' }}>
-                    <img
-                      src={effectiveUrl}
-                      alt={previewDoc.title}
-                      style={{
-                        maxWidth: '100%',
-                        maxHeight: '520px',
-                        objectFit: 'contain',
-                        borderRadius: '8px',
-                        border: '1px solid var(--adm-border)'
-                      }}
-                    />
-                    <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
-                      High-Resolution Verified Image Record ({previewDoc.fileSize})
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. Embedded PDF Viewer */}
-                {isPdf && (
-                  <div style={{ width: '100%', height: '520px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--adm-border)' }}>
-                    <iframe
-                      src={effectiveUrl}
-                      title={previewDoc.title}
-                      style={{ width: '100%', height: '100%', border: 'none' }}
-                    />
-                  </div>
-                )}
-
-                {/* 3. Official Corporate Document Paper Reader */}
-                {!isImage && !isPdf && (
-                  <div
-                    style={{
-                      background: '#ffffff',
-                      color: '#0f172a',
-                      borderRadius: '10px',
-                      padding: '2.5rem',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: generateDocumentHtml(previewDoc, emp)
-                        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-                        .replace(/<!DOCTYPE html>[\s\S]*?<body.*?>/i, '')
-                        .replace(/<\/body>[\s\S]*?<\/html>/i, '')
-                    }}
-                  />
-                )}
-              </div>
-
-              {/* Footer */}
-              <div
+                className="adm-preview-drawer"
                 style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
                   alignItems: 'center',
-                  paddingTop: '0.85rem',
-                  borderTop: '1px solid var(--adm-border)',
-                  fontSize: '0.78rem',
-                  color: 'var(--adm-text-dim)'
+                  justifyContent: 'center',
+                  width: 'clamp(440px, 56vw, 860px)'
                 }}
               >
-                <div>
-                  🔒 Employee ID: <code style={{ color: '#38bdf8' }}>{empId || 'General'}</code> &bull; Status: <strong style={{ color: '#fff' }}>{verificationStatus}</strong>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button
-                    className="adm-btn adm-btn-secondary"
-                    onClick={() => {
-                      setEmailModalDoc(previewDoc);
-                      setPreviewDoc(null);
-                    }}
-                  >
-                    <Mail size={14} />
-                    <span>Email Document</span>
-                  </button>
-                  <button className="adm-btn adm-btn-primary" onClick={() => handleDownload(previewDoc)}>
-                    <Download size={14} />
-                    <span>Download File</span>
-                  </button>
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div className="adm-spinner" style={{ margin: '0 auto 1rem auto' }} />
+                  <div style={{ fontSize: '0.85rem', color: 'var(--adm-text-muted)' }}>
+                    Loading Document Drawer...
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        );
-      })()}
+          }
+        >
+          <DocumentPreviewDrawer
+            doc={previewDoc}
+            onClose={() => setPreviewDoc(null)}
+            onSetVerificationStatus={handleSetVerificationStatus}
+            onDownload={handleDownload}
+            onPrint={handlePrintPdf}
+            onOpenEmailModal={doc => {
+              setEmailModalDoc(doc);
+              setPreviewDoc(null);
+            }}
+            canManageVerification={canManageVerification}
+            empId={getDocEmployeeInfo(previewDoc).empId}
+            emp={getDocEmployeeInfo(previewDoc).emp}
+            verificationStatus={getDocEmployeeInfo(previewDoc).verificationStatus}
+            effectiveUrl={getEffectiveDocUrl(previewDoc)}
+            generateDocumentHtml={generateDocumentHtml}
+          />
+        </React.Suspense>
+      )}
 
       {/* ── EMAIL / SHARE DOCUMENT MODAL ── */}
       {emailModalDoc && (() => {

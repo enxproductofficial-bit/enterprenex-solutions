@@ -9,8 +9,15 @@ import {
   Target,
   Briefcase,
   Layers,
-  ArrowUpRight
+  ArrowUpRight,
+  Globe,
+  Activity,
+  MousePointer,
+  Smartphone,
+  Laptop,
+  Eye
 } from 'lucide-react';
+import { useVisitorTelemetry } from '../../utils/visitorTracker';
 
 export const AnalyticsPage: React.FC = () => {
   const { leads, invoices, expenses, clients, employees, projects, showToast } = useAdmin();
@@ -75,6 +82,11 @@ export const AnalyticsPage: React.FC = () => {
   const handleExportCsv = () => {
     showToast('Report Exported', 'Enterprenex_Financial_Report.csv downloaded successfully.', 'success');
   };
+
+  const visitorEvents = useVisitorTelemetry();
+  const uniqueVisitors = new Set(visitorEvents.map(e => e.visitorId)).size;
+  const pageViewsCount = visitorEvents.filter(e => e.type === 'pageview').length;
+  const interactionClicksCount = visitorEvents.filter(e => e.type === 'interaction').length;
 
   return (
     <div>
@@ -245,6 +257,223 @@ export const AnalyticsPage: React.FC = () => {
               No service project allocations recorded yet. Create projects to visualize revenue distribution.
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── LIVE WEBSITE VISITOR & ACTIVITY TRACKING TELEMETRY (SDK INGESTION) ── */}
+      <div className="adm-card" style={{ marginBottom: '1.5rem' }}>
+        <div className="adm-card-header" style={{ flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div>
+            <div className="adm-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Globe size={18} color="#0284c7" />
+              <span>Website Visitor Telemetry & User Activity Stream</span>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', margin: '4px 0 0 0' }}>
+              Real-time user telemetry ingested via <code>enx-tracker.js</code> SDK on company website
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span
+              className="adm-badge adm-badge-success"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <span
+                style={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  background: '#10b981',
+                  boxShadow: '0 0 8px #10b981'
+                }}
+              />
+              SDK Active & Tracking
+            </span>
+          </div>
+        </div>
+
+        {/* Visitor Stats Quick Ribbon */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: '1rem',
+            padding: '1rem',
+            borderBottom: '1px solid var(--adm-border)',
+            background: 'rgba(0, 0, 0, 0.02)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(2, 132, 199, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#0284c7'
+              }}
+            >
+              <Users size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text, #fff)' }}>
+                {uniqueVisitors}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>Unique Visitors</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(16, 185, 129, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#10b981'
+              }}
+            >
+              <Eye size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text, #fff)' }}>
+                {pageViewsCount}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>Page Views Logged</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(245, 158, 11, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#f59e0b'
+              }}
+            >
+              <MousePointer size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text, #fff)' }}>
+                {interactionClicksCount}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>Button Clicks Tracked</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'rgba(139, 92, 246, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#8b5cf6'
+              }}
+            >
+              <Activity size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text, #fff)' }}>
+                100% Live
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>Telemetry Feed</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Live Visitor Activity Log Table */}
+        <div className="adm-table-container" style={{ maxHeight: '360px', overflowY: 'auto' }}>
+          <table className="adm-table">
+            <thead>
+              <tr>
+                <th>Visitor Session</th>
+                <th>Activity Type & Action</th>
+                <th>Page Path</th>
+                <th>Device & Browser</th>
+                <th>Referrer Source</th>
+                <th>Time Logged</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visitorEvents.slice(0, 15).map(evt => (
+                <tr key={evt.id}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span
+                        style={{
+                          fontFamily: 'monospace',
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
+                          background: 'rgba(2, 132, 199, 0.08)',
+                          color: '#0284c7',
+                          padding: '2px 6px',
+                          borderRadius: '4px'
+                        }}
+                      >
+                        {evt.visitorId}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td>
+                    {evt.type === 'pageview' ? (
+                      <span className="adm-badge adm-badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Eye size={11} /> Page View
+                      </span>
+                    ) : (
+                      <span className="adm-badge adm-badge-warning" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <MousePointer size={11} /> {evt.action || 'User Click'}
+                      </span>
+                    )}
+                  </td>
+
+                  <td>
+                    <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--adm-text, #fff)' }}>
+                      {evt.path}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.76rem' }}>
+                      {evt.device === 'Mobile' ? (
+                        <Smartphone size={13} color="#f59e0b" />
+                      ) : (
+                        <Laptop size={13} color="#38bdf8" />
+                      )}
+                      <span>{evt.os || 'Windows'} &bull; {evt.browser || 'Chrome'}</span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-dim)' }}>
+                      {evt.referrer || 'Direct Visit'}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)' }}>
+                      {new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
