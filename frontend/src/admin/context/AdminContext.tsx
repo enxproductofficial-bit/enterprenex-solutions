@@ -278,12 +278,20 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.clients) setClients(parsed.clients);
-        if (parsed.projects) setProjects(parsed.projects);
-        if (parsed.services) setServices(parsed.services);
-        if (parsed.leads) setLeads(parsed.leads);
-        if (parsed.invoices) setInvoices(parsed.invoices);
-        if (parsed.expenses) setExpenses(parsed.expenses);
+        if (parsed.clients && parsed.clients.length > 0) {
+          setClients(parsed.clients);
+        } else {
+          setClients(INITIAL_CLIENTS);
+        }
+        if (parsed.projects && parsed.projects.length > 0) {
+          setProjects(parsed.projects);
+        } else {
+          setProjects(INITIAL_PROJECTS);
+        }
+        if (parsed.services && parsed.services.length > 0) setServices(parsed.services);
+        if (parsed.leads && parsed.leads.length > 0) setLeads(parsed.leads);
+        if (parsed.invoices && parsed.invoices.length > 0) setInvoices(parsed.invoices);
+        if (parsed.expenses && parsed.expenses.length > 0) setExpenses(parsed.expenses);
         if (parsed.employees) {
           const sanitized = parsed.employees.map((emp: any, idx: number) => {
             let item = { ...emp };

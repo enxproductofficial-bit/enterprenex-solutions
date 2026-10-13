@@ -1234,9 +1234,10 @@ export const TasksPage: React.FC = () => {
                 <div className="adm-form-group">
                   <label className="adm-form-label">Associated Project</label>
                   <select className="adm-select" value={fProjectId} onChange={e => setFProjectId(e.target.value)}>
+                    <option value="">-- General / Internal Operations --</option>
                     {projects.map(p => (
                       <option key={p.id} value={p.id}>
-                        {p.title}
+                        {p.title} ({p.clientName})
                       </option>
                     ))}
                   </select>

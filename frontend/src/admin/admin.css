@@ -1208,7 +1208,7 @@
   border-bottom-color: transparent;
 }
 
-/* FastX Studio Inputs */
+/* FastX Studio Inputs & Dropdowns */
 .adm-app.theme-light .adm-input,
 .adm-app.theme-light .adm-select,
 .adm-app.theme-light .adm-textarea {
@@ -1216,6 +1216,18 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   color: #1a1a1a;
+}
+
+.adm-app.theme-light select.adm-select option {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+  padding: 8px 12px;
+}
+
+.adm-app select.adm-select option {
+  background: #181c24;
+  color: #ffffff;
+  padding: 8px 12px;
 }
 
 .adm-app.theme-light .adm-input:focus,

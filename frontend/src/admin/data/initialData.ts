@@ -57,9 +57,180 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   }
 ];
 
-export const INITIAL_CLIENTS: Client[] = [];
+export const INITIAL_CLIENTS: Client[] = [
+  {
+    id: 'cli-1',
+    companyName: 'NexaCorp Systems Ltd',
+    industry: 'Enterprise Software & Cloud',
+    website: 'https://nexacorpsystems.com',
+    gstin: '27AABCN1234A1Z5',
+    primaryContact: {
+      name: 'Vikramaditya Roy',
+      role: 'Chief Technology Officer',
+      email: 'v.roy@nexacorpsystems.com',
+      phone: '+91-9820154321'
+    },
+    billingAddress: {
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      pincode: '400051',
+      fullAddress: 'Nexa Towers, BKC, Bandra East, Mumbai, MH - 400051'
+    },
+    status: 'Active',
+    slaTier: 'Enterprise (2h SLA)',
+    totalBilled: 1850000,
+    activeProjectsCount: 2,
+    openTicketsCount: 1,
+    createdAt: '2026-01-15'
+  },
+  {
+    id: 'cli-2',
+    companyName: 'Apex Global Financial Technologies',
+    industry: 'FinTech & Banking',
+    website: 'https://apexglobalfin.com',
+    gstin: '29AAACA5678B1Z2',
+    primaryContact: {
+      name: 'Anita Shenoy',
+      role: 'VP of Engineering',
+      email: 'anita.shenoy@apexglobalfin.com',
+      phone: '+91-9880234567'
+    },
+    billingAddress: {
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      pincode: '560100',
+      fullAddress: 'Electronic City Phase 1, Hosur Road, Bengaluru, KA - 560100'
+    },
+    status: 'Active',
+    slaTier: 'Enterprise (2h SLA)',
+    totalBilled: 2400000,
+    activeProjectsCount: 1,
+    openTicketsCount: 0,
+    createdAt: '2026-02-01'
+  },
+  {
+    id: 'cli-3',
+    companyName: 'Vertex Retail & Logistics Cloud',
+    industry: 'Retail & Supply Chain',
+    website: 'https://vertexretailcloud.io',
+    gstin: '07AAACV9012C1Z8',
+    primaryContact: {
+      name: 'Karan Mehra',
+      role: 'Head of Digital Transformation',
+      email: 'karan.m@vertexretailcloud.io',
+      phone: '+91-9811345678'
+    },
+    billingAddress: {
+      city: 'New Delhi',
+      state: 'Delhi',
+      pincode: '110001',
+      fullAddress: 'Connaught Place, Barakhamba Road, New Delhi, DL - 110001'
+    },
+    status: 'Active',
+    slaTier: 'Standard (6h SLA)',
+    totalBilled: 1200000,
+    activeProjectsCount: 1,
+    openTicketsCount: 1,
+    createdAt: '2026-02-20'
+  },
+  {
+    id: 'cli-4',
+    companyName: 'Zenith HealthTech Solutions',
+    industry: 'Healthcare & AI Diagnostics',
+    website: 'https://zenithhealthtech.com',
+    gstin: '36AAACZ3456D1Z4',
+    primaryContact: {
+      name: 'Dr. Suresh Varma',
+      role: 'Director of Technology',
+      email: 'suresh.varma@zenithhealthtech.com',
+      phone: '+91-9440123456'
+    },
+    billingAddress: {
+      city: 'Hyderabad',
+      state: 'Telangana',
+      pincode: '500081',
+      fullAddress: 'Hitec City, Madhapur, Hyderabad, TS - 500081'
+    },
+    status: 'Active',
+    slaTier: 'Standard (6h SLA)',
+    totalBilled: 950000,
+    activeProjectsCount: 1,
+    openTicketsCount: 0,
+    createdAt: '2026-03-01'
+  }
+];
 
-export const INITIAL_PROJECTS: Project[] = [];
+export const INITIAL_PROJECTS: Project[] = [
+  {
+    id: 'proj-1',
+    title: 'NexaCorp Cloud-Native ERP Modernization',
+    clientName: 'NexaCorp Systems Ltd',
+    clientId: 'cli-1',
+    status: 'Development',
+    progress: 65,
+    budget: 1850000,
+    expenses: 620000,
+    startDate: '2026-01-20',
+    targetEndDate: '2026-06-30',
+    assignedTeam: ['Rohit P.', 'POLAMREDDY REVANTH REDDY'],
+    techStack: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker'],
+    serviceCategory: 'Custom Enterprise Software',
+    description: 'Multi-tenant enterprise ERP modernization with real-time financial reconciliation and RBAC security.',
+    milestones: [
+      { id: 'ms-1', title: 'Phase 1: Architecture & Data Migration', dueDate: '2026-02-28', completed: true, amount: 650000 },
+      { id: 'ms-2', title: 'Phase 2: Core Microservices & APIs', dueDate: '2026-04-30', completed: false, amount: 700000 },
+      { id: 'ms-3', title: 'Phase 3: UAT & Production Cutover', dueDate: '2026-06-30', completed: false, amount: 500000 }
+    ],
+    tasks: [],
+    documentsCount: 6,
+    priority: 'High'
+  },
+  {
+    id: 'proj-2',
+    title: 'Apex Global High-Frequency Trading Analytics',
+    clientName: 'Apex Global Financial Technologies',
+    clientId: 'cli-2',
+    status: 'Development',
+    progress: 40,
+    budget: 2400000,
+    expenses: 850000,
+    startDate: '2026-02-10',
+    targetEndDate: '2026-08-15',
+    assignedTeam: ['Rohit P.', 'POLAMREDDY REVANTH REDDY'],
+    techStack: ['Python', 'FastAPI', 'React', 'TimescaleDB', 'Redis'],
+    serviceCategory: 'AI/ML Solutions',
+    description: 'Sub-millisecond trade analytics ingestion pipeline and predictive volatility monitoring engine.',
+    milestones: [
+      { id: 'ms-4', title: 'Phase 1: Telemetry Ingestion Architecture', dueDate: '2026-03-31', completed: true, amount: 800000 },
+      { id: 'ms-5', title: 'Phase 2: Live Predictive Dashboard', dueDate: '2026-05-31', completed: false, amount: 800000 }
+    ],
+    tasks: [],
+    documentsCount: 4,
+    priority: 'Critical'
+  },
+  {
+    id: 'proj-3',
+    title: 'Vertex Logistics Fleet & Telematics IoT Suite',
+    clientName: 'Vertex Retail & Logistics Cloud',
+    clientId: 'cli-3',
+    status: 'Planning',
+    progress: 25,
+    budget: 1200000,
+    expenses: 310000,
+    startDate: '2026-03-01',
+    targetEndDate: '2026-07-31',
+    assignedTeam: ['POLAMREDDY REVANTH REDDY'],
+    techStack: ['Node.js', 'React Native', 'MQTT', 'PostgreSQL'],
+    serviceCategory: 'IoT Solutions',
+    description: 'Real-time GPS telematics tracking, geo-fencing alert engine, and fleet maintenance mobile application.',
+    milestones: [
+      { id: 'ms-6', title: 'Phase 1: Hardware MQTT Broker Setup', dueDate: '2026-04-15', completed: false, amount: 450000 }
+    ],
+    tasks: [],
+    documentsCount: 3,
+    priority: 'Medium'
+  }
+];
 
 export const INITIAL_SERVICES: ServiceCatalogueItem[] = [
   {

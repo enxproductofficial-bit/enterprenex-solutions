@@ -769,13 +769,18 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
 
                   <div className="adm-grid-2">
                     <div className="adm-form-group">
-                      <label className="adm-form-label">Client Account</label>
+                      <label className="adm-form-label">Client Account *</label>
                       <select className="adm-select" value={fClientId} onChange={e => setFClientId(e.target.value)}>
-                        {clients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
+                        <option value="internal">Enterprenex Solutions Pvt Ltd (Internal / Operations)</option>
+                        {clients.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.companyName} {c.industry ? `(${c.industry})` : ''}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div className="adm-form-group">
-                      <label className="adm-form-label">Category</label>
+                      <label className="adm-form-label">Category *</label>
                       <select className="adm-select" value={fCategory} onChange={e => setFCategory(e.target.value as any)}>
                         <option value="Bug Fix">Bug Fix</option>
                         <option value="Feature Request">Feature Request</option>
@@ -802,9 +807,13 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                       </select>
                     </div>
                     <div className="adm-form-group">
-                      <label className="adm-form-label">Assigned Engineer</label>
+                      <label className="adm-form-label">Assigned Engineer *</label>
                       <select className="adm-select" value={fAssignedTo} onChange={e => setFAssignedTo(e.target.value)}>
-                        {employees.map(e => <option key={e.id} value={e.name}>{e.name} ({e.role})</option>)}
+                        {employees.map(e => (
+                          <option key={e.id} value={e.name}>
+                            {e.name} — {e.role}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
