@@ -1383,3 +1383,52 @@
   border-left: 3px solid #12c990;
 }
 
+/* ── Screen-Adaptive Sticky Table Columns ── */
+.adm-table th.adm-table-sticky-right,
+.adm-table td.adm-table-sticky-right {
+  position: sticky;
+  right: 0;
+  background: inherit;
+  z-index: 3;
+  box-shadow: -6px 0 12px rgba(0, 0, 0, 0.05);
+}
+
+.adm-app.theme-light .adm-table th.adm-table-sticky-right {
+  background: #f8f8f9 !important;
+}
+
+.adm-app.theme-light .adm-table td.adm-table-sticky-right {
+  background: #ffffff !important;
+}
+
+.adm-app.theme-light .adm-table tr:hover td.adm-table-sticky-right {
+  background: #fafafa !important;
+}
+
+.adm-app.theme-dark .adm-table th.adm-table-sticky-right {
+  background: #111419 !important;
+}
+
+.adm-app.theme-dark .adm-table td.adm-table-sticky-right {
+  background: #0e1217 !important;
+}
+
+/* ── Shimmer Skeleton Loading ── */
+.adm-skeleton-row td {
+  padding: 1.15rem 1rem;
+}
+
+.adm-skeleton-bar {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.04) 25%, rgba(0, 0, 0, 0.09) 50%, rgba(0, 0, 0, 0.04) 75%);
+  background-size: 200% 100%;
+  animation: admShimmer 1.4s infinite ease-in-out;
+}
+
+.adm-app.theme-dark .adm-skeleton-bar {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+}
+
+

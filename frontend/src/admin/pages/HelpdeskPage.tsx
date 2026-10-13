@@ -23,6 +23,13 @@ export const HelpdeskPage: React.FC = () => {
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [replyText, setReplyText] = useState('');
+  const [isLazyLoading, setIsLazyLoading] = useState(false);
+
+  const handleStatusFilterChange = (st: string) => {
+    setIsLazyLoading(true);
+    setStatusFilter(st);
+    setTimeout(() => setIsLazyLoading(false), 140);
+  };
 
   // Determine user role
   const userRole = currentUser?.role || 'Super Admin';
@@ -335,7 +342,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
           {(['All', 'Open', 'In Progress', 'Resolved', 'Closed'] as const).map(st => (
             <button
               key={st}
-              onClick={() => setStatusFilter(st)}
+              onClick={() => handleStatusFilterChange(st)}
               style={{
                 background: statusFilter === st ? 'var(--adm-primary)' : 'var(--adm-bg)',
                 color: statusFilter === st ? '#fff' : 'var(--adm-text-muted)',
@@ -353,9 +360,15 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
         </div>
       </div>
 
+      {/* Viewport adaptation hint */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '0.74rem', color: 'var(--adm-text-dim)' }}>
+        <span>Showing {filteredTickets.length} ticket records</span>
+        <span>⇄ Auto-fit viewport: Click any row or &quot;View&quot; for instant preview drawer</span>
+      </div>
+
       {/* Tickets Table */}
-      <div className="adm-table-container">
-        <table className="adm-table">
+      <div className="adm-table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table className="adm-table" style={{ minWidth: '950px' }}>
           <thead>
             <tr>
               <th>Ticket # & Subject</th>
@@ -365,11 +378,24 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
               <th>SLA Status</th>
               <th>Assigned Staff</th>
               <th>Ticket Status</th>
-              <th>Actions</th>
+              <th className="adm-table-sticky-right" style={{ textAlign: 'center' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTickets.length === 0 ? (
+            {isLazyLoading ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <tr key={`skel-${idx}`} className="adm-skeleton-row">
+                  <td><div className="adm-skeleton-bar" style={{ width: '150px' }} /></td>
+                  <td><div className="adm-skeleton-bar" style={{ width: '130px' }} /></td>
+                  <td><div className="adm-skeleton-bar" style={{ width: '85px' }} /></td>
+                  <td><div className="adm-skeleton-bar" style={{ width: '65px' }} /></td>
+                  <td><div className="adm-skeleton-bar" style={{ width: '85px' }} /></td>
+                  <td><div className="adm-skeleton-bar" style={{ width: '110px' }} /></td>
+                  <td><div className="adm-skeleton-bar" style={{ width: '70px' }} /></td>
+                  <td className="adm-table-sticky-right"><div className="adm-skeleton-bar" style={{ width: '65px' }} /></td>
+                </tr>
+              ))
+            ) : filteredTickets.length === 0 ? (
               <tr>
                 <td colSpan={8} style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--adm-text-muted)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
@@ -454,7 +480,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                       </select>
                     )}
                   </td>
-                  <td onClick={e => e.stopPropagation()}>
+                  <td className="adm-table-sticky-right" onClick={e => e.stopPropagation()}>
                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                       <button
                         className="adm-btn adm-btn-sm adm-btn-secondary"
