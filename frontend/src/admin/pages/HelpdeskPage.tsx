@@ -11,7 +11,8 @@ import {
   Mail,
   LifeBuoy,
   FileQuestion,
-  User
+  User,
+  Eye
 } from 'lucide-react';
 import type { SupportTicket } from '../types';
 
@@ -392,15 +393,20 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
               </tr>
             ) : (
               filteredTickets.map(tkt => (
-                <tr key={tkt.id}>
+                <tr
+                  key={tkt.id}
+                  className={`adm-table-row-clickable ${selectedTicket?.id === tkt.id ? 'adm-table-row-active' : ''}`}
+                  onClick={() => setSelectedTicket(tkt)}
+                  title="Click to open preview drawer"
+                >
                   <td>
-                    <div style={{ fontWeight: 700, color: '#fff' }}>{tkt.ticketNumber}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>{tkt.ticketNumber}</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', maxWidth: '280px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                       {tkt.subject}
                     </div>
                   </td>
                   <td>
-                    <div style={{ fontWeight: 600, color: '#fff' }}>{tkt.clientName}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--adm-text, #1a1a1a)' }}>{tkt.clientName}</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>{tkt.clientEmail}</div>
                   </td>
                   <td><span className="adm-badge adm-badge-neutral">{tkt.category}</span></td>
@@ -425,7 +431,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                     )}
                   </td>
                   <td>{tkt.assignedTo}</td>
-                  <td>
+                  <td onClick={e => e.stopPropagation()}>
                     {isEmployee ? (
                       <span className={`adm-badge ${
                         tkt.status === 'Resolved' ? 'adm-badge-success' :
@@ -448,10 +454,15 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                       </select>
                     )}
                   </td>
-                  <td>
+                  <td onClick={e => e.stopPropagation()}>
                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => setSelectedTicket(tkt)}>
-                        View
+                      <button
+                        className="adm-btn adm-btn-sm adm-btn-secondary"
+                        onClick={() => setSelectedTicket(tkt)}
+                        style={{ gap: '4px' }}
+                      >
+                        <Eye size={13} />
+                        <span>View</span>
                       </button>
                       <a
                         href={getTicketWhatsAppUrl(tkt)}
@@ -480,13 +491,13 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
         </table>
       </div>
 
-      {/* ── TICKET THREAD MODAL ── */}
+      {/* ── SCREEN-ADAPTIVE SLIDING PREVIEW DRAWER ── */}
       {selectedTicket && (
-        <div className="adm-modal-overlay" onClick={() => setSelectedTicket(null)}>
-          <div className="adm-modal-content adm-modal-lg" onClick={e => e.stopPropagation()}>
-            <div className="adm-modal-header">
-              <div>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '4px' }}>
+        <div className="adm-drawer-overlay" onClick={() => setSelectedTicket(null)}>
+          <div className="adm-preview-drawer" onClick={e => e.stopPropagation()}>
+            <div className="adm-drawer-header">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
                   <span className="adm-badge adm-badge-primary">{selectedTicket.ticketNumber}</span>
                   <span className="adm-badge adm-badge-neutral">{selectedTicket.category}</span>
                   <span className={`adm-badge ${selectedTicket.priority === 'Critical' ? 'adm-badge-danger' : 'adm-badge-warning'}`}>
@@ -494,107 +505,164 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                   </span>
                   <span className="adm-badge adm-badge-success">{selectedTicket.status}</span>
                 </div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)', margin: 0, wordBreak: 'break-word', lineHeight: 1.35 }}>
                   {selectedTicket.subject}
                 </h2>
-                <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
-                  Requester: <strong style={{ color: '#fff' }}>{selectedTicket.clientName}</strong> ({selectedTicket.clientEmail}) • Opened: {selectedTicket.createdAt}
+                <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
+                  From: <strong style={{ color: 'var(--adm-text, #1a1a1a)' }}>{selectedTicket.clientName}</strong> &bull; {selectedTicket.createdAt}
                 </div>
               </div>
-              <button className="adm-modal-close" onClick={() => setSelectedTicket(null)}>
+              <button className="adm-modal-close" onClick={() => setSelectedTicket(null)} title="Close Preview">
                 <X size={18} />
               </button>
             </div>
 
-            {/* Quick Dispatch Action Bar inside modal */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '0.75rem',
-                padding: '0.75rem 1rem',
-                background: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '8px',
-                border: '1px solid var(--adm-border)',
-                marginBottom: '1rem',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap'
-              }}
-            >
-              <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontWeight: 600 }}>
-                Direct Enterprise Dispatch:
-              </span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <a
-                  href={getTicketWhatsAppUrl(selectedTicket)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="adm-btn adm-btn-sm"
-                  style={{ background: '#25D366', color: '#fff', border: 'none', textDecoration: 'none', fontWeight: 700 }}
+            <div className="adm-drawer-body">
+              {/* Direct Enterprise Dispatch Actions */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  background: 'var(--adm-bg, #f8f8f9)',
+                  borderRadius: '10px',
+                  border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.06))',
+                  flexDirection: 'column'
+                }}
+              >
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Instant Communication
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <a
+                    href={getTicketWhatsAppUrl(selectedTicket)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="adm-btn adm-btn-sm"
+                    style={{ background: '#25D366', color: '#fff', border: 'none', textDecoration: 'none', fontWeight: 600, flex: 1, minWidth: '180px', justifyContent: 'center' }}
+                  >
+                    <MessageCircle size={14} />
+                    <span>WhatsApp (+91-9226860060)</span>
+                  </a>
+                  <a
+                    href={getTicketEmailUrl(selectedTicket)}
+                    className="adm-btn adm-btn-sm adm-btn-secondary"
+                    style={{ textDecoration: 'none', fontWeight: 600, flex: 1, minWidth: '180px', justifyContent: 'center' }}
+                  >
+                    <Mail size={14} color="var(--adm-primary)" />
+                    <span>Email Support</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Requester & SLA Details Panel */}
+              <div
+                style={{
+                  padding: '0.85rem 1rem',
+                  background: 'var(--adm-bg, #f8f8f9)',
+                  borderRadius: '10px',
+                  border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.06))',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                  gap: '0.75rem'
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
+                    Official Email
+                  </div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--adm-text, #1a1a1a)', wordBreak: 'break-all' }}>
+                    {selectedTicket.clientEmail || 'N/A'}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
+                    Assigned Staff
+                  </div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--adm-text, #1a1a1a)' }}>
+                    {selectedTicket.assignedTo || 'Unassigned'}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
+                    SLA Countdown
+                  </div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: selectedTicket.status === 'Resolved' ? '#12c990' : '#f59e0b' }}>
+                    {selectedTicket.status === 'Resolved' ? '✓ Resolved in SLA' : `${selectedTicket.slaHoursRemaining}h remaining`}
+                  </div>
+                </div>
+              </div>
+
+              {/* Conversation / Discussion Stream */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Conversation History
+                </div>
+                <div
+                  style={{
+                    flex: 1,
+                    minHeight: '180px',
+                    maxHeight: '320px',
+                    overflowY: 'auto',
+                    background: 'var(--adm-bg, #f8f8f9)',
+                    padding: '0.85rem',
+                    borderRadius: '10px',
+                    border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.06))',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem'
+                  }}
                 >
-                  <MessageCircle size={13} />
-                  <span>Send to HR WhatsApp (+91-9226860060)</span>
-                </a>
-                <a
-                  href={getTicketEmailUrl(selectedTicket)}
-                  className="adm-btn adm-btn-sm adm-btn-secondary"
-                  style={{ textDecoration: 'none', fontWeight: 700 }}
-                >
-                  <Mail size={13} color="var(--adm-primary)" />
-                  <span>Email contact@enterprenex.solutions</span>
-                </a>
+                  {selectedTicket.messages.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--adm-text-dim)', fontSize: '0.82rem' }}>
+                      No replies logged yet. Use the message box below to post an update.
+                    </div>
+                  ) : (
+                    selectedTicket.messages.map(msg => (
+                      <div
+                        key={msg.id}
+                        style={{
+                          alignSelf: msg.isClient ? 'flex-start' : 'flex-end',
+                          maxWidth: '85%',
+                          background: msg.isClient ? 'var(--adm-surface, #ffffff)' : '#1a1a1a',
+                          color: msg.isClient ? 'var(--adm-text, #1a1a1a)' : '#ffffff',
+                          border: msg.isClient ? '1px solid var(--adm-border, rgba(0,0,0,0.06))' : 'none',
+                          borderRadius: '12px',
+                          padding: '0.65rem 0.85rem',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: msg.isClient ? 'var(--adm-text-dim)' : 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: '3px', gap: '1rem' }}>
+                          <span>{msg.sender}</span>
+                          <span>{msg.timestamp}</span>
+                        </div>
+                        <p style={{ fontSize: '0.82rem', margin: 0, lineHeight: 1.45, wordBreak: 'break-word' }}>
+                          {msg.text}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Instant Reply Input */}
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
+                <input
+                  type="text"
+                  className="adm-input"
+                  placeholder={isEmployee ? "Write message for HR / Support..." : "Type reply to ticket requester..."}
+                  value={replyText}
+                  onChange={e => setReplyText(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSendReply(selectedTicket.id); }}
+                />
+                <button className="adm-btn adm-btn-primary" onClick={() => handleSendReply(selectedTicket.id)}>
+                  <Send size={14} />
+                  <span>Send</span>
+                </button>
               </div>
             </div>
 
-            {/* Conversation Thread */}
-            <div style={{ minHeight: '220px', maxHeight: '350px', overflowY: 'auto', background: 'var(--adm-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--adm-border)', display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1rem' }}>
-              {selectedTicket.messages.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--adm-text-dim)', fontSize: '0.85rem' }}>
-                  No replies in this thread yet. Send a message below to communicate directly.
-                </div>
-              ) : (
-                selectedTicket.messages.map(msg => (
-                  <div
-                    key={msg.id}
-                    style={{
-                      alignSelf: msg.isClient ? 'flex-start' : 'flex-end',
-                      maxWidth: '80%',
-                      background: msg.isClient ? 'var(--adm-surface)' : 'var(--adm-primary-soft)',
-                      border: msg.isClient ? '1px solid var(--adm-border)' : '1px solid var(--adm-primary-border)',
-                      borderRadius: '10px',
-                      padding: '0.75rem 1rem'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: msg.isClient ? 'var(--adm-text-dim)' : 'var(--adm-primary)', fontWeight: 700, marginBottom: '4px' }}>
-                      <span>{msg.sender}</span>
-                      <span style={{ marginLeft: '1rem' }}>{msg.timestamp}</span>
-                    </div>
-                    <p style={{ fontSize: '0.85rem', color: '#fff', margin: 0, lineHeight: 1.5 }}>
-                      {msg.text}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Reply Input Box */}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input
-                type="text"
-                className="adm-input"
-                placeholder={isEmployee ? "Type reply or note for HR team..." : "Type reply to requester..."}
-                value={replyText}
-                onChange={e => setReplyText(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleSendReply(selectedTicket.id); }}
-              />
-              <button className="adm-btn adm-btn-primary" onClick={() => handleSendReply(selectedTicket.id)}>
-                <Send size={15} />
-                <span>Send</span>
-              </button>
-            </div>
-
-            {/* Footer status buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)' }}>
+            <div className="adm-drawer-footer">
               {!isEmployee && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button
@@ -610,10 +678,11 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                 </div>
               )}
               <div style={{ marginLeft: 'auto' }}>
-                <button className="adm-btn adm-btn-secondary" onClick={() => setSelectedTicket(null)}>Close</button>
+                <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => setSelectedTicket(null)}>
+                  Close Preview
+                </button>
               </div>
             </div>
-
           </div>
         </div>
       )}
