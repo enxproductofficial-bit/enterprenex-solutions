@@ -1238,20 +1238,37 @@
 }
 
 /* Clean Overrides for Hardcoded Inline Styles */
-.adm-app.theme-light strong,
-.adm-app.theme-light [style*="color: #fff"],
-.adm-app.theme-light [style*="color: rgb(255, 255, 255)"],
-.adm-app.theme-light [style*="color:#fff"] {
+.adm-app.theme-light strong:not(.adm-btn *):not(.adm-badge *):not([style*="background"] *),
+.adm-app.theme-light p > [style*="color: #fff"],
+.adm-app.theme-light h1[style*="color: #fff"],
+.adm-app.theme-light h2[style*="color: #fff"],
+.adm-app.theme-light h3[style*="color: #fff"] {
   color: #1a1a1a !important;
 }
 
-.adm-app.theme-light .adm-btn-primary strong,
-.adm-app.theme-light .adm-btn-primary [style*="color: #fff"],
-.adm-app.theme-light .adm-btn-primary [style*="color:#fff"],
-.adm-app.theme-light .adm-tab-btn.active [style*="color: #fff"],
-.adm-app.theme-light .adm-tab-btn.active [style*="color:#fff"],
+/* Any button, badge, active tab, or element with dark/primary background MUST ALWAYS have bright white text */
+.adm-app.theme-light .adm-btn-primary,
+.adm-app.theme-light .adm-btn-primary *,
+.adm-app.theme-light .adm-tab-btn.active,
+.adm-app.theme-light .adm-tab-btn.active *,
 .adm-app.theme-light .adm-badge-primary,
-.adm-app.theme-light .adm-btn-primary {
+.adm-app.theme-light .adm-badge-primary *,
+.adm-app.theme-light [style*="background: var(--adm-primary)"],
+.adm-app.theme-light [style*="background: var(--adm-primary)"] *,
+.adm-app.theme-light [style*="background: #1a1a1a"],
+.adm-app.theme-light [style*="background: #1a1a1a"] *,
+.adm-app.theme-light [style*="background:#1a1a1a"],
+.adm-app.theme-light [style*="background:#1a1a1a"] *,
+.adm-app.theme-light [style*="background:var(--adm-primary)"],
+.adm-app.theme-light [style*="background:var(--adm-primary)"] *,
+.adm-app.theme-light [style*="background: #000"],
+.adm-app.theme-light [style*="background: #000"] *,
+.adm-app.theme-light [style*="background: #059669"],
+.adm-app.theme-light [style*="background: #059669"] *,
+.adm-app.theme-light [style*="background: #d97706"],
+.adm-app.theme-light [style*="background: #d97706"] *,
+.adm-app.theme-light [style*="background: #dc2626"],
+.adm-app.theme-light [style*="background: #dc2626"] * {
   color: #ffffff !important;
 }
 

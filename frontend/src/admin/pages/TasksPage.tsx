@@ -427,24 +427,25 @@ export const TasksPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontWeight: 600 }}>Priority:</span>
-          {(['All', 'Urgent', 'High', 'Medium', 'Low'] as const).map(p => (
-            <button
-              key={p}
-              onClick={() => setPriorityFilter(p)}
-              style={{
-                background: priorityFilter === p ? 'var(--adm-primary)' : 'var(--adm-bg)',
-                color: priorityFilter === p ? '#fff' : 'var(--adm-text-muted)',
-                border: '1px solid var(--adm-border)',
-                borderRadius: '6px',
-                padding: '0.4rem 0.85rem',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              {p}
-            </button>
-          ))}
+          {(['All', 'Urgent', 'High', 'Medium', 'Low'] as const).map(p => {
+            const isSelected = priorityFilter === p;
+            return (
+              <button
+                key={p}
+                onClick={() => setPriorityFilter(p)}
+                className={isSelected ? 'adm-btn adm-btn-primary adm-btn-sm' : 'adm-btn adm-btn-secondary adm-btn-sm'}
+                style={{
+                  borderRadius: '20px',
+                  padding: '0.45rem 1rem',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                {p}
+              </button>
+            );
+          })}
         </div>
       </div>
 

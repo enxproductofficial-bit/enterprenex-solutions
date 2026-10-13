@@ -116,24 +116,25 @@ export const ClientsPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontWeight: 600 }}>Filter Status:</span>
-          {(['All', 'Active', 'Onboarding', 'Inactive'] as const).map(st => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              style={{
-                background: statusFilter === st ? 'var(--adm-primary)' : 'var(--adm-bg)',
-                color: statusFilter === st ? '#fff' : 'var(--adm-text-muted)',
-                border: '1px solid var(--adm-border)',
-                borderRadius: '6px',
-                padding: '0.4rem 0.85rem',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              {st}
-            </button>
-          ))}
+          {(['All', 'Active', 'Onboarding', 'Inactive'] as const).map(st => {
+            const isSelected = statusFilter === st;
+            return (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                className={isSelected ? 'adm-btn adm-btn-primary adm-btn-sm' : 'adm-btn adm-btn-secondary adm-btn-sm'}
+                style={{
+                  borderRadius: '20px',
+                  padding: '0.45rem 1rem',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                {st}
+              </button>
+            );
+          })}
         </div>
       </div>
 

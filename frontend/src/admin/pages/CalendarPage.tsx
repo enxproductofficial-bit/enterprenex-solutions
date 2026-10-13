@@ -63,24 +63,26 @@ export const CalendarPage: React.FC = () => {
       {/* Filter Bar */}
       <div className="adm-card" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontWeight: 600, marginRight: '0.5rem' }}>Meeting Type:</span>
-        {(['All', 'Client Presentation', 'Sprint Planning', 'Lead Follow-up', 'Internal Sync'] as const).map(t => (
-          <button
-            key={t}
-            onClick={() => setSelectedType(t)}
-            style={{
-              background: selectedType === t ? 'var(--adm-primary)' : 'var(--adm-bg)',
-              color: selectedType === t ? '#fff' : 'var(--adm-text-muted)',
-              border: '1px solid var(--adm-border)',
-              borderRadius: '6px',
-              padding: '0.4rem 0.85rem',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            {t}
-          </button>
-        ))}
+        {(['All', 'Client Presentation', 'Sprint Planning', 'Lead Follow-up', 'Internal Sync'] as const).map(t => {
+          const isSelected = selectedType === t;
+          return (
+            <button
+              key={t}
+              onClick={() => setSelectedType(t)}
+              className={isSelected ? 'adm-btn adm-btn-primary adm-btn-sm' : 'adm-btn adm-btn-secondary adm-btn-sm'}
+              style={{
+                borderRadius: '20px',
+                padding: '0.45rem 1rem',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                color: isSelected ? '#ffffff !important' : 'var(--adm-text-muted)'
+              }}
+            >
+              {t}
+            </button>
+          );
+        })}
       </div>
 
       {/* Schedule Agenda Cards */}

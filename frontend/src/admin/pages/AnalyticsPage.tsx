@@ -111,25 +111,30 @@ export const AnalyticsPage: React.FC = () => {
           <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>Reporting Period: Real-time Live Telemetry</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '4px', background: 'var(--adm-bg)', padding: '3px', borderRadius: '6px', border: '1px solid var(--adm-border)' }}>
-          {(['30D', '90D', '1Y'] as const).map(tf => (
-            <button
-              key={tf}
-              onClick={() => setTimeframe(tf)}
-              style={{
-                background: timeframe === tf ? 'var(--adm-primary)' : 'transparent',
-                color: timeframe === tf ? '#fff' : 'var(--adm-text-muted)',
-                border: 'none',
-                padding: '5px 12px',
-                borderRadius: '4px',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              {tf}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: '4px', background: 'var(--adm-bg)', padding: '3px', borderRadius: '20px', border: '1px solid var(--adm-border)' }}>
+          {(['30D', '90D', '1Y'] as const).map(tf => {
+            const isSelected = timeframe === tf;
+            return (
+              <button
+                key={tf}
+                onClick={() => setTimeframe(tf)}
+                style={{
+                  background: isSelected ? 'var(--adm-primary, #1a1a1a)' : 'transparent',
+                  color: isSelected ? '#ffffff !important' : 'var(--adm-text-muted)',
+                  border: 'none',
+                  padding: '5px 14px',
+                  borderRadius: '16px',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: isSelected ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {tf}
+              </button>
+            );
+          })}
         </div>
       </div>
 
