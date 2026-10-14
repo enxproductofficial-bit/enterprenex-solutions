@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   X,
-  FileText,
   Printer,
   Download,
   Mail,
@@ -9,9 +8,6 @@ import {
   Clock,
   XCircle,
   Shield,
-  ExternalLink,
-  User,
-  Calendar,
   Lock
 } from 'lucide-react';
 import type { VaultDocument, Employee } from '../types';

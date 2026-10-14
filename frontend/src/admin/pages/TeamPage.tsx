@@ -28,22 +28,12 @@ import {
   ShieldAlert,
   CheckCheck,
   Award,
-  BarChart3,
-  Activity,
-  Star,
-  Target,
-  TrendingUp,
-  Cpu,
-  Server,
-  Database,
-  Code,
-  Sliders,
   CheckCircle,
   MessageSquare,
   MessageCircle
 } from 'lucide-react';
 import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64 } from '../data/companyLogo';
-import type { Employee, LeaveRequest, KpiMetricItem, ObjectiveKeyResult, AttendanceRecord } from '../types';
+import type { Employee, LeaveRequest, AttendanceRecord } from '../types';
 
 export const TeamPage: React.FC = () => {
   const {
@@ -67,7 +57,6 @@ export const TeamPage: React.FC = () => {
     okrs,
     verifyEmployeeSkill,
     updateKpiMetric,
-    updateOkrProgress,
     updateAttendanceRecord
   } = useAdmin();
 
@@ -1931,7 +1920,6 @@ export const TeamPage: React.FC = () => {
         const overallUtilization = Math.round((totalAssignedHours / (totalCapacityHours || 1)) * 100);
 
         const availableCount = employees.filter(e => (e.workloadPercentage || 75) < 70).length;
-        const healthyCount = employees.filter(e => (e.workloadPercentage || 75) >= 70 && (e.workloadPercentage || 75) <= 100).length;
         const overloadedCount = employees.filter(e => (e.workloadPercentage || 75) > 100).length;
 
         return (

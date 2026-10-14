@@ -14,14 +14,7 @@ import {
   Calendar,
   MessageSquare,
   MessageCircle,
-  Clock,
-  RotateCcw,
-  Check,
-  AlertTriangle,
-  UserCheck,
-  Zap,
-  Activity,
-  Layers
+  Clock
 } from 'lucide-react';
 import type { Task, TaskColumn, TaskPriority } from '../types';
 
@@ -132,7 +125,6 @@ export const TasksPage: React.FC = () => {
 
   // Role detection and view filter
   const isEmployee = currentUser?.role === 'Team Member' || currentUser?.role === 'Developer';
-  const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email?.includes('director');
   const [taskViewFilter, setTaskViewFilter] = useState<'my' | 'all'>(isEmployee ? 'my' : 'all');
 
   // Form State

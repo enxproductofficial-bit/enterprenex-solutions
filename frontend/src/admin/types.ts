@@ -64,6 +64,7 @@ export interface Client {
   primaryContact: ClientContact;
   additionalContacts?: ClientContact[];
   address: string;
+  billingAddress?: string;
   city: string;
   country: string;
   totalRevenue: number;

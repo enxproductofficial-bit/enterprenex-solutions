@@ -5,10 +5,7 @@ import {
   Mail,
   Send,
   CheckCircle2,
-  Clock,
-  User,
-  Shield,
-  ExternalLink
+  Clock
 } from 'lucide-react';
 import type { SupportTicket } from '../types';
 
