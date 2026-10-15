@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useAdmin } from '../context/AdminContext';
+
+const EmployeePreviewDrawer = lazy(() =>
+  import('../components/EmployeePreviewDrawer').then(m => ({ default: m.EmployeePreviewDrawer }))
+);
 import {
   Plus,
   CheckCircle2,
@@ -77,6 +81,7 @@ export const TeamPage: React.FC = () => {
   const [rosterFilter, setRosterFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   // Absence Incident & Outreach Modal State (RBAC Restricted to Director & HR)
   const [absenceModalAtt, setAbsenceModalAtt] = useState<AttendanceRecord | null>(null);
@@ -1067,18 +1072,24 @@ export const TeamPage: React.FC = () => {
                 const isPending = emp.approvalStatus === 'Pending Director Approval';
                 const isRejected = emp.approvalStatus === 'Rejected';
 
+                const isSelected = selectedEmployee?.id === emp.id;
                 return (
                   <div
                     key={emp.id}
                     className="adm-card adm-card-hover"
+                    onClick={() => setSelectedEmployee(emp)}
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      border: isPending
+                      cursor: 'pointer',
+                      border: isSelected
+                        ? '2px solid var(--adm-primary)'
+                        : isPending
                         ? '1px solid rgba(245, 158, 11, 0.45)'
                         : isRejected
                         ? '1px solid rgba(239, 68, 68, 0.45)'
-                        : undefined
+                        : undefined,
+                      boxShadow: isSelected ? '0 0 0 2px rgba(18, 201, 144, 0.25)' : undefined
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1rem' }}>
@@ -1101,7 +1112,8 @@ export const TeamPage: React.FC = () => {
                         />
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setPhotoModalEmp(emp);
                             setCustomPhotoInput(emp.avatar || '');
                           }}
@@ -1397,7 +1409,8 @@ export const TeamPage: React.FC = () => {
                           type="button"
                           className="adm-btn adm-btn-secondary"
                           style={{ padding: '0.25rem 0.55rem', fontSize: '0.7rem', gap: '4px' }}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setKycModalEmp(emp);
                             setShowFullAadhaar(false);
                             setEditKycPan(emp.panNumber || '');
@@ -1438,7 +1451,10 @@ export const TeamPage: React.FC = () => {
                           <button
                             className="adm-btn adm-btn-secondary"
                             style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
-                            onClick={() => openIssueCertModal(emp)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openIssueCertModal(emp);
+                            }}
                             title="Issue Official Certificate for this Member"
                           >
                             <Award size={13} color="#10b981" />
@@ -1448,7 +1464,8 @@ export const TeamPage: React.FC = () => {
                           <button
                             className="adm-btn adm-btn-secondary"
                             style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setCredentialEmp(emp);
                               setNewPasswordInput('');
                               setShowActivePassword(false);
@@ -1463,7 +1480,8 @@ export const TeamPage: React.FC = () => {
                               type="button"
                               className="adm-btn adm-btn-danger"
                               style={{ padding: '0.35rem 0.55rem', fontSize: '0.72rem' }}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setOffboardModalEmp(emp);
                                 setPurgeDocsOnDelete(false);
                               }}
@@ -1801,7 +1819,7 @@ export const TeamPage: React.FC = () => {
                     <th>Dates Requested</th>
                     <th>Reason</th>
                     <th>Approval Status</th>
-                    <th>{canManageTeam ? 'Actions / Decision' : 'Action / Status'}</th>
+                    <th className="adm-table-sticky-right" style={{ minWidth: '160px' }}>{canManageTeam ? 'Actions / Decision' : 'Action / Status'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1840,7 +1858,7 @@ export const TeamPage: React.FC = () => {
                           {lv.status}
                         </span>
                       </td>
-                      <td>
+                      <td className="adm-table-sticky-right" style={{ minWidth: '160px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           {canManageTeam ? (
                             lv.status === 'Pending' ? (
@@ -4310,6 +4328,59 @@ export const TeamPage: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* ── LAZY-LOADED SCREEN-ADAPTIVE SLIDING EMPLOYEE DRAWER ── */}
+      {selectedEmployee && (
+        <Suspense
+          fallback={
+            <div className="adm-drawer-overlay">
+              <div
+                className="adm-preview-drawer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 'clamp(440px, 58vw, 900px)'
+                }}
+              >
+                <div className="adm-spinner" />
+              </div>
+            </div>
+          }
+        >
+          <EmployeePreviewDrawer
+            employee={selectedEmployee}
+            onClose={() => setSelectedEmployee(null)}
+            isDirector={isDirector}
+            canManageTeam={canManageTeam}
+            onUpdateEmployee={(id, updates) => {
+              updateEmployee(id, updates);
+              setSelectedEmployee(prev => (prev && prev.id === id ? { ...prev, ...updates } : prev));
+            }}
+            onApproveLogin={emp => {
+              updateEmployee(emp.id, {
+                approvalStatus: 'Approved',
+                approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                approvedAt: new Date().toISOString()
+              });
+              setSelectedEmployee(prev => (prev && prev.id === emp.id ? { ...prev, approvalStatus: 'Approved' } : prev));
+              showToast('Login Approved', `Authorized portal login for ${emp.name}.`, 'success');
+            }}
+            onIssueCertificate={emp => {
+              openIssueCertModal(emp);
+            }}
+            onOpenCredentials={emp => {
+              setCredentialEmp(emp);
+              setNewPasswordInput('');
+              setShowActivePassword(false);
+            }}
+            onOffboard={emp => {
+              setOffboardModalEmp(emp);
+              setPurgeDocsOnDelete(false);
+            }}
+          />
+        </Suspense>
       )}
 
     </div>
