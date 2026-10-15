@@ -127,7 +127,7 @@ export const SecurityPage: React.FC = () => {
                 <span className={`adm-badge ${ipSettings.enforceIpRestriction ? 'adm-badge-success' : 'adm-badge-danger'}`}>
                   {ipSettings.enforceIpRestriction ? 'ENFORCED (Strict Zero-Trust)' : 'DISABLED (Open Access)'}
                 </span>
-                <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 700 }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--adm-text)', fontWeight: 700 }}>
                   Admin Portal IP Access Policy
                 </span>
               </div>
@@ -154,7 +154,7 @@ export const SecurityPage: React.FC = () => {
           <div className="adm-card" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Your Current Public IP Address</span>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-text)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <code style={{ background: 'var(--adm-bg)', padding: '2px 8px', borderRadius: '6px', color: 'var(--adm-primary)' }}>{detectedIp}</code>
                 {ipSettings.allowedIps.some(e => e.ip === detectedIp) ? (
                   <span className="adm-badge adm-badge-success" style={{ fontSize: '0.7rem' }}>
@@ -208,7 +208,7 @@ export const SecurityPage: React.FC = () => {
                   {ipSettings.allowedIps.map(entry => (
                     <tr key={entry.id}>
                       <td>
-                        <code style={{ background: 'var(--adm-bg)', padding: '3px 8px', borderRadius: '4px', fontSize: '0.85rem', color: '#fff', fontWeight: 700 }}>
+                        <code style={{ background: 'var(--adm-bg)', padding: '3px 8px', borderRadius: '4px', fontSize: '0.85rem', color: 'var(--adm-text)', fontWeight: 700 }}>
                           {entry.ip}
                         </code>
                       </td>
@@ -243,7 +243,7 @@ export const SecurityPage: React.FC = () => {
             <div className="adm-modal-overlay" onClick={() => setShowAddIpModal(false)}>
               <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
                 <div className="adm-modal-header">
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Add IP to Admin Whitelist</h3>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)' }}>Add IP to Admin Whitelist</h3>
                   <button className="adm-modal-close" onClick={() => setShowAddIpModal(false)}>
                     <X size={18} />
                   </button>
@@ -296,7 +296,7 @@ export const SecurityPage: React.FC = () => {
                 <div key={u.id} style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: 'var(--adm-radius)', border: '1px solid var(--adm-border)', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                   <img src={u.avatar} alt={u.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
                   <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem' }}>{u.name}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.9rem' }}>{u.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{u.role}</div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{u.email}</div>
                   </div>
@@ -326,7 +326,7 @@ export const SecurityPage: React.FC = () => {
                 <tbody>
                   {PERMISSIONS.map((perm, idx) => (
                     <tr key={idx}>
-                      <td style={{ fontWeight: 600, color: '#fff' }}>{perm.module}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{perm.module}</td>
                       {ROLES.map(r => {
                         const hasAccess = perm.roles.includes(r);
                         return (
@@ -353,7 +353,7 @@ export const SecurityPage: React.FC = () => {
         <div className="adm-card">
           <div className="adm-card-header">
             <div className="adm-card-title">
-              <Key size={18} color="var(--adm-warning)" />
+              <Key size={18} color="var(--adm-primary)" />
               Enterprise Cryptographic API Tokens
             </div>
             <button className="adm-btn adm-btn-primary" onClick={() => setShowKeyModal(true)}>
@@ -378,7 +378,7 @@ export const SecurityPage: React.FC = () => {
                 {apiKeys.map(k => (
                   <tr key={k.id}>
                     <td>
-                      <div style={{ fontWeight: 700, color: '#fff' }}>{k.name}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--adm-text)' }}>{k.name}</div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)' }}>{k.service}</div>
                     </td>
                     <td>
@@ -412,7 +412,7 @@ export const SecurityPage: React.FC = () => {
             <div className="adm-modal-overlay" onClick={() => setShowKeyModal(false)}>
               <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
                 <div className="adm-modal-header">
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Generate API Key</h3>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)' }}>Generate API Key</h3>
                   <button className="adm-modal-close" onClick={() => setShowKeyModal(false)}>
                     <X size={18} />
                   </button>
@@ -447,7 +447,7 @@ export const SecurityPage: React.FC = () => {
         <div className="adm-card">
           <div className="adm-card-header">
             <div className="adm-card-title">
-              <Laptop size={18} color="var(--adm-info)" />
+              <Laptop size={18} color="var(--adm-primary)" />
               Active Login Sessions & IP Bindings
             </div>
           </div>
@@ -468,7 +468,7 @@ export const SecurityPage: React.FC = () => {
               <tbody>
                 {sessions.map(sess => (
                   <tr key={sess.id}>
-                    <td style={{ fontWeight: 700, color: '#fff' }}>{sess.userName}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--adm-text)' }}>{sess.userName}</td>
                     <td>{sess.device}</td>
                     <td><code>{sess.ipAddress}</code></td>
                     <td>{sess.location}</td>
@@ -525,10 +525,10 @@ export const SecurityPage: React.FC = () => {
                   <tr key={log.id}>
                     <td style={{ color: 'var(--adm-text-dim)', fontSize: '0.78rem' }}>{log.timestamp}</td>
                     <td>
-                      <div style={{ fontWeight: 700, color: '#fff' }}>{log.userName}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--adm-text)' }}>{log.userName}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--adm-primary)' }}>{log.userRole}</div>
                     </td>
-                    <td style={{ fontWeight: 600 }}>{log.action}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{log.action}</td>
                     <td><span className="adm-badge adm-badge-neutral">{log.module}</span></td>
                     <td style={{ color: 'var(--adm-text-muted)', fontSize: '0.82rem' }}>{log.details}</td>
                     <td><code>{log.ipAddress}</code></td>

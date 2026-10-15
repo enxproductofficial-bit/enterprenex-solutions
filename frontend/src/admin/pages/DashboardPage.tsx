@@ -72,19 +72,19 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── TOP KPI STATS (8 Requested Metrics) ── */}
+      {/* ── TOP KPI STATS (8 Requested Metrics — Minimalist Enterprise Palette) ── */}
       <div className="adm-grid-4" style={{ marginBottom: '1.75rem' }}>
         {/* 1. Total Clients */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
             <span className="adm-kpi-label">Total Clients</span>
-            <div className="adm-kpi-icon" style={{ background: 'var(--adm-info-soft)', color: 'var(--adm-info)' }}>
+            <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text)', border: '1px solid var(--adm-border)' }}>
               <Users size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">{totalClients}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-primary)' }}>{clients.filter(c => c.status === 'Active').length} Active</span>
+            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{clients.filter(c => c.status === 'Active').length} Active</span>
             <span>accounts</span>
           </div>
         </div>
@@ -93,7 +93,7 @@ export const DashboardPage: React.FC = () => {
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
             <span className="adm-kpi-label">Active Projects</span>
-            <div className="adm-kpi-icon" style={{ background: 'var(--adm-primary-soft)', color: 'var(--adm-primary)' }}>
+            <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-primary)', border: '1px solid var(--adm-border)' }}>
               <Briefcase size={18} />
             </div>
           </div>
@@ -108,13 +108,13 @@ export const DashboardPage: React.FC = () => {
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
             <span className="adm-kpi-label">Completed / Pending</span>
-            <div className="adm-kpi-icon" style={{ background: 'var(--adm-success-soft)', color: 'var(--adm-success)' }}>
+            <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-success)', border: '1px solid var(--adm-border)' }}>
               <CheckCircle2 size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">{completedProjects} <span style={{ fontSize: '1rem', color: 'var(--adm-text-dim)' }}>/ {pendingProjects} pend</span></div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-success)' }}>{projects.length > 0 ? Math.round((completedProjects / projects.length) * 100) : 0}%</span>
+            <span style={{ color: 'var(--adm-success)', fontWeight: 600 }}>{projects.length > 0 ? Math.round((completedProjects / projects.length) * 100) : 0}%</span>
             <span>delivery completion rate</span>
           </div>
         </div>
@@ -123,13 +123,13 @@ export const DashboardPage: React.FC = () => {
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
             <span className="adm-kpi-label">Realized Revenue</span>
-            <div className="adm-kpi-icon" style={{ background: 'var(--adm-success-soft)', color: 'var(--adm-success)' }}>
+            <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text)', border: '1px solid var(--adm-border)' }}>
               <TrendingUp size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">₹{monthlyRevenue.toLocaleString('en-IN')}</div>
           <div className="adm-kpi-footer">
-            <span className="adm-trend-up"><ArrowUpRight size={14} /> Live Total</span>
+            <span className="adm-trend-up" style={{ color: 'var(--adm-success)' }}><ArrowUpRight size={14} /> Live Total</span>
             <span>Paid Invoices</span>
           </div>
         </div>
@@ -138,13 +138,13 @@ export const DashboardPage: React.FC = () => {
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
             <span className="adm-kpi-label">Outstanding Due</span>
-            <div className="adm-kpi-icon" style={{ background: 'var(--adm-warning-soft)', color: 'var(--adm-warning)' }}>
+            <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text-muted)', border: '1px solid var(--adm-border)' }}>
               <CreditCard size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">₹{outstandingPayments.toLocaleString('en-IN')}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-warning)' }}>{invoices.filter(i => i.status === 'Pending').length} Pending</span>
+            <span style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>{invoices.filter(i => i.status === 'Pending').length} Pending</span>
             <span>invoices</span>
           </div>
         </div>
@@ -153,13 +153,13 @@ export const DashboardPage: React.FC = () => {
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
             <span className="adm-kpi-label">New CRM Leads</span>
-            <div className="adm-kpi-icon" style={{ background: 'var(--adm-purple-soft)', color: 'var(--adm-purple)' }}>
+            <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-primary)', border: '1px solid var(--adm-border)' }}>
               <Target size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">{newLeads}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-primary)' }}>{leads.length} Total</span>
+            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{leads.length} Total</span>
             <span>in sales pipeline</span>
           </div>
         </div>
@@ -168,7 +168,7 @@ export const DashboardPage: React.FC = () => {
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
             <span className="adm-kpi-label">Active Tickets</span>
-            <div className="adm-kpi-icon" style={{ background: 'var(--adm-danger-soft)', color: 'var(--adm-danger)' }}>
+            <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text-muted)', border: '1px solid var(--adm-border)' }}>
               <LifeBuoy size={18} />
             </div>
           </div>
@@ -182,7 +182,7 @@ export const DashboardPage: React.FC = () => {
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
             <span className="adm-kpi-label">Team Capacity</span>
-            <div className="adm-kpi-icon" style={{ background: 'var(--adm-primary-soft)', color: 'var(--adm-primary)' }}>
+            <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-primary)', border: '1px solid var(--adm-border)' }}>
               <Users size={18} />
             </div>
           </div>
@@ -288,7 +288,7 @@ export const DashboardPage: React.FC = () => {
               <span style={{ color: 'var(--adm-text-muted)' }}>Realized Revenue</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'rgba(255, 255, 255, 0.15)' }} />
+              <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--adm-surface-hover)', border: '1px solid var(--adm-border)' }} />
               <span style={{ color: 'var(--adm-text-muted)' }}>Target Projection</span>
             </div>
           </div>
@@ -298,7 +298,7 @@ export const DashboardPage: React.FC = () => {
         <div className="adm-card">
           <div className="adm-card-header">
             <div className="adm-card-title">
-              <Users size={18} color="var(--adm-info)" />
+              <Users size={18} color="var(--adm-primary)" />
               Team Workload & Capacity
             </div>
           </div>
@@ -307,10 +307,10 @@ export const DashboardPage: React.FC = () => {
             {employees.map(emp => (
               <div key={emp.id}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '0.82rem' }}>
-                  <span style={{ fontWeight: 600, color: '#fff' }}>{emp.name}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{emp.name}</span>
                   <span style={{
                     fontWeight: 700,
-                    color: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+                    color: emp.workloadPercentage > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
                   }}>
                     {emp.workloadPercentage}%
                   </span>
@@ -320,7 +320,7 @@ export const DashboardPage: React.FC = () => {
                     className="adm-progress-fill"
                     style={{
                       width: `${emp.workloadPercentage}%`,
-                      background: emp.workloadPercentage > 85 ? 'var(--adm-danger)' : emp.workloadPercentage > 70 ? 'var(--adm-warning)' : 'var(--adm-success)'
+                      background: emp.workloadPercentage > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
                     }}
                   />
                 </div>
@@ -362,13 +362,12 @@ export const DashboardPage: React.FC = () => {
                 <tbody>
                   {projects.slice(0, 5).map(p => (
                     <tr key={p.id}>
-                      <td style={{ fontWeight: 600, color: '#fff' }}>{p.title}</td>
-                      <td>{p.clientName}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{p.title}</td>
+                      <td style={{ color: 'var(--adm-text-muted)' }}>{p.clientName}</td>
                       <td>
                         <span className={`adm-badge ${
                           p.status === 'Development' ? 'adm-badge-primary' :
-                          p.status === 'Delivered' ? 'adm-badge-success' :
-                          p.status === 'Testing' ? 'adm-badge-warning' : 'adm-badge-neutral'
+                          p.status === 'Delivered' ? 'adm-badge-success' : 'adm-badge-neutral'
                         }`}>
                           {p.status}
                         </span>
@@ -397,36 +396,43 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Live Audit Activity Stream */}
-        <div className="adm-card">
-          <div className="adm-card-header">
+        <div className="adm-card" style={{ padding: '1.25rem 1.4rem' }}>
+          <div className="adm-card-header" style={{ marginBottom: '1.1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--adm-border)' }}>
             <div className="adm-card-title">
-              <Activity size={18} color="var(--adm-success)" />
+              <Activity size={18} color="var(--adm-primary)" />
               Live Audit Stream
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
               System Logs
             </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {auditLogs.slice(0, 5).map(log => (
               <div
                 key={log.id}
                 style={{
-                  padding: '0.65rem 0.85rem',
+                  padding: '0.9rem 1.15rem',
                   background: 'var(--adm-bg)',
-                  borderRadius: 'var(--adm-radius)',
+                  borderRadius: '10px',
                   border: '1px solid var(--adm-border)',
-                  fontSize: '0.8rem'
+                  fontSize: '0.82rem',
+                  transition: 'all 0.2s ease'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                  <span style={{ fontWeight: 700, color: '#fff' }}>{log.action}</span>
-                  <span style={{ color: 'var(--adm-text-dim)', fontSize: '0.7rem' }}>{log.timestamp}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.84rem' }}>{log.action}</span>
+                  <span style={{ color: 'var(--adm-text-dim)', fontSize: '0.7rem', fontWeight: 500 }}>{log.timestamp}</span>
                 </div>
-                <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.75rem' }}>{log.details}</div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--adm-primary)', marginTop: '3px' }}>
-                  by {log.userName} • {log.module}
+                <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.78rem', lineHeight: 1.5 }}>
+                  {log.details}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.7rem', color: 'var(--adm-primary)', marginTop: '8px', fontWeight: 600 }}>
+                  <span>by {log.userName}</span>
+                  <span style={{ color: 'var(--adm-text-dim)' }}>•</span>
+                  <span style={{ background: 'var(--adm-surface-hover)', padding: '2px 7px', borderRadius: '4px', border: '1px solid var(--adm-border)', color: 'var(--adm-text-muted)' }}>
+                    {log.module}
+                  </span>
                 </div>
               </div>
             ))}
