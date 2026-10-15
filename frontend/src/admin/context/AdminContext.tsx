@@ -342,7 +342,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.tasks && parsed.tasks.length > 0) {
           // Merge with INITIAL_TASKS so standard sprint tasks are never lost
           const existingIds = new Set(parsed.tasks.map((t: any) => t.id));
-          const mergedTasks = [...parsed.tasks];
+          const mergedTasks = parsed.tasks.map((t: any) => {
+            if (t.status === 'Approved') return { ...t, status: 'Done' };
+            if (t.id === 'tsk-102' && t.status === 'To Do') return { ...t, status: 'In Progress' };
+            return t;
+          });
           INITIAL_TASKS.forEach(initTask => {
             if (!existingIds.has(initTask.id)) {
               mergedTasks.push(initTask);

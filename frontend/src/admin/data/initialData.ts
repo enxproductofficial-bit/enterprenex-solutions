@@ -547,7 +547,7 @@ export const INITIAL_TASKS: Task[] = [
     assignedTo: 'POLAMREDDY REVANTH REDDY',
     reviewer: 'Rohit P.',
     priority: 'Urgent',
-    status: 'To Do',
+    status: 'In Progress',
     dueDate: '2026-10-15',
     loggedHours: 2.0,
     estimatedHours: 8,
@@ -591,7 +591,7 @@ export const INITIAL_TASKS: Task[] = [
     assignedTo: 'Rohit P.',
     reviewer: 'Rohit P.',
     priority: 'High',
-    status: 'Approved',
+    status: 'Done',
     dueDate: '2026-10-18',
     loggedHours: 14.0,
     estimatedHours: 14,
@@ -604,6 +604,27 @@ export const INITIAL_TASKS: Task[] = [
     comments: [
       { id: 'tc-3', author: 'Rohit P.', authorAvatar: '', text: 'Architecture approved. Meets Section 15-17 EWMS blueprint.', createdAt: '2 days ago' }
     ]
+  },
+  {
+    id: 'tsk-105',
+    title: 'Enterprise API Gateway & Security Policy Audit',
+    description: 'Audit RBAC middleware and configure CORS & rate limiting rules for production API endpoints.',
+    projectId: 'prj-1',
+    projectName: 'Enterprise Web & AI Systems',
+    assignedTo: 'POLAMREDDY REVANTH REDDY',
+    reviewer: 'Rohit P.',
+    priority: 'Medium',
+    status: 'To Do',
+    dueDate: '2026-10-22',
+    loggedHours: 0,
+    estimatedHours: 6,
+    tags: ['Security', 'API', 'Audit'],
+    createdAt: '2026-10-14',
+    subtasks: [
+      { id: 'st-10', title: 'Verify statutory identity token validation', completed: false },
+      { id: 'st-11', title: 'Test rate limiter on public auth endpoints', completed: false }
+    ],
+    comments: []
   }
 ];
 
