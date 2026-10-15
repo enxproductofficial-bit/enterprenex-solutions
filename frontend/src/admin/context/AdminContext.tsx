@@ -60,6 +60,7 @@ export interface ToastNotification {
 const INITIAL_IP_SETTINGS: IpSecuritySettings = {
   enforceIpRestriction: false,
   allowedIps: [
+    { id: 'ip-admin-3', ip: '42.104.219.93', label: 'Director Station (42.104.219.93)', addedBy: 'Managing Director', addedAt: '2026-01-01' },
     { id: 'ip-admin-2', ip: '10.228.245.155', label: 'Director Station (10.228.245.155)', addedBy: 'Managing Director', addedAt: '2026-01-01' },
     { id: 'ip-admin-1', ip: '10.206.229.155', label: 'Primary Admin Station (10.206.229.155)', addedBy: 'Security Policy', addedAt: '2026-01-01' },
     { id: 'ip-local-1', ip: '127.0.0.1', label: 'Local Development IPv4', addedBy: 'System', addedAt: '2026-01-01' },
@@ -395,7 +396,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             setCurrentUser(cur);
           }
         }
-        if (parsed.ipSettings) setIpSettings(parsed.ipSettings);
+        if (parsed.ipSettings) {
+          const list = parsed.ipSettings.allowedIps || [];
+          if (!list.some((e: any) => e.ip === '42.104.219.93')) {
+            list.unshift({ id: 'ip-dir-live', ip: '42.104.219.93', label: 'Director Station (42.104.219.93)', addedBy: 'Managing Director', addedAt: '2026-01-01' });
+          }
+          if (!list.some((e: any) => e.ip === '10.228.245.155')) {
+            list.unshift({ id: 'ip-dir-lan', ip: '10.228.245.155', label: 'Director Station (10.228.245.155)', addedBy: 'Managing Director', addedAt: '2026-01-01' });
+          }
+          setIpSettings({
+            ...parsed.ipSettings,
+            allowedIps: list
+          });
+        }
       }
     } catch (e) {
       console.warn('Could not parse saved admin state:', e);

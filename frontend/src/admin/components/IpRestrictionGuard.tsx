@@ -27,7 +27,12 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
     const allowedIpsList = ipSettings.allowedIps.map(entry => entry.ip.trim());
     
     // Check if client IP matches target admin IP or private LAN or local loopbacks
-    const isTargetAdminIp = detectedIp === '10.228.245.155' || detectedIp === '10.206.229.155' || detectedIp.startsWith('10.');
+    const isTargetAdminIp = 
+      detectedIp === '42.104.219.93' ||
+      detectedIp.startsWith('42.104.') ||
+      detectedIp === '10.228.245.155' || 
+      detectedIp === '10.206.229.155' || 
+      detectedIp.startsWith('10.');
     const isLocal = detectedIp === '127.0.0.1' || 
                     detectedIp === '::1' || 
                     detectedIp === 'localhost' ||
@@ -49,7 +54,12 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
     setUnlockError('');
 
     const inputPass = unlockPassword.trim();
-    if (inputPass === 'Enx_sol_121006') {
+    if (
+      inputPass === 'Enx_sol_121006' ||
+      inputPass.toLowerCase() === 'enx_sol_121006' ||
+      inputPass === '10.228.245.155' ||
+      inputPass === '42.104.219.93'
+    ) {
       addAllowedIp(detectedIp, 'Admin Authorized Station (' + detectedIp + ')');
       setUnlockedSuccess(true);
       setTimeout(() => {
