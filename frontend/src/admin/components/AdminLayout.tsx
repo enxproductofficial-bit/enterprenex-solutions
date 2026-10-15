@@ -441,7 +441,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 {currentUser && <img src={currentUser.avatar} alt={currentUser.name} className="adm-avatar" />}
                 <div className="adm-user-info">
                   <span className="adm-user-name">{currentUser?.name || 'Enterprenex Admin'}</span>
-                  <span className="adm-user-role">{currentUser?.role || 'Super Admin'}</span>
+                  <span className="adm-user-role" style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', maxWidth: '170px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {currentUser?.email || currentUser?.role || 'Super Admin'}
+                  </span>
                 </div>
                 <ChevronDown size={14} color="var(--adm-text-dim)" />
               </div>

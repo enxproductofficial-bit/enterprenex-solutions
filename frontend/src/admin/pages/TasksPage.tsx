@@ -172,12 +172,10 @@ export const TasksPage: React.FC = () => {
         (e.employeeId && assigneeName.includes(e.employeeId))
     );
     const pct = emp?.workloadPercentage || 75;
-    if (pct < 70) {
-      return { status: 'Available', percent: pct, color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' };
-    } else if (pct <= 100) {
-      return { status: 'Healthy', percent: pct, color: '#0284c7', bg: 'rgba(2, 132, 199, 0.12)' };
+    if (pct < 85) {
+      return { status: 'Available', percent: pct, color: 'var(--adm-success)', bg: 'rgba(16, 185, 129, 0.10)' };
     } else {
-      return { status: 'Overloaded', percent: pct, color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.12)' };
+      return { status: 'High Load', percent: pct, color: 'var(--adm-primary)', bg: 'var(--adm-primary-soft)' };
     }
   };
 
@@ -263,26 +261,26 @@ export const TasksPage: React.FC = () => {
                 width: '32px',
                 height: '32px',
                 borderRadius: '6px',
-                background: isTimerRunning ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid ' + (isTimerRunning ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'),
+                background: isTimerRunning ? 'rgba(16, 185, 129, 0.12)' : 'var(--adm-primary-soft)',
+                border: '1px solid ' + (isTimerRunning ? 'rgba(16, 185, 129, 0.25)' : 'var(--adm-primary-border)'),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: isTimerRunning ? '#10b981' : '#f59e0b'
+                color: isTimerRunning ? 'var(--adm-success)' : 'var(--adm-primary)'
               }}
             >
               <Clock size={16} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: isTimerRunning ? '#10b981' : '#f59e0b', fontWeight: 800 }}>
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: isTimerRunning ? 'var(--adm-success)' : 'var(--adm-primary)', fontWeight: 800 }}>
                   {isTimerRunning ? '● Live Stopwatch Active' : '⏸ Stopwatch Paused'}
                 </span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>•</span>
-                <span style={{ fontSize: '0.82rem', color: '#fff', fontWeight: 600 }}>{activeTimerTask.title}</span>
+                <span style={{ fontSize: '0.82rem', color: 'var(--adm-text)', fontWeight: 600 }}>{activeTimerTask.title}</span>
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
-                Assigned: <strong style={{ color: '#fff' }}>{activeTimerTask.assignedTo}</strong> ({activeTimerTask.projectName})
+                Assigned: <strong style={{ color: 'var(--adm-text)' }}>{activeTimerTask.assignedTo}</strong> ({activeTimerTask.projectName})
               </div>
             </div>
           </div>
@@ -294,11 +292,11 @@ export const TasksPage: React.FC = () => {
                 fontFamily: 'monospace',
                 fontSize: '1.45rem',
                 fontWeight: 800,
-                color: '#fff',
+                color: 'var(--adm-text)',
                 letterSpacing: '1px',
                 padding: '0.2rem 0.75rem',
                 borderRadius: '6px',
-                background: 'rgba(0,0,0,0.4)',
+                background: 'var(--adm-surface-hover)',
                 border: '1px solid var(--adm-border)'
               }}
             >
@@ -332,7 +330,7 @@ export const TasksPage: React.FC = () => {
               type="button"
               className="adm-btn"
               style={{
-                background: '#10b981',
+                background: 'var(--adm-success)',
                 color: '#fff',
                 border: 'none',
                 padding: '0.45rem 0.85rem',
@@ -453,29 +451,36 @@ export const TasksPage: React.FC = () => {
         {TASK_COLUMNS.map(col => {
           const colTasks = filteredTasks.filter(t => t.status === col);
 
-          const colBadgeColor =
-            col === 'In Review'
-              ? 'rgba(245, 158, 11, 0.2)'
-              : col === 'Changes Required'
-              ? 'rgba(239, 68, 68, 0.2)'
-              : col === 'Done'
-              ? 'rgba(16, 185, 129, 0.2)'
-              : 'rgba(255, 255, 255, 0.05)';
-
-          const colTextColor =
-            col === 'In Review' ? '#f59e0b' : col === 'Changes Required' ? '#ef4444' : col === 'Done' ? '#10b981' : '#fff';
+          const isDone = col === 'Done';
+          const isInReview = col === 'In Review';
 
           return (
             <div key={col} className="adm-kanban-column">
               <div
                 className="adm-kanban-column-header"
-                style={{ borderBottom: `2px solid ${col === 'In Review' ? '#f59e0b' : col === 'Done' ? '#10b981' : 'var(--adm-border)'}` }}
+                style={{
+                  borderBottom: isDone ? '2px solid var(--adm-success)' : isInReview ? '2px solid var(--adm-primary)' : '1px solid var(--adm-border)',
+                  background: 'transparent'
+                }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: colTextColor }}>{col}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{
+                    fontSize: '0.86rem',
+                    fontWeight: 700,
+                    color: isDone ? 'var(--adm-success)' : isInReview ? 'var(--adm-primary)' : 'var(--adm-text)'
+                  }}>
+                    {col}
+                  </span>
                   <span
                     className="adm-badge"
-                    style={{ background: colBadgeColor, color: colTextColor, fontSize: '0.7rem' }}
+                    style={{
+                      background: isDone ? 'rgba(16, 185, 129, 0.12)' : isInReview ? 'var(--adm-primary-soft)' : 'var(--adm-surface-hover)',
+                      color: isDone ? 'var(--adm-success)' : isInReview ? 'var(--adm-primary)' : 'var(--adm-text-muted)',
+                      border: '1px solid var(--adm-border)',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '2px 8px'
+                    }}
                   >
                     {colTasks.length}
                   </span>
@@ -495,13 +500,13 @@ export const TasksPage: React.FC = () => {
                       style={{
                         cursor: 'pointer',
                         borderLeft: isThisTaskTimerActive
-                          ? '3px solid #10b981'
+                          ? '3px solid var(--adm-success)'
+                          : t.status === 'Done'
+                          ? '3px solid var(--adm-success)'
                           : t.status === 'In Review'
-                          ? '3px solid #f59e0b'
-                          : t.status === 'Changes Required'
-                          ? '3px solid #ef4444'
+                          ? '3px solid var(--adm-primary)'
                           : selectedTask?.id === t.id
-                          ? '3px solid var(--adm-primary, #1a1a1a)'
+                          ? '3px solid var(--adm-primary)'
                           : '1px solid var(--adm-border)',
                         boxShadow: selectedTask?.id === t.id ? '0 4px 16px rgba(0,0,0,0.08)' : undefined,
                         transform: selectedTask?.id === t.id ? 'scale(1.01)' : 'none',
@@ -514,9 +519,7 @@ export const TasksPage: React.FC = () => {
                         <span
                           className={`adm-badge ${
                             t.priority === 'Urgent'
-                              ? 'adm-badge-danger'
-                              : t.priority === 'High'
-                              ? 'adm-badge-warning'
+                              ? 'adm-badge-primary'
                               : 'adm-badge-neutral'
                           }`}
                           style={{ fontSize: '0.65rem' }}
@@ -532,7 +535,8 @@ export const TasksPage: React.FC = () => {
                             padding: '2px 6px',
                             borderRadius: '4px',
                             background: workloadInfo.bg,
-                            color: workloadInfo.color
+                            color: workloadInfo.color,
+                            border: '1px solid var(--adm-border)'
                           }}
                           title={`Assignee Workload: ${workloadInfo.status} (${workloadInfo.percent}% capacity)`}
                         >
@@ -540,10 +544,10 @@ export const TasksPage: React.FC = () => {
                         </span>
                       </div>
 
-                      <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff', margin: '4px 0', lineHeight: 1.3 }}>
+                      <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--adm-text)', margin: '4px 0', lineHeight: 1.3 }}>
                         {t.title}
                       </h4>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-primary)', marginBottom: '8px' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginBottom: '8px' }}>
                         {t.projectName}
                       </div>
 
@@ -551,13 +555,13 @@ export const TasksPage: React.FC = () => {
                       {t.reviewNotes && (
                         <div
                           style={{
-                            background: 'rgba(239, 68, 68, 0.08)',
-                            border: '1px solid rgba(239, 68, 68, 0.25)',
+                            background: 'var(--adm-primary-soft)',
+                            border: '1px solid var(--adm-primary-border)',
                             borderRadius: '6px',
                             padding: '6px 8px',
                             marginBottom: '8px',
                             fontSize: '0.72rem',
-                            color: '#fca5a5'
+                            color: 'var(--adm-primary)'
                           }}
                         >
                           <strong>Reviewer Note:</strong> {t.reviewNotes}
@@ -601,7 +605,7 @@ export const TasksPage: React.FC = () => {
                           borderTop: '1px solid var(--adm-border)'
                         }}
                       >
-                        <span style={{ fontWeight: 600, color: '#fff' }}>{t.assignedTo}</span>
+                        <span style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{t.assignedTo}</span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                           <Calendar size={11} /> {t.dueDate}
                         </span>
@@ -612,7 +616,7 @@ export const TasksPage: React.FC = () => {
                         style={{
                           marginTop: '8px',
                           paddingTop: '6px',
-                          borderTop: '1px solid rgba(255,255,255,0.06)',
+                          borderTop: '1px solid var(--adm-border)',
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
@@ -626,7 +630,7 @@ export const TasksPage: React.FC = () => {
                               style={{
                                 fontFamily: 'monospace',
                                 fontSize: '0.72rem',
-                                color: '#10b981',
+                                color: 'var(--adm-success)',
                                 fontWeight: 800
                               }}
                             >
@@ -640,8 +644,8 @@ export const TasksPage: React.FC = () => {
                               }}
                               style={{
                                 background: 'transparent',
-                                border: '1px solid #10b981',
-                                color: '#10b981',
+                                border: '1px solid var(--adm-success)',
+                                color: 'var(--adm-success)',
                                 borderRadius: '4px',
                                 padding: '2px 5px',
                                 fontSize: '0.68rem',
@@ -657,7 +661,7 @@ export const TasksPage: React.FC = () => {
                                 handleStopAndLogTimer(t.id);
                               }}
                               style={{
-                                background: '#10b981',
+                                background: 'var(--adm-success)',
                                 border: 'none',
                                 color: '#fff',
                                 borderRadius: '4px',
@@ -690,7 +694,7 @@ export const TasksPage: React.FC = () => {
                             }}
                             title="Start Stopwatch on this Task"
                           >
-                            <Play size={11} color="#10b981" />
+                            <Play size={11} color="var(--adm-success)" />
                             <span>{t.loggedHours}h logged</span>
                           </button>
                         )}
@@ -704,9 +708,9 @@ export const TasksPage: React.FC = () => {
                               submitTaskForReview(t.id);
                             }}
                             style={{
-                              background: 'rgba(245, 158, 11, 0.15)',
-                              border: '1px solid rgba(245, 158, 11, 0.35)',
-                              color: '#f59e0b',
+                              background: 'var(--adm-primary-soft)',
+                              border: '1px solid var(--adm-primary-border)',
+                              color: 'var(--adm-primary)',
                               fontSize: '0.68rem',
                               fontWeight: 700,
                               padding: '2px 7px',
@@ -726,9 +730,9 @@ export const TasksPage: React.FC = () => {
                               submitTaskForReview(t.id);
                             }}
                             style={{
-                              background: 'rgba(245, 158, 11, 0.15)',
-                              border: '1px solid rgba(245, 158, 11, 0.35)',
-                              color: '#f59e0b',
+                              background: 'var(--adm-primary-soft)',
+                              border: '1px solid var(--adm-primary-border)',
+                              color: 'var(--adm-primary)',
                               fontSize: '0.68rem',
                               fontWeight: 700,
                               padding: '2px 7px',
@@ -749,7 +753,7 @@ export const TasksPage: React.FC = () => {
                                 reviewTask(t.id, 'Approved');
                               }}
                               style={{
-                                background: '#10b981',
+                                background: 'var(--adm-success)',
                                 border: 'none',
                                 color: '#fff',
                                 fontSize: '0.68rem',
@@ -771,9 +775,9 @@ export const TasksPage: React.FC = () => {
                                 setShowReworkModal(true);
                               }}
                               style={{
-                                background: 'rgba(239, 68, 68, 0.2)',
-                                border: '1px solid rgba(239, 68, 68, 0.4)',
-                                color: '#fca5a5',
+                                background: 'var(--adm-surface-hover)',
+                                border: '1px solid var(--adm-border)',
+                                color: 'var(--adm-text-muted)',
                                 fontSize: '0.68rem',
                                 fontWeight: 700,
                                 padding: '2px 6px',
@@ -884,7 +888,7 @@ export const TasksPage: React.FC = () => {
         <div className="adm-modal-overlay" onClick={() => setShowReworkModal(false)}>
           <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
             <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                 Request Task Changes & Rework
               </h3>
               <button className="adm-modal-close" onClick={() => setShowReworkModal(false)}>
@@ -906,8 +910,7 @@ export const TasksPage: React.FC = () => {
                 Cancel
               </button>
               <button
-                className="adm-btn"
-                style={{ background: '#ef4444', color: '#fff', border: 'none', fontWeight: 700 }}
+                className="adm-btn adm-btn-primary"
                 onClick={() => {
                   reviewTask(reworkTaskId, 'Changes Required', reworkNotes || 'Please address lead review feedback.');
                   setShowReworkModal(false);
@@ -928,7 +931,7 @@ export const TasksPage: React.FC = () => {
         <div className="adm-modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Create Sprint Task</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)' }}>Create Sprint Task</h3>
               <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
