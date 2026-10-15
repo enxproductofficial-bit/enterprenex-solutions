@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, FileText, CheckCircle2, Shield, Printer, Building, AlertCircle } from 'lucide-react';
+import { X, FileText, CheckCircle2 } from 'lucide-react';
 
 interface EmployeeTermsModalProps {
   onClose: () => void;
@@ -15,10 +15,6 @@ export const EmployeeTermsModal: React.FC<EmployeeTermsModalProps> = ({ onClose,
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   const handleAcceptAndClose = () => {
     if (onAccept) onAccept();
@@ -96,29 +92,7 @@ export const EmployeeTermsModal: React.FC<EmployeeTermsModalProps> = ({ onClose,
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={handlePrint}
-              style={{
-                padding: '0.4rem 0.75rem',
-                borderRadius: '8px',
-                border: '1px solid #cbd5e1',
-                background: '#ffffff',
-                color: '#334155',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                cursor: 'pointer'
-              }}
-              title="Print Terms & Conditions"
-            >
-              <Printer size={13} />
-              <span>Print</span>
-            </button>
-
+          <div>
             <button
               type="button"
               onClick={onClose}
