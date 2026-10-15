@@ -6,9 +6,7 @@ import {
   Trash2,
   ArrowRight,
   X,
-  Calendar,
-  Layers,
-  DollarSign
+  Calendar
 } from 'lucide-react';
 import type { Project, ProjectStatus } from '../types';
 

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import {
   X,
-  Calendar,
   CheckCircle2,
   Circle,
   Phone,
