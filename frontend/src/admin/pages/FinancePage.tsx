@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import {
   Plus,
   Search,
   CheckCircle2,
   AlertCircle,
-  Download,
   CreditCard,
   X,
-  FileCheck
+  FileCheck,
+  Send
 } from 'lucide-react';
 import type { Invoice, ExpenseRecord } from '../types';
 
+const InvoicePreviewDrawer = lazy(() =>
+  import('../components/InvoicePreviewDrawer').then(m => ({ default: m.InvoicePreviewDrawer }))
+);
+
 export const FinancePage: React.FC = () => {
-  const { invoices, expenses, clients, projects, addInvoice, markInvoicePaid, sendPaymentReminder, addExpense } = useAdmin();
+  const { invoices, expenses, clients, projects, addInvoice, updateInvoice, markInvoicePaid, sendPaymentReminder, addExpense } = useAdmin();
   const [tab, setTab] = useState<'invoices' | 'expenses' | 'gst'>('invoices');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -52,6 +56,8 @@ export const FinancePage: React.FC = () => {
     const matchStatus = statusFilter === 'All' || i.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const selectedClient = clients.find(c => c.id === selectedInvoice?.clientId || c.companyName === selectedInvoice?.clientName);
 
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,60 +149,99 @@ export const FinancePage: React.FC = () => {
 
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Total Expenses</span>
+            <span className="adm-kpi-label">Total Expenses Logged</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-danger-soft)', color: 'var(--adm-danger)' }}>
               <CreditCard size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">₹{(totalExpenses / 100000).toFixed(1)}L</div>
           <div className="adm-kpi-footer">
-            <span>Cloud & Operations</span>
+            <span style={{ color: 'var(--adm-text-dim)' }}>Across {expenses.length} Records</span>
           </div>
         </div>
 
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Net Operating Margin</span>
+            <span className="adm-kpi-label">Operating Margin</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-primary-soft)', color: 'var(--adm-primary)' }}>
-              <FileCheck size={18} />
+              <CheckCircle2 size={18} />
             </div>
           </div>
-          <div className="adm-kpi-value">
+          <div className="adm-kpi-value" style={{ color: 'var(--adm-success)' }}>
             {totalPaidRevenue > 0 ? Math.round(((totalPaidRevenue - totalExpenses) / totalPaidRevenue) * 100) : 0}%
           </div>
           <div className="adm-kpi-footer">
-            <span className="adm-trend-up">Healthy Margin</span>
+            <span className="adm-trend-up">Profitable Cashflow</span>
           </div>
         </div>
       </div>
 
-      {/* Tabs Bar */}
-      <div className="adm-card" style={{ padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div className="adm-tabs" style={{ margin: 0, border: 'none' }}>
-          <button className={`adm-tab-btn ${tab === 'invoices' ? 'active' : ''}`} onClick={() => setTab('invoices')}>
-            Invoices & Quotations ({invoices.length})
-          </button>
-          <button className={`adm-tab-btn ${tab === 'expenses' ? 'active' : ''}`} onClick={() => setTab('expenses')}>
-            Expenses Ledger ({expenses.length})
-          </button>
-          <button className={`adm-tab-btn ${tab === 'gst' ? 'active' : ''}`} onClick={() => setTab('gst')}>
-            GST Compliance Breakdown
-          </button>
+      {/* Tabs Header */}
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--adm-border)', marginBottom: '1.5rem', gap: '1rem' }}>
+        <button
+          onClick={() => setTab('invoices')}
+          style={{
+            padding: '0.6rem 1rem',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: tab === 'invoices' ? '2px solid var(--adm-primary)' : '2px solid transparent',
+            color: tab === 'invoices' ? 'var(--adm-primary)' : 'var(--adm-text-muted)',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer'
+          }}
+        >
+          Invoices & Quotations ({invoices.length})
+        </button>
+        <button
+          onClick={() => setTab('expenses')}
+          style={{
+            padding: '0.6rem 1rem',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: tab === 'expenses' ? '2px solid var(--adm-primary)' : '2px solid transparent',
+            color: tab === 'expenses' ? 'var(--adm-primary)' : 'var(--adm-text-muted)',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer'
+          }}
+        >
+          Expense Ledger ({expenses.length})
+        </button>
+        <button
+          onClick={() => setTab('gst')}
+          style={{
+            padding: '0.6rem 1rem',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: tab === 'gst' ? '2px solid var(--adm-primary)' : '2px solid transparent',
+            color: tab === 'gst' ? 'var(--adm-primary)' : 'var(--adm-text-muted)',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer'
+          }}
+        >
+          GST Remittance Summary
+        </button>
+      </div>
+
+      {/* Filter / Search Bar */}
+      <div className="adm-card" style={{ padding: '0.75rem 1rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div style={{ position: 'relative', width: '320px' }}>
+          <Search size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }} />
+          <input
+            type="text"
+            className="adm-input"
+            style={{ paddingLeft: '2.4rem' }}
+            placeholder="Search by client or invoice #..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
 
         {tab === 'invoices' && (
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <div style={{ position: 'relative', width: '220px' }}>
-              <Search size={14} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }} />
-              <input
-                type="text"
-                className="adm-input"
-                style={{ paddingLeft: '2.2rem', padding: '0.35rem 0.5rem 0.35rem 2.2rem', fontSize: '0.8rem' }}
-                placeholder="Search invoices..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>Filter:</span>
             <select
               className="adm-select"
               style={{ width: 'auto', padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
@@ -226,54 +271,73 @@ export const FinancePage: React.FC = () => {
                 <th>GST (18%)</th>
                 <th>Total Payable</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th className="adm-table-sticky-right" style={{ minWidth: '160px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredInvoices.map(inv => (
-                <tr key={inv.id}>
-                  <td>
-                    <div style={{ fontWeight: 700, color: '#fff' }}>{inv.invoiceNumber}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)' }}>{inv.type}</div>
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 600, color: '#fff' }}>{inv.clientName}</div>
-                  </td>
-                  <td>{inv.issueDate}</td>
-                  <td>{inv.dueDate}</td>
-                  <td>₹{inv.subtotal.toLocaleString('en-IN')}</td>
-                  <td>₹{inv.taxAmount.toLocaleString('en-IN')}</td>
-                  <td style={{ fontWeight: 800, color: '#fff' }}>
-                    ₹{inv.totalAmount.toLocaleString('en-IN')}
-                  </td>
-                  <td>
-                    <span className={`adm-badge ${
-                      inv.status === 'Paid' ? 'adm-badge-success' :
-                      inv.status === 'Pending' ? 'adm-badge-warning' :
-                      inv.status === 'Overdue' ? 'adm-badge-danger' : 'adm-badge-neutral'
-                    }`}>
-                      {inv.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
-                      <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => setSelectedInvoice(inv)}>
-                        View PDF
-                      </button>
-                      {inv.status === 'Pending' && (
-                        <>
-                          <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => markInvoicePaid(inv.id)}>
-                            Mark Paid
-                          </button>
-                          <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => sendPaymentReminder(inv.id)} title="Send Reminder">
-                            Remind
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredInvoices.map(inv => {
+                const isSelected = selectedInvoice?.id === inv.id;
+                return (
+                  <tr
+                    key={inv.id}
+                    className={isSelected ? 'adm-table-row-clickable adm-table-row-active' : 'adm-table-row-clickable'}
+                    onClick={() => setSelectedInvoice(inv)}
+                  >
+                    <td>
+                      <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>{inv.invoiceNumber}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)' }}>{inv.type}</div>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: 'var(--adm-text, #1a1a1a)' }}>{inv.clientName}</div>
+                    </td>
+                    <td>{inv.issueDate}</td>
+                    <td>{inv.dueDate}</td>
+                    <td>₹{inv.subtotal.toLocaleString('en-IN')}</td>
+                    <td>₹{inv.taxAmount.toLocaleString('en-IN')}</td>
+                    <td style={{ fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
+                      ₹{inv.totalAmount.toLocaleString('en-IN')}
+                    </td>
+                    <td>
+                      <span className={`adm-badge ${
+                        inv.status === 'Paid' ? 'adm-badge-success' :
+                        inv.status === 'Pending' ? 'adm-badge-warning' :
+                        inv.status === 'Overdue' ? 'adm-badge-danger' : 'adm-badge-neutral'
+                      }`}>
+                        {inv.status}
+                      </span>
+                    </td>
+                    <td className="adm-table-sticky-right" style={{ minWidth: '160px' }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                        <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => setSelectedInvoice(inv)}>
+                          Preview PDF
+                        </button>
+                        {inv.status === 'Pending' && (
+                          <>
+                            <button
+                              className="adm-btn adm-btn-sm adm-btn-primary"
+                              onClick={() => {
+                                markInvoicePaid(inv.id);
+                                if (selectedInvoice?.id === inv.id) {
+                                  setSelectedInvoice({ ...inv, status: 'Paid', paymentDate: new Date().toISOString().split('T')[0] });
+                                }
+                              }}
+                            >
+                              Mark Paid
+                            </button>
+                            <button
+                              className="adm-btn adm-btn-sm adm-btn-secondary"
+                              onClick={() => sendPaymentReminder(inv.id)}
+                              title="Send Reminder"
+                            >
+                              <Send size={12} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -297,7 +361,7 @@ export const FinancePage: React.FC = () => {
               {expenses.map(exp => (
                 <tr key={exp.id}>
                   <td><span className="adm-badge adm-badge-neutral">{exp.category}</span></td>
-                  <td style={{ fontWeight: 600, color: '#fff' }}>{exp.description}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--adm-text, #1a1a1a)' }}>{exp.description}</td>
                   <td>{exp.vendor}</td>
                   <td>{exp.paidBy}</td>
                   <td>{exp.date}</td>
@@ -343,7 +407,7 @@ export const FinancePage: React.FC = () => {
 
                   return (
                     <tr key={inv.id}>
-                      <td style={{ fontWeight: 700, color: '#fff' }}>{inv.clientName}</td>
+                      <td style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>{inv.clientName}</td>
                       <td><code>27AAACB{inv.id.replace('inv-', '99')}P1ZX</code></td>
                       <td>₹{subtotal.toLocaleString('en-IN')}</td>
                       <td>₹{cgst.toLocaleString('en-IN')}</td>
@@ -358,116 +422,51 @@ export const FinancePage: React.FC = () => {
         </div>
       )}
 
-      {/* ── PRINTABLE INVOICE VIEW MODAL ── */}
+      {/* ── LAZY-LOADED SCREEN-ADAPTIVE SLIDING INVOICE DRAWER ── */}
       {selectedInvoice && (
-        <div className="adm-modal-overlay" onClick={() => setSelectedInvoice(null)}>
-          <div className="adm-modal-content adm-modal-lg" onClick={e => e.stopPropagation()} style={{ background: '#fff', color: '#111' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #F66135', paddingBottom: '1.25rem', marginBottom: '1.5rem' }}>
-              <div>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#111', margin: 0 }}>
-                  ENTERPRENEX SOLUTIONS PVT. LTD.
-                </h2>
-                <div style={{ fontSize: '0.8rem', color: '#555', marginTop: '4px' }}>
-                  CIN: U72200MH2024PTC123456 • GSTIN: 27AAACB2212P1ZX
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#555' }}>
-                  Waluj Mahanagar, Chhatrapati Sambhajinagar, Maharashtra 431136
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '1.4rem', fontWeight: 900, color: '#F66135', textTransform: 'uppercase' }}>
-                  {selectedInvoice.type}
-                </span>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111', marginTop: '4px' }}>{selectedInvoice.invoiceNumber}</div>
-                <div style={{ fontSize: '0.8rem', color: '#666' }}>Date: {selectedInvoice.issueDate}</div>
+        <Suspense
+          fallback={
+            <div className="adm-drawer-overlay">
+              <div
+                className="adm-preview-drawer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 'clamp(440px, 58vw, 900px)'
+                }}
+              >
+                <div className="adm-spinner" />
               </div>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-              <div>
-                <strong style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.75rem' }}>Billed To:</strong>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#111', marginTop: '2px' }}>{selectedInvoice.clientName}</div>
-                <div style={{ color: '#555' }}>State Code: 27 (Maharashtra)</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <strong style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.75rem' }}>Payment Status:</strong>
-                <div style={{ marginTop: '2px' }}>
-                  <span style={{ display: 'inline-block', padding: '3px 10px', background: selectedInvoice.status === 'Paid' ? '#dcfce7' : '#fef3c7', color: selectedInvoice.status === 'Paid' ? '#166534' : '#92400e', borderRadius: '4px', fontWeight: 700, fontSize: '0.82rem' }}>
-                    {selectedInvoice.status.toUpperCase()}
-                  </span>
-                </div>
-                <div style={{ color: '#555', marginTop: '4px' }}>Due Date: {selectedInvoice.dueDate}</div>
-              </div>
-            </div>
-
-            {/* Items Table */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ background: '#f4f4f5', borderBottom: '1px solid #e4e4e7', textAlign: 'left' }}>
-                  <th style={{ padding: '8px 12px' }}>Item & Description</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'center' }}>Qty</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'right' }}>Rate (₹)</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'right' }}>Tax (18%)</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'right' }}>Total (₹)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedInvoice.items.map((item, idx) => (
-                  <tr key={idx} style={{ borderBottom: '1px solid #f4f4f5' }}>
-                    <td style={{ padding: '10px 12px', fontWeight: 600 }}>{item.description}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'center' }}>{item.quantity}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>₹{item.rate.toLocaleString('en-IN')}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>18%</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700 }}>₹{item.amount.toLocaleString('en-IN')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Calculations Footer */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
-              <div style={{ width: '280px', fontSize: '0.85rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
-                  <span style={{ color: '#666' }}>Subtotal:</span>
-                  <span style={{ fontWeight: 600 }}>₹{selectedInvoice.subtotal.toLocaleString('en-IN')}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
-                  <span style={{ color: '#666' }}>CGST (9%):</span>
-                  <span>₹{Math.round(selectedInvoice.taxAmount / 2).toLocaleString('en-IN')}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
-                  <span style={{ color: '#666' }}>SGST (9%):</span>
-                  <span>₹{Math.round(selectedInvoice.taxAmount / 2).toLocaleString('en-IN')}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '2px solid #111', fontWeight: 800, fontSize: '1.1rem', color: '#F66135' }}>
-                  <span>Total Due:</span>
-                  <span>₹{selectedInvoice.totalAmount.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bank details & Sign */}
-            <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.8rem', color: '#475569', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <strong>Bank Account Details:</strong>
-                <div>Bank: HDFC Bank Ltd • Current A/C: 50200088991122</div>
-                <div>IFSC: HDFC0001234 • Branch: Waluj MIDC</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 700, color: '#111' }}>Enterprenex Solutions Pvt. Ltd.</div>
-                <div style={{ fontSize: '0.72rem', color: '#888', marginTop: '2px' }}>Authorized Signatory (Digital)</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-              <button className="adm-btn adm-btn-secondary" onClick={() => setSelectedInvoice(null)}>Close</button>
-              <button className="adm-btn adm-btn-primary" onClick={() => window.print()}>
-                <Download size={14} />
-                <span>Print / Download PDF</span>
-              </button>
-            </div>
-          </div>
-        </div>
+          }
+        >
+          <InvoicePreviewDrawer
+            invoice={selectedInvoice}
+            client={selectedClient}
+            onClose={() => setSelectedInvoice(null)}
+            onMarkPaid={(id, method) => {
+              markInvoicePaid(id, method);
+              setSelectedInvoice(prev =>
+                prev && prev.id === id
+                  ? {
+                      ...prev,
+                      status: 'Paid',
+                      paymentDate: new Date().toISOString().split('T')[0],
+                      paymentMethod: method
+                    }
+                  : prev
+              );
+            }}
+            onSendReminder={id => {
+              sendPaymentReminder(id);
+            }}
+            onUpdateInvoice={(id, updates) => {
+              updateInvoice(id, updates);
+              setSelectedInvoice(prev => (prev && prev.id === id ? { ...prev, ...updates } : prev));
+            }}
+          />
+        </Suspense>
       )}
 
       {/* ── CREATE INVOICE MODAL ── */}
@@ -475,7 +474,9 @@ export const FinancePage: React.FC = () => {
         <div className="adm-modal-overlay" onClick={() => setShowAddInvoiceModal(false)}>
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Generate Tax Invoice / Quotation</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
+                Generate Tax Invoice / Quotation
+              </h3>
               <button className="adm-modal-close" onClick={() => setShowAddInvoiceModal(false)}>
                 <X size={18} />
               </button>
@@ -534,7 +535,9 @@ export const FinancePage: React.FC = () => {
         <div className="adm-modal-overlay" onClick={() => setShowAddExpenseModal(false)}>
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Record Company Expense</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
+                Record Company Expense
+              </h3>
               <button className="adm-modal-close" onClick={() => setShowAddExpenseModal(false)}>
                 <X size={18} />
               </button>
