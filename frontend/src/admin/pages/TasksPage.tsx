@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import type { Task, TaskColumn, TaskPriority } from '../types';
 
+const TaskPreviewDrawer = React.lazy(() => import('../components/TaskPreviewDrawer'));
+
 const TASK_COLUMNS: TaskColumn[] = ['To Do', 'In Progress', 'In Review', 'Changes Required', 'Done'];
 
 export const TasksPage: React.FC = () => {
@@ -484,15 +486,21 @@ export const TasksPage: React.FC = () => {
                   return (
                     <div
                       key={t.id}
-                      className="adm-kanban-card"
+                      className={`adm-kanban-card ${selectedTask?.id === t.id ? 'adm-kanban-card-active' : ''}`}
                       style={{
+                        cursor: 'pointer',
                         borderLeft: isThisTaskTimerActive
                           ? '3px solid #10b981'
                           : t.status === 'In Review'
                           ? '3px solid #f59e0b'
                           : t.status === 'Changes Required'
                           ? '3px solid #ef4444'
-                          : '1px solid var(--adm-border)'
+                          : selectedTask?.id === t.id
+                          ? '3px solid var(--adm-primary, #1a1a1a)'
+                          : '1px solid var(--adm-border)',
+                        boxShadow: selectedTask?.id === t.id ? '0 4px 16px rgba(0,0,0,0.08)' : undefined,
+                        transform: selectedTask?.id === t.id ? 'scale(1.01)' : 'none',
+                        transition: 'all 0.15s ease'
                       }}
                       onClick={() => setSelectedTask(t)}
                     >
@@ -813,347 +821,57 @@ export const TasksPage: React.FC = () => {
         })}
       </div>
 
-      {/* ── TASK DETAIL MODAL ── */}
+      {/* ── SCREEN-ADAPTIVE SLIDING TASK PREVIEW DRAWER (LAZY LOADED) ── */}
       {selectedTask && (
-        <div className="adm-modal-overlay" onClick={() => setSelectedTask(null)}>
-          <div className="adm-modal-content adm-modal-lg" onClick={e => e.stopPropagation()}>
-            <div className="adm-modal-header">
-              <div>
-                <span className="adm-badge adm-badge-primary" style={{ marginBottom: '4px' }}>
-                  {selectedTask.projectName}
-                </span>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-                  {selectedTask.title}
-                </h2>
-                <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
-                  Assigned to: <strong style={{ color: '#fff' }}>{selectedTask.assignedTo}</strong> • Due: {selectedTask.dueDate}
-                </div>
-              </div>
-              <button className="adm-modal-close" onClick={() => setSelectedTask(null)}>
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* ⏱ Real-time Task Stopwatch & Time Logger */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: 'var(--adm-bg)',
-                padding: '1rem 1.25rem',
-                borderRadius: '8px',
-                border: '1px solid var(--adm-border)',
-                marginBottom: '1.25rem',
-                flexWrap: 'wrap',
-                gap: '1rem'
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
-                  Stopwatch & Time Tracking
-                </div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
-                  {selectedTask.loggedHours}{' '}
-                  <span style={{ fontSize: '0.88rem', color: 'var(--adm-text-dim)' }}>/ {selectedTask.estimatedHours} Hours</span>
-                </div>
-              </div>
-
-              {/* Stopwatch Action Controls */}
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                {activeTimerTaskId === selectedTask.id && isTimerRunning ? (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <span
-                      style={{
-                        fontFamily: 'monospace',
-                        fontSize: '1.2rem',
-                        fontWeight: 800,
-                        color: '#10b981',
-                        background: 'rgba(0,0,0,0.4)',
-                        padding: '0.2rem 0.6rem',
-                        borderRadius: '4px'
-                      }}
-                    >
-                      {formatStopwatch(timerSeconds)}
-                    </span>
-                    <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={handlePauseTimer}>
-                      <Pause size={13} />
-                      <span>Pause</span>
-                    </button>
-                    <button
-                      className="adm-btn adm-btn-sm"
-                      style={{ background: '#10b981', color: '#fff', border: 'none' }}
-                      onClick={() => handleStopAndLogTimer(selectedTask.id)}
-                    >
-                      <Square size={12} fill="#fff" />
-                      <span>Stop & Log</span>
-                    </button>
-                  </div>
-                ) : (
-                  <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => handleStartTimer(selectedTask.id)}>
-                    <Play size={13} />
-                    <span>Start Stopwatch</span>
-                  </button>
-                )}
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '0.5rem', borderLeft: '1px solid var(--adm-border)', paddingLeft: '0.75rem' }}>
-                  <input
-                    type="number"
-                    className="adm-input"
-                    style={{ width: '65px', padding: '0.3rem 0.4rem', fontSize: '0.8rem' }}
-                    value={loggedHoursInput}
-                    onChange={e => setLoggedHoursInput(Number(e.target.value))}
-                  />
-                  <button
-                    className="adm-btn adm-btn-secondary adm-btn-sm"
-                    onClick={() => {
-                      logTaskTime(selectedTask.id, loggedHoursInput);
-                      setSelectedTask({ ...selectedTask, loggedHours: selectedTask.loggedHours + loggedHoursInput });
-                    }}
-                  >
-                    +Hours
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Review Status & Actions Pipeline */}
-            <div
-              style={{
-                background:
-                  selectedTask.status === 'In Review'
-                    ? 'rgba(245, 158, 11, 0.08)'
-                    : selectedTask.status === 'Changes Required'
-                    ? 'rgba(239, 68, 68, 0.08)'
-                    : 'var(--adm-bg)',
-                border: '1px solid var(--adm-border)',
-                borderRadius: '8px',
-                padding: '0.85rem 1.25rem',
-                marginBottom: '1.25rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '0.75rem'
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>
-                  Review & Approval Pipeline
-                </div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff', marginTop: '2px' }}>
-                  Current Status: <span style={{ color: 'var(--adm-primary)' }}>{selectedTask.status}</span>
-                </div>
-                {selectedTask.reviewNotes && (
-                  <div style={{ fontSize: '0.78rem', color: '#fca5a5', marginTop: '3px' }}>
-                    <strong>Rework Feedback:</strong> {selectedTask.reviewNotes}
-                  </div>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {(selectedTask.status === 'In Progress' || selectedTask.status === 'Changes Required') && (
-                  <button
-                    className="adm-btn adm-btn-sm"
-                    style={{ background: '#f59e0b', color: '#fff', border: 'none', fontWeight: 700 }}
-                    onClick={() => {
-                      submitTaskForReview(selectedTask.id);
-                      setSelectedTask({ ...selectedTask, status: 'In Review' });
-                    }}
-                  >
-                    Submit for Review 📤
-                  </button>
-                )}
-
-                {selectedTask.status === 'In Review' && (
-                  <>
-                    <button
-                      className="adm-btn adm-btn-sm"
-                      style={{ background: '#10b981', color: '#fff', border: 'none', fontWeight: 700 }}
-                      onClick={() => {
-                        reviewTask(selectedTask.id, 'Approved');
-                        setSelectedTask({ ...selectedTask, status: 'Done' });
-                      }}
-                    >
-                      ✓ Approve (Done)
-                    </button>
-                    <button
-                      className="adm-btn adm-btn-sm"
-                      style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', border: '1px solid #ef4444', fontWeight: 700 }}
-                      onClick={() => {
-                        setReworkTaskId(selectedTask.id);
-                        setReworkNotes('');
-                        setShowReworkModal(true);
-                      }}
-                    >
-                      ↺ Request Changes
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Subtasks Checklist */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <h4
+        <React.Suspense
+          fallback={
+            <div className="adm-drawer-overlay">
+              <div
+                className="adm-preview-drawer"
                 style={{
-                  fontSize: '0.92rem',
-                  fontWeight: 700,
-                  color: '#fff',
-                  marginBottom: '0.75rem',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px'
+                  justifyContent: 'center',
+                  width: 'clamp(440px, 56vw, 860px)'
                 }}
               >
-                <CheckCircle2 size={16} color="var(--adm-success)" />
-                Subtasks Breakdown
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {selectedTask.subtasks.map(st => (
-                  <div
-                    key={st.id}
-                    onClick={() => {
-                      toggleSubtask(selectedTask.id, st.id);
-                      const updated = selectedTask.subtasks.map(s => (s.id === st.id ? { ...s, completed: !s.completed } : s));
-                      setSelectedTask({ ...selectedTask, subtasks: updated });
-                    }}
-                    style={{
-                      padding: '0.65rem 0.85rem',
-                      background: st.completed ? 'var(--adm-success-soft)' : 'var(--adm-bg)',
-                      border: '1px solid var(--adm-border)',
-                      borderRadius: '6px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <input type="checkbox" checked={st.completed} onChange={() => {}} style={{ accentColor: 'var(--adm-success)' }} />
-                    <span
-                      style={{
-                        fontSize: '0.85rem',
-                        color: st.completed ? 'var(--adm-success)' : '#fff',
-                        textDecoration: st.completed ? 'line-through' : 'none'
-                      }}
-                    >
-                      {st.title}
-                    </span>
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div className="adm-spinner" style={{ margin: '0 auto 1rem auto' }} />
+                  <div style={{ fontSize: '0.85rem', color: 'var(--adm-text-muted)' }}>
+                    Loading Task Drawer...
                   </div>
-                ))}
+                </div>
               </div>
             </div>
-
-            {/* Collaboration Comments Thread */}
-            <div>
-              <h4
-                style={{
-                  fontSize: '0.92rem',
-                  fontWeight: 700,
-                  color: '#fff',
-                  marginBottom: '0.75rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <MessageSquare size={16} color="var(--adm-info)" />
-                Engineering Comments Thread
-              </h4>
-
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                <input
-                  type="text"
-                  className="adm-input"
-                  placeholder="Post technical update or review comment..."
-                  value={commentInput}
-                  onChange={e => setCommentInput(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') handleAddComment(selectedTask.id);
-                  }}
-                />
-                <button className="adm-btn adm-btn-primary" onClick={() => handleAddComment(selectedTask.id)}>
-                  <Send size={14} />
-                  <span>Reply</span>
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                {selectedTask.comments.map(c => (
-                  <div
-                    key={c.id}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      background: 'var(--adm-bg)',
-                      borderRadius: '8px',
-                      border: '1px solid var(--adm-border)'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>{c.author}</span>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{c.createdAt}</span>
-                    </div>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', margin: 0 }}>{c.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '0.75rem',
-                marginTop: '1.5rem',
-                paddingTop: '1rem',
-                borderTop: '1px solid var(--adm-border)'
-              }}
-            >
-              <a
-                href={`https://wa.me/919226860060?text=${encodeURIComponent(
-                  `*ENTERPRENEX TASK STATUS UPDATE*\n\n*Task:* ${selectedTask.title}\n*Assignee:* ${selectedTask.assignedTo}\n*Status:* ${selectedTask.status}\n*Project:* ${selectedTask.projectName}\n*Logged Time:* ${selectedTask.loggedHours}h / ${selectedTask.estimatedHours}h\n*Due Date:* ${selectedTask.dueDate}\n\n*Portal Link:* https://www.enterprenexsolution.com/admin/tasks`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="adm-btn adm-btn-sm"
-                style={{
-                  background: '#25D366',
-                  color: '#fff',
-                  border: 'none',
-                  textDecoration: 'none',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <MessageCircle size={14} />
-                <span>Share Update on WhatsApp</span>
-              </a>
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {!isEmployee && (
-                  <button
-                    className="adm-btn adm-btn-danger adm-btn-sm"
-                    onClick={() => {
-                      deleteTask(selectedTask.id);
-                      setSelectedTask(null);
-                    }}
-                  >
-                    <Trash2 size={13} />
-                    <span>Delete Task</span>
-                  </button>
-                )}
-                <button className="adm-btn adm-btn-secondary" onClick={() => setSelectedTask(null)}>
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+          }
+        >
+          <TaskPreviewDrawer
+            task={selectedTask}
+            onClose={() => setSelectedTask(null)}
+            activeTimerTaskId={activeTimerTaskId}
+            isTimerRunning={isTimerRunning}
+            timerSeconds={timerSeconds}
+            formatStopwatch={formatStopwatch}
+            onStartTimer={handleStartTimer}
+            onPauseTimer={handlePauseTimer}
+            onStopAndLogTimer={handleStopAndLogTimer}
+            onLogHours={logTaskTime}
+            onSubmitForReview={submitTaskForReview}
+            onReviewTask={reviewTask}
+            onRequestRework={taskId => {
+              setReworkTaskId(taskId);
+              setReworkNotes('');
+              setShowReworkModal(true);
+            }}
+            onToggleSubtask={toggleSubtask}
+            commentInput={commentInput}
+            setCommentInput={setCommentInput}
+            onAddComment={handleAddComment}
+            isEmployee={isEmployee}
+            onDeleteTask={deleteTask}
+            onUpdateSelectedTask={setSelectedTask}
+          />
+        </React.Suspense>
       )}
 
       {/* ── REWORK FEEDBACK MODAL ── */}
