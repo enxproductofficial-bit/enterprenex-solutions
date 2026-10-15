@@ -413,7 +413,7 @@ export const DocumentsPage: React.FC = () => {
 
       bodyContent = `
         <div class="kyc-badge-header">
-          <div class="kyc-tag">STATUTORY GOVERNMENT COMPLIANCE RECORD &bull; DPDP ACT 2023 & UIDAI COMPLIANT</div>
+          <div class="kyc-tag">STATUTORY IDENTITY ARCHIVE &bull; EXECUTIVE AUTHENTICATED</div>
           <div class="status-verified" style="color: ${statusColor}; font-weight: 800;">
             ${verificationStatus === 'Verified' ? '&check; VERIFIED & AUTHENTICATED' : verificationStatus === 'Rejected' ? '&cross; REJECTED / RESUBMISSION REQUIRED' : '⏳ PENDING STATUTORY VERIFICATION'}
           </div>
@@ -431,7 +431,7 @@ export const DocumentsPage: React.FC = () => {
           </table>
         </div>
         <div class="legal-section" style="margin-top: 1.5rem; font-size: 0.8rem; color: #475569;">
-          <p><strong>Statutory Declaration:</strong> This identity verification record has been archived in compliance with Section 139AA of the Income Tax Act 1961, Employee Provident Fund & Miscellaneous Provisions Act 1952, and the Digital Personal Data Protection (DPDP) Act 2023. Authenticated by Enterprenex Solutions Central Security Vault.</p>
+          <p><strong>Statutory Declaration:</strong> This identity verification record has been archived in compliance with applicable statutory provisions. Authenticated by Enterprenex Solutions Central Security Vault.</p>
         </div>
       `;
     } else {
@@ -729,7 +729,7 @@ export const DocumentsPage: React.FC = () => {
             <CheckCircle2 size={12} /> Status Sync: Active
           </span>
           <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.72rem' }}>
-            <Lock size={12} /> DPDP Act 2023 Compliant
+            <Lock size={12} /> Encrypted Vault
           </span>
         </div>
       </div>

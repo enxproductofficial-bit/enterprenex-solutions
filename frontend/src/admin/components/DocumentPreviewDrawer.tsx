@@ -163,7 +163,7 @@ export const DocumentPreviewDrawer: React.FC<DocumentPreviewDrawerProps> = ({
                   padding: '4px 9px'
                 }}
                 onClick={() => onSetVerificationStatus(doc, 'Verified')}
-                title="Mark as Verified & DPDP Compliant"
+                title="Mark as Verified & Authenticated"
               >
                 <CheckCircle2 size={12} />
                 <span>Mark as Verified</span>

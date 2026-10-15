@@ -433,7 +433,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
             </div>
           </div>
 
-          {/* Statutory KYC Vault (Restricted under DPDP Act) */}
+          {/* Statutory KYC Vault */}
           <div
             style={{
               padding: '1rem',

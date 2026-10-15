@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
-import { Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { Lock, Mail, ArrowRight, AlertCircle, FileText } from 'lucide-react';
+import { EmployeeTermsModal } from '../../components/EmployeeTermsModal';
 import type { AdminUser } from '../types';
 
 export const AdminLoginPage: React.FC = () => {
@@ -10,6 +11,8 @@ export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [agreeTerms, setAgreeTerms] = useState(true);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFormLogin = (e: React.FormEvent) => {
@@ -204,11 +207,57 @@ export const AdminLoginPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Terms and Conditions Option */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.65rem 0.85rem',
+              background: 'rgba(5, 150, 105, 0.08)',
+              border: '1px solid rgba(5, 150, 105, 0.25)',
+              borderRadius: '10px',
+              fontSize: '0.8rem',
+              marginBottom: '1rem',
+              flexWrap: 'wrap',
+              gap: '6px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="checkbox"
+                id="adm-terms-checkbox"
+                checked={agreeTerms}
+                onChange={e => setAgreeTerms(e.target.checked)}
+                style={{ width: '15px', height: '15px', accentColor: '#10b981', cursor: 'pointer' }}
+              />
+              <label htmlFor="adm-terms-checkbox" style={{ color: '#cbd5e1', cursor: 'pointer', fontWeight: 500 }}>
+                Agree to Terms & Conditions
+              </label>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowTermsModal(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#34d399',
+                fontWeight: 700,
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                fontSize: '0.8rem'
+              }}
+            >
+              View All Terms & Conditions
+            </button>
+          </div>
+
           <button
             type="submit"
             disabled={isLoading}
             className="adm-btn adm-btn-primary"
-            style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', marginTop: '0.75rem', justifyContent: 'center' }}
+            style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', justifyContent: 'center' }}
           >
             <span>{isLoading ? 'Verifying Credentials...' : 'Authenticate & Sign In'}</span>
             {!isLoading && <ArrowRight size={16} />}
@@ -223,6 +272,14 @@ export const AdminLoginPage: React.FC = () => {
             Back to Public Website
           </Link>
         </div>
+
+        {/* Terms and Conditions Modal */}
+        {showTermsModal && (
+          <EmployeeTermsModal
+            onClose={() => setShowTermsModal(false)}
+            onAccept={() => setAgreeTerms(true)}
+          />
+        )}
       </div>
     </div>
   );

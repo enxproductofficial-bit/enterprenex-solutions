@@ -3067,7 +3067,7 @@ export const TeamPage: React.FC = () => {
                 </div>
 
                 <p style={{ margin: '0.65rem 0 0 0', fontSize: '0.7rem', color: '#94a3b8' }}>
-                  🔒 <strong>DPDP Act 2023 & UIDAI Protection:</strong> These sensitive government identification records are encrypted and accessible exclusively to the <strong>Managing Director</strong> and authorized <strong>Human Resources</strong> personnel for TDS, PF and payroll processing.
+                  🔒 <strong>Confidential Identity Protection:</strong> These sensitive government identification records are encrypted and accessible exclusively to the <strong>Managing Director</strong> and authorized <strong>Human Resources</strong> personnel for TDS, PF and payroll processing.
                 </p>
               </div>
 
@@ -3568,7 +3568,7 @@ export const TeamPage: React.FC = () => {
             >
               <ShieldCheck size={22} color="#10b981" style={{ flexShrink: 0 }} />
               <div style={{ fontSize: '0.74rem', color: '#cbd5e1', lineHeight: 1.4 }}>
-                <strong>DPDP Act 2023 & Income Tax Law Protected:</strong> This vault is strictly confidential. Only the <strong>Managing Director</strong> and authorized <strong>Human Resources</strong> officers may inspect or verify these government records.
+                <strong>Confidential Statutory Identity Vault:</strong> This vault is strictly confidential. Only the <strong>Managing Director</strong> and authorized <strong>Human Resources</strong> officers may inspect or verify these government records.
               </div>
             </div>
 

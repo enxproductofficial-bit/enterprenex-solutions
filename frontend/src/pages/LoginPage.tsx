@@ -15,6 +15,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAdmin } from '../admin/context/AdminContext';
+import { EmployeeTermsModal } from '../components/EmployeeTermsModal';
 import './register/register.css';
 
 export const LoginPage: React.FC = () => {
@@ -25,6 +26,8 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [agreeTerms, setAgreeTerms] = useState(true);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -104,6 +107,10 @@ export const LoginPage: React.FC = () => {
         setTimeout(() => navigate('/admin'), 600);
       } else {
         // Employee portal - individual unique 12-Digit Employee ID
+        if (!agreeTerms) {
+          setErrorMessage('Please review and agree to the Employee Terms & Conditions before signing in.');
+          return;
+        }
         if (!inputEmail) {
           setErrorMessage('Please enter your Employee ID (e.g. 202600000002).');
           return;
@@ -378,6 +385,52 @@ export const LoginPage: React.FC = () => {
                   Keep me signed in on this device
                 </label>
               </div>
+
+              {/* Terms and Conditions Option for Employees */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.65rem 0.85rem',
+                  background: 'rgba(5, 150, 105, 0.08)',
+                  border: '1px solid rgba(5, 150, 105, 0.25)',
+                  borderRadius: '10px',
+                  fontSize: '0.82rem',
+                  marginTop: '0.25rem',
+                  flexWrap: 'wrap',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    id="employee-terms-checkbox"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                    style={{ width: '16px', height: '16px', accentColor: '#059669', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="employee-terms-checkbox" style={{ color: '#1e293b', cursor: 'pointer', fontWeight: 600 }}>
+                    I agree to Terms & Policies
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowTermsModal(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#059669',
+                    fontWeight: 700,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontSize: '0.82rem'
+                  }}
+                >
+                  View All Terms & Conditions
+                </button>
+              </div>
             </div>
 
             <button
@@ -409,6 +462,14 @@ export const LoginPage: React.FC = () => {
             <span>Back to Public Website</span>
           </Link>
         </div>
+
+        {/* Terms and Conditions Modal */}
+        {showTermsModal && (
+          <EmployeeTermsModal
+            onClose={() => setShowTermsModal(false)}
+            onAccept={() => setAgreeTerms(true)}
+          />
+        )}
       </div>
     </div>
   );
