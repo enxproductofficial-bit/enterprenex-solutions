@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import {
   Plus,
   Search,
-  CheckCircle2,
   Trash2,
   ArrowRight,
   X,
-  Calendar
+  Calendar,
+  Layers,
+  DollarSign
 } from 'lucide-react';
 import type { Project, ProjectStatus } from '../types';
+
+const ProjectPreviewDrawer = lazy(() =>
+  import('../components/ProjectPreviewDrawer').then(m => ({ default: m.ProjectPreviewDrawer }))
+);
 
 const STAGES: ProjectStatus[] = [
   'Lead',
@@ -45,6 +50,10 @@ export const ProjectsPage: React.FC = () => {
       p.clientName.toLowerCase().includes(search.toLowerCase()) ||
       p.serviceCategory.toLowerCase().includes(search.toLowerCase());
   });
+
+  const selectedClient = clients.find(
+    c => c.id === selectedProject?.clientId || c.companyName === selectedProject?.clientName
+  );
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,87 +197,101 @@ export const ProjectsPage: React.FC = () => {
               <div key={stage} className="adm-kanban-column">
                 <div className="adm-kanban-column-header">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>{stage}</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>{stage}</span>
                     <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.7rem' }}>{stageProjects.length}</span>
                   </div>
                 </div>
 
                 <div className="adm-kanban-cards-wrapper">
-                  {stageProjects.map(p => (
-                    <div
-                      key={p.id}
-                      className="adm-kanban-card"
-                      onClick={() => setSelectedProject(p)}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                        <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.68rem' }}>{p.serviceCategory}</span>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--adm-success)' }}>
-                          ₹{(p.budget / 100000).toFixed(1)}L
-                        </span>
-                      </div>
-
-                      <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#fff', marginBottom: '4px', lineHeight: 1.3 }}>
-                        {p.title}
-                      </h4>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginBottom: '8px' }}>
-                        {p.clientName}
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div style={{ marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
-                          <span>Progress</span>
-                          <span>{p.progress}%</span>
+                  {stageProjects.map(p => {
+                    const isSelected = selectedProject?.id === p.id;
+                    return (
+                      <div
+                        key={p.id}
+                        className="adm-kanban-card"
+                        onClick={() => setSelectedProject(p)}
+                        style={{
+                          cursor: 'pointer',
+                          borderColor: isSelected ? 'var(--adm-primary)' : undefined,
+                          boxShadow: isSelected ? '0 0 0 2px rgba(18, 201, 144, 0.25)' : undefined
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                          <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.68rem' }}>{p.serviceCategory}</span>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--adm-success)' }}>
+                            ₹{(p.budget / 100000).toFixed(1)}L
+                          </span>
                         </div>
-                        <div className="adm-progress-bar">
-                          <div className="adm-progress-fill" style={{ width: `${p.progress}%` }} />
+
+                        <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', marginBottom: '4px', lineHeight: 1.3 }}>
+                          {p.title}
+                        </h4>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginBottom: '8px' }}>
+                          {p.clientName}
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div style={{ marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
+                            <span>Progress</span>
+                            <span style={{ fontWeight: 700, color: 'var(--adm-primary)' }}>{p.progress}%</span>
+                          </div>
+                          <div className="adm-progress-bar">
+                            <div className="adm-progress-fill" style={{ width: `${p.progress}%` }} />
+                          </div>
+                        </div>
+
+                        {/* Footer Info */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'var(--adm-text-dim)', paddingTop: '6px', borderTop: '1px solid var(--adm-border)' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Calendar size={12} /> {p.targetEndDate}
+                          </span>
+                          <div style={{ display: 'flex', gap: '2px' }}>
+                            {p.assignedTeam.map((mem, idx) => (
+                              <span key={idx} style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'var(--adm-surface-active)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#fff' }}>
+                                {mem.charAt(0)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Quick Action Footer */}
+                        <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
+                            Milestones &rarr;
+                          </span>
+                          {stage !== 'Delivered' && stage !== 'Maintenance' && (
+                            <button
+                              onClick={e => {
+                                e.stopPropagation();
+                                const currentIdx = STAGES.indexOf(stage);
+                                if (currentIdx < STAGES.length - 1) {
+                                  updateProjectStatus(p.id, STAGES[currentIdx + 1]);
+                                  if (selectedProject?.id === p.id) {
+                                    setSelectedProject({ ...p, status: STAGES[currentIdx + 1] });
+                                  }
+                                }
+                              }}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--adm-primary)',
+                                fontSize: '0.72rem',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <span>Advance</span>
+                              <ArrowRight size={12} />
+                            </button>
+                          )}
                         </div>
                       </div>
-
-                      {/* Footer Info */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'var(--adm-text-dim)', paddingTop: '6px', borderTop: '1px solid var(--adm-border)' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Calendar size={12} /> {p.targetEndDate}
-                        </span>
-                        <div style={{ display: 'flex', gap: '2px' }}>
-                          {p.assignedTeam.map((mem, idx) => (
-                            <span key={idx} style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'var(--adm-surface-active)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#fff' }}>
-                              {mem.charAt(0)}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Quick Move Forward Button */}
-                      <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
-                        {stage !== 'Delivered' && stage !== 'Maintenance' && (
-                          <button
-                            onClick={e => {
-                              e.stopPropagation();
-                              const currentIdx = STAGES.indexOf(stage);
-                              if (currentIdx < STAGES.length - 1) {
-                                updateProjectStatus(p.id, STAGES[currentIdx + 1]);
-                              }
-                            }}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: 'var(--adm-primary)',
-                              fontSize: '0.72rem',
-                              fontWeight: 600,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <span>Move to {STAGES[STAGES.indexOf(stage) + 1]}</span>
-                            <ArrowRight size={12} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {stageProjects.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--adm-text-dim)', fontSize: '0.78rem' }}>
@@ -282,216 +305,129 @@ export const ProjectsPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── 2. TABLE VIEW ── */}
+      {/* ── 2. LIST / TABLE VIEW ── */}
       {viewMode === 'table' && (
         <div className="adm-table-container">
           <table className="adm-table">
             <thead>
               <tr>
-                <th>Project Name</th>
-                <th>Client</th>
+                <th>Project Title & Client</th>
                 <th>Category</th>
-                <th>Status Lifecycle</th>
+                <th>Stage</th>
                 <th>Progress</th>
-                <th>Budget vs Expenses</th>
-                <th>Target End Date</th>
-                <th>Actions</th>
+                <th>Budget / Exp</th>
+                <th>Delivery Target</th>
+                <th className="adm-table-sticky-right" style={{ minWidth: '160px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredProjects.map(p => (
-                <tr key={p.id}>
-                  <td>
-                    <div style={{ fontWeight: 700, color: '#fff' }}>{p.title}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)', display: 'flex', gap: '4px', marginTop: '2px' }}>
-                      {p.techStack.slice(0, 3).map((t, idx) => <span key={idx} className="adm-badge adm-badge-neutral">{t}</span>)}
-                    </div>
-                  </td>
-                  <td>{p.clientName}</td>
-                  <td>{p.serviceCategory}</td>
-                  <td>
-                    <select
-                      className="adm-select"
-                      style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', width: 'auto' }}
-                      value={p.status}
-                      onChange={e => updateProjectStatus(p.id, e.target.value as ProjectStatus)}
-                    >
-                      {STAGES.map(st => <option key={st} value={st}>{st}</option>)}
-                    </select>
-                  </td>
-                  <td style={{ minWidth: '100px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '2px' }}>
-                      <span>{p.progress}%</span>
-                    </div>
-                    <div className="adm-progress-bar" style={{ margin: 0 }}>
-                      <div className="adm-progress-fill" style={{ width: `${p.progress}%` }} />
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 700, color: '#fff' }}>₹{p.budget.toLocaleString('en-IN')}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>Exp: ₹{p.expenses.toLocaleString('en-IN')}</div>
-                  </td>
-                  <td>{p.targetEndDate}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => setSelectedProject(p)}>
-                        Details
-                      </button>
-                      <button className="adm-btn adm-btn-sm adm-btn-danger" onClick={() => deleteProject(p.id)}>
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredProjects.map(p => {
+                const isSelected = selectedProject?.id === p.id;
+                return (
+                  <tr
+                    key={p.id}
+                    className={isSelected ? 'adm-table-row-clickable adm-table-row-active' : 'adm-table-row-clickable'}
+                    onClick={() => setSelectedProject(p)}
+                  >
+                    <td>
+                      <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>{p.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{p.clientName}</div>
+                    </td>
+                    <td><span className="adm-badge adm-badge-neutral">{p.serviceCategory}</span></td>
+                    <td onClick={e => e.stopPropagation()}>
+                      <select
+                        className="adm-select"
+                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', width: 'auto' }}
+                        value={p.status}
+                        onChange={e => {
+                          const newStatus = e.target.value as ProjectStatus;
+                          updateProjectStatus(p.id, newStatus);
+                          if (selectedProject?.id === p.id) {
+                            setSelectedProject({ ...p, status: newStatus });
+                          }
+                        }}
+                      >
+                        {STAGES.map(st => <option key={st} value={st}>{st}</option>)}
+                      </select>
+                    </td>
+                    <td style={{ minWidth: '100px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '2px' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--adm-primary)' }}>{p.progress}%</span>
+                      </div>
+                      <div className="adm-progress-bar" style={{ margin: 0 }}>
+                        <div className="adm-progress-fill" style={{ width: `${p.progress}%` }} />
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>₹{p.budget.toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>Exp: ₹{p.expenses.toLocaleString('en-IN')}</div>
+                    </td>
+                    <td>{p.targetEndDate}</td>
+                    <td className="adm-table-sticky-right" style={{ minWidth: '160px' }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => setSelectedProject(p)}>
+                          Preview Drawer
+                        </button>
+                        <button
+                          className="adm-btn adm-btn-sm adm-btn-danger"
+                          onClick={() => {
+                            if (window.confirm(`Delete project "${p.title}"?`)) {
+                              deleteProject(p.id);
+                              if (selectedProject?.id === p.id) setSelectedProject(null);
+                            }
+                          }}
+                          title="Delete Project"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* ── PROJECT DETAILS & MILESTONES MODAL ── */}
+      {/* ── LAZY-LOADED SCREEN-ADAPTIVE SLIDING PROJECT DRAWER ── */}
       {selectedProject && (
-        <div className="adm-modal-overlay" onClick={() => setSelectedProject(null)}>
-          <div className="adm-modal-content adm-modal-lg" onClick={e => e.stopPropagation()}>
-            <div className="adm-modal-header">
-              <div>
-                <span className="adm-badge adm-badge-primary" style={{ marginBottom: '4px' }}>{selectedProject.serviceCategory}</span>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-                  {selectedProject.title}
-                </h2>
-                <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
-                  Client: <strong style={{ color: '#fff' }}>{selectedProject.clientName}</strong> • Target Delivery: {selectedProject.targetEndDate}
-                </div>
-              </div>
-              <button className="adm-modal-close" onClick={() => setSelectedProject(null)}>
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Lifecycle Stages Bar */}
-            <div style={{ marginBottom: '1.5rem', background: 'var(--adm-bg)', padding: '0.85rem', borderRadius: 'var(--adm-radius)', border: '1px solid var(--adm-border)' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '0.5rem' }}>
-                Current Lifecycle Phase
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {STAGES.map(st => {
-                  const isCurrent = selectedProject.status === st;
-                  return (
-                    <button
-                      key={st}
-                      onClick={() => {
-                        updateProjectStatus(selectedProject.id, st);
-                        setSelectedProject({ ...selectedProject, status: st });
-                      }}
-                      style={{
-                        background: isCurrent ? 'var(--adm-primary)' : 'var(--adm-surface)',
-                        color: isCurrent ? '#fff' : 'var(--adm-text-muted)',
-                        border: isCurrent ? '1px solid var(--adm-primary)' : '1px solid var(--adm-border)',
-                        borderRadius: '6px',
-                        padding: '4px 10px',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {st}
-                    </button>
-                  );
-                })}
+        <Suspense
+          fallback={
+            <div className="adm-drawer-overlay">
+              <div
+                className="adm-preview-drawer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 'clamp(440px, 58vw, 900px)'
+                }}
+              >
+                <div className="adm-spinner" />
               </div>
             </div>
-
-            {/* Metrics & Financials */}
-            <div className="adm-grid-3" style={{ marginBottom: '1.5rem' }}>
-              <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase' }}>Contract Budget</span>
-                <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
-                  ₹{selectedProject.budget.toLocaleString('en-IN')}
-                </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-warning)', marginTop: '2px' }}>Expenses: ₹{selectedProject.expenses.toLocaleString('en-IN')}</div>
-              </div>
-
-              <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase' }}>Completion Progress</span>
-                <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--adm-primary)', marginTop: '2px' }}>
-                  {selectedProject.progress}%
-                </div>
-                <div className="adm-progress-bar" style={{ marginTop: '6px' }}>
-                  <div className="adm-progress-fill" style={{ width: `${selectedProject.progress}%` }} />
-                </div>
-              </div>
-
-              <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase' }}>Assigned Engineering Team</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
-                  {selectedProject.assignedTeam.map((mem, idx) => (
-                    <span key={idx} className="adm-badge adm-badge-neutral">{mem}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Milestones Checklist */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckCircle2 size={16} color="var(--adm-success)" />
-                Project Milestones & Billing Gates
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                {selectedProject.milestones.map(ms => (
-                  <div
-                    key={ms.id}
-                    onClick={() => handleToggleMilestone(selectedProject.id, ms.id)}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      background: ms.completed ? 'var(--adm-success-soft)' : 'var(--adm-bg)',
-                      border: ms.completed ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid var(--adm-border)',
-                      borderRadius: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <input
-                        type="checkbox"
-                        checked={ms.completed}
-                        onChange={() => {}}
-                        style={{ accentColor: 'var(--adm-success)', width: '16px', height: '16px' }}
-                      />
-                      <div>
-                        <div style={{ fontWeight: 600, color: ms.completed ? 'var(--adm-success)' : '#fff', textDecoration: ms.completed ? 'line-through' : 'none' }}>
-                          {ms.title}
-                        </div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>Due: {ms.dueDate}</div>
-                      </div>
-                    </div>
-                    {ms.amount && (
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem', color: ms.completed ? 'var(--adm-success)' : 'var(--adm-text-muted)' }}>
-                        ₹{ms.amount.toLocaleString('en-IN')}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Scope & Description */}
-            <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Project Scope & Architecture</span>
-              <p style={{ fontSize: '0.85rem', color: 'var(--adm-text-muted)', lineHeight: 1.6, marginTop: '4px' }}>
-                {selectedProject.description}
-              </p>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '0.75rem' }}>
-                {selectedProject.techStack.map((tech, idx) => (
-                  <span key={idx} className="adm-badge adm-badge-primary">{tech}</span>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </div>
+          }
+        >
+          <ProjectPreviewDrawer
+            project={selectedProject}
+            client={selectedClient}
+            onClose={() => setSelectedProject(null)}
+            onUpdateStatus={(id, status) => {
+              updateProjectStatus(id, status);
+              setSelectedProject(prev => (prev && prev.id === id ? { ...prev, status } : prev));
+            }}
+            onToggleMilestone={handleToggleMilestone}
+            onUpdateProject={(id, updates) => {
+              updateProject(id, updates);
+              setSelectedProject(prev => (prev && prev.id === id ? { ...prev, ...updates } : prev));
+            }}
+            onDeleteProject={id => {
+              deleteProject(id);
+              setSelectedProject(null);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* ── CREATE PROJECT MODAL ── */}
@@ -499,7 +435,9 @@ export const ProjectsPage: React.FC = () => {
         <div className="adm-modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Initialize New Project</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
+                Initialize New Project
+              </h3>
               <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
