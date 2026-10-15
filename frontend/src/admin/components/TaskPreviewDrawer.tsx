@@ -8,11 +8,7 @@ import {
   MessageSquare,
   Send,
   MessageCircle,
-  Trash2,
-  Clock,
-  Calendar,
-  AlertCircle,
-  FileCheck
+  Trash2
 } from 'lucide-react';
 import type { Task } from '../types';
 

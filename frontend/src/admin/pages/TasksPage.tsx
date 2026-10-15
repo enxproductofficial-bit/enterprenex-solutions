@@ -3,17 +3,12 @@ import { useAdmin } from '../context/AdminContext';
 import {
   Plus,
   Search,
-  CheckCircle2,
-  Trash2,
-  Send,
   ArrowRight,
   X,
   Play,
   Pause,
   Square,
   Calendar,
-  MessageSquare,
-  MessageCircle,
   Clock
 } from 'lucide-react';
 import type { Task, TaskColumn, TaskPriority } from '../types';
@@ -44,7 +39,6 @@ export const TasksPage: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [commentInput, setCommentInput] = useState('');
-  const [loggedHoursInput, setLoggedHoursInput] = useState(2);
 
   // Review rework modal state
   const [showReworkModal, setShowReworkModal] = useState(false);

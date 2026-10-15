@@ -5,11 +5,7 @@ import {
   Search,
   Trash2,
   ArrowRight,
-  X,
-  Building,
-  Mail,
-  Phone,
-  DollarSign
+  X
 } from 'lucide-react';
 import type { Lead, LeadStatus } from '../types';
 

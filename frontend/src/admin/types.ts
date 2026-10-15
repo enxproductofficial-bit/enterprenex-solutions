@@ -54,6 +54,13 @@ export interface ClientPaymentRecord {
   method: string;
 }
 
+export interface ClientBillingAddress {
+  city: string;
+  state: string;
+  pincode: string;
+  fullAddress: string;
+}
+
 export interface Client {
   id: string;
   companyName: string;
@@ -63,15 +70,18 @@ export interface Client {
   status: 'Active' | 'Onboarding' | 'Lead' | 'Inactive';
   primaryContact: ClientContact;
   additionalContacts?: ClientContact[];
-  address: string;
-  billingAddress?: string;
-  city: string;
-  country: string;
-  totalRevenue: number;
-  activeProjectsCount: number;
-  notes: string[];
-  documents: ClientDocument[];
-  paymentHistory: ClientPaymentRecord[];
+  address?: string;
+  billingAddress?: string | ClientBillingAddress;
+  city?: string;
+  country?: string;
+  slaTier?: string;
+  totalBilled?: number;
+  totalRevenue?: number;
+  activeProjectsCount?: number;
+  openTicketsCount?: number;
+  notes?: string[];
+  documents?: ClientDocument[];
+  paymentHistory?: ClientPaymentRecord[];
   createdAt: string;
 }
 

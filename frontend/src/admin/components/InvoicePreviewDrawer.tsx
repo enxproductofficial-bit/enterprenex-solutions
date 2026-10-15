@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   X,
-  Download,
   Printer,
   CheckCircle2,
-  AlertCircle,
   MessageCircle,
   Mail,
-  Building,
   CreditCard,
-  Calendar,
-  FileCheck,
-  Send,
-  DollarSign
+  Send
 } from 'lucide-react';
-import type { Invoice, InvoiceStatus, Client } from '../types';
+import type { Invoice, Client } from '../types';
 
 interface InvoicePreviewDrawerProps {
   invoice: Invoice;
@@ -30,8 +24,7 @@ export const InvoicePreviewDrawer: React.FC<InvoicePreviewDrawerProps> = ({
   client,
   onClose,
   onMarkPaid,
-  onSendReminder,
-  onUpdateInvoice
+  onSendReminder
 }) => {
   const [payMethod, setPayMethod] = useState('NEFT / Bank Transfer');
   const [showPayModal, setShowPayModal] = useState(false);
@@ -315,7 +308,7 @@ export const InvoicePreviewDrawer: React.FC<InvoicePreviewDrawerProps> = ({
                   </div>
                 )}
                 <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '2px' }}>
-                  {client?.billingAddress || client?.address || 'Corporate Office, India'}
+                  {typeof client?.billingAddress === 'object' ? client.billingAddress.fullAddress : (client?.billingAddress || client?.address || 'Corporate Office, India')}
                 </div>
                 <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
                   Client GSTIN: <strong>{client?.gstin || '27AABCE1234M1Z2 (Registered)'}</strong>

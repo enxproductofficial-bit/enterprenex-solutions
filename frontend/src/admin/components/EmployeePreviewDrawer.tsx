@@ -4,22 +4,16 @@ import {
   Phone,
   Mail,
   MessageCircle,
-  Building,
-  User,
   Shield,
   ShieldCheck,
   Award,
   Key,
   Trash2,
   Check,
-  Clock,
   Eye,
   EyeOff,
   Briefcase,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  FileText
+  TrendingUp
 } from 'lucide-react';
 import type { Employee } from '../types';
 

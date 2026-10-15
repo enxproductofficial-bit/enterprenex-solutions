@@ -5,7 +5,6 @@ import {
   Mail,
   MessageCircle,
   Calendar,
-  User,
   Building,
   DollarSign,
   TrendingUp,

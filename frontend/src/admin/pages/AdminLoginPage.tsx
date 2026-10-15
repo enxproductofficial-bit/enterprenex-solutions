@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
-import { Lock, Mail, ArrowRight, AlertCircle, FileText } from 'lucide-react';
+import { Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 import { EmployeeTermsModal } from '../../components/EmployeeTermsModal';
 import type { AdminUser } from '../types';
 
