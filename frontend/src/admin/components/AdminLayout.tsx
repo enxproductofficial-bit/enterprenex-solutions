@@ -222,7 +222,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <div className="adm-sidebar-footer">
             <img src={currentUser.avatar} alt={currentUser.name} className="adm-avatar" />
             <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                 {currentUser.name}
               </div>
               <div style={{ fontSize: '0.7rem', color: 'var(--adm-primary)' }}>
@@ -426,7 +426,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                         onClick={() => { navigate('/admin/finance'); setShowNotifMenu(false); }}
                         style={{ padding: '0.5rem', background: 'var(--adm-bg)', borderRadius: '6px', cursor: 'pointer' }}
                       >
-                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#fff' }}>{i.invoiceNumber}: Payment Pending</div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--adm-text)' }}>{i.invoiceNumber}: Payment Pending</div>
                         <div style={{ fontSize: '0.7rem', color: 'var(--adm-danger)', marginTop: '2px' }}>₹{i.totalAmount.toLocaleString('en-IN')} • Due {i.dueDate}</div>
                       </div>
                     ))}
@@ -453,41 +453,41 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
                     right: 0,
-                    width: '260px',
+                    width: '280px',
                     background: 'var(--adm-surface)',
                     border: '1px solid var(--adm-border-light)',
-                    borderRadius: 'var(--adm-radius)',
-                    boxShadow: 'var(--adm-shadow-lg)',
+                    borderRadius: '14px',
+                    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.16)',
                     zIndex: 1000,
-                    padding: '1rem'
+                    padding: '1.1rem'
                   }}
                 >
                   {currentUser && (
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
-                        <img src={currentUser.avatar} alt={currentUser.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <img src={currentUser.avatar} alt={currentUser.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {currentUser.name}
                           </div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
+                          <div style={{ fontSize: '0.74rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
                             {currentUser.role}
                           </div>
                         </div>
                       </div>
 
-                      <div style={{ padding: '0.65rem 0.75rem', background: 'var(--adm-bg)', borderRadius: '6px', fontSize: '0.75rem', marginBottom: '0.85rem', border: '1px solid var(--adm-border)' }}>
-                        <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '2px' }}>
+                      <div style={{ padding: '0.75rem 0.85rem', background: 'var(--adm-bg)', borderRadius: '8px', fontSize: '0.78rem', marginBottom: '0.85rem', border: '1px solid var(--adm-border)' }}>
+                        <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '3px' }}>
                           Official Email
                         </div>
-                        <div style={{ color: '#fff', fontWeight: 600, wordBreak: 'break-all' }}>
+                        <div style={{ color: 'var(--adm-text)', fontWeight: 600, wordBreak: 'break-all' }}>
                           {currentUser.email}
                         </div>
-                        <div style={{ marginTop: '6px', color: 'var(--adm-text-dim)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '2px' }}>
+                        <div style={{ marginTop: '8px', color: 'var(--adm-text-dim)', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '3px' }}>
                           Department
                         </div>
-                        <div style={{ color: 'var(--adm-text-muted)', fontWeight: 500 }}>
-                          {currentUser.department}
+                        <div style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>
+                          {currentUser.department || 'Operations & Engineering'}
                         </div>
                       </div>
 

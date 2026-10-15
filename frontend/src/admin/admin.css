@@ -377,7 +377,7 @@
 .adm-user-name {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--adm-text);
   line-height: 1.2;
 }
 
@@ -981,10 +981,11 @@
   --adm-purple: #7c3aed;
   --adm-purple-soft: rgba(124, 58, 237, 0.08);
 
-  --adm-radius-sm: 9999px;
-  --adm-radius: 9999px;
+  --adm-radius-sm: 6px;
+  --adm-radius: 10px;
   --adm-radius-lg: 14px;
   --adm-radius-xl: 18px;
+  --adm-radius-pill: 9999px;
 
   --adm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.02);
   --adm-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.035);

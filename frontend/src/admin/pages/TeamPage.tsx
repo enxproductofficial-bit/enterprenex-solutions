@@ -3122,7 +3122,7 @@ export const TeamPage: React.FC = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
               {/* Credentials Overview Card */}
-              <div style={{ background: '#0e1217', border: '1px solid var(--adm-border)', borderRadius: '12px', padding: '1.15rem' }}>
+              <div style={{ background: 'var(--adm-surface)', border: '1px solid var(--adm-border)', borderRadius: '12px', padding: '1.15rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                   <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>UNIQUE EMPLOYEE ID</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -3143,7 +3143,7 @@ export const TeamPage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                   <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>OFFICIAL EMAIL</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: '#fff', fontSize: '0.85rem' }}>{credentialEmp.email}</span>
+                    <span style={{ color: 'var(--adm-text)', fontSize: '0.85rem' }}>{credentialEmp.email}</span>
                     <button
                       className="adm-btn adm-btn-secondary"
                       style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem' }}
