@@ -90,7 +90,8 @@ export const AdminLoginPage: React.FC = () => {
         department: matchedEmp.department,
         status: 'Active',
         lastLogin: 'Just now',
-        phone: matchedEmp.phone || '+91-9226860060'
+        phone: matchedEmp.phone || '+91-9226860060',
+        employeeId: matchedEmp.employeeId
       };
 
       setTimeout(() => {

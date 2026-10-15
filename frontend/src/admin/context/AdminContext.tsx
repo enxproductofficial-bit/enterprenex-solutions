@@ -339,10 +339,34 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.leaves) {
           setLeaves(parsed.leaves.length > 0 ? parsed.leaves : INITIAL_LEAVES);
         }
-        if (parsed.tasks) setTasks(parsed.tasks);
-        if (parsed.tickets) setTickets(parsed.tickets);
-        if (parsed.documents) setDocuments(parsed.documents);
-        if (parsed.meetings) setMeetings(parsed.meetings);
+        if (parsed.tasks && parsed.tasks.length > 0) {
+          // Merge with INITIAL_TASKS so standard sprint tasks are never lost
+          const existingIds = new Set(parsed.tasks.map((t: any) => t.id));
+          const mergedTasks = [...parsed.tasks];
+          INITIAL_TASKS.forEach(initTask => {
+            if (!existingIds.has(initTask.id)) {
+              mergedTasks.push(initTask);
+            }
+          });
+          setTasks(mergedTasks);
+        } else {
+          setTasks(INITIAL_TASKS);
+        }
+        if (parsed.tickets && parsed.tickets.length > 0) {
+          setTickets(parsed.tickets);
+        } else {
+          setTickets(INITIAL_TICKETS);
+        }
+        if (parsed.documents && parsed.documents.length > 0) {
+          setDocuments(parsed.documents);
+        } else {
+          setDocuments(INITIAL_DOCUMENTS);
+        }
+        if (parsed.meetings && parsed.meetings.length > 0) {
+          setMeetings(parsed.meetings);
+        } else {
+          setMeetings(INITIAL_MEETINGS);
+        }
         if (parsed.cms) setCms(parsed.cms);
         if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
         if (parsed.apiKeys) setApiKeys(parsed.apiKeys);
@@ -356,6 +380,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               phone: '+91-9226860060'
             });
           } else {
+            if (!cur.employeeId) {
+              const matched = INITIAL_EMPLOYEES.find(
+                e => e.email?.toLowerCase() === cur.email?.toLowerCase() || e.name?.toLowerCase() === cur.name?.toLowerCase()
+              );
+              if (matched?.employeeId) {
+                cur.employeeId = matched.employeeId;
+              }
+            }
             setCurrentUser(cur);
           }
         }

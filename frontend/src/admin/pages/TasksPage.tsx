@@ -138,16 +138,27 @@ export const TasksPage: React.FC = () => {
   const [fDesc, setFDesc] = useState('');
   const [fHours, setFHours] = useState(8);
 
-  const myTasks = tasks.filter(t =>
-    (currentUser?.name && t.assignedTo.toLowerCase().includes(currentUser.name.toLowerCase())) ||
-    (currentUser?.employeeId && t.assignedTo.includes(currentUser.employeeId))
-  );
+  const myTasks = tasks.filter(t => {
+    const userName = (currentUser?.name || '').toLowerCase().trim();
+    const empId = (currentUser?.employeeId || '').toLowerCase().trim();
+    const assigned = (t.assignedTo || '').toLowerCase().trim();
+
+    const nameParts = userName.split(' ').filter(p => p.length >= 3);
+    const nameMatch = userName && (assigned.includes(userName) || nameParts.some(p => assigned.includes(p)));
+    const idMatch = empId && assigned.includes(empId);
+
+    return nameMatch || idMatch;
+  });
 
   const filteredTasks = tasks.filter(t => {
     if (taskViewFilter === 'my') {
-      const isMine =
-        (currentUser?.name && t.assignedTo.toLowerCase().includes(currentUser.name.toLowerCase())) ||
-        (currentUser?.employeeId && t.assignedTo.includes(currentUser.employeeId));
+      const userName = (currentUser?.name || '').toLowerCase().trim();
+      const empId = (currentUser?.employeeId || '').toLowerCase().trim();
+      const assigned = (t.assignedTo || '').toLowerCase().trim();
+
+      const nameParts = userName.split(' ').filter(p => p.length >= 3);
+      const isMine = (userName && (assigned.includes(userName) || nameParts.some(p => assigned.includes(p)))) ||
+                     (empId && assigned.includes(empId));
       if (!isMine) return false;
     }
 
