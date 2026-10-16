@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
+import { useLanguage } from '../i18n/LanguageContext';
+import {
+  registerServiceWorker,
+  isPushSupported,
+  getPushPermissionState,
+  requestPushPermission,
+  sendNativePushNotification
+} from '../utils/pushNotifications';
 import {
   LayoutDashboard,
   Users,
@@ -24,10 +32,14 @@ import {
   LogOut,
   Camera,
   Sun,
-  Moon
+  Moon,
+  Languages,
+  Smartphone,
+  Sparkles
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
 import { ToastContainer } from './ToastContainer';
+import { AiChatbotWidget } from './AiChatbotWidget';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -48,12 +60,34 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     employees,
     showToast
   } = useAdmin();
+  const { language, setLanguage, t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [pushState, setPushState] = useState<NotificationPermission>(() => getPushPermissionState());
+
+  // Auto-register PWA service worker on mount
+  useEffect(() => {
+    registerServiceWorker();
+    setPushState(getPushPermissionState());
+  }, []);
+
+  const handleTogglePush = async () => {
+    const perm = await requestPushPermission();
+    setPushState(perm);
+    if (perm === 'granted') {
+      showToast('Push Enabled', 'Native mobile and desktop push notifications activated.', 'success');
+      sendNativePushNotification('Enterprenex EWMS Notifications Active', {
+        body: 'Real-time shift alerts, task handovers, and approval updates enabled.'
+      });
+    } else {
+      showToast('Permissions Required', 'Please enable notifications in your browser permission bar.', 'warning');
+    }
+  };
 
   // Live Portal Theme (Default to clean Light minimalism, with instant toggle)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -89,13 +123,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const isManagerOrHr = userRole === 'Project Manager' || userRole === 'HR Manager' || userRole === 'Sales Lead' || userRole === 'Finance Officer';
   const isDirector = userRole === 'Super Admin';
 
-  // Navigation Items strictly filtered according to EWMS Permissions Matrix
   // Navigation Items strictly filtered according to EWMS Institutional Permissions Matrix
   const getNavItems = () => {
     // 1. Employee / Engineering Workforce Portal
     if (isEmployee) {
       return [
-        { section: 'Engineering Workspace' },
+        { section: t('sec.humanCapital', 'Engineering Workspace') },
         { to: '/admin/team', label: 'Workforce Roster & Attendance', icon: UserCheck },
         { to: '/admin/tasks', label: 'Assigned Engineering Tasks', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
         { to: '/admin/calendar', label: 'Corporate Schedule & Sessions', icon: Calendar },
@@ -374,6 +407,137 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
 
           <div className="adm-topbar-right">
+            {/* Multi-Language Selector Dropdown (English / Hindi / Marathi) */}
+            <div style={{ position: 'relative' }}>
+              <button
+                className="adm-topbar-btn"
+                onClick={() => setShowLangMenu(!showLangMenu)}
+                title="Change Portal Language (English / हिन्दी / मराठी)"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  padding: '0 10px'
+                }}
+              >
+                <Languages size={15} color="var(--adm-primary)" />
+                <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  {language === 'hi' ? 'हिन्दी' : language === 'mr' ? 'मराठी' : 'ENG'}
+                </span>
+                <ChevronDown size={12} />
+              </button>
+
+              {showLangMenu && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    width: '180px',
+                    background: 'var(--adm-surface)',
+                    border: '1px solid var(--adm-border)',
+                    borderRadius: 'var(--adm-radius)',
+                    boxShadow: 'var(--adm-shadow-lg)',
+                    zIndex: 1000,
+                    padding: '0.5rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}
+                >
+                  <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', padding: '4px 8px', textTransform: 'uppercase', fontWeight: 800 }}>
+                    Select Language / भाषा निवडा
+                  </div>
+                  <button
+                    onClick={() => { setLanguage('en'); setShowLangMenu(false); }}
+                    style={{
+                      padding: '8px 10px',
+                      background: language === 'en' ? 'var(--adm-primary-soft)' : 'transparent',
+                      color: language === 'en' ? 'var(--adm-primary)' : 'var(--adm-text)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      textAlign: 'left',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <span>English (Official)</span>
+                    {language === 'en' && <CheckCircle2 size={13} />}
+                  </button>
+                  <button
+                    onClick={() => { setLanguage('hi'); setShowLangMenu(false); }}
+                    style={{
+                      padding: '8px 10px',
+                      background: language === 'hi' ? 'var(--adm-primary-soft)' : 'transparent',
+                      color: language === 'hi' ? 'var(--adm-primary)' : 'var(--adm-text)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      textAlign: 'left',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <span>हिन्दी (Hindi)</span>
+                    {language === 'hi' && <CheckCircle2 size={13} />}
+                  </button>
+                  <button
+                    onClick={() => { setLanguage('mr'); setShowLangMenu(false); }}
+                    style={{
+                      padding: '8px 10px',
+                      background: language === 'mr' ? 'var(--adm-primary-soft)' : 'transparent',
+                      color: language === 'mr' ? 'var(--adm-primary)' : 'var(--adm-text)',
+                      border: 'none',
+                      borderRadius: '6px',
+                      textAlign: 'left',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <span>मराठी (Maharashtra)</span>
+                    {language === 'mr' && <CheckCircle2 size={13} />}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile / Browser Push Notification Toggle */}
+            <button
+              className="adm-topbar-btn"
+              onClick={handleTogglePush}
+              title={pushState === 'granted' ? 'Native Mobile & Desktop Push Notifications Active' : 'Enable Native Push Notifications'}
+              style={{ position: 'relative' }}
+            >
+              <Smartphone size={16} color={pushState === 'granted' ? 'var(--adm-success)' : undefined} />
+              {pushState === 'granted' && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: '#10B981',
+                    boxShadow: '0 0 6px #10B981'
+                  }}
+                />
+              )}
+            </button>
+
             {/* Live Minimalist Theme Toggle (Light / Dark) */}
             <button
               className="adm-topbar-btn"
@@ -387,7 +551,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             {/* Quick Action Button */}
             <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowQuickCreate(true)}>
               <Plus size={15} />
-              <span>Create New</span>
+              <span>{t('btn.add', 'Create New')}</span>
             </button>
 
             {/* Notifications Bell */}
@@ -582,6 +746,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <main className="adm-content">
           {children}
         </main>
+
+        {/* Floating Conversational AI Copilot */}
+        <AiChatbotWidget />
 
       </div>
     </div>

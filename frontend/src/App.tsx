@@ -19,6 +19,7 @@ import LoginPage from './pages/LoginPage';
 
 // Admin Context, Layout & IP Guard
 import { AdminProvider, useAdmin } from './admin/context/AdminContext';
+import { LanguageProvider } from './admin/i18n/LanguageContext';
 import { AdminLayout } from './admin/components/AdminLayout';
 import { IpRestrictionGuard } from './admin/components/IpRestrictionGuard';
 import { AdminErrorBoundary } from './admin/components/AdminErrorBoundary';
@@ -363,7 +364,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AdminProvider>
-        <MainAppRoutes />
+        <LanguageProvider>
+          <MainAppRoutes />
+        </LanguageProvider>
       </AdminProvider>
     </BrowserRouter>
   );

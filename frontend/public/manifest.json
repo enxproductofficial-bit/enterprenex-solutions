@@ -1,0 +1,25 @@
+{
+  "name": "Enterprenex EWMS - Enterprise Workforce Portal",
+  "short_name": "Enterprenex EWMS",
+  "description": "Enterprise Workforce Management System for Enterprenex Solutions Private Limited. Biometric attendance, project governance, sprint execution, and statutory compliance.",
+  "start_url": "/admin",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B0F19",
+  "theme_color": "#F66135",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/images/logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48 96x96",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["business", "productivity"]
+}
