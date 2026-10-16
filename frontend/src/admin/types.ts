@@ -443,6 +443,39 @@ export interface CalendarMeeting {
   description: string;
 }
 
+// 11b. Community Announcements & Director Bulletins
+export interface CommunityAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  authorName: string;
+  authorRole: string;
+  authorAvatar?: string;
+  isDirectorPost: boolean;
+  priority: 'Urgent' | 'General' | 'Policy' | 'Celebration';
+  postedAt: string;
+  likes: number;
+  likedBy?: string[];
+  tags?: string[];
+  meetingLink?: string;
+}
+
+// 11c. Employee 1-on-1 and Group Chat
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderRole: string;
+  senderAvatar?: string;
+  channelId: string; // 'general' or 1-on-1 employee ID
+  recipientId?: string;
+  recipientName?: string;
+  message: string;
+  timestamp: string;
+  isDirector: boolean;
+}
+
+
 // 12. CMS & Website Editor
 export interface WebsiteCmsData {
   hero: {

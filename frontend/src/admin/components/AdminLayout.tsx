@@ -89,6 +89,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { section: 'My Work Portal' },
         { to: '/admin/team', label: 'My Attendance & Leave', icon: UserCheck },
         { to: '/admin/tasks', label: 'My Tasks', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
+        { to: '/admin/calendar', label: 'Community & Meetings', icon: Calendar },
         { to: '/admin/support', label: 'Raise a Ticket', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
         { to: '/admin/documents', label: 'My Documents & Certificate', icon: FileText }
       ];
@@ -111,7 +112,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { to: '/admin/team', label: 'Team & Attendance', icon: UserCheck },
         { to: '/admin/support', label: 'Support & Helpdesk', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
         { to: '/admin/documents', label: 'Document Vault', icon: FileText },
-        { to: '/admin/calendar', label: 'Calendar & Meetings', icon: Calendar },
+        { to: '/admin/calendar', label: 'Calendar & Community', icon: Calendar },
 
         { section: 'Platform & Intelligence' },
         { to: '/admin/analytics', label: 'Analytics & Reports', icon: BarChart3 }
@@ -135,7 +136,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       { to: '/admin/team', label: 'Team & Attendance', icon: UserCheck },
       { to: '/admin/support', label: 'Support & Helpdesk', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
       { to: '/admin/documents', label: 'Document Vault', icon: FileText },
-      { to: '/admin/calendar', label: 'Calendar & Meetings', icon: Calendar },
+      { to: '/admin/calendar', label: 'Calendar & Community', icon: Calendar },
 
       { section: 'Platform & Intelligence' },
       { to: '/admin/cms', label: 'CMS & Website', icon: Globe },

@@ -309,10 +309,10 @@ function MainAppRoutes() {
           </IpRestrictionGuard>
         } />
 
-        {/* 11. Calendar & Meetings: Director & Managers */}
+        {/* 11. Calendar, Community & Team Chat: All Roles */}
         <Route path="/admin/calendar" element={
           <IpRestrictionGuard>
-            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager']} moduleName="Calendar & Meetings">
+            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'Team Member', 'Developer', 'HR Manager', 'Sales Lead', 'Finance Officer']} moduleName="Calendar & Community">
               <CalendarPage />
             </AdminRouteGuard>
           </IpRestrictionGuard>

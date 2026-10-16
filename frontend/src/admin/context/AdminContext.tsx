@@ -17,6 +17,8 @@ import type {
   SupportTicket,
   VaultDocument,
   CalendarMeeting,
+  CommunityAnnouncement,
+  ChatMessage,
   WebsiteCmsData,
   AuditLog,
   ApiKeyItem,
@@ -41,6 +43,8 @@ import {
   INITIAL_TICKETS,
   INITIAL_DOCUMENTS,
   INITIAL_MEETINGS,
+  INITIAL_ANNOUNCEMENTS,
+  INITIAL_CHAT_MESSAGES,
   INITIAL_CMS,
   INITIAL_AUDIT_LOGS,
   INITIAL_API_KEYS,
@@ -84,6 +88,8 @@ interface AdminContextType {
   tickets: SupportTicket[];
   documents: VaultDocument[];
   meetings: CalendarMeeting[];
+  announcements: CommunityAnnouncement[];
+  chatMessages: ChatMessage[];
   cms: WebsiteCmsData;
   auditLogs: AuditLog[];
   apiKeys: ApiKeyItem[];
@@ -175,6 +181,11 @@ interface AdminContextType {
   addMeeting: (meeting: Omit<CalendarMeeting, 'id'>) => void;
   deleteMeeting: (id: string) => void;
 
+  // Community & Chat actions
+  addAnnouncement: (announcement: Omit<CommunityAnnouncement, 'id' | 'postedAt' | 'likes'>) => void;
+  likeAnnouncement: (id: string) => void;
+  sendChatMessage: (msg: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
+
   // CMS actions
   updateCms: (updates: Partial<WebsiteCmsData>) => void;
   updateEnquiryStatus: (id: string, status: 'New' | 'Contacted' | 'Archived') => void;
@@ -213,6 +224,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [tickets, setTickets] = useState<SupportTicket[]>(INITIAL_TICKETS);
   const [documents, setDocuments] = useState<VaultDocument[]>(INITIAL_DOCUMENTS);
   const [meetings, setMeetings] = useState<CalendarMeeting[]>(INITIAL_MEETINGS);
+  const [announcements, setAnnouncements] = useState<CommunityAnnouncement[]>(INITIAL_ANNOUNCEMENTS);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(INITIAL_CHAT_MESSAGES);
   const [cms, setCms] = useState<WebsiteCmsData>(INITIAL_CMS);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
   const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>(INITIAL_API_KEYS);
@@ -1038,6 +1051,45 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Event Cancelled', 'Event removed from calendar.', 'info');
   };
 
+  const addAnnouncement = (annData: Omit<CommunityAnnouncement, 'id' | 'postedAt' | 'likes'>) => {
+    const newAnn: CommunityAnnouncement = {
+      ...annData,
+      id: 'ann-' + Date.now(),
+      postedAt: 'Just now',
+      likes: 0,
+      likedBy: []
+    };
+    setAnnouncements(prev => [newAnn, ...prev]);
+    showToast('Announcement Posted', `"${newAnn.title}" published to community board.`, 'success');
+  };
+
+  const likeAnnouncement = (id: string) => {
+    const currentUserId = currentUser?.employeeId || currentUser?.id || 'guest';
+    setAnnouncements(prev => prev.map(ann => {
+      if (ann.id !== id) return ann;
+      const alreadyLiked = ann.likedBy?.includes(currentUserId);
+      const newLikedBy = alreadyLiked
+        ? (ann.likedBy || []).filter(u => u !== currentUserId)
+        : [...(ann.likedBy || []), currentUserId];
+      return {
+        ...ann,
+        likes: alreadyLiked ? Math.max(0, ann.likes - 1) : ann.likes + 1,
+        likedBy: newLikedBy
+      };
+    }));
+  };
+
+  const sendChatMessage = (msgData: Omit<ChatMessage, 'id' | 'timestamp'>) => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMsg: ChatMessage = {
+      ...msgData,
+      id: 'msg-' + Date.now(),
+      timestamp: timeStr
+    };
+    setChatMessages(prev => [...prev, newMsg]);
+  };
+
   const updateCms = (updates: Partial<WebsiteCmsData>) => {
     setCms(prev => ({ ...prev, ...updates }));
     logAction('Updated Website Content', 'CMS & Website', 'Published updates to public website content');
@@ -1214,6 +1266,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deleteDocument,
         addMeeting,
         deleteMeeting,
+        announcements,
+        addAnnouncement,
+        likeAnnouncement,
+        chatMessages,
+        sendChatMessage,
         updateCms,
         updateEnquiryStatus,
         revokeApiKey,

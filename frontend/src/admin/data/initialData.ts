@@ -15,6 +15,8 @@ import type {
   SupportTicket,
   VaultDocument,
   CalendarMeeting,
+  CommunityAnnouncement,
+  ChatMessage,
   WebsiteCmsData,
   AuditLog,
   ApiKeyItem,
@@ -454,6 +456,78 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     education: [
       { degree: 'B.Tech in Computer Science & Engineering', institute: 'Engineering Institute of Technology', specialization: 'Software Systems & AI', startYear: '2022', endYear: '2026', score: '8.4 CGPA' }
     ]
+  },
+  {
+    id: 'emp-3',
+    employeeId: '202600000003',
+    password: 'Enx_sol_121006',
+    name: 'Aniket More',
+    role: 'Lead Project Manager & Mentor',
+    department: 'Engineering',
+    email: 'aniket.m@enterprenex.solutions',
+    phone: '+91-9822114455',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    skills: ['Agile / Scrum', 'React', 'Node.js', 'System Architecture', 'Client Delivery'],
+    currentProjects: [],
+    workloadPercentage: 60,
+    joinDate: '2026-01-15',
+    salaryMonthly: 120000,
+    performanceRating: 4.9,
+    status: 'Active',
+    approvalStatus: 'Approved',
+    approvedBy: 'Rohit P. (Managing Director)',
+    panNumber: 'AMRPK7892L',
+    aadhaarNumber: '890123456789',
+    kycStatus: 'Verified',
+    kycVerifiedBy: 'Rohit P. (Managing Director)',
+    kycVerifiedAt: '2026-01-15T09:00:00.000Z',
+    employmentType: 'Full Time',
+    workMode: 'Hybrid',
+    kpiScore: 94.0,
+    okrScore: 92.5,
+    skillsMatrix: [
+      { name: 'Sprint & Agile Leadership', category: 'Management', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P.' },
+      { name: 'Full Stack Architecture', category: 'Architecture', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' }
+    ],
+    education: [
+      { degree: 'B.E. in Information Technology', institute: 'Pune University', specialization: 'Software Engineering', startYear: '2017', endYear: '2021', score: '8.8 CGPA' }
+    ]
+  },
+  {
+    id: 'emp-4',
+    employeeId: '202600000004',
+    password: 'Enx_sol_121006',
+    name: 'Sneha Patil',
+    role: 'Senior UI/UX & Frontend Designer',
+    department: 'Design',
+    email: 'sneha.p@enterprenex.solutions',
+    phone: '+91-9765432109',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    skills: ['Figma', 'React', 'Minimalist UI', 'Design Tokens', 'Tailwind CSS'],
+    currentProjects: [],
+    workloadPercentage: 55,
+    joinDate: '2026-02-01',
+    salaryMonthly: 95000,
+    performanceRating: 4.8,
+    status: 'Active',
+    approvalStatus: 'Approved',
+    approvedBy: 'Rohit P. (Managing Director)',
+    panNumber: 'SNPPB6543M',
+    aadhaarNumber: '901234567890',
+    kycStatus: 'Verified',
+    kycVerifiedBy: 'Rohit P. (Managing Director)',
+    kycVerifiedAt: '2026-02-01T09:00:00.000Z',
+    employmentType: 'Full Time',
+    workMode: 'Hybrid',
+    kpiScore: 92.0,
+    okrScore: 90.0,
+    skillsMatrix: [
+      { name: 'Figma & Design Systems', category: 'Design', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P.' },
+      { name: 'React CSS Frameworks', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' }
+    ],
+    education: [
+      { degree: 'B.Des in Digital Product Design', institute: 'National Institute of Design', specialization: 'Interaction Design', startYear: '2018', endYear: '2022', score: '9.0 CGPA' }
+    ]
   }
 ];
 
@@ -722,7 +796,173 @@ export const INITIAL_DOCUMENTS: VaultDocument[] = [
   }
 ];
 
-export const INITIAL_MEETINGS: CalendarMeeting[] = [];
+export const INITIAL_MEETINGS: CalendarMeeting[] = [
+  {
+    id: 'meet-1',
+    title: 'Weekly All-Hands & Sprint Kickoff',
+    type: 'Sprint Planning',
+    date: '2026-10-16',
+    time: '11:00 AM - 12:00 PM',
+    attendees: ['Rohit P.', 'POLAMREDDY REVANTH REDDY', 'Aniket More', 'Sneha Patil'],
+    location: 'Google Meet',
+    meetUrl: 'https://meet.google.com/enx-sprint-sync',
+    description: 'Sprint planning, deliverables review for Apex Global & EWMS feature milestones.'
+  },
+  {
+    id: 'meet-2',
+    title: 'Client Demo: FinTech Payment Gateway Architecture',
+    type: 'Client Presentation',
+    date: '2026-10-17',
+    time: '03:30 PM - 04:30 PM',
+    attendees: ['Anita Shenoy (Apex Global)', 'Rohit P.', 'POLAMREDDY REVANTH REDDY'],
+    location: 'Google Meet (Enterprise)',
+    meetUrl: 'https://meet.google.com/enx-apex-demo',
+    description: 'Architecture review & live demo of sub-millisecond telemetry ingestion engine.'
+  },
+  {
+    id: 'meet-3',
+    title: 'Director Sync: Q4 Project Milestones & Performance Reviews',
+    type: 'Internal Sync',
+    date: '2026-10-19',
+    time: '02:00 PM - 02:45 PM',
+    attendees: ['Rohit P.', 'Aniket More', 'Executive Team'],
+    location: 'Enterprenex Executive Boardroom / Hybrid',
+    meetUrl: 'https://meet.google.com/enx-exec-sync',
+    description: 'Review quarterly deliverables, client satisfaction scores, and talent promotions.'
+  }
+];
+
+export const INITIAL_ANNOUNCEMENTS: CommunityAnnouncement[] = [
+  {
+    id: 'ann-1',
+    title: 'Welcome to Enterprenex Work Management System (EWMS) V2.4',
+    content: 'Dear Enterprenex Family, we are proud to introduce our unified enterprise portal covering Daily Attendance Geo-Check, Automated Monthly Payroll, Direct WhatsApp Meeting Dispatch, and our new Company Community. All employees are requested to review project milestones and mark daily punch-in on time.',
+    authorName: 'Rohit P.',
+    authorRole: 'Managing Director & Lead Architect',
+    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    isDirectorPost: true,
+    priority: 'Urgent',
+    postedAt: 'Today at 09:30 AM',
+    likes: 16,
+    likedBy: ['202600000002'],
+    tags: ['Director Notice', 'EWMS Launch', 'Enterprise Update'],
+    meetingLink: 'https://meet.google.com/enx-sprint-sync'
+  },
+  {
+    id: 'ann-2',
+    title: 'Google Meet Calendar Sync & WhatsApp Instant Invitations',
+    content: 'All sprint planning meetings will now broadcast calendar links directly to team WhatsApp groups. When scheduling any meeting from the Calendar, choose "Schedule & Share on WhatsApp" to notify all attendees automatically with time, agenda, and Google Meet link.',
+    authorName: 'Aniket More',
+    authorRole: 'Lead Project Manager & Mentor',
+    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    isDirectorPost: false,
+    priority: 'General',
+    postedAt: 'Yesterday at 04:15 PM',
+    likes: 12,
+    likedBy: ['202600000001', '202600000002'],
+    tags: ['Operations', 'WhatsApp Integration', 'Agile']
+  },
+  {
+    id: 'ann-3',
+    title: 'Team Appreciation & Upcoming Company Town Hall',
+    content: 'Big congratulations to the Engineering Team for delivering the statutory Payroll Engine with 50-30-20 tax breakdown and the Official Certificate Verification Portal ahead of schedule! Refreshments will be hosted at HQ this Friday.',
+    authorName: 'Rohit P.',
+    authorRole: 'Managing Director & Lead Architect',
+    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    isDirectorPost: true,
+    priority: 'Celebration',
+    postedAt: 'Oct 14, 2026',
+    likes: 24,
+    likedBy: ['202600000002', '202600000003', '202600000004'],
+    tags: ['Celebration', 'Town Hall', 'Kudos']
+  }
+];
+
+export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
+  {
+    id: 'msg-1',
+    senderId: '202600000001',
+    senderName: 'Rohit P.',
+    senderRole: 'Managing Director',
+    senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    channelId: 'general',
+    message: 'Good morning everyone! Welcome to the new Enterprenex Community channel. Feel free to collaborate and post updates here.',
+    timestamp: '09:00 AM',
+    isDirector: true
+  },
+  {
+    id: 'msg-2',
+    senderId: '202600000003',
+    senderName: 'Aniket More',
+    senderRole: 'Lead PM',
+    senderAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    channelId: 'general',
+    message: 'Good morning Rohit Sir! Sprint backlog for Apex Global and Vertex IoT is finalized and ready for the 11 AM sync.',
+    timestamp: '09:12 AM',
+    isDirector: false
+  },
+  {
+    id: 'msg-3',
+    senderId: '202600000002',
+    senderName: 'POLAMREDDY REVANTH REDDY',
+    senderRole: 'Full Stack Developer',
+    senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    channelId: 'general',
+    message: 'Good morning Sir! Working on the direct WhatsApp dispatch button and Community announcement board.',
+    timestamp: '09:20 AM',
+    isDirector: false
+  },
+  {
+    id: 'msg-4',
+    senderId: '202600000004',
+    senderName: 'Sneha Patil',
+    senderRole: 'UI/UX Designer',
+    senderAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    channelId: 'general',
+    message: 'The 3-color minimalist palette and generous 1.4rem card spacing tokens look extremely sharp on both light and dark modes!',
+    timestamp: '09:28 AM',
+    isDirector: false
+  },
+  {
+    id: 'msg-5',
+    senderId: '202600000001',
+    senderName: 'Rohit P.',
+    senderRole: 'Managing Director',
+    senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    channelId: 'general',
+    message: 'Terrific effort team. Let us deliver another flawless release today!',
+    timestamp: '09:35 AM',
+    isDirector: true
+  },
+  // 1-on-1 direct messages between Aniket More & POLAMREDDY REVANTH REDDY
+  {
+    id: 'msg-dm-1',
+    senderId: '202600000003',
+    senderName: 'Aniket More',
+    senderRole: 'Lead PM',
+    senderAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    channelId: '202600000002',
+    recipientId: '202600000002',
+    recipientName: 'POLAMREDDY REVANTH REDDY',
+    message: 'Hi Revanth, please ensure the WhatsApp meeting invite formats the Google Meet URL clearly so clients and team can join with 1 tap.',
+    timestamp: '10:05 AM',
+    isDirector: false
+  },
+  {
+    id: 'msg-dm-2',
+    senderId: '202600000002',
+    senderName: 'POLAMREDDY REVANTH REDDY',
+    senderRole: 'Full Stack Developer',
+    senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    channelId: '202600000003',
+    recipientId: '202600000003',
+    recipientName: 'Aniket More',
+    message: 'Yes Aniket Sir! Added the automatic WhatsApp format generator with bold headings, date, time window, agenda, and direct link.',
+    timestamp: '10:14 AM',
+    isDirector: false
+  }
+];
+
 
 export const INITIAL_CMS: WebsiteCmsData = {
   hero: {
