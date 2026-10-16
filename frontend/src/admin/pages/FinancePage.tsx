@@ -570,7 +570,7 @@ export const FinancePage: React.FC = () => {
       </div>
 
       {/* Tabs Header */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--adm-border)', marginBottom: '1.5rem', gap: '1rem' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--adm-border)', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap', overflowX: 'auto' }}>
         <button
           onClick={() => setTab('invoices')}
           style={{
@@ -635,7 +635,7 @@ export const FinancePage: React.FC = () => {
 
       {/* Filter / Search Bar */}
       <div className="adm-card" style={{ padding: '0.75rem 1rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div style={{ position: 'relative', width: '320px' }}>
+        <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: '340px' }}>
           <Search size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }} />
           <input
             type="text"

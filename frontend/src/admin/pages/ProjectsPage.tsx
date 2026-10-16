@@ -146,7 +146,7 @@ export const ProjectsPage: React.FC = () => {
 
       {/* Search & Overview Stats */}
       <div className="adm-card" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ position: 'relative', width: '320px' }}>
+        <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: '340px' }}>
           <Search size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }} />
           <input
             type="text"
@@ -159,7 +159,7 @@ export const ProjectsPage: React.FC = () => {
         </div>
 
         {/* 8-Stage Progress Overview Breadcrumb */}
-        <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', padding: '4px 0' }}>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
           {STAGES.map(st => {
             const count = projects.filter(p => p.status === st).length;
             return (

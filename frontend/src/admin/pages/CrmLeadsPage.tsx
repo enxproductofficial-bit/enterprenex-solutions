@@ -126,7 +126,7 @@ export const CrmLeadsPage: React.FC = () => {
 
       {/* Metrics Bar */}
       <div className="adm-card" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ position: 'relative', width: '320px' }}>
+        <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: '340px' }}>
           <Search size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }} />
           <input
             type="text"

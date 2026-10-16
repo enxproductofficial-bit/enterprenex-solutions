@@ -361,7 +361,7 @@ export const TasksPage: React.FC = () => {
         }}
       >
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', width: '280px' }}>
+          <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: '320px' }}>
             <Search
               size={15}
               style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--adm-text-dim)' }}
