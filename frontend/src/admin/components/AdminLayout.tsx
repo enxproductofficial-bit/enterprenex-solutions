@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { useLanguage } from '../i18n/LanguageContext';
+import { SUPPORTED_LANGUAGES } from '../i18n/types';
 import {
   LayoutDashboard,
   Users,
@@ -102,61 +103,61 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     if (isEmployee) {
       return [
         { section: t('sec.humanCapital', 'Engineering Workspace') },
-        { to: '/admin/team', label: 'Workforce Roster & Attendance', icon: UserCheck },
-        { to: '/admin/tasks', label: 'Assigned Engineering Tasks', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
-        { to: '/admin/calendar', label: 'Corporate Schedule & Sessions', icon: Calendar },
-        { to: '/admin/support', label: 'Service Desk Incident Tickets', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
-        { to: '/admin/documents', label: 'Compliance Records & Credentials', icon: FileText }
+        { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck },
+        { to: '/admin/tasks', label: t('nav.tasks', 'Assigned Engineering Tasks'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
+        { to: '/admin/calendar', label: t('nav.calendar', 'Corporate Schedule & Sessions'), icon: Calendar },
+        { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk Incident Tickets'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/documents', label: t('nav.documents', 'Compliance Records & Credentials'), icon: FileText }
       ];
     }
 
     // 2. Manager / Operations & HR Portal
     if (isManagerOrHr) {
       return [
-        { section: 'Enterprise Operations' },
-        { to: '/admin', label: 'Executive Operations Dashboard', icon: LayoutDashboard, exact: true },
-        { to: '/admin/clients', label: 'Client Accounts Directory', icon: Users, badge: safeClients.length },
-        { to: '/admin/projects', label: 'Project Portfolio & Milestones', icon: Briefcase, badge: activeProjectsCount },
-        { to: '/admin/tasks', label: 'Sprint Backlog & Kanban', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
+        { section: t('sec.operations', 'Enterprise Operations') },
+        { to: '/admin', label: t('nav.dashboard', 'Executive Operations Dashboard'), icon: LayoutDashboard, exact: true },
+        { to: '/admin/clients', label: t('nav.clients', 'Client Accounts Directory'), icon: Users, badge: safeClients.length },
+        { to: '/admin/projects', label: t('nav.projects', 'Project Portfolio & Milestones'), icon: Briefcase, badge: activeProjectsCount },
+        { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
 
-        { section: 'Commercial Governance' },
-        { to: '/admin/services', label: 'Enterprise Services Catalogue', icon: Layers },
-        { to: '/admin/crm', label: 'Enterprise CRM & Sales Pipeline', icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
+        { section: t('sec.commercial', 'Commercial Governance') },
+        { to: '/admin/services', label: t('nav.services', 'Enterprise Services Catalogue'), icon: Layers },
+        { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
 
-        { section: 'Human Capital & Delivery' },
-        { to: '/admin/team', label: 'Workforce Roster & Attendance', icon: UserCheck },
-        { to: '/admin/support', label: 'Service Desk & SLA Governance', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
-        { to: '/admin/documents', label: 'Compliance Vault & Records', icon: FileText },
-        { to: '/admin/calendar', label: 'Corporate Calendar & Sessions', icon: Calendar },
+        { section: t('sec.humanCapital', 'Human Capital & Delivery') },
+        { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck },
+        { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk & SLA Governance'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/documents', label: t('nav.documents', 'Compliance Vault & Records'), icon: FileText },
+        { to: '/admin/calendar', label: t('nav.calendar', 'Corporate Calendar & Sessions'), icon: Calendar },
 
-        { section: 'Governance & Intelligence' },
-        { to: '/admin/analytics', label: 'Operational Telemetry & Reports', icon: BarChart3 }
+        { section: t('sec.governance', 'Governance & Intelligence') },
+        { to: '/admin/analytics', label: t('nav.analytics', 'Operational Telemetry & Reports'), icon: BarChart3 }
       ];
     }
 
     // 3. Director (Super Admin) - Full 14-Module Executive Access
     return [
-      { section: 'Enterprise Operations' },
-      { to: '/admin', label: 'Executive Operations Dashboard', icon: LayoutDashboard, exact: true },
-      { to: '/admin/clients', label: 'Client Accounts Directory', icon: Users, badge: safeClients.length },
-      { to: '/admin/projects', label: 'Project Portfolio & Milestones', icon: Briefcase, badge: activeProjectsCount },
-      { to: '/admin/tasks', label: 'Sprint Backlog & Kanban', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
+      { section: t('sec.operations', 'Enterprise Operations') },
+      { to: '/admin', label: t('nav.dashboard', 'Executive Operations Dashboard'), icon: LayoutDashboard, exact: true },
+      { to: '/admin/clients', label: t('nav.clients', 'Client Accounts Directory'), icon: Users, badge: safeClients.length },
+      { to: '/admin/projects', label: t('nav.projects', 'Project Portfolio & Milestones'), icon: Briefcase, badge: activeProjectsCount },
+      { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
 
-      { section: 'Commercial Governance' },
-      { to: '/admin/services', label: 'Enterprise Services Catalogue', icon: Layers },
-      { to: '/admin/crm', label: 'Enterprise CRM & Sales Pipeline', icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
-      { to: '/admin/finance', label: 'Fiscal Operations & Invoicing', icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
+      { section: t('sec.commercial', 'Commercial Governance') },
+      { to: '/admin/services', label: t('nav.services', 'Enterprise Services Catalogue'), icon: Layers },
+      { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
+      { to: '/admin/finance', label: t('nav.finance', 'Fiscal Operations & Invoicing'), icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
 
-      { section: 'Human Capital & Delivery' },
-      { to: '/admin/team', label: 'Workforce Roster & Attendance', icon: UserCheck },
-      { to: '/admin/support', label: 'Service Desk & SLA Governance', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
-      { to: '/admin/documents', label: 'Compliance Vault & Records', icon: FileText },
-      { to: '/admin/calendar', label: 'Corporate Calendar & Sessions', icon: Calendar },
+      { section: t('sec.humanCapital', 'Human Capital & Delivery') },
+      { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck },
+      { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk & SLA Governance'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+      { to: '/admin/documents', label: t('nav.documents', 'Compliance Vault & Records'), icon: FileText },
+      { to: '/admin/calendar', label: t('nav.calendar', 'Corporate Calendar & Sessions'), icon: Calendar },
 
-      { section: 'Governance & Intelligence' },
-      { to: '/admin/cms', label: 'Digital Publishing & Web CMS', icon: Globe },
-      { to: '/admin/analytics', label: 'Executive Intelligence & Analytics', icon: BarChart3 },
-      { to: '/admin/security', label: 'Information Security & RBAC Governance', icon: ShieldCheck }
+      { section: t('sec.governance', 'Governance & Intelligence') },
+      { to: '/admin/cms', label: t('nav.cms', 'Digital Publishing & Web CMS'), icon: Globe },
+      { to: '/admin/analytics', label: t('nav.analytics', 'Executive Intelligence & Analytics'), icon: BarChart3 },
+      { to: '/admin/security', label: t('nav.security', 'Information Security & RBAC Governance'), icon: ShieldCheck }
     ];
   };
 
@@ -397,7 +398,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               >
                 <Languages size={15} color="var(--adm-primary)" />
                 <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  {language === 'hi' ? 'हिन्दी' : language === 'mr' ? 'मराठी' : 'ENG'}
+                  {language.toUpperCase()}
                 </span>
                 <ChevronDown size={12} />
               </button>
@@ -408,7 +409,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
                     right: 0,
-                    width: '180px',
+                    width: '220px',
                     background: 'var(--adm-surface)',
                     border: '1px solid var(--adm-border)',
                     borderRadius: 'var(--adm-radius)',
@@ -421,68 +422,34 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   }}
                 >
                   <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', padding: '4px 8px', textTransform: 'uppercase', fontWeight: 800 }}>
-                    Select Language / भाषा निवडा
+                    Select Language / भाषा निवडा ({SUPPORTED_LANGUAGES.length})
                   </div>
-                  <button
-                    onClick={() => { setLanguage('en'); setShowLangMenu(false); }}
-                    style={{
-                      padding: '8px 10px',
-                      background: language === 'en' ? 'var(--adm-primary-soft)' : 'transparent',
-                      color: language === 'en' ? 'var(--adm-primary)' : 'var(--adm-text)',
-                      border: 'none',
-                      borderRadius: '6px',
-                      textAlign: 'left',
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}
-                  >
-                    <span>English (Official)</span>
-                    {language === 'en' && <CheckCircle2 size={13} />}
-                  </button>
-                  <button
-                    onClick={() => { setLanguage('hi'); setShowLangMenu(false); }}
-                    style={{
-                      padding: '8px 10px',
-                      background: language === 'hi' ? 'var(--adm-primary-soft)' : 'transparent',
-                      color: language === 'hi' ? 'var(--adm-primary)' : 'var(--adm-text)',
-                      border: 'none',
-                      borderRadius: '6px',
-                      textAlign: 'left',
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}
-                  >
-                    <span>हिन्दी (Hindi)</span>
-                    {language === 'hi' && <CheckCircle2 size={13} />}
-                  </button>
-                  <button
-                    onClick={() => { setLanguage('mr'); setShowLangMenu(false); }}
-                    style={{
-                      padding: '8px 10px',
-                      background: language === 'mr' ? 'var(--adm-primary-soft)' : 'transparent',
-                      color: language === 'mr' ? 'var(--adm-primary)' : 'var(--adm-text)',
-                      border: 'none',
-                      borderRadius: '6px',
-                      textAlign: 'left',
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}
-                  >
-                    <span>मराठी (Maharashtra)</span>
-                    {language === 'mr' && <CheckCircle2 size={13} />}
-                  </button>
+                  <div style={{ maxHeight: '320px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    {SUPPORTED_LANGUAGES.map(lang => (
+                      <button
+                        key={lang.code}
+                        onClick={() => { setLanguage(lang.code); setShowLangMenu(false); }}
+                        style={{
+                          padding: '7px 10px',
+                          background: language === lang.code ? 'var(--adm-primary-soft)' : 'transparent',
+                          color: language === lang.code ? 'var(--adm-primary)' : 'var(--adm-text)',
+                          border: 'none',
+                          borderRadius: '6px',
+                          textAlign: 'left',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <span>{lang.nativeLabel}</span>
+                        {language === lang.code && <CheckCircle2 size={13} color="var(--adm-primary)" />}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

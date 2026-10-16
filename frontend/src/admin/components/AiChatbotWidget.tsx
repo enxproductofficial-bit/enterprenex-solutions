@@ -35,16 +35,31 @@ export const AiChatbotWidget: React.FC = () => {
   const [isThinking, setIsThinking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Initial greeting based on active language
+  // Initial greeting based on active language (Supports all 10 languages)
   const getGreeting = () => {
     const name = currentUser?.name || 'Colleague';
-    if (language === 'hi') {
-      return `नमस्ते **${name}**! मैं एंटरप्रेनेक्स EWMS एआई कोपायलट हूँ। मैं आपकी छुट्टियों, शिफ्ट के नियमों, लंबित कार्यों, वेतन गणना और कंपनी नीतियों में कैसे सहायता कर सकता हूँ?`;
+    switch (language) {
+      case 'hi':
+        return `नमस्ते **${name}**! मैं एंटरप्रेनेक्स EWMS एआई कोपायलट हूँ। मैं आपकी छुट्टियों, शिफ्ट के नियमों, लंबित कार्यों, वेतन गणना और नीतियों में कैसे सहायता कर सकता हूँ?`;
+      case 'mr':
+        return `नमस्कार **${name}**! मी एंटरप्रेनेक्स EWMS एआय कोपायलट आहे. मी तुम्हाला सुट्ट्या, कामाच्या वेळा, प्रलंबित कार्ये, वेतन गणना आणि कंपनीच्या नियमांबद्दल कशी मदत करू शकतो?`;
+      case 'te':
+        return `నమస్కారం **${name}**! నేను ఎంటర్‌ప్రెనెక్స్ EWMS AI కోపైలట్. సెలవులు, షిఫ్ట్ సమయాలు, పెండింగ్ పనులు, జీతం లెక్కింపుల గురించి మీకు ఎలా సహాయపడగలను?`;
+      case 'ta':
+        return `வணக்கம் **${name}**! நான் என்டர்பிரனக்ஸ் EWMS AI உதவியாளர். விடுப்பு இருப்பு, பணி நேரம், நிலுவையில் உள்ள பணிகள் மற்றும் சம்பள கணக்கீடு குறித்து நான் உங்களுக்கு எவ்வாறு உதவ முடியும்?`;
+      case 'kn':
+        return `ನಮಸ್ಕಾರ **${name}**! ನಾನು ಎಂಟರ್‌ಪ್ರೆನೆಕ್ಸ್ EWMS AI ಸಹಾಯಕ. ರಜೆಗಳು, ಶಿಫ್ಟ್ ನಿಯಮಗಳು, ಬಾಕಿ ಕೆಲಸಗಳು ಮತ್ತು ವೇತನ ಲೆಕ್ಕಾಚಾರದಲ್ಲಿ ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?`;
+      case 'bn':
+        return `নমস্কার **${name}**! আমি এন্টারপ্রেনেক্স EWMS এআই কোপাইলট। ছুটি, শিফটের সময়, বাকি কাজ এবং বেতন গণনায় কীভাবে সাহায্য করতে পারি?`;
+      case 'gu':
+        return `નમસ્તે **${name}**! હું એન્ટરપ્રેનેક્સ EWMS AI કોપાયલટ છું. રજાઓ, શિફ્ટ નિયમો, બાકી કાર્યો અને પગાર ગણતરીમાં હું તમને કેવી રીતે મદદ કરી શકું?`;
+      case 'es':
+        return `¡Hola **${name}**! Soy el copiloto de IA de Enterprenex EWMS. ¿Cómo puedo ayudarte hoy con tus días de vacaciones, turnos, tareas pendientes o cálculo de nómina?`;
+      case 'de':
+        return `Hallo **${name}**! Ich bin der Enterprenex EWMS KI-Copilot. Wie kann ich Ihnen heute bei Urlaubstagen, Schichtzeiten, offenen Aufgaben oder der Gehaltsberechnung helfen?`;
+      default:
+        return `Hello **${name}**! I am your **Enterprenex EWMS AI Copilot**. How can I assist you with your leave balances, shift rules, assigned deliverables, payroll calculations, or corporate compliance policies today?`;
     }
-    if (language === 'mr') {
-      return `नमस्कार **${name}**! मी एंटरप्रेनेक्स EWMS एआय कोपायलट आहे. मी तुम्हाला सुट्ट्या, कामाच्या वेळा, प्रलंबित कार्ये, वेतन गणना आणि कंपनीच्या नियमांबद्दल कशी मदत करू शकतो?`;
-    }
-    return `Hello **${name}**! I am your **Enterprenex EWMS AI Copilot**. How can I assist you with your leave balances, shift rules, assigned tasks, payroll calculations, or corporate compliance policies today?`;
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
@@ -59,115 +74,145 @@ export const AiChatbotWidget: React.FC = () => {
   // Update greeting if language changes and only initial message is present
   useEffect(() => {
     setMessages(prev => {
-      if (prev.length === 1 && prev[0].id === 'init-1') {
-        return [{
-          id: 'init-1',
-          sender: 'assistant',
-          text: getGreeting(),
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }];
+      if (prev.length <= 1) {
+        return [
+          {
+            id: 'init-' + language,
+            sender: 'assistant',
+            text: getGreeting(),
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ];
       }
       return prev;
     });
   }, [language, currentUser?.name]);
 
+  // Scroll to bottom on new message
   useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, isThinking]);
 
-  // Knowledge Engine Generator
+  // Knowledge Base Query Evaluator
   const generateAiResponse = (query: string): string => {
     const q = query.toLowerCase();
 
     // 1. Leave Balances Inquiry
-    if (q.includes('leave') || q.includes('holiday') || q.includes('vacation') || q.includes('सुट्टी') || q.includes('छुट्टी')) {
-      const userLeaves = leaves.filter(l => l.employeeName?.toLowerCase() === currentUser?.name?.toLowerCase());
+    if (q.includes('leave') || q.includes('holiday') || q.includes('vacation') || q.includes('रजा') || q.includes('छुट्टी') || q.includes('సెలవు') || q.includes('விடுப்பு') || q.includes('ರಜೆ') || q.includes('ছুটি') || q.includes('રજા') || q.includes('vacaciones') || q.includes('urlaub')) {
+      const userLeaves = leaves.filter(
+        l => l.employeeName?.toLowerCase().includes((currentUser?.name || '').toLowerCase()) ||
+             l.employeeName?.toLowerCase().includes((currentUser?.employeeId || '').toLowerCase())
+      );
       const approvedCount = userLeaves.filter(l => l.status === 'Approved').length;
       const pendingCount = userLeaves.filter(l => l.status === 'Pending').length;
 
+      const casualQuota = 12;
+      const sickQuota = 8;
+      const earnedQuota = 15;
+      const remainingCasual = Math.max(0, casualQuota - approvedCount);
+
       if (language === 'hi') {
-        return `📊 **आपकी अवकाश (Leave) स्थिति:**\n\n` +
-          `• **आकस्मिक अवकाश (Casual Leave - CL):** 12 दिन प्रति वर्ष (शेष: ~${Math.max(0, 12 - approvedCount)} दिन)\n` +
-          `• **चिकित्सा अवकाश (Sick Leave - SL):** 8 दिन प्रति वर्ष\n` +
-          `• **अर्जित अवकाश (Earned Leave - EL):** 15 दिन प्रति वर्ष (10 दिन तक अगले वर्ष अग्रसारित)\n` +
-          `• **प्रलंबित आवेदन:** ${pendingCount} आवेदन अनुमोदन हेतु प्रतीक्षारत\n\n` +
-          `*नोट: 3 दिन से अधिक बीमारी अवकाश के लिए अधिकृत चिकित्सा प्रमाणपत्र अनिवार्य है (नीति: EPX-POL-002)।*`;
+        return `🌴 **आपकी वैधानिक अवकाश शेष राशि (वार्षिक कोटा):**\n\n` +
+          `• **आकस्मिक अवकाश (CL):** 12 दिन / वर्ष (शेष: ~${remainingCasual} दिन)\n` +
+          `• **चिकित्सा अवकाश (SL):** 8 दिन / वर्ष\n` +
+          `• **अर्जित / वार्षिक अवकाश (EL):** 15 दिन / वर्ष (अधिकतम 10 दिन अगले वर्ष ले जाए जा सकते हैं)\n\n` +
+          `📌 **वर्तमान स्थिति:** ${approvedCount} स्वीकृत | ${pendingCount} समीक्षाधीन।\n` +
+          `*आप टीम पेज के 'Statutory Leave Applications' टैब से तुरंत नया अवकाश आवेदन जमा कर सकते हैं।*`;
       }
       if (language === 'mr') {
-        return `📊 **तुमची रजा (Leave) स्थिती:**\n\n` +
-          `• **किरकोळ रजा (Casual Leave - CL):** वर्षाला १२ दिवस (शिल्लक: ~${Math.max(0, 12 - approvedCount)} दिवस)\n` +
-          `• **वैद्यकीय रजा (Sick Leave - SL):** वर्षाला ८ दिवस\n` +
-          `• **हक्काची रजा (Earned Leave - EL):** वर्षाला १५ दिवस\n` +
-          `• **प्रलंबित अर्ज:** ${pendingCount} अर्ज मंजुरीच्या प्रतीक्षेत\n\n` +
-          `*टीप: ३ दिवसांपेक्षा जास्त आजारपणाच्या रजेसाठी वैद्यकीय प्रमाणपत्र आवश्यक आहे (धोरण: EPX-POL-002).*`;
+        return `🌴 **तुमचा वैधानिक रजा शिल्लक कोटा (वार्षिक):**\n\n` +
+          `• **किरकोळ रजा (CL):** 12 दिवस / वर्ष (शिल्लक: ~${remainingCasual} दिवस)\n` +
+          `• **वैद्यकीय रजा (SL):** 8 दिवस / वर्ष\n` +
+          `• **हक्काची रजा (EL):** 15 दिवस / वर्ष (कमाल 10 दिवस पुढे ओढले जाऊ शकतात)\n\n` +
+          `📌 **सध्याची स्थिती:** ${approvedCount} मंजूर | ${pendingCount} प्रलंबित अर्ज.\n` +
+          `*तुम्ही टीम पेजवरून तात्काळ नवीन रजेसाठी अर्ज करू शकता.*`;
       }
-      return `📊 **Your Statutory Leave Balances (Annual Allotment):**\n\n` +
-        `• **Casual Leave (CL):** 12 Days / year (Available: ~${Math.max(0, 12 - approvedCount)} days)\n` +
+      if (language === 'te') {
+        return `🌴 **మీ చట్టబద్ధమైన సెలవు బ్యాలెన్స్ (వార్షిక కోటా):**\n\n` +
+          `• **కాజువల్ లీవ్ (CL):** 12 రోజులు (మిగిలినవి: ~${remainingCasual} రోజులు)\n` +
+          `• **సిక్ లీవ్ (SL):** 8 రోజులు / సంవత్సరం\n` +
+          `• **ప్రివిలేజ్ లీవ్ (EL):** 15 రోజులు / సంవత్సరం\n\n` +
+          `📌 **ప్రస్తుత స్థితి:** ${approvedCount} ఆమోదించబడింది | ${pendingCount} పెండింగ్‌లో ఉన్నాయి.`;
+      }
+      if (language === 'es') {
+        return `🌴 **Tu Saldo de Vacaciones y Licencias Estatutarias:**\n\n` +
+          `• **Licencia Casual (CL):** 12 días / año (Disponibles: ~${remainingCasual} días)\n` +
+          `• **Licencia por Enfermedad (SL):** 8 días / año\n` +
+          `• **Vacaciones Pagadas (EL):** 15 días / año\n\n` +
+          `📌 **Estado Actual:** ${approvedCount} Aprobadas | ${pendingCount} en Revisión.`;
+      }
+      if (language === 'de') {
+        return `🌴 **Ihr Gesetzliches Urlaubsguthaben (Jahreskontingent):**\n\n` +
+          `• **Sonderurlaub (CL):** 12 Tage / Jahr (Verfügbar: ~${remainingCasual} Tage)\n` +
+          `• **Krankheitsurlaub (SL):** 8 Tage / Jahr\n` +
+          `• **Jahresurlaub (EL):** 15 Tage / Jahr\n\n` +
+          `📌 **Status:** ${approvedCount} Genehmigt | ${pendingCount} Ausstehend.`;
+      }
+
+      return `🌴 **Your Statutory Leave Balances (Annual Allotment):**\n\n` +
+        `• **Casual Leave (CL):** 12 Days / year (Available: ~${remainingCasual} days)\n` +
         `• **Sick / Medical Leave (SL):** 8 Days / year\n` +
-        `• **Earned / Annual Leave (EL):** 15 Days / year (Max 10 days carry forward)\n` +
-        `• **Pending Leave Applications:** ${pendingCount} pending Manager/HR review\n\n` +
-        `*Policy Reference: EPX-POL-002 (Maharashtra Shops & Establishments Act).*`;
+        `• **Earned / Annual Leave (EL):** 15 Days / year (Max 10 days carry forward)\n\n` +
+        `📌 **Your Status:** ${approvedCount} Approved | ${pendingCount} Pending Review.\n` +
+        `*You can submit a formal application directly under Team & Attendance → Statutory Leave Applications.*`;
     }
 
-    // 2. Shift timing, late marks, attendance
-    if (q.includes('shift') || q.includes('timing') || q.includes('late') || q.includes('attendance') || q.includes('हजेरी') || q.includes('उपस्थिति') || q.includes('समय')) {
-      const todayRecord = attendance.find(a => a.employeeName?.toLowerCase() === currentUser?.name?.toLowerCase());
-
+    // 2. Shift Timings & Late Mark Policy
+    if (q.includes('shift') || q.includes('time') || q.includes('late') || q.includes('attendance') || q.includes('हजेरी') || q.includes('समय') || q.includes('वेळ') || q.includes('హాజరు') || q.includes('வருகை') || q.includes('turno')) {
       if (language === 'hi') {
-        return `⏰ **शिफ्ट समय एवं लेट मार्क नीति (EPX-POL-002):**\n\n` +
-          `• **आधिकारिक समय:** प्रातः 09:30 AM से सायं 06:30 PM IST (कुल 9 घंटे)\n` +
-          `• **लेट मार्क नियम:** प्रातः 09:30 AM के बाद चेक-इन स्वतः लेट मार्क में दर्ज होता है।\n` +
-          `• **हाफ-डे नियम:** 4 से 5 घंटे की कार्य अवधि को हाफ-डे गिना जाता है। 4 घंटे से कम को अनुपस्थित माना जाता है।\n` +
-          `• **आज की स्थिति:** ${todayRecord ? `चेक-इन: ${todayRecord.checkIn || '-'} (${todayRecord.status})` : 'आज अभी तक चेक-इन दर्ज नहीं हुआ है।'}`;
+        return `⏰ **कॉर्पोरेट शिफ्ट एवं लेट मार्क नीति (EPX-POL-002):**\n\n` +
+          `• **मानक कार्य समय:** प्रातः 09:30 AM से सायं 06:30 PM IST (सोमवार से शुक्रवार)\n` +
+          `• **लेट मार्क नियम:** प्रातः 09:30 AM के बाद चेक-इन करने पर स्वचालित 'Late Mark' दर्ज होता है। 09:45 AM तक 15 मिनट की रियायत उपलब्ध है।\n` +
+          `• **हाफ-डे गणना:** 4.0 से 5.0 घंटे काम करने पर आधा दिन (Half-Day) माना जाता है। 4 घंटे से कम काम करने पर अनाधिकृत अनुपस्थिति मानी जाती है।`;
       }
       if (language === 'mr') {
-        return `⏰ **कामाची वेळ आणि लेट मार्क धोरण (EPX-POL-002):**\n\n` +
-          `• **अधिकृत वेळ:** सकाळी ०९:३० ते संध्याकाळी ०६:३० IST (एकूण ९ तास)\n` +
-          `• **लेट मार्क:** सकाळी ०९:३० नंतर हजेरी लावल्यास लेट मार्क नोंदवला जातो.\n` +
-          `• **हाफ-डे नियम:** ४ ते ५ तास काम केल्यास अर्धा दिवस धरला जातो. ४ तासांपेक्षा कमी असल्यास गैरहजर धरले जाते.\n` +
-          `• **आजची हजेरी:** ${todayRecord ? `चेक-इन: ${todayRecord.checkIn || '-'} (${todayRecord.status})` : 'आज अजून चेक-इन केलेले नाही.'}`;
+        return `⏰ **कॉर्पोरेट शिफ्ट आणि लेट मार्क नियम (EPX-POL-002):**\n\n` +
+          `• **कामाची अधिकृत वेळ:** सकाळी 09:30 AM ते संध्याकाळी 06:30 PM IST (सोमवार ते शुक्रवार)\n` +
+          `• **लेट मार्क नियम:** सकाळी 09:30 नंतर चेक-इन केल्यास सिस्टीममध्ये 'Late Mark' नोंदवला जातो. 09:45 पर्यंत 15 मिनिटांची सवलت आहे.\n` +
+          `• **हाफ-डे नियम:** 4 ते 5 तास कामाची नोंद झाल्यास अर्धा दिवस (Half Day) धरला जातो.`;
       }
-      return `⏰ **Shift Timing & Attendance Regulations (EPX-POL-002):**\n\n` +
-        `• **Official Working Hours:** 09:30 AM – 06:30 PM IST (9 Hours incl. lunch break)\n` +
-        `• **Late Mark Threshold:** Check-in after 09:30 AM automatically triggers a Late Mark.\n` +
-        `• **Half-Day Rule:** 4.0 to 5.0 hours duration is recorded as Half-Day. Less than 4 hours is logged as Absent.\n` +
-        `• **Your Today's Status:** ${todayRecord ? `Logged at ${todayRecord.checkIn || '-'} (${todayRecord.status})` : 'No punch-in recorded yet today.'}`;
+      return `⏰ **Corporate Shift & Late Mark Regulations (EPX-POL-002):**\n\n` +
+        `• **Core Working Hours:** 09:30 AM – 06:30 PM IST (Monday to Friday, 9h shift)\n` +
+        `• **Late Mark Rule:** Check-in past 09:30 AM IST logs an automated Late Mark. A 15-minute grace window exists up to 09:45 AM.\n` +
+        `• **Half-Day Threshold:** Working between 4.0 and 5.0 hours is audited as a Half-Day. Less than 4.0 hours counts as an unexcused absence unless pre-approved.`;
     }
 
-    // 3. Pending tasks
-    if (q.includes('task') || q.includes('work') || q.includes('sprint') || q.includes('कार्य') || q.includes('काम') || q.includes('प्रकल्प')) {
-      const myAssignedTasks = tasks.filter(t => 
-        (t.assignedTo || '').toLowerCase().includes((currentUser?.name || '').toLowerCase()) ||
-        (currentUser?.employeeId && (t.assignedTo || '').includes(currentUser.employeeId))
+    // 3. Assigned Deliverables / Tasks
+    if (q.includes('task') || q.includes('work') || q.includes('todo') || q.includes('deliverable') || q.includes('काम') || q.includes('कार्य') || q.includes('పని') || q.includes('பணி') || q.includes('tarea')) {
+      const myTasks = tasks.filter(
+        t => t.assignedTo?.toLowerCase().includes((currentUser?.name || '').toLowerCase()) ||
+             t.assignedTo?.toLowerCase().includes((currentUser?.employeeId || '').toLowerCase())
       );
-      const pendingTasks = myAssignedTasks.filter(t => t.status !== 'Done');
+      const pendingTasks = myTasks.filter(t => t.status !== 'Done');
 
       if (pendingTasks.length === 0) {
-        return language === 'hi'
-          ? `🎉 बहुत बढ़िया! आपके पास वर्तमान में कोई अधूरा कार्य नहीं है। सभी कार्य पूर्ण हैं!`
-          : language === 'mr'
-          ? `🎉 अभिनंदन! तुमच्याकडे सध्या कोणतेही प्रलंबित काम नाही. सर्व कामे पूर्ण झाली आहेत!`
-          : `🎉 Excellent! You have **0 pending tasks** right now. All your assigned deliverables are up to date!`;
+        return `🎉 **Great news!** You currently have **0 pending tasks**. All assigned engineering deliverables have been completed. Check the Sprint Backlog to pick up new workstreams.`;
       }
 
-      const list = pendingTasks.slice(0, 3).map(t => `• **${t.title}** (${t.status}) - अंतिम तिथि: ${t.dueDate}`).join('\n');
-      return `📋 **आपके सक्रिय कार्य (${pendingTasks.length} कुल):**\n\n${list}\n\n*कार्य शुरू करने पर स्प्रिंट स्टॉपवॉच (Live Stopwatch) चालू करना न भूलें!*`;
+      const taskList = pendingTasks
+        .slice(0, 4)
+        .map(t => `• **${t.title}** [${t.status}] — Priority: *${t.priority}* (Due: ${t.dueDate || 'Sprint End'})`)
+        .join('\n');
+
+      return `📋 **Your Active Sprint Deliverables (${pendingTasks.length} Pending):**\n\n` +
+        taskList +
+        `\n\n*View full details or start the stopwatch under Sprint Backlog & Kanban.*`;
     }
 
-    // 4. Statutory Company Info: GSTIN, CIN, Office
-    if (q.includes('gstin') || q.includes('cin') || q.includes('company') || q.includes('office') || q.includes('कंपनी') || q.includes('जीएसटी')) {
-      return `🏛️ **Enterprenex Solutions Private Limited (Corporate Registry):**\n\n` +
-        `• **Corporate Identification Number (CIN):** U72900PN2023PTC221940\n` +
-        `• **GSTIN:** 27AAACB2212P1ZX (Maharashtra, State Code 27)\n` +
+    // 4. Corporate Information & Identity
+    if (q.includes('gst') || q.includes('cin') || q.includes('company') || q.includes('director') || q.includes('address') || q.includes('कंपनी') || q.includes('पत्ता')) {
+      return `🏢 **Enterprenex Solutions Private Limited (Corporate Identity):**\n\n` +
+        `• **CIN:** \`U72200PN2026PTC239841\`\n` +
+        `• **GSTIN:** \`27AAXPE1206M1ZV\` (Maharashtra Jurisdiction)\n` +
         `• **Managing Director:** Rohit Pawar\n` +
-        `• **Registered Domain:** https://enterprenexsolution.com\n` +
-        `• **Compliance Classification:** Private Limited Company (Incorporated under Companies Act 2013).`;
+        `• **Corporate Head Office:** Tech Park Tower B, Shivajinagar, Pune, Maharashtra 411005\n` +
+        `• **Official Portal:** \`https://enterprenex.solutions\``;
     }
 
-    // 5. POSH / Grievance Redressal
-    if (q.includes('posh') || q.includes('harassment') || q.includes('grievance') || q.includes('complaint') || q.includes('तक्रार')) {
+    // 5. POSH & Compliance
+    if (q.includes('posh') || q.includes('harassment') || q.includes('grievance') || q.includes('complaint') || q.includes('तक्रार') || q.includes('शिकायत')) {
       return `🛡️ **Internal Complaints Committee (ICC) & POSH Policy (EPX-POL-004):**\n\n` +
         `Enterprenex Solutions maintains strict zero tolerance towards workplace harassment, discrimination, or hostile conduct.\n\n` +
         `• **Dedicated Grievance Email:** \`posh@enterprenex.solutions\`\n` +
@@ -176,15 +221,15 @@ export const AiChatbotWidget: React.FC = () => {
     }
 
     // 6. Payroll & Salary Formula
-    if (q.includes('salary') || q.includes('payroll') || q.includes('payslip') || q.includes('pf') || q.includes('वेतन') || q.includes('पगार')) {
+    if (q.includes('salary') || q.includes('payroll') || q.includes('payslip') || q.includes('pf') || q.includes('वेतन') || q.includes('पगार') || q.includes('జీతం') || q.includes('சம்பளம்') || q.includes('sueldo') || q.includes('gehalt')) {
       return `💵 **Statutory Indian Payroll Formula (Rule-Based):**\n\n` +
         `• **Basic Salary:** 50% of Monthly Gross CTC\n` +
         `• **House Rent Allowance (HRA):** 30% of Monthly Gross CTC\n` +
         `• **Special Allowance:** 20% of Monthly Gross CTC\n` +
         `• **Provident Fund (EPF):** 12% of Basic Salary (Statutory Employee Contribution)\n` +
         `• **Professional Tax (PT):** ₹200 flat (Maharashtra State Regulation)\n` +
-        `• **TDS:** Deducted as per applicable Income Tax slab if CTC exceeds annual tax threshold.\n\n` +
-        `*आप फाइनेंस या टीम पेज से अपना डिजिटल पे-स्लिप एवं फॉर्म 16 पार्ट B डाउनलोड कर सकते हैं।*`;
+        `• **TDS:** Deducted as per applicable Income Tax slab.\n\n` +
+        `*Download your verified payslip or Form 16 Part B from Workforce Roster → Payslips.*`;
     }
 
     // Default Fallback
@@ -240,7 +285,7 @@ export const AiChatbotWidget: React.FC = () => {
       };
       setMessages(prev => [...prev, aiMsg]);
       setIsThinking(false);
-    }, 450);
+    }, 400);
   };
 
   return (
@@ -261,13 +306,12 @@ export const AiChatbotWidget: React.FC = () => {
             borderRadius: '50px',
             background: 'linear-gradient(135deg, #F66135 0%, #EA580C 100%)',
             color: '#ffffff',
-            border: '2px solid rgba(255, 255, 255, 0.25)',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
             boxShadow: '0 10px 25px rgba(246, 97, 53, 0.45)',
             cursor: 'pointer',
             fontWeight: 700,
             fontSize: '0.9rem',
-            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-            backdropFilter: 'blur(10px)'
+            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
           onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0) scale(1)')}
@@ -300,22 +344,22 @@ export const AiChatbotWidget: React.FC = () => {
         </button>
       )}
 
-      {/* ── FLOATING CHAT DIALOG WINDOW ── */}
+      {/* ── FLOATING CHAT DIALOG WINDOW (Theme-Aware: Crisp in Light & Dark Mode) ── */}
       {isOpen && (
         <div
           style={{
             position: 'fixed',
             bottom: '24px',
             right: '24px',
-            width: isExpanded ? '540px' : '380px',
-            height: isExpanded ? '650px' : '520px',
+            width: isExpanded ? '540px' : '390px',
+            height: isExpanded ? '660px' : '530px',
             maxWidth: 'calc(100vw - 32px)',
             maxHeight: 'calc(100vh - 48px)',
             zIndex: 10000,
-            background: 'var(--adm-surface, #111827)',
-            border: '1px solid var(--adm-border, rgba(255, 255, 255, 0.12))',
+            background: 'var(--adm-surface, #ffffff)',
+            border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.12))',
             borderRadius: '16px',
-            boxShadow: '0 20px 45px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(246, 97, 53, 0.25)',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(246, 97, 53, 0.2)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -326,8 +370,8 @@ export const AiChatbotWidget: React.FC = () => {
           <div
             style={{
               padding: '14px 18px',
-              background: 'linear-gradient(135deg, rgba(246, 97, 53, 0.15) 0%, rgba(17, 24, 39, 0.95) 100%)',
-              borderBottom: '1px solid var(--adm-border, rgba(255, 255, 255, 0.1))',
+              background: 'linear-gradient(135deg, rgba(246, 97, 53, 0.12) 0%, var(--adm-surface, #ffffff) 100%)',
+              borderBottom: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between'
@@ -343,14 +387,15 @@ export const AiChatbotWidget: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#ffffff'
+                  color: '#ffffff',
+                  boxShadow: '0 4px 10px rgba(246, 97, 53, 0.35)'
                 }}
               >
                 <Bot size={18} />
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 800, color: '#ffffff' }}>
+                  <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 800, color: 'var(--adm-text, #111827)' }}>
                     {t('ai.title', 'Enterprenex EWMS Copilot')}
                   </h3>
                   <span
@@ -366,8 +411,8 @@ export const AiChatbotWidget: React.FC = () => {
                     LIVE
                   </span>
                 </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim, #94a3b8)' }}>
-                  {currentUser?.name} • {currentUser?.role}
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim, #64748b)' }}>
+                  {currentUser?.name || 'Enterprenex Member'} • {currentUser?.role || 'Team'}
                 </div>
               </div>
             </div>
@@ -378,37 +423,53 @@ export const AiChatbotWidget: React.FC = () => {
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: 'var(--adm-text-dim, #94a3b8)',
+                  color: 'var(--adm-text-dim, #64748b)',
                   cursor: 'pointer',
-                  padding: '4px'
+                  padding: '6px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
-                title={isExpanded ? 'Collapse' : 'Expand'}
+                title={isExpanded ? 'Collapse' : 'Expand window'}
               >
-                {isExpanded ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+                {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </button>
+
               <button
-                onClick={() => setMessages([{ id: 'init-1', sender: 'assistant', text: getGreeting(), timestamp: 'Just now' }])}
+                onClick={() => setMessages([{
+                  id: 'init-' + Date.now(),
+                  sender: 'assistant',
+                  text: getGreeting(),
+                  timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }])}
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: 'var(--adm-text-dim, #94a3b8)',
+                  color: 'var(--adm-text-dim, #64748b)',
                   cursor: 'pointer',
-                  padding: '4px'
+                  padding: '6px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
-                title="Clear Chat History"
+                title="Clear conversation"
               >
-                <Trash2 size={15} />
+                <Trash2 size={16} />
               </button>
+
               <button
                 onClick={() => setIsOpen(false)}
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: '#ffffff',
+                  color: 'var(--adm-text-dim, #64748b)',
                   cursor: 'pointer',
-                  padding: '4px'
+                  padding: '6px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center'
                 }}
-                title="Close"
+                title="Close Copilot"
               >
                 <X size={18} />
               </button>
@@ -423,7 +484,8 @@ export const AiChatbotWidget: React.FC = () => {
               padding: '14px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '12px'
+              gap: '12px',
+              background: 'var(--adm-bg, #fafafa)'
             }}
           >
             {messages.map(msg => (
@@ -442,7 +504,7 @@ export const AiChatbotWidget: React.FC = () => {
                       width: '26px',
                       height: '26px',
                       borderRadius: '50%',
-                      background: 'var(--adm-primary-soft, rgba(246, 97, 53, 0.15))',
+                      background: 'var(--adm-primary-soft, rgba(246, 97, 53, 0.12))',
                       color: 'var(--adm-primary, #F66135)',
                       display: 'flex',
                       alignItems: 'center',
@@ -456,13 +518,18 @@ export const AiChatbotWidget: React.FC = () => {
                 )}
                 <div
                   style={{
-                    background: msg.sender === 'user' ? 'linear-gradient(135deg, #F66135 0%, #EA580C 100%)' : 'var(--adm-surface-hover, #1e293b)',
-                    color: '#ffffff',
+                    background: msg.sender === 'user'
+                      ? 'linear-gradient(135deg, #F66135 0%, #EA580C 100%)'
+                      : 'var(--adm-surface, #ffffff)',
+                    color: msg.sender === 'user'
+                      ? '#ffffff'
+                      : 'var(--adm-text, #111827)',
                     padding: '10px 14px',
                     borderRadius: msg.sender === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
                     fontSize: '0.82rem',
-                    lineHeight: '1.5',
-                    border: msg.sender === 'user' ? 'none' : '1px solid var(--adm-border, rgba(255, 255, 255, 0.08))',
+                    lineHeight: '1.55',
+                    border: msg.sender === 'user' ? 'none' : '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
+                    boxShadow: msg.sender === 'user' ? '0 2px 8px rgba(246, 97, 53, 0.3)' : '0 2px 6px rgba(0, 0, 0, 0.04)',
                     whiteSpace: 'pre-line'
                   }}
                 >
@@ -470,7 +537,7 @@ export const AiChatbotWidget: React.FC = () => {
                   <div
                     style={{
                       fontSize: '0.65rem',
-                      color: msg.sender === 'user' ? 'rgba(255, 255, 255, 0.7)' : 'var(--adm-text-dim, #64748b)',
+                      color: msg.sender === 'user' ? 'rgba(255, 255, 255, 0.8)' : 'var(--adm-text-dim, #64748b)',
                       marginTop: '4px',
                       textAlign: 'right'
                     }}
@@ -488,7 +555,7 @@ export const AiChatbotWidget: React.FC = () => {
                     width: '26px',
                     height: '26px',
                     borderRadius: '50%',
-                    background: 'var(--adm-primary-soft, rgba(246, 97, 53, 0.15))',
+                    background: 'var(--adm-primary-soft, rgba(246, 97, 53, 0.12))',
                     color: 'var(--adm-primary, #F66135)',
                     display: 'flex',
                     alignItems: 'center',
@@ -500,11 +567,12 @@ export const AiChatbotWidget: React.FC = () => {
                 </div>
                 <div
                   style={{
-                    background: 'var(--adm-surface-hover, #1e293b)',
+                    background: 'var(--adm-surface, #ffffff)',
+                    border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
                     padding: '8px 14px',
                     borderRadius: '14px',
                     fontSize: '0.78rem',
-                    color: 'var(--adm-text-dim, #94a3b8)',
+                    color: 'var(--adm-text-dim, #64748b)',
                     fontStyle: 'italic'
                   }}
                 >
@@ -519,8 +587,8 @@ export const AiChatbotWidget: React.FC = () => {
           <div
             style={{
               padding: '6px 12px',
-              background: 'var(--adm-bg, #0B0F19)',
-              borderTop: '1px solid var(--adm-border, rgba(255, 255, 255, 0.08))',
+              background: 'var(--adm-surface, #ffffff)',
+              borderTop: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
               display: 'flex',
               gap: '6px',
               overflowX: 'auto',
@@ -531,12 +599,13 @@ export const AiChatbotWidget: React.FC = () => {
               onClick={() => handleSendMessage(t('ai.promptLeaves', 'How many leaves do I have?'))}
               style={{
                 fontSize: '0.72rem',
-                padding: '4px 8px',
+                padding: '5px 10px',
                 borderRadius: '12px',
-                background: 'var(--adm-surface, #1e293b)',
-                border: '1px solid var(--adm-border, rgba(255, 255, 255, 0.1))',
-                color: 'var(--adm-text-muted, #94a3b8)',
-                cursor: 'pointer'
+                background: 'var(--adm-bg, #f4f4f5)',
+                border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
+                color: 'var(--adm-text, #374151)',
+                cursor: 'pointer',
+                fontWeight: 600
               }}
             >
               🌴 {t('ai.promptLeaves', 'Leaves Balance')}
@@ -545,12 +614,13 @@ export const AiChatbotWidget: React.FC = () => {
               onClick={() => handleSendMessage(t('ai.promptShift', 'What is today shift timing & late mark rule?'))}
               style={{
                 fontSize: '0.72rem',
-                padding: '4px 8px',
+                padding: '5px 10px',
                 borderRadius: '12px',
-                background: 'var(--adm-surface, #1e293b)',
-                border: '1px solid var(--adm-border, rgba(255, 255, 255, 0.1))',
-                color: 'var(--adm-text-muted, #94a3b8)',
-                cursor: 'pointer'
+                background: 'var(--adm-bg, #f4f4f5)',
+                border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
+                color: 'var(--adm-text, #374151)',
+                cursor: 'pointer',
+                fontWeight: 600
               }}
             >
               ⏰ {t('ai.promptShift', 'Shift & Late Mark')}
@@ -559,12 +629,13 @@ export const AiChatbotWidget: React.FC = () => {
               onClick={() => handleSendMessage(t('ai.promptTasks', 'Show my pending tasks'))}
               style={{
                 fontSize: '0.72rem',
-                padding: '4px 8px',
+                padding: '5px 10px',
                 borderRadius: '12px',
-                background: 'var(--adm-surface, #1e293b)',
-                border: '1px solid var(--adm-border, rgba(255, 255, 255, 0.1))',
-                color: 'var(--adm-text-muted, #94a3b8)',
-                cursor: 'pointer'
+                background: 'var(--adm-bg, #f4f4f5)',
+                border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
+                color: 'var(--adm-text, #374151)',
+                cursor: 'pointer',
+                fontWeight: 600
               }}
             >
               📋 {t('ai.promptTasks', 'My Tasks')}
@@ -573,12 +644,13 @@ export const AiChatbotWidget: React.FC = () => {
               onClick={() => handleSendMessage(t('ai.promptSalary', 'How is monthly payroll calculated?'))}
               style={{
                 fontSize: '0.72rem',
-                padding: '4px 8px',
+                padding: '5px 10px',
                 borderRadius: '12px',
-                background: 'var(--adm-surface, #1e293b)',
-                border: '1px solid var(--adm-border, rgba(255, 255, 255, 0.1))',
-                color: 'var(--adm-text-muted, #94a3b8)',
-                cursor: 'pointer'
+                background: 'var(--adm-bg, #f4f4f5)',
+                border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
+                color: 'var(--adm-text, #374151)',
+                cursor: 'pointer',
+                fontWeight: 600
               }}
             >
               💵 {t('ai.promptSalary', 'Payroll Rules')}
@@ -589,8 +661,8 @@ export const AiChatbotWidget: React.FC = () => {
           <div
             style={{
               padding: '10px 12px',
-              background: 'var(--adm-surface, #111827)',
-              borderTop: '1px solid var(--adm-border, rgba(255, 255, 255, 0.1))',
+              background: 'var(--adm-surface, #ffffff)',
+              borderTop: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
               display: 'flex',
               gap: '8px',
               alignItems: 'center'
@@ -606,12 +678,12 @@ export const AiChatbotWidget: React.FC = () => {
               placeholder={t('ai.askPlaceholder', 'Ask Copilot about leaves, shifts, policies, or tasks...')}
               style={{
                 flex: 1,
-                background: 'var(--adm-bg, #0B0F19)',
-                border: '1px solid var(--adm-border, rgba(255, 255, 255, 0.15))',
+                background: 'var(--adm-bg, #fafafa)',
+                border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.12))',
                 borderRadius: '20px',
                 padding: '8px 14px',
                 fontSize: '0.82rem',
-                color: '#ffffff',
+                color: 'var(--adm-text, #111827)',
                 outline: 'none'
               }}
             />
@@ -628,7 +700,8 @@ export const AiChatbotWidget: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                flexShrink: 0
+                flexShrink: 0,
+                boxShadow: '0 2px 6px rgba(246, 97, 53, 0.35)'
               }}
             >
               <Send size={15} />

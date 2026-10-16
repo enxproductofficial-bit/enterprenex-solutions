@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const EmployeePreviewDrawer = lazy(() =>
   import('../components/EmployeePreviewDrawer').then(m => ({ default: m.EmployeePreviewDrawer }))
@@ -144,6 +145,7 @@ export const TeamPage: React.FC = () => {
     updateAttendanceRecord,
     detectedIp
   } = useAdmin();
+  const { t } = useLanguage();
 
   const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenex.solutions' || currentUser?.email === 'director@enterprenexsolution.com';
   const isManagerOrHr =
@@ -1251,11 +1253,11 @@ export const TeamPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>{isRegularEmployee ? 'Human Capital Operations & Attendance Governance' : 'Enterprise Workforce Roster, Biometric Attendance & Human Capital Governance'}</h1>
+          <h1>{isRegularEmployee ? t('team.titleRegular', 'Human Capital Operations & Attendance Governance') : t('team.title', 'Enterprise Workforce Roster, Biometric Attendance & Human Capital Governance')}</h1>
           <p>
             {isRegularEmployee
-              ? 'Statutory biometric geo-fence verification (09:30 AM – 06:30 PM IST), attendance log history, statutory leave allocations (CL/SL/EL), and electronic payslip retrieval'
-              : 'Workforce capacity allocation, real-time biometric telemetry, statutory leave governance (Maharashtra Shops & Establishments Act), and compensation schedules'}
+              ? t('team.subtitleRegular', 'Statutory biometric geo-fence verification (09:30 AM – 06:30 PM IST), attendance log history, statutory leave allocations (CL/SL/EL), and electronic payslip retrieval')
+              : t('team.subtitle', 'Workforce capacity allocation, real-time biometric telemetry, statutory leave governance (Maharashtra Shops & Establishments Act), and compensation schedules')}
           </p>
         </div>
         <div className="adm-page-actions" style={{ flexWrap: 'wrap' }}>
@@ -1263,17 +1265,17 @@ export const TeamPage: React.FC = () => {
             <>
               <button className="adm-btn adm-btn-secondary" onClick={handleExportRosterCsv} title="Download Institutional Personnel Directory as CSV">
                 <Download size={15} />
-                <span>Export Roster CSV</span>
+                <span>{t('team.exportRoster', 'Export Roster CSV')}</span>
               </button>
               {canManageTeam && (
                 <>
                   <button className="adm-btn adm-btn-secondary" onClick={() => openIssueCertModal()} title="Execute Official Statutory Internship or Experience Certificate">
                     <Award size={15} color="#10b981" />
-                    <span>Issue Statutory Certificate</span>
+                    <span>{t('team.issueCert', 'Issue Statutory Certificate')}</span>
                   </button>
                   <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal}>
                     <Plus size={16} />
-                    <span>Onboard Personnel</span>
+                    <span>{t('team.onboard', '+ Onboard Personnel')}</span>
                   </button>
                 </>
               )}
@@ -1361,23 +1363,23 @@ export const TeamPage: React.FC = () => {
         <div className="adm-tabs" style={{ margin: 0, border: 'none', flexWrap: 'wrap', gap: '0.35rem' }}>
           {canManageTeam && (
             <button className={`adm-tab-btn ${tab === 'roster' ? 'active' : ''}`} onClick={() => setTab('roster')}>
-              Institutional Personnel Directory ({employees.length})
+              {t('team.tabRoster', 'Institutional Personnel Directory')} ({employees.length})
             </button>
           )}
           <button className={`adm-tab-btn ${tab === 'workload' ? 'active' : ''}`} onClick={() => setTab('workload')}>
-            Workforce Capacity & Utilization
+            {t('team.tabCapacity', 'Workforce Capacity & Utilization')}
           </button>
           <button className={`adm-tab-btn ${tab === 'skills' ? 'active' : ''}`} onClick={() => setTab('skills')}>
-            Competency Matrix & Skill Governance
+            {t('team.tabSkills', 'Competency Matrix & Skill Governance')}
           </button>
           <button className={`adm-tab-btn ${tab === 'kpis' ? 'active' : ''}`} onClick={() => setTab('kpis')}>
-            Corporate Objectives & OKR Engine
+            {t('team.tabOkrs', 'Corporate Objectives & OKR Engine')}
           </button>
           <button className={`adm-tab-btn ${tab === 'attendance' ? 'active' : ''}`} onClick={() => setTab('attendance')}>
-            {isRegularEmployee ? 'Personal Attendance Register & Geo-Check' : `Biometric Attendance Register (${attendance.length})`}
+            {isRegularEmployee ? 'Personal Attendance Register & Geo-Check' : `${t('team.tabAttendance', 'Biometric Attendance Register')} (${attendance.length})`}
           </button>
           <button className={`adm-tab-btn ${tab === 'leaves' ? 'active' : ''}`} onClick={() => setTab('leaves')}>
-            {canManageTeam ? `Statutory Leave Applications (${leaves.length})` : 'Personal Leave Application Register'}
+            {canManageTeam ? `${t('team.tabLeaves', 'Statutory Leave Applications')} (${leaves.length})` : 'Personal Leave Application Register'}
             {canManageTeam && pendingLeavesCount > 0 && (
               <span className="adm-badge adm-badge-warning" style={{ marginLeft: '6px', fontSize: '0.65rem' }}>
                 {pendingLeavesCount} Pending
@@ -1385,10 +1387,10 @@ export const TeamPage: React.FC = () => {
             )}
           </button>
           <button className={`adm-tab-btn ${tab === 'payroll' ? 'active' : ''}`} onClick={() => setTab('payroll')}>
-            Verified Compensation Payslips & Form 16
+            {t('team.tabPayroll', 'Verified Compensation Payslips & Form 16')}
           </button>
           <button className={`adm-tab-btn ${tab === 'policies' ? 'active' : ''}`} onClick={() => setTab('policies')}>
-            Corporate Governance Policies & Document Vault
+            {t('team.tabPolicies', 'Corporate Governance Policies & Document Vault')}
           </button>
         </div>
       </div>
@@ -1489,28 +1491,28 @@ export const TeamPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', fontWeight: 700, marginRight: '4px' }}>
-                  FILTER ROSTER:
+                  {t('team.filterRoster', 'FILTER ROSTER:')}
                 </span>
                 <button
                   onClick={() => setRosterFilter('all')}
                   className={`adm-btn adm-btn-sm ${rosterFilter === 'all' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
                   style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
                 >
-                  All ({employees.length})
+                  {t('team.filterAll', 'All')} ({employees.length})
                 </button>
                 <button
                   onClick={() => setRosterFilter('pending')}
                   className={`adm-btn adm-btn-sm ${rosterFilter === 'pending' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
                   style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
                 >
-                  ⏳ Pending Director Review ({pendingEmployees.length})
+                  ⏳ {t('team.filterPending', 'Pending Director Review')} ({pendingEmployees.length})
                 </button>
                 <button
                   onClick={() => setRosterFilter('approved')}
                   className={`adm-btn adm-btn-sm ${rosterFilter === 'approved' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
                   style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
                 >
-                  ✓ Approved ({approvedEmployees.length})
+                  ✓ {t('team.filterApproved', 'Approved')} ({approvedEmployees.length})
                 </button>
               </div>
 
@@ -1622,7 +1624,7 @@ export const TeamPage: React.FC = () => {
                           }`}
                           style={{ fontSize: '0.65rem' }}
                         >
-                          {emp.status}
+                          {emp.status === 'Active' ? t('team.active', 'Active') : emp.status}
                         </span>
                         <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.7rem', fontFamily: 'monospace', fontWeight: 700 }}>
                           {displayEmpId}
@@ -1751,7 +1753,7 @@ export const TeamPage: React.FC = () => {
                     <div style={{ marginBottom: '1rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', marginBottom: '4px' }}>
                         <span style={{ color: 'var(--adm-text-dim)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          Sprint Workload
+                          {t('team.sprintWorkload', 'Sprint Workload')}
                           {emp.workloadPercentage >= 100 && (
                             <span className="adm-badge adm-badge-warning" style={{ fontSize: '0.62rem', padding: '1px 5px' }}>
                               Full Capacity

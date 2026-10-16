@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { useLanguage } from '../i18n/LanguageContext';
 import {
   Users,
   Briefcase,
@@ -16,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const DashboardPage: React.FC = () => {
   const { clients, projects, invoices, leads, tickets, employees, auditLogs } = useAdmin();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [chartPeriod, setChartPeriod] = useState<'30D' | '90D' | '1Y'>('30D');
 
@@ -65,8 +67,8 @@ export const DashboardPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Executive Operations & Intelligence Dashboard</h1>
-          <p>Real-time operational telemetry, fiscal revenue realization, engineering capacity & portfolio workstream governance</p>
+          <h1>{t('dash.title', 'Executive Operations & Intelligence Dashboard')}</h1>
+          <p>{t('dash.subtitle', 'Real-time operational telemetry, fiscal revenue realization, engineering capacity & portfolio workstream governance')}</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-secondary" onClick={() => navigate('/admin/analytics')}>
@@ -85,7 +87,7 @@ export const DashboardPage: React.FC = () => {
         {/* 1. Total Clients */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Institutional Client Accounts</span>
+            <span className="adm-kpi-label">{t('dash.clients', 'Institutional Client Accounts')}</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text)', border: '1px solid var(--adm-border)' }}>
               <Users size={18} />
             </div>
@@ -100,7 +102,7 @@ export const DashboardPage: React.FC = () => {
         {/* 2. Active Projects */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Active Engineering Workstreams</span>
+            <span className="adm-kpi-label">{t('dash.projects', 'Active Engineering Workstreams')}</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-primary)', border: '1px solid var(--adm-border)' }}>
               <Briefcase size={18} />
             </div>
@@ -130,7 +132,7 @@ export const DashboardPage: React.FC = () => {
         {/* 4. Monthly Revenue */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Realized Net Revenue</span>
+            <span className="adm-kpi-label">{t('dash.revenue', 'Realized Net Revenue')}</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text)', border: '1px solid var(--adm-border)' }}>
               <TrendingUp size={18} />
             </div>
@@ -145,7 +147,7 @@ export const DashboardPage: React.FC = () => {
         {/* 5. Outstanding Payments */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Accounts Receivable Outstanding</span>
+            <span className="adm-kpi-label">{t('dash.outstanding', 'Accounts Receivable Outstanding')}</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text-muted)', border: '1px solid var(--adm-border)' }}>
               <CreditCard size={18} />
             </div>
