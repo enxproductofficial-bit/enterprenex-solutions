@@ -27,6 +27,7 @@ import {
   Sun,
   Moon,
   Languages,
+  CheckCircle2,
   Sparkles
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
