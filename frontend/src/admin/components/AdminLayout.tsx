@@ -69,11 +69,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Safe array references to prevent any undefined crashes
+  const safeTickets = tickets || [];
+  const safeInvoices = invoices || [];
+  const safeLeads = leads || [];
+  const safeProjects = projects || [];
+  const safeClients = clients || [];
+  const safeTasks = tasks || [];
+
   // Calculate live badge counters
-  const openTicketsCount = tickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length;
-  const pendingInvoicesCount = invoices.filter(i => i.status === 'Pending').length;
-  const newLeadsCount = leads.filter(l => l.status === 'New Lead').length;
-  const activeProjectsCount = projects.filter(p => p.status !== 'Delivered').length;
+  const openTicketsCount = safeTickets.filter(t => t && (t.status === 'Open' || t.status === 'In Progress')).length;
+  const pendingInvoicesCount = safeInvoices.filter(i => i && i.status === 'Pending').length;
+  const newLeadsCount = safeLeads.filter(l => l && l.status === 'New Lead').length;
+  const activeProjectsCount = safeProjects.filter(p => p && p.status !== 'Delivered').length;
 
   // Determine current user role
   const userRole = currentUser?.role || 'Super Admin';
@@ -88,7 +96,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       return [
         { section: 'My Work Portal' },
         { to: '/admin/team', label: 'My Attendance & Leave', icon: UserCheck },
-        { to: '/admin/tasks', label: 'My Tasks', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
+        { to: '/admin/tasks', label: 'My Tasks', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
         { to: '/admin/calendar', label: 'Community & Meetings', icon: Calendar },
         { to: '/admin/support', label: 'Raise a Ticket', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
         { to: '/admin/documents', label: 'My Documents & Certificate', icon: FileText }
@@ -100,9 +108,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       return [
         { section: 'Core Operations' },
         { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-        { to: '/admin/clients', label: 'Client Management', icon: Users, badge: clients.length },
+        { to: '/admin/clients', label: 'Client Management', icon: Users, badge: safeClients.length },
         { to: '/admin/projects', label: 'Project Lifecycle', icon: Briefcase, badge: activeProjectsCount },
-        { to: '/admin/tasks', label: 'Task Kanban & Sprints', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done').length },
+        { to: '/admin/tasks', label: 'Task Kanban & Sprints', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
 
         { section: 'Growth & Commerce' },
         { to: '/admin/services', label: 'Services Catalogue', icon: Layers },
@@ -123,9 +131,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     return [
       { section: 'Core Operations' },
       { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-      { to: '/admin/clients', label: 'Client Management', icon: Users, badge: clients.length },
+      { to: '/admin/clients', label: 'Client Management', icon: Users, badge: safeClients.length },
       { to: '/admin/projects', label: 'Project Lifecycle', icon: Briefcase, badge: activeProjectsCount },
-      { to: '/admin/tasks', label: 'Task Kanban & Sprints', icon: CheckSquare, badge: tasks.filter(t => t.status !== 'Done').length },
+      { to: '/admin/tasks', label: 'Task Kanban & Sprints', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
 
       { section: 'Growth & Commerce' },
       { to: '/admin/services', label: 'Services Catalogue', icon: Layers },
@@ -147,11 +155,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const NAV_ITEMS = getNavItems();
 
-  // Search matches
-  const matchingProjects = searchQuery ? projects.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.clientName.toLowerCase().includes(searchQuery.toLowerCase())) : [];
-  const matchingClients = searchQuery ? clients.filter(c => c.companyName.toLowerCase().includes(searchQuery.toLowerCase()) || c.primaryContact.name.toLowerCase().includes(searchQuery.toLowerCase())) : [];
-  const matchingTasks = searchQuery ? tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase())) : [];
-  const matchingLeads = searchQuery ? leads.filter(l => l.company.toLowerCase().includes(searchQuery.toLowerCase()) || l.name.toLowerCase().includes(searchQuery.toLowerCase())) : [];
+  // Search matches with null safety
+  const matchingProjects = searchQuery ? safeProjects.filter(p => p && (p.title?.toLowerCase().includes(searchQuery.toLowerCase()) || p.clientName?.toLowerCase().includes(searchQuery.toLowerCase()))) : [];
+  const matchingClients = searchQuery ? safeClients.filter(c => c && (c.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) || c.primaryContact?.name?.toLowerCase().includes(searchQuery.toLowerCase()))) : [];
+  const matchingTasks = searchQuery ? safeTasks.filter(t => t && t.title?.toLowerCase().includes(searchQuery.toLowerCase())) : [];
+  const matchingLeads = searchQuery ? safeLeads.filter(l => l && (l.company?.toLowerCase().includes(searchQuery.toLowerCase()) || l.name?.toLowerCase().includes(searchQuery.toLowerCase()))) : [];
 
   const hasSearchResults = matchingProjects.length > 0 || matchingClients.length > 0 || matchingTasks.length > 0 || matchingLeads.length > 0;
 
@@ -410,25 +418,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                    {tickets.slice(0, 2).map(t => (
+                    {safeTickets.slice(0, 2).map(t => (
                       <div
                         key={t.id}
                         onClick={() => { navigate('/admin/support'); setShowNotifMenu(false); }}
                         style={{ padding: '0.5rem', background: 'var(--adm-bg)', borderRadius: '6px', cursor: 'pointer' }}
                       >
                         <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#fff' }}>{t.ticketNumber}: {t.subject}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--adm-warning)', marginTop: '2px' }}>SLA: {t.slaHoursRemaining}h remaining • {t.clientName}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--adm-warning)', marginTop: '2px' }}>SLA: {t.slaHoursRemaining || 24}h remaining • {t.clientName || 'General'}</div>
                       </div>
                     ))}
 
-                    {isDirector && invoices.filter(i => i.status === 'Pending').slice(0, 1).map(i => (
+                    {isDirector && safeInvoices.filter(i => i && i.status === 'Pending').slice(0, 1).map(i => (
                       <div
                         key={i.id}
                         onClick={() => { navigate('/admin/finance'); setShowNotifMenu(false); }}
                         style={{ padding: '0.5rem', background: 'var(--adm-bg)', borderRadius: '6px', cursor: 'pointer' }}
                       >
                         <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--adm-text)' }}>{i.invoiceNumber}: Payment Pending</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--adm-danger)', marginTop: '2px' }}>₹{i.totalAmount.toLocaleString('en-IN')} • Due {i.dueDate}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--adm-danger)', marginTop: '2px' }}>₹{(Number(i.totalAmount) || 0).toLocaleString('en-IN')} • Due {i.dueDate || 'N/A'}</div>
                       </div>
                     ))}
                   </div>
@@ -439,7 +447,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             {/* User Profile & Role Switcher */}
             <div style={{ position: 'relative' }}>
               <div className="adm-user-profile-btn" onClick={() => setShowUserMenu(!showUserMenu)}>
-                {currentUser && <img src={currentUser.avatar} alt={currentUser.name} className="adm-avatar" />}
+                {currentUser && <img src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentUser.name || 'User'} className="adm-avatar" />}
                 <div className="adm-user-info">
                   <span className="adm-user-name">{currentUser?.name || 'Enterprenex Admin'}</span>
                   <span className="adm-user-role" style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', maxWidth: '170px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -468,7 +476,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   {currentUser && (
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
-                        <img src={currentUser.avatar} alt={currentUser.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <img src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentUser.name || 'User'} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {currentUser.name}

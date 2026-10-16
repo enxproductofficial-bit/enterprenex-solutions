@@ -18,13 +18,13 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
 
   useEffect(() => {
     // If IP restriction is not enforced, allow access
-    if (!ipSettings.enforceIpRestriction) {
+    if (!ipSettings || !ipSettings.enforceIpRestriction) {
       setIsAllowed(true);
       setChecking(false);
       return;
     }
 
-    const allowedIpsList = ipSettings.allowedIps.map(entry => entry.ip.trim());
+    const allowedIpsList = (ipSettings.allowedIps || []).map(entry => (entry?.ip || '').trim());
     
     // Check if client IP matches target admin IP or private LAN or local loopbacks
     const isTargetAdminIp = 

@@ -19,25 +19,33 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [chartPeriod, setChartPeriod] = useState<'30D' | '90D' | '1Y'>('30D');
 
-  // Calculations
-  const totalClients = clients.length;
-  const activeProjects = projects.filter(p => p.status !== 'Delivered' && p.status !== 'Lead').length;
-  const completedProjects = projects.filter(p => p.status === 'Delivered').length;
-  const pendingProjects = projects.filter(p => p.status === 'Planning' || p.status === 'Lead').length;
+  // Calculations with complete null-safety
+  const safeClients = clients || [];
+  const safeProjects = projects || [];
+  const safeInvoices = invoices || [];
+  const safeLeads = leads || [];
+  const safeTickets = tickets || [];
+  const safeEmployees = employees || [];
+  const safeAuditLogs = auditLogs || [];
 
-  const monthlyRevenue = invoices
-    .filter(i => i.status === 'Paid')
-    .reduce((acc, i) => acc + i.totalAmount, 0);
+  const totalClients = safeClients.length;
+  const activeProjects = safeProjects.filter(p => p && p.status !== 'Delivered' && p.status !== 'Lead').length;
+  const completedProjects = safeProjects.filter(p => p && p.status === 'Delivered').length;
+  const pendingProjects = safeProjects.filter(p => p && (p.status === 'Planning' || p.status === 'Lead')).length;
 
-  const outstandingPayments = invoices
-    .filter(i => i.status === 'Pending' || i.status === 'Overdue')
-    .reduce((acc, i) => acc + (i.totalAmount - i.paidAmount), 0);
+  const monthlyRevenue = safeInvoices
+    .filter(i => i && i.status === 'Paid')
+    .reduce((acc, i) => acc + (Number(i.totalAmount) || 0), 0);
 
-  const newLeads = leads.filter(l => l.status === 'New Lead').length;
-  const activeTickets = tickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length;
+  const outstandingPayments = safeInvoices
+    .filter(i => i && (i.status === 'Pending' || i.status === 'Overdue'))
+    .reduce((acc, i) => acc + ((Number(i.totalAmount) || 0) - (Number(i.paidAmount) || 0)), 0);
 
-  const avgWorkload = employees.length > 0
-    ? Math.round(employees.reduce((acc, e) => acc + (e.workloadPercentage || 0), 0) / employees.length)
+  const newLeads = safeLeads.filter(l => l && l.status === 'New Lead').length;
+  const activeTickets = safeTickets.filter(t => t && (t.status === 'Open' || t.status === 'In Progress')).length;
+
+  const avgWorkload = safeEmployees.length > 0
+    ? Math.round(safeEmployees.reduce((acc, e) => acc + (Number(e?.workloadPercentage) || 0), 0) / safeEmployees.length)
     : 0;
 
   // Monthly Revenue Chart Data derived from actual invoices
@@ -84,7 +92,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="adm-kpi-value">{totalClients}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{clients.filter(c => c.status === 'Active').length} Active</span>
+            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeClients.filter(c => c && c.status === 'Active').length} Active</span>
             <span>accounts</span>
           </div>
         </div>
@@ -99,7 +107,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="adm-kpi-value">{activeProjects}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{projects.length} Total</span>
+            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeProjects.length} Total</span>
             <span>tracked in lifecycle</span>
           </div>
         </div>
@@ -114,7 +122,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="adm-kpi-value">{completedProjects} <span style={{ fontSize: '1rem', color: 'var(--adm-text-dim)' }}>/ {pendingProjects} pend</span></div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-success)', fontWeight: 600 }}>{projects.length > 0 ? Math.round((completedProjects / projects.length) * 100) : 0}%</span>
+            <span style={{ color: 'var(--adm-success)', fontWeight: 600 }}>{safeProjects.length > 0 ? Math.round((completedProjects / safeProjects.length) * 100) : 0}%</span>
             <span>delivery completion rate</span>
           </div>
         </div>
@@ -144,7 +152,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="adm-kpi-value">₹{outstandingPayments.toLocaleString('en-IN')}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>{invoices.filter(i => i.status === 'Pending').length} Pending</span>
+            <span style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>{safeInvoices.filter(i => i && i.status === 'Pending').length} Pending</span>
             <span>invoices</span>
           </div>
         </div>
@@ -159,7 +167,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="adm-kpi-value">{newLeads}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{leads.length} Total</span>
+            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeLeads.length} Total</span>
             <span>in sales pipeline</span>
           </div>
         </div>
@@ -174,7 +182,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="adm-kpi-value">{activeTickets}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-text-dim)' }}>{tickets.filter(t => t.status === 'Resolved').length} resolved</span>
+            <span style={{ color: 'var(--adm-text-dim)' }}>{safeTickets.filter(t => t && t.status === 'Resolved').length} resolved</span>
           </div>
         </div>
 
@@ -188,7 +196,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="adm-kpi-value">{avgWorkload}%</div>
           <div className="adm-kpi-footer">
-            <span>{employees.length} Engineers Roster</span>
+            <span>{safeEmployees.length} Engineers Roster</span>
           </div>
         </div>
       </div>
@@ -304,32 +312,36 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {employees.map(emp => (
-              <div key={emp.id}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '0.82rem' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{emp.name}</span>
-                  <span style={{
-                    fontWeight: 700,
-                    color: emp.workloadPercentage > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
-                  }}>
-                    {emp.workloadPercentage}%
-                  </span>
+            {safeEmployees.map(emp => {
+              const workload = Number(emp?.workloadPercentage) || 0;
+              const projectCount = (emp?.currentProjects || []).length;
+              return (
+                <div key={emp.id}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '0.82rem' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{emp.name}</span>
+                    <span style={{
+                      fontWeight: 700,
+                      color: workload > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
+                    }}>
+                      {workload}%
+                    </span>
+                  </div>
+                  <div className="adm-progress-bar">
+                    <div
+                      className="adm-progress-fill"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, workload))}%`,
+                        background: workload > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
+                    <span>{emp.role || 'Staff'}</span>
+                    <span>{projectCount} Projects</span>
+                  </div>
                 </div>
-                <div className="adm-progress-bar">
-                  <div
-                    className="adm-progress-fill"
-                    style={{
-                      width: `${emp.workloadPercentage}%`,
-                      background: emp.workloadPercentage > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
-                    }}
-                  />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
-                  <span>{emp.role}</span>
-                  <span>{emp.currentProjects.length} Projects</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -344,11 +356,11 @@ export const DashboardPage: React.FC = () => {
               Active Project Progress
             </div>
             <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => navigate('/admin/projects')}>
-              View All ({projects.length})
+              View All ({safeProjects.length})
             </button>
           </div>
 
-          {projects.length > 0 ? (
+          {safeProjects.length > 0 ? (
             <div className="adm-table-container">
               <table className="adm-table">
                 <thead>
@@ -360,28 +372,31 @@ export const DashboardPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {projects.slice(0, 5).map(p => (
-                    <tr key={p.id}>
-                      <td style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{p.title}</td>
-                      <td style={{ color: 'var(--adm-text-muted)' }}>{p.clientName}</td>
-                      <td>
-                        <span className={`adm-badge ${
-                          p.status === 'Development' ? 'adm-badge-primary' :
-                          p.status === 'Delivered' ? 'adm-badge-success' : 'adm-badge-neutral'
-                        }`}>
-                          {p.status}
-                        </span>
-                      </td>
-                      <td style={{ width: '130px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div className="adm-progress-bar" style={{ flex: 1 }}>
-                            <div className="adm-progress-fill" style={{ width: `${p.progress}%` }} />
+                  {safeProjects.slice(0, 5).map(p => {
+                    const prog = Number(p?.progress) || 0;
+                    return (
+                      <tr key={p.id}>
+                        <td style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{p.title}</td>
+                        <td style={{ color: 'var(--adm-text-muted)' }}>{p.clientName}</td>
+                        <td>
+                          <span className={`adm-badge ${
+                            p.status === 'Development' ? 'adm-badge-primary' :
+                            p.status === 'Delivered' ? 'adm-badge-success' : 'adm-badge-neutral'
+                          }`}>
+                            {p.status}
+                          </span>
+                        </td>
+                        <td style={{ width: '130px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div className="adm-progress-bar" style={{ flex: 1 }}>
+                              <div className="adm-progress-fill" style={{ width: `${Math.min(100, Math.max(0, prog))}%` }} />
+                            </div>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{prog}%</span>
                           </div>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{p.progress}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -408,7 +423,7 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {auditLogs.slice(0, 5).map(log => (
+            {safeAuditLogs.slice(0, 5).map(log => (
               <div
                 key={log.id}
                 style={{

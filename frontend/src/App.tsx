@@ -21,6 +21,7 @@ import LoginPage from './pages/LoginPage';
 import { AdminProvider, useAdmin } from './admin/context/AdminContext';
 import { AdminLayout } from './admin/components/AdminLayout';
 import { IpRestrictionGuard } from './admin/components/IpRestrictionGuard';
+import { AdminErrorBoundary } from './admin/components/AdminErrorBoundary';
 
 // Admin Module Pages (All 14 Enterprise Modules)
 import { AdminLoginPage } from './admin/pages/AdminLoginPage';
@@ -74,66 +75,72 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
     const isEmployeeRole = currentUser.role === 'Team Member' || currentUser.role === 'Developer';
     return (
-      <AdminLayout>
-        <div style={{
-          minHeight: '65vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          padding: '2.5rem 1.5rem'
-        }}>
+      <AdminErrorBoundary fallbackTitle="Unauthorized Module Access">
+        <AdminLayout>
           <div style={{
-            width: '84px',
-            height: '84px',
-            borderRadius: '50%',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '2px solid rgba(239, 68, 68, 0.35)',
+            minHeight: '65vh',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '1.5rem',
-            color: '#ef4444',
-            boxShadow: '0 0 30px rgba(239, 68, 68, 0.15)'
+            textAlign: 'center',
+            padding: '2.5rem 1.5rem'
           }}>
-            <ShieldAlert size={44} />
+            <div style={{
+              width: '84px',
+              height: '84px',
+              borderRadius: '50%',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '2px solid rgba(239, 68, 68, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '1.5rem',
+              color: '#ef4444',
+              boxShadow: '0 0 30px rgba(239, 68, 68, 0.15)'
+            }}>
+              <ShieldAlert size={44} />
+            </div>
+            <span style={{
+              padding: '5px 14px',
+              borderRadius: '100px',
+              background: 'rgba(239, 68, 68, 0.12)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              color: '#ef4444',
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              marginBottom: '1rem'
+            }}>
+              EWMS Access Restricted
+            </span>
+            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#fff', marginBottom: '0.75rem' }}>
+              {moduleName} Access Restricted
+            </h2>
+            <p style={{ maxWidth: '520px', color: 'var(--adm-text-muted)', lineHeight: '1.6', fontSize: '0.92rem', marginBottom: '1.75rem' }}>
+              According to the Enterprenex Solutions EWMS Policy, access to <strong style={{ color: '#fff' }}>{moduleName}</strong> is restricted to <strong>Director / Authorized Personnel</strong> only. Your current role is <strong style={{ color: 'var(--adm-primary)' }}>{currentUser.role}</strong>.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Link
+                to={isEmployeeRole ? '/admin/team' : '/admin'}
+                className="adm-btn adm-btn-primary"
+                style={{ textDecoration: 'none', padding: '0.65rem 1.4rem' }}
+              >
+                Return to Authorized Workspace
+              </Link>
+            </div>
           </div>
-          <span style={{
-            padding: '5px 14px',
-            borderRadius: '100px',
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.25)',
-            color: '#ef4444',
-            fontSize: '0.75rem',
-            fontWeight: 800,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            marginBottom: '1rem'
-          }}>
-            EWMS Access Restricted
-          </span>
-          <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#fff', marginBottom: '0.75rem' }}>
-            {moduleName} Access Restricted
-          </h2>
-          <p style={{ maxWidth: '520px', color: 'var(--adm-text-muted)', lineHeight: '1.6', fontSize: '0.92rem', marginBottom: '1.75rem' }}>
-            According to the Enterprenex Solutions EWMS Policy, access to <strong style={{ color: '#fff' }}>{moduleName}</strong> is restricted to <strong>Director / Authorized Personnel</strong> only. Your current role is <strong style={{ color: 'var(--adm-primary)' }}>{currentUser.role}</strong>.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Link
-              to={isEmployeeRole ? '/admin/team' : '/admin'}
-              className="adm-btn adm-btn-primary"
-              style={{ textDecoration: 'none', padding: '0.65rem 1.4rem' }}
-            >
-              Return to Authorized Workspace
-            </Link>
-          </div>
-        </div>
-      </AdminLayout>
+        </AdminLayout>
+      </AdminErrorBoundary>
     );
   }
 
-  return <AdminLayout>{children}</AdminLayout>;
+  return (
+    <AdminErrorBoundary fallbackTitle={`${moduleName} Workspace`}>
+      <AdminLayout>{children}</AdminLayout>
+    </AdminErrorBoundary>
+  );
 }
 
 // Public Website Layout Component (renders Public Header/Footer only for public routes)
