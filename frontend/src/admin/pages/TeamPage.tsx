@@ -1823,7 +1823,10 @@ export const TeamPage: React.FC = () => {
                     {/* Skills */}
                     <div style={{ marginBottom: '1rem', flex: 1 }}>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                        {emp.skills.map((sk, idx) => (
+                        {(emp.skills && Array.isArray(emp.skills) && emp.skills.length > 0
+                          ? emp.skills
+                          : [emp.department || 'Engineering', 'Core Member']
+                        ).map((sk, idx) => (
                           <span key={idx} className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>{sk}</span>
                         ))}
                       </div>
@@ -3540,7 +3543,7 @@ export const TeamPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedKpi.metrics.map(m => {
+                        {(selectedKpi?.metrics || []).map(m => {
                           const weightedVal = Math.round((m.score * (m.weight / 100)) * 10) / 10;
                           const isEditing = editingMetricId === m.id;
 
@@ -3674,7 +3677,7 @@ export const TeamPage: React.FC = () => {
 
                         {/* Key Results Checklist */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          {okr.keyResults.map(kr => (
+                          {(okr?.keyResults || []).map(kr => (
                             <div
                               key={kr.id}
                               style={{
@@ -4064,7 +4067,7 @@ export const TeamPage: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {selectedPolicyModal.sections.map((sec, idx) => (
+                {(selectedPolicyModal?.sections || []).map((sec, idx) => (
                   <div key={idx} style={{ background: 'var(--adm-surface)', border: '1px solid var(--adm-border)', borderRadius: '8px', padding: '1rem' }}>
                     <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '0.92rem', fontWeight: 800, color: 'var(--adm-text)' }}>
                       {sec.heading}
