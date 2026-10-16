@@ -93,13 +93,13 @@ export const AnalyticsPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Analytics, Business Intelligence & Reports</h1>
-          <p>Real-time revenue performance, conversion funnels & automated P&L statement</p>
+          <h1>Executive Business Intelligence & Financial Telemetry</h1>
+          <p>Real-time fiscal realization, conversion funnel telemetry, engineering velocity & automated corporate P&L audit</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={handleExportCsv}>
             <Download size={16} />
-            <span>Export Executive CSV</span>
+            <span>Export Executive Financial Packet (CSV)</span>
           </button>
         </div>
       </div>

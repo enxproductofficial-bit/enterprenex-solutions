@@ -842,11 +842,11 @@ export const DocumentsPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>{canManageVerification ? 'Central Document Vault & IP Repository' : 'My Documents & Certificate'}</h1>
+          <h1>{canManageVerification ? 'Institutional Compliance Vault & Legal Instrument Repository' : 'Personal Compliance Dossier, Credentials & Certified Instruments'}</h1>
           <p>
             {canManageVerification
-              ? 'Encrypted vault for client NDAs, master service agreements, employee KYC and statutory records'
-              : 'Your verified internship and experience certificates, official credentials, and KYC verification records'}
+              ? 'ISO 27001 / DPDP Act 2023 certified encrypted repository for Master Service Agreements (MSA), NDAs, statutory personnel KYC, and corporate resolutions'
+              : 'Bilateral employment covenants, statutory KYC records, certified experience credentials, and university internship verifications'}
           </p>
         </div>
         <div className="adm-page-actions" style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
@@ -857,12 +857,12 @@ export const DocumentsPage: React.FC = () => {
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <FileCheck size={16} color="var(--adm-primary)" />
-              <span>Generate HR Document</span>
+              <span>Draft Statutory Instrument</span>
             </button>
           )}
           <button className="adm-btn adm-btn-primary" onClick={() => setShowUploadModal(true)}>
             <UploadCloud size={16} />
-            <span>{canManageVerification ? 'Upload Document' : 'Upload My KYC / File'}</span>
+            <span>{canManageVerification ? 'Deposit Compliant Record' : 'Deposit KYC / Legal Instrument'}</span>
           </button>
         </div>
       </div>

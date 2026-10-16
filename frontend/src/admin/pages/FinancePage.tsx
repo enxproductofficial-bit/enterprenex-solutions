@@ -497,17 +497,17 @@ export const FinancePage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Finance, Invoicing & GST Accounting</h1>
-          <p>Generate GST compliant tax invoices, quotations, expense ledger, and real-time cashflow</p>
+          <h1>Fiscal Operations, Statutory Tax Invoicing & Treasury</h1>
+          <p>Statutory GST tax invoices under Rule 46 CGST Act, commercial quotations, expenditure general ledger, compliant payroll (EPF/PT), and fiscal treasury analytics</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-secondary" onClick={() => setShowAddExpenseModal(true)}>
             <Plus size={15} />
-            <span>Record Expense</span>
+            <span>Record Expenditure</span>
           </button>
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddInvoiceModal(true)}>
             <Plus size={16} />
-            <span>Create Invoice</span>
+            <span>Issue Tax Invoice</span>
           </button>
         </div>
       </div>
@@ -516,55 +516,55 @@ export const FinancePage: React.FC = () => {
       <div className="adm-grid-4" style={{ marginBottom: '1.5rem' }}>
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Cash Inflow (Paid)</span>
+            <span className="adm-kpi-label">Realized Fiscal Inflow (Settled)</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-success-soft)', color: 'var(--adm-success)' }}>
               <CheckCircle2 size={18} />
             </div>
           </div>
-          <div className="adm-kpi-value">₹{(totalPaidRevenue / 100000).toFixed(1)}L</div>
+          <div className="adm-kpi-value" style={{ fontVariantNumeric: 'tabular-nums' }}>₹{(totalPaidRevenue / 100000).toFixed(2)}L</div>
           <div className="adm-kpi-footer">
-            <span className="adm-trend-up">100% Realized</span>
+            <span className="adm-trend-up">100% Realized Liquidity</span>
           </div>
         </div>
 
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Accounts Receivable (Due)</span>
+            <span className="adm-kpi-label">Accounts Receivable (Outstanding)</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-warning-soft)', color: 'var(--adm-warning)' }}>
               <AlertCircle size={18} />
             </div>
           </div>
-          <div className="adm-kpi-value">₹{(totalOutstanding / 100000).toFixed(1)}L</div>
+          <div className="adm-kpi-value" style={{ fontVariantNumeric: 'tabular-nums' }}>₹{(totalOutstanding / 100000).toFixed(2)}L</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-warning)' }}>{invoices.filter(i => i.status === 'Pending').length} Invoices Pending</span>
+            <span style={{ color: 'var(--adm-warning)' }}>{invoices.filter(i => i.status === 'Pending').length} Remittance Claims Outstanding</span>
           </div>
         </div>
 
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Total Expenses Logged</span>
+            <span className="adm-kpi-label">Corporate Operating Expenditure</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-danger-soft)', color: 'var(--adm-danger)' }}>
               <CreditCard size={18} />
             </div>
           </div>
-          <div className="adm-kpi-value">₹{(totalExpenses / 100000).toFixed(1)}L</div>
+          <div className="adm-kpi-value" style={{ fontVariantNumeric: 'tabular-nums' }}>₹{(totalExpenses / 100000).toFixed(2)}L</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-text-dim)' }}>Across {expenses.length} Records</span>
+            <span style={{ color: 'var(--adm-text-dim)' }}>Across {expenses.length} Audited General Ledger Records</span>
           </div>
         </div>
 
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Operating Margin</span>
+            <span className="adm-kpi-label">Net Operating Margin Realization</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-primary-soft)', color: 'var(--adm-primary)' }}>
               <CheckCircle2 size={18} />
             </div>
           </div>
-          <div className="adm-kpi-value" style={{ color: 'var(--adm-success)' }}>
+          <div className="adm-kpi-value" style={{ color: 'var(--adm-success)', fontVariantNumeric: 'tabular-nums' }}>
             {totalPaidRevenue > 0 ? Math.round(((totalPaidRevenue - totalExpenses) / totalPaidRevenue) * 100) : 0}%
           </div>
           <div className="adm-kpi-footer">
-            <span className="adm-trend-up">Profitable Cashflow</span>
+            <span className="adm-trend-up">Positive Institutional Cashflow</span>
           </div>
         </div>
       </div>
@@ -584,7 +584,7 @@ export const FinancePage: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          Invoices & Quotations ({invoices.length})
+          Statutory Invoices & Commercial Quotations ({invoices.length})
         </button>
         <button
           onClick={() => setTab('expenses')}
@@ -599,7 +599,7 @@ export const FinancePage: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          Expense Ledger ({expenses.length})
+          Corporate Expenditure General Ledger ({expenses.length})
         </button>
         <button
           onClick={() => setTab('payroll')}
@@ -614,7 +614,7 @@ export const FinancePage: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          Automated Payroll & Slips ({employees.length})
+          Statutory Payroll & Verified Payslips ({employees.length})
         </button>
         <button
           onClick={() => setTab('gst')}
@@ -629,7 +629,7 @@ export const FinancePage: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          GST Remittance Summary
+          Statutory GST Remittance & Tax Governance
         </button>
       </div>
 
@@ -641,7 +641,7 @@ export const FinancePage: React.FC = () => {
             type="text"
             className="adm-input"
             style={{ paddingLeft: '2.4rem' }}
-            placeholder="Search by client or invoice #..."
+            placeholder="Search by client entity or invoice serial..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -649,7 +649,7 @@ export const FinancePage: React.FC = () => {
 
         {tab === 'invoices' && (
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>Filter:</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>Settlement Status:</span>
             <select
               className="adm-select"
               style={{ width: 'auto', padding: '0.35rem 0.6rem', fontSize: '0.8rem' }}
@@ -657,9 +657,9 @@ export const FinancePage: React.FC = () => {
               onChange={e => setStatusFilter(e.target.value)}
             >
               <option value="All">All Statuses</option>
-              <option value="Paid">Paid</option>
-              <option value="Pending">Pending</option>
-              <option value="Draft">Draft</option>
+              <option value="Paid">Settled / Paid</option>
+              <option value="Pending">Pending Remittance</option>
+              <option value="Draft">Draft Instrument</option>
             </select>
           </div>
         )}
@@ -671,15 +671,15 @@ export const FinancePage: React.FC = () => {
           <table className="adm-table">
             <thead>
               <tr>
-                <th>Invoice / Quotation #</th>
-                <th>Client Account</th>
-                <th>Issue Date</th>
-                <th>Due Date</th>
-                <th>Subtotal</th>
-                <th>GST (18%)</th>
-                <th>Total Payable</th>
-                <th>Status</th>
-                <th className="adm-table-sticky-right" style={{ minWidth: '160px' }}>Actions</th>
+                <th>Tax Invoice / Proforma Instrument</th>
+                <th>Contracted Client Entity</th>
+                <th>Statutory Execution Date</th>
+                <th>Contractual Due Date</th>
+                <th>Taxable Base Value</th>
+                <th>Statutory GST (18%)</th>
+                <th>Total Remittance Payable</th>
+                <th>Settlement Standing</th>
+                <th className="adm-table-sticky-right" style={{ minWidth: '160px' }}>Fiscal Administration</th>
               </tr>
             </thead>
             <tbody>

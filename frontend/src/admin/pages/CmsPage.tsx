@@ -102,8 +102,8 @@ export const CmsPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>CMS & Public Website Manager</h1>
-          <p>Live visual editor for homepage copy, portfolio case studies, technical blog, testimonials & contact inquiries</p>
+          <h1>Digital Publishing, Web CMS & Brand Governance</h1>
+          <p>Institutional web presence management, enterprise case study publication, thought leadership articles, certified testimonials, and inbound corporate inquiries</p>
         </div>
       </div>
 
@@ -111,22 +111,22 @@ export const CmsPage: React.FC = () => {
       <div className="adm-card" style={{ padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
         <div className="adm-tabs" style={{ margin: 0, border: 'none' }}>
           <button className={`adm-tab-btn ${tab === 'hero' ? 'active' : ''}`} onClick={() => setTab('hero')}>
-            Hero Copy
+            Institutional Hero & Value Proposition
           </button>
           <button className={`adm-tab-btn ${tab === 'portfolio' ? 'active' : ''}`} onClick={() => setTab('portfolio')}>
-            Portfolio & Case Studies ({(cms?.portfolioItems || []).length})
+            Enterprise Case Studies ({(cms?.portfolioItems || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'blog' ? 'active' : ''}`} onClick={() => setTab('blog')}>
-            Blog Articles ({(cms?.blogPosts || []).length})
+            Thought Leadership & Articles ({(cms?.blogPosts || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'testimonials' ? 'active' : ''}`} onClick={() => setTab('testimonials')}>
-            Testimonials ({(cms?.testimonials || []).length})
+            Client Endorsements ({(cms?.testimonials || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'enquiries' ? 'active' : ''}`} onClick={() => setTab('enquiries')}>
-            Contact Enquiries ({(cms?.contactEnquiries || []).length})
+            Inbound Corporate Inquiries ({(cms?.contactEnquiries || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'seo' ? 'active' : ''}`} onClick={() => setTab('seo')}>
-            SEO Metadata
+            Search Engine Optimization & Meta
           </button>
         </div>
       </div>

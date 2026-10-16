@@ -84,13 +84,13 @@ export const SecurityPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Admin Governance, IP Firewall & Security Suite</h1>
-          <p>Zero-trust IP whitelisting, granular RBAC permissions, real-time audit stream & cryptographic API keys</p>
+          <h1>Information Security, Network Firewall & RBAC Governance</h1>
+          <p>Zero-Trust network perimeter whitelisting, ISO 27001 compliant role-based access control (RBAC), cryptographic credential vault, and real-time security audit trails</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-secondary" onClick={resetAllData} title="Synchronize security state with ledger">
             <RefreshCw size={15} />
-            <span>Sync Security State</span>
+            <span>Synchronize Security Ledger</span>
           </button>
         </div>
       </div>
@@ -100,19 +100,19 @@ export const SecurityPage: React.FC = () => {
         <div className="adm-tabs" style={{ margin: 0, border: 'none' }}>
           <button className={`adm-tab-btn ${tab === 'ip' ? 'active' : ''}`} onClick={() => setTab('ip')}>
             <Globe size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
-            IP Whitelisting & Firewall ({(ipSettings?.allowedIps || []).length})
+            Perimeter IP Firewall ({(ipSettings?.allowedIps || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'rbac' ? 'active' : ''}`} onClick={() => setTab('rbac')}>
-            RBAC Permission Matrix
+            Institutional RBAC Governance Matrix
           </button>
           <button className={`adm-tab-btn ${tab === 'api' ? 'active' : ''}`} onClick={() => setTab('api')}>
-            API Keys Vault ({apiKeys.length})
+            Cryptographic Key Vault ({apiKeys.length})
           </button>
           <button className={`adm-tab-btn ${tab === 'sessions' ? 'active' : ''}`} onClick={() => setTab('sessions')}>
-            Active Sessions ({sessions.length})
+            Active Administrative Sessions ({sessions.length})
           </button>
           <button className={`adm-tab-btn ${tab === 'audit' ? 'active' : ''}`} onClick={() => setTab('audit')}>
-            Live Audit Stream ({auditLogs.length})
+            ISMS Audit Trail Log ({auditLogs.length})
           </button>
         </div>
       </div>

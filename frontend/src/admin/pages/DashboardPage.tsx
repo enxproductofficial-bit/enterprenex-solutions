@@ -65,57 +65,57 @@ export const DashboardPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Enterprise Operations Dashboard</h1>
-          <p>Real-time analytics, revenue pipeline, team workload & project health</p>
+          <h1>Executive Operations & Intelligence Dashboard</h1>
+          <p>Real-time operational telemetry, fiscal revenue realization, engineering capacity & portfolio workstream governance</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-secondary" onClick={() => navigate('/admin/analytics')}>
             <TrendingUp size={15} />
-            <span>Detailed Analytics</span>
+            <span>Executive Analytics & Telemetry</span>
           </button>
           <button className="adm-btn adm-btn-primary" onClick={() => navigate('/admin/projects')}>
             <Briefcase size={15} />
-            <span>Manage Projects</span>
+            <span>Project Portfolio Governance</span>
           </button>
         </div>
       </div>
 
-      {/* ── TOP KPI STATS (8 Requested Metrics — Minimalist Enterprise Palette) ── */}
+      {/* ── TOP KPI STATS (8 Institutional Enterprise Metrics) ── */}
       <div className="adm-grid-4" style={{ marginBottom: '1.75rem' }}>
         {/* 1. Total Clients */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Total Clients</span>
+            <span className="adm-kpi-label">Institutional Client Accounts</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text)', border: '1px solid var(--adm-border)' }}>
               <Users size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">{totalClients}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeClients.filter(c => c && c.status === 'Active').length} Active</span>
-            <span>accounts</span>
+            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeClients.filter(c => c && c.status === 'Active').length} Active Retainers</span>
+            <span>corporate registry</span>
           </div>
         </div>
 
         {/* 2. Active Projects */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Active Projects</span>
+            <span className="adm-kpi-label">Active Engineering Workstreams</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-primary)', border: '1px solid var(--adm-border)' }}>
               <Briefcase size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">{activeProjects}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeProjects.length} Total</span>
-            <span>tracked in lifecycle</span>
+            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeProjects.length} Portfolio Workstreams</span>
+            <span>in execution lifecycle</span>
           </div>
         </div>
 
         {/* 3. Completed & Pending Projects */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Completed / Pending</span>
+            <span className="adm-kpi-label">Deliverable Fulfillment Rate</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-success)', border: '1px solid var(--adm-border)' }}>
               <CheckCircle2 size={18} />
             </div>
@@ -123,21 +123,21 @@ export const DashboardPage: React.FC = () => {
           <div className="adm-kpi-value">{completedProjects} <span style={{ fontSize: '1rem', color: 'var(--adm-text-dim)' }}>/ {pendingProjects} pend</span></div>
           <div className="adm-kpi-footer">
             <span style={{ color: 'var(--adm-success)', fontWeight: 600 }}>{safeProjects.length > 0 ? Math.round((completedProjects / safeProjects.length) * 100) : 0}%</span>
-            <span>delivery completion rate</span>
+            <span>milestone delivery completion</span>
           </div>
         </div>
 
         {/* 4. Monthly Revenue */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Realized Revenue</span>
+            <span className="adm-kpi-label">Realized Net Revenue</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text)', border: '1px solid var(--adm-border)' }}>
               <TrendingUp size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">₹{monthlyRevenue.toLocaleString('en-IN')}</div>
           <div className="adm-kpi-footer">
-            <span className="adm-trend-up" style={{ color: 'var(--adm-success)' }}><ArrowUpRight size={14} /> Live Total</span>
+            <span className="adm-trend-up" style={{ color: 'var(--adm-success)' }}><ArrowUpRight size={14} /> Audited Gross</span>
             <span>Paid Invoices</span>
           </div>
         </div>
@@ -145,58 +145,58 @@ export const DashboardPage: React.FC = () => {
         {/* 5. Outstanding Payments */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Outstanding Due</span>
+            <span className="adm-kpi-label">Accounts Receivable Outstanding</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text-muted)', border: '1px solid var(--adm-border)' }}>
               <CreditCard size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">₹{outstandingPayments.toLocaleString('en-IN')}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>{safeInvoices.filter(i => i && i.status === 'Pending').length} Pending</span>
-            <span>invoices</span>
+            <span style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>{safeInvoices.filter(i => i && i.status === 'Pending').length} Pending Remittances</span>
+            <span>fiscal ledger</span>
           </div>
         </div>
 
         {/* 6. New Leads */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">New CRM Leads</span>
+            <span className="adm-kpi-label">Enterprise CRM Pipeline</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-primary)', border: '1px solid var(--adm-border)' }}>
               <Target size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">{newLeads}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeLeads.length} Total</span>
-            <span>in sales pipeline</span>
+            <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>{safeLeads.length} Total Opportunities</span>
+            <span>commercial pipeline</span>
           </div>
         </div>
 
         {/* 7. Active Support Tickets */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Active Tickets</span>
+            <span className="adm-kpi-label">Service Desk Incidents</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-text-muted)', border: '1px solid var(--adm-border)' }}>
               <LifeBuoy size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">{activeTickets}</div>
           <div className="adm-kpi-footer">
-            <span style={{ color: 'var(--adm-text-dim)' }}>{safeTickets.filter(t => t && t.status === 'Resolved').length} resolved</span>
+            <span style={{ color: 'var(--adm-text-dim)' }}>{safeTickets.filter(t => t && t.status === 'Resolved').length} resolved under SLA</span>
           </div>
         </div>
 
         {/* 8. Team Workload Gauge */}
         <div className="adm-kpi-card">
           <div className="adm-kpi-header">
-            <span className="adm-kpi-label">Team Capacity</span>
+            <span className="adm-kpi-label">Engineering Capacity Allocation</span>
             <div className="adm-kpi-icon" style={{ background: 'var(--adm-surface-hover)', color: 'var(--adm-primary)', border: '1px solid var(--adm-border)' }}>
               <Users size={18} />
             </div>
           </div>
           <div className="adm-kpi-value">{avgWorkload}%</div>
           <div className="adm-kpi-footer">
-            <span>{safeEmployees.length} Engineers Roster</span>
+            <span>{safeEmployees.length} Technical Personnel Roster</span>
           </div>
         </div>
       </div>
@@ -208,7 +208,7 @@ export const DashboardPage: React.FC = () => {
           <div className="adm-card-header">
             <div className="adm-card-title">
               <TrendingUp size={18} color="var(--adm-primary)" />
-              Monthly Revenue vs Target Realization
+              Fiscal Revenue Realization vs. Strategic Target Benchmark
             </div>
             <div style={{ display: 'flex', gap: '4px', background: 'var(--adm-bg)', padding: '2px', borderRadius: '6px', border: '1px solid var(--adm-border)' }}>
               {(['30D', '90D', '1Y'] as const).map(p => (
@@ -293,11 +293,11 @@ export const DashboardPage: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginTop: '1.5rem', fontSize: '0.78rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--adm-primary)' }} />
-              <span style={{ color: 'var(--adm-text-muted)' }}>Realized Revenue</span>
+              <span style={{ color: 'var(--adm-text-muted)' }}>Audited Net Realization</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--adm-surface-hover)', border: '1px solid var(--adm-border)' }} />
-              <span style={{ color: 'var(--adm-text-muted)' }}>Target Projection</span>
+              <span style={{ color: 'var(--adm-text-muted)' }}>Strategic Target Benchmark</span>
             </div>
           </div>
         </div>
@@ -307,7 +307,7 @@ export const DashboardPage: React.FC = () => {
           <div className="adm-card-header">
             <div className="adm-card-title">
               <Users size={18} color="var(--adm-primary)" />
-              Team Workload & Capacity
+              Engineering Workforce Capacity & Allocation
             </div>
           </div>
 
@@ -337,7 +337,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
                     <span>{emp.role || 'Staff'}</span>
-                    <span>{projectCount} Projects</span>
+                    <span>{projectCount} Workstreams</span>
                   </div>
                 </div>
               );
@@ -353,10 +353,10 @@ export const DashboardPage: React.FC = () => {
           <div className="adm-card-header">
             <div className="adm-card-title">
               <Briefcase size={18} color="var(--adm-primary)" />
-              Active Project Progress
+              Active Project Execution Portfolio
             </div>
             <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => navigate('/admin/projects')}>
-              View All ({safeProjects.length})
+              View All Workstreams ({safeProjects.length})
             </button>
           </div>
 
@@ -365,10 +365,10 @@ export const DashboardPage: React.FC = () => {
               <table className="adm-table">
                 <thead>
                   <tr>
-                    <th>Project</th>
-                    <th>Client</th>
-                    <th>Stage</th>
-                    <th>Progress</th>
+                    <th>Project Charter</th>
+                    <th>Corporate Client Entity</th>
+                    <th>Lifecycle Stage</th>
+                    <th>Milestone Execution</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -402,9 +402,9 @@ export const DashboardPage: React.FC = () => {
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--adm-text-dim)', fontSize: '0.85rem' }}>
-              <p>No active projects yet.</p>
+              <p>No active project charters registered.</p>
               <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => navigate('/admin/projects')}>
-                <Plus size={14} /> Create First Project
+                <Plus size={14} /> Initiate First Project Charter
               </button>
             </div>
           )}
@@ -415,10 +415,10 @@ export const DashboardPage: React.FC = () => {
           <div className="adm-card-header" style={{ marginBottom: '1.1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--adm-border)' }}>
             <div className="adm-card-title">
               <Activity size={18} color="var(--adm-primary)" />
-              Live Audit Stream
+              Institutional Audit & Governance Telemetry
             </div>
             <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
-              System Logs
+              ISO 27001 Log Register
             </span>
           </div>
 

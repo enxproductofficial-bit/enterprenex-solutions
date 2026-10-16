@@ -246,17 +246,17 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>{isEmployee ? 'Raise a Ticket & Support Desk' : 'Customer Support & SLA Helpdesk'}</h1>
+          <h1>{isEmployee ? 'Service Desk & Institutional Grievance Governance' : 'Enterprise Service Desk, Incident Response & SLA Governance'}</h1>
           <p>
             {isEmployee
-              ? 'Raise HR, attendance correction, certificate requests & IT tickets linked directly to Company Email and WhatsApp'
-              : 'Multi-tier ticket dispatch, client message threads, resolution logs & real-time SLA countdowns'}
+              ? 'Statutory HR inquiries, attendance regularization petitions, credential requests, and IT incident logging directly governed under ISO 20000 / ITIL frameworks'
+              : 'Multi-tier incident dispatch (P1–P4), client communications audit trail, resolution telemetry, and contractual SLA response countdowns'}
           </p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
-            <span>{isEmployee ? 'Raise a Ticket' : 'Open Support Ticket'}</span>
+            <span>{isEmployee ? 'Log Institutional Incident' : 'Open Statutory Ticket'}</span>
           </button>
         </div>
       </div>

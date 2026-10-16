@@ -80,8 +80,8 @@ export const CrmLeadsPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Lead & CRM Sales Pipeline</h1>
-          <p>Track sales opportunities, follow-up touchpoints, conversion probabilities & deal values</p>
+          <h1>Enterprise CRM & Commercial Pipeline Governance</h1>
+          <p>Institutional opportunity pipeline, strategic touchpoint tracking, win probability assessment, and contract capital realization</p>
         </div>
         <div className="adm-page-actions">
           <div style={{ display: 'flex', background: 'var(--adm-surface)', border: '1px solid var(--adm-border)', borderRadius: 'var(--adm-radius)', padding: '2px' }}>
@@ -98,7 +98,7 @@ export const CrmLeadsPage: React.FC = () => {
                 cursor: 'pointer'
               }}
             >
-              Sales Pipeline
+              Opportunity Stage Gate
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -113,13 +113,13 @@ export const CrmLeadsPage: React.FC = () => {
                 cursor: 'pointer'
               }}
             >
-              List View
+              Tabular Register
             </button>
           </div>
 
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
-            <span>Add Opportunity</span>
+            <span>Initiate Commercial Opportunity</span>
           </button>
         </div>
       </div>

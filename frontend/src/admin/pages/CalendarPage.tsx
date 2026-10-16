@@ -224,7 +224,7 @@ export const CalendarPage: React.FC = () => {
       <div className="adm-page-header">
         <div className="adm-page-title-group">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <h1>Calendar, Community & Executive Sync</h1>
+            <h1>Corporate Calendar, Institutional Sessions & Executive Sync</h1>
             <span
               style={{
                 fontSize: '0.72rem',
@@ -239,11 +239,11 @@ export const CalendarPage: React.FC = () => {
                 gap: '0.35rem'
               }}
             >
-              <WhatsAppIcon size={13} color="#25D366" /> WhatsApp Dispatch Enabled
+              <WhatsAppIcon size={13} color="#25D366" /> Encrypted Dispatch Active
             </span>
           </div>
           <p>
-            Schedule executive meetings with 1-click WhatsApp invitations, view official Director community bulletins, and collaborate in real-time team channels.
+            Convening executive board sessions, bilateral client consultations with automated encrypted dispatch, statutory company bulletins, and inter-departmental communications
           </p>
         </div>
 

@@ -1235,29 +1235,29 @@ export const TeamPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>{isRegularEmployee ? 'My Attendance & Leave' : 'Team, Attendance & Workforce Ops'}</h1>
+          <h1>{isRegularEmployee ? 'Human Capital Operations & Attendance Governance' : 'Enterprise Workforce Roster, Biometric Attendance & Human Capital Governance'}</h1>
           <p>
             {isRegularEmployee
-              ? 'Daily biometric check-in, attendance history, leave balances & time-off applications'
-              : 'Employee capacity roster, daily biometric check-ins, leave approvals & payroll rates'}
+              ? 'Statutory biometric geo-fence verification (09:30 AM – 06:30 PM IST), attendance log history, statutory leave allocations (CL/SL/EL), and electronic payslip retrieval'
+              : 'Workforce capacity allocation, real-time biometric telemetry, statutory leave governance (Maharashtra Shops & Establishments Act), and compensation schedules'}
           </p>
         </div>
         <div className="adm-page-actions" style={{ flexWrap: 'wrap' }}>
           {tab === 'roster' && (
             <>
-              <button className="adm-btn adm-btn-secondary" onClick={handleExportRosterCsv} title="Download Team Directory as CSV">
+              <button className="adm-btn adm-btn-secondary" onClick={handleExportRosterCsv} title="Download Institutional Personnel Directory as CSV">
                 <Download size={15} />
                 <span>Export Roster CSV</span>
               </button>
               {canManageTeam && (
                 <>
-                  <button className="adm-btn adm-btn-secondary" onClick={() => openIssueCertModal()} title="Issue Official Internship or Experience Certificate">
+                  <button className="adm-btn adm-btn-secondary" onClick={() => openIssueCertModal()} title="Execute Official Statutory Internship or Experience Certificate">
                     <Award size={15} color="#10b981" />
-                    <span>Issue Certificate</span>
+                    <span>Issue Statutory Certificate</span>
                   </button>
                   <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal}>
                     <Plus size={16} />
-                    <span>Add Team Member</span>
+                    <span>Onboard Personnel</span>
                   </button>
                 </>
               )}
@@ -1270,18 +1270,18 @@ export const TeamPage: React.FC = () => {
                 <Download size={15} />
                 <span>Export CSV</span>
               </button>
-              <button className="adm-btn adm-btn-secondary" onClick={handlePrintAttendance} title="Print or Save as PDF Report">
+              <button className="adm-btn adm-btn-secondary" onClick={handlePrintAttendance} title="Print Official Biometric Register Report">
                 <Printer size={15} />
                 <span>Print / PDF</span>
               </button>
               <button className="adm-btn adm-btn-primary" onClick={() => markAttendanceToday('Present')}>
                 <CheckCircle2 size={15} />
-                <span>Mark My Attendance Today</span>
+                <span>Log Verification Timestamp</span>
               </button>
               {isRegularEmployee && (
                 <button className="adm-btn adm-btn-secondary" onClick={openApplyLeaveModal}>
                   <CalendarPlus size={15} color="var(--adm-primary)" />
-                  <span>Apply for Leave</span>
+                  <span>Submit Leave Application</span>
                 </button>
               )}
             </>
@@ -1299,7 +1299,7 @@ export const TeamPage: React.FC = () => {
               </button>
               <button className="adm-btn adm-btn-primary" onClick={openApplyLeaveModal}>
                 <CalendarPlus size={16} />
-                <span>Apply for Leave</span>
+                <span>Submit Leave Application</span>
               </button>
             </>
           )}
@@ -1334,7 +1334,7 @@ export const TeamPage: React.FC = () => {
           {tab === 'policies' && (
             <button className="adm-btn adm-btn-primary" onClick={() => setShowUploadVaultModal(true)}>
               <Upload size={15} />
-              <span>Upload to Vault</span>
+              <span>Deposit to Compliance Vault</span>
             </button>
           )}
         </div>
@@ -1345,23 +1345,23 @@ export const TeamPage: React.FC = () => {
         <div className="adm-tabs" style={{ margin: 0, border: 'none', flexWrap: 'wrap', gap: '0.35rem' }}>
           {canManageTeam && (
             <button className={`adm-tab-btn ${tab === 'roster' ? 'active' : ''}`} onClick={() => setTab('roster')}>
-              Team Directory ({employees.length})
+              Institutional Personnel Directory ({employees.length})
             </button>
           )}
           <button className={`adm-tab-btn ${tab === 'workload' ? 'active' : ''}`} onClick={() => setTab('workload')}>
-            📊 Workload & Capacity
+            Workforce Capacity & Utilization
           </button>
           <button className={`adm-tab-btn ${tab === 'skills' ? 'active' : ''}`} onClick={() => setTab('skills')}>
-            🛠 IT Skill Matrix
+            Competency Matrix & Skill Governance
           </button>
           <button className={`adm-tab-btn ${tab === 'kpis' ? 'active' : ''}`} onClick={() => setTab('kpis')}>
-            🎯 KPI & OKR Engine
+            Corporate Objectives & OKR Engine
           </button>
           <button className={`adm-tab-btn ${tab === 'attendance' ? 'active' : ''}`} onClick={() => setTab('attendance')}>
-            {isRegularEmployee ? '📅 My Attendance & Check-In' : `Daily Attendance (${attendance.length})`}
+            {isRegularEmployee ? 'Personal Attendance Register & Geo-Check' : `Biometric Attendance Register (${attendance.length})`}
           </button>
           <button className={`adm-tab-btn ${tab === 'leaves' ? 'active' : ''}`} onClick={() => setTab('leaves')}>
-            {canManageTeam ? `Leave Approvals (${leaves.length})` : '🌴 My Leave Applications'}
+            {canManageTeam ? `Statutory Leave Applications (${leaves.length})` : 'Personal Leave Application Register'}
             {canManageTeam && pendingLeavesCount > 0 && (
               <span className="adm-badge adm-badge-warning" style={{ marginLeft: '6px', fontSize: '0.65rem' }}>
                 {pendingLeavesCount} Pending
@@ -1369,10 +1369,10 @@ export const TeamPage: React.FC = () => {
             )}
           </button>
           <button className={`adm-tab-btn ${tab === 'payroll' ? 'active' : ''}`} onClick={() => setTab('payroll')}>
-            💵 My Payslips & Form 16
+            Verified Compensation Payslips & Form 16
           </button>
           <button className={`adm-tab-btn ${tab === 'policies' ? 'active' : ''}`} onClick={() => setTab('policies')}>
-            📜 Company Policies & Vault
+            Corporate Governance Policies & Document Vault
           </button>
         </div>
       </div>

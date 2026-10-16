@@ -111,13 +111,13 @@ export const ServicesManagePage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Enterprise Services Catalogue</h1>
-          <p>Manage corporate technical offerings, baseline pricing structures, deliverables & technologies</p>
+          <h1>Enterprise Technical Services & Solutions Catalogue</h1>
+          <p>Institutional solution offerings, Master Service Agreement (MSA) baseline rate cards, deliverable milestones & technology stacks</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
-            <span>Add New Offering</span>
+            <span>Commission Solution Offering</span>
           </button>
         </div>
       </div>

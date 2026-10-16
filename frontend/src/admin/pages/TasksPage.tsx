@@ -226,17 +226,17 @@ export const TasksPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>{isEmployee ? 'My Assigned Tasks & Review Flow' : 'Sprint Tasks, Stopwatch & Review Flow'}</h1>
+          <h1>{isEmployee ? 'Engineering Backlog & Deliverable Review Governance' : 'Sprint Backlog, Engineering Telemetry & Peer Review Governance'}</h1>
           <p>
             {isEmployee
-              ? 'Real-time task stopwatch, subtask execution, capacity load & Lead review submissions'
-              : 'EWMS Live task stopwatch, QA/Lead review approvals, capacity engine & Agile sprint delivery'}
+              ? 'Active engineering execution telemetry, subtask milestone fulfillment, sprint capacity tracking, and peer review sign-offs'
+              : 'Enterprise Agile execution engine, technical review stage gates, engineering capacity utilization, and deliverable sign-offs'}
           </p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
-            <span>Create Task</span>
+            <span>Commission Backlog Task</span>
           </button>
         </div>
       </div>

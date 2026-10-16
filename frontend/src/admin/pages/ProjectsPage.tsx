@@ -100,8 +100,8 @@ export const ProjectsPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Project Lifecycle Governance</h1>
-          <p>End-to-end 8-stage delivery management, milestone tracker, and budget analytics</p>
+          <h1>Engineering Project Portfolio & Workstream Governance</h1>
+          <p>Institutional lifecycle stage-gate governance (Lead through Maintenance), milestone delivery SLAs, and capital expenditure analytics</p>
         </div>
         <div className="adm-page-actions">
           <div style={{ display: 'flex', background: 'var(--adm-surface)', border: '1px solid var(--adm-border)', borderRadius: 'var(--adm-radius)', padding: '2px' }}>
@@ -118,7 +118,7 @@ export const ProjectsPage: React.FC = () => {
                 cursor: 'pointer'
               }}
             >
-              Pipeline Board
+              Stage Gate Kanban
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -133,13 +133,13 @@ export const ProjectsPage: React.FC = () => {
                 cursor: 'pointer'
               }}
             >
-              Table View
+              Tabular Register
             </button>
           </div>
 
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
-            <span>Create Project</span>
+            <span>Commission Workstream</span>
           </button>
         </div>
       </div>
@@ -309,13 +309,13 @@ export const ProjectsPage: React.FC = () => {
           <table className="adm-table">
             <thead>
               <tr>
-                <th>Project Title & Client</th>
-                <th>Category</th>
-                <th>Stage</th>
-                <th>Progress</th>
-                <th>Budget / Exp</th>
-                <th>Delivery Target</th>
-                <th className="adm-table-sticky-right" style={{ minWidth: '160px' }}>Actions</th>
+                <th>Workstream Engagement & Client Entity</th>
+                <th>Engineering Practice</th>
+                <th>Stage Gate Standing</th>
+                <th>SOW Fulfillment</th>
+                <th>Contract Capital / Realized Exp</th>
+                <th>Contractual Delivery SLA</th>
+                <th className="adm-table-sticky-right" style={{ minWidth: '160px' }}>Workstream Governance</th>
               </tr>
             </thead>
             <tbody>
@@ -350,31 +350,31 @@ export const ProjectsPage: React.FC = () => {
                     </td>
                     <td style={{ minWidth: '100px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '2px' }}>
-                        <span style={{ fontWeight: 700, color: 'var(--adm-primary)' }}>{p.progress}%</span>
+                        <span style={{ fontWeight: 700, color: 'var(--adm-primary)', fontVariantNumeric: 'tabular-nums' }}>{p.progress}%</span>
                       </div>
                       <div className="adm-progress-bar" style={{ margin: 0 }}>
                         <div className="adm-progress-fill" style={{ width: `${p.progress}%` }} />
                       </div>
                     </td>
                     <td>
-                      <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>₹{p.budget.toLocaleString('en-IN')}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>Exp: ₹{p.expenses.toLocaleString('en-IN')}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', fontVariantNumeric: 'tabular-nums' }}>₹{p.budget.toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', fontVariantNumeric: 'tabular-nums' }}>Exp: ₹{p.expenses.toLocaleString('en-IN')}</div>
                     </td>
-                    <td>{p.targetEndDate}</td>
+                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>{p.targetEndDate}</td>
                     <td className="adm-table-sticky-right" style={{ minWidth: '160px' }} onClick={e => e.stopPropagation()}>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => setSelectedProject(p)}>
-                          Preview Drawer
+                        <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => setSelectedProject(p)} title="Inspect Workstream Dossier">
+                          Inspect Dossier
                         </button>
                         <button
                           className="adm-btn adm-btn-sm adm-btn-danger"
                           onClick={() => {
-                            if (window.confirm(`Delete project "${p.title}"?`)) {
+                            if (window.confirm(`Decommission and archive workstream "${p.title}"?`)) {
                               deleteProject(p.id);
                               if (selectedProject?.id === p.id) setSelectedProject(null);
                             }
                           }}
-                          title="Delete Project"
+                          title="Decommission Workstream"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -434,7 +434,7 @@ export const ProjectsPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
-                Initialize New Project
+                Commission Engineering Workstream Engagement
               </h3>
               <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
@@ -444,11 +444,11 @@ export const ProjectsPage: React.FC = () => {
             <form onSubmit={handleCreateSubmit}>
               <div className="adm-grid-2">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Project Title *</label>
-                  <input className="adm-input" required value={fTitle} onChange={e => setFTitle(e.target.value)} placeholder="e.g. AI Pathology Scanner" />
+                  <label className="adm-form-label">Workstream Engagement Title *</label>
+                  <input className="adm-input" required value={fTitle} onChange={e => setFTitle(e.target.value)} placeholder="e.g. Distributed Core Banking Infrastructure" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Client Account *</label>
+                  <label className="adm-form-label">Contracted Client Entity *</label>
                   <select className="adm-select" value={fClientId} onChange={e => setFClientId(e.target.value)}>
                     {clients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
                   </select>
@@ -457,53 +457,53 @@ export const ProjectsPage: React.FC = () => {
 
               <div className="adm-grid-3">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Service Category</label>
+                  <label className="adm-form-label">Engineering Practice Domain</label>
                   <select className="adm-select" value={fCategory} onChange={e => setFCategory(e.target.value)}>
-                    <option value="Web Development">Web Development</option>
-                    <option value="Mobile App Development">Mobile App Development</option>
-                    <option value="SaaS Development">SaaS Development</option>
-                    <option value="AI/ML Solutions">AI/ML Solutions</option>
-                    <option value="IoT Solutions">IoT Solutions</option>
-                    <option value="Cloud & DevOps">Cloud & DevOps</option>
-                    <option value="Custom Enterprise Software">Custom Enterprise Software</option>
+                    <option value="Enterprise Web Architecture">Enterprise Web Architecture</option>
+                    <option value="Mobile Engineering & SDKs">Mobile Engineering & SDKs</option>
+                    <option value="SaaS Platform Engineering">SaaS Platform Engineering</option>
+                    <option value="AI / ML & Intelligent Systems">AI / ML & Intelligent Systems</option>
+                    <option value="Industrial IoT & Embedded Systems">Industrial IoT & Embedded Systems</option>
+                    <option value="Cloud Infrastructure & SRE">Cloud Infrastructure & SRE</option>
+                    <option value="Custom Enterprise Solutions">Custom Enterprise Solutions</option>
                   </select>
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Initial Status</label>
+                  <label className="adm-form-label">Initial Stage Gate Standing</label>
                   <select className="adm-select" value={fStatus} onChange={e => setFStatus(e.target.value as ProjectStatus)}>
                     {STAGES.map(st => <option key={st} value={st}>{st}</option>)}
                   </select>
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Total Budget (₹)</label>
+                  <label className="adm-form-label">Allocated Contract Value (₹) *</label>
                   <input className="adm-input" type="number" required value={fBudget} onChange={e => setFBudget(Number(e.target.value))} />
                 </div>
               </div>
 
               <div className="adm-grid-2">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Start Date</label>
+                  <label className="adm-form-label">Statutory Effective Start Date</label>
                   <input className="adm-input" type="date" value={fStart} onChange={e => setFStart(e.target.value)} />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Target Delivery Date</label>
+                  <label className="adm-form-label">Contractual Milestone Completion Date</label>
                   <input className="adm-input" type="date" value={fEnd} onChange={e => setFEnd(e.target.value)} />
                 </div>
               </div>
 
               <div className="adm-form-group">
-                <label className="adm-form-label">Tech Stack (comma separated)</label>
-                <input className="adm-input" value={fTechStack} onChange={e => setFTechStack(e.target.value)} />
+                <label className="adm-form-label">Approved Architecture & Technology Stack</label>
+                <input className="adm-input" value={fTechStack} onChange={e => setFTechStack(e.target.value)} placeholder="React, TypeScript, Node.js, PostgreSQL" />
               </div>
 
               <div className="adm-form-group">
-                <label className="adm-form-label">Engagement Description & Objectives</label>
-                <textarea className="adm-textarea" value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Key architecture, deliverables, and integration points..." />
+                <label className="adm-form-label">Technical Scope, Architecture & Deliverable Objectives</label>
+                <textarea className="adm-textarea" value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Document foundational architecture, technical SLAs, and deliverable acceptance criteria..." />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
-                <button type="submit" className="adm-btn adm-btn-primary">Launch Project</button>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowAddModal(false)}>Discard</button>
+                <button type="submit" className="adm-btn adm-btn-primary">Commission Workstream</button>
               </div>
             </form>
           </div>

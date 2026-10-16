@@ -96,13 +96,13 @@ export const ClientsPage: React.FC = () => {
       {/* Page Header */}
       <div className="adm-page-header">
         <div className="adm-page-title-group">
-          <h1>Client Management Directory</h1>
-          <p>Maintain corporate records, contacts, master agreements, contracts & billing history</p>
+          <h1>Enterprise Client Accounts Directory</h1>
+          <p>Institutional client profiles, authorized corporate signatories, statutory tax compliance (GSTIN), executed Master Service Agreements (MSA/NDA), and cumulative ledger records</p>
         </div>
         <div className="adm-page-actions">
           <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
-            <span>Add New Client</span>
+            <span>Onboard Institutional Client</span>
           </button>
         </div>
       </div>
@@ -150,13 +150,13 @@ export const ClientsPage: React.FC = () => {
         <table className="adm-table">
           <thead>
             <tr>
-              <th>Company & Industry</th>
-              <th>Primary Contact</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Total Billed</th>
-              <th>Contracts/NDA</th>
-              <th>Actions</th>
+              <th>Corporate Entity & Industrial Domain</th>
+              <th>Authorized Corporate Signatory</th>
+              <th>Registered Jurisdiction</th>
+              <th>Institutional Account Status</th>
+              <th>Cumulative Invoiced Capital</th>
+              <th>Statutory Covenants (MSA/NDA)</th>
+              <th>Administrative Governance</th>
             </tr>
           </thead>
           <tbody>
@@ -171,13 +171,13 @@ export const ClientsPage: React.FC = () => {
                     <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>{c.companyName}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                       <Building2 size={12} />
-                      <span>{c.industry || 'Corporate'}</span>
-                      {c.gstin && <span style={{ color: 'var(--adm-text-dim)' }}>• GSTIN: {c.gstin}</span>}
+                      <span>{c.industry || 'Corporate Entity'}</span>
+                      {c.gstin && <span style={{ color: 'var(--adm-text-dim)', fontVariantNumeric: 'tabular-nums' }}>• GSTIN: {c.gstin}</span>}
                     </div>
                   </td>
                   <td>
-                    <div style={{ fontWeight: 600, color: '#fff' }}>{c.primaryContact?.name || 'Authorized Contact'}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{c.primaryContact?.role || 'Executive'}</div>
+                    <div style={{ fontWeight: 600, color: '#fff' }}>{c.primaryContact?.name || 'Principal Officer'}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{c.primaryContact?.role || 'Executive Signatory'}</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', marginTop: '2px' }}>{c.primaryContact?.email || '-'}</div>
                   </td>
                   <td>
@@ -203,17 +203,17 @@ export const ClientsPage: React.FC = () => {
                     </span>
                   </td>
                   <td>
-                    <div style={{ fontWeight: 700, color: 'var(--adm-success)', fontSize: '0.92rem' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--adm-success)', fontSize: '0.92rem', fontVariantNumeric: 'tabular-nums' }}>
                       ₹{totalBilled.toLocaleString('en-IN')}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
-                      {clientProjects.length} Projects Tracked
+                      {clientProjects.length} Engagements Under SOW
                     </div>
                   </td>
                   <td>
                     <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.72rem' }}>
                       <ShieldCheck size={12} color="var(--adm-success)" />
-                      {(c.documents?.length) ?? 2} Docs Active
+                      {(c.documents?.length) ?? 2} Executed Instruments
                     </span>
                   </td>
                   <td>
@@ -221,14 +221,14 @@ export const ClientsPage: React.FC = () => {
                       <button
                         className="adm-btn adm-btn-sm adm-btn-secondary"
                         onClick={() => setSelectedClient(c)}
-                        title="View Full Profile"
+                        title="Inspect Institutional Client Dossier"
                       >
-                        View Profile
+                        Inspect Dossier
                       </button>
                       <button
                         className="adm-btn adm-btn-sm adm-btn-danger"
                         onClick={() => deleteClient(c.id)}
-                        title="Delete Client"
+                        title="Archive / Remove Corporate Record"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -267,27 +267,27 @@ export const ClientsPage: React.FC = () => {
             {/* Quick Summary Grid */}
             <div className="adm-grid-3" style={{ marginBottom: '1.5rem' }}>
               <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: 'var(--adm-radius)', border: '1px solid var(--adm-border)' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Primary Contact</span>
-                <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.92rem', marginTop: '2px' }}>{selectedClient.primaryContact?.name || 'Authorized Contact'}</div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Authorized Signatory</span>
+                <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.92rem', marginTop: '2px' }}>{selectedClient.primaryContact?.name || 'Principal Officer'}</div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)' }}>{selectedClient.primaryContact?.email || '-'}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{selectedClient.primaryContact?.phone || '-'}</div>
               </div>
 
               <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: 'var(--adm-radius)', border: '1px solid var(--adm-border)' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Account Status</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Institutional Standing</span>
                 <div style={{ marginTop: '4px' }}>
                   <span className="adm-badge adm-badge-success">{selectedClient.status || 'Active'}</span>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>Onboarded: {selectedClient.createdAt || 'N/A'}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>Account Established: {selectedClient.createdAt || 'N/A'}</div>
               </div>
 
               <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: 'var(--adm-radius)', border: '1px solid var(--adm-border)' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Total Billed Value</span>
-                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-success)', marginTop: '2px' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Cumulative Billed Capital</span>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-success)', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>
                   ₹{safeInvoices.filter(i => i && i.clientId === selectedClient.id).reduce((s, i) => s + (Number(i?.totalAmount) || 0), 0).toLocaleString('en-IN')}
                 </div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
-                  {safeInvoices.filter(i => i && i.clientId === selectedClient.id && i.status === 'Paid').length} Paid Invoices
+                  {safeInvoices.filter(i => i && i.clientId === selectedClient.id && i.status === 'Paid').length} Fully Settled Invoices
                 </div>
               </div>
             </div>
@@ -296,14 +296,14 @@ export const ClientsPage: React.FC = () => {
             <div style={{ marginBottom: '1.5rem' }}>
               <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Briefcase size={16} color="var(--adm-primary)" />
-                Client Projects
+                Active Engineering Engagements & SOW Portfolio
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 {safeProjects.filter(p => p && (p.clientId === selectedClient.id || p.clientName === selectedClient.companyName)).map(p => (
                   <div key={p.id} style={{ padding: '0.75rem 1rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.88rem' }}>{p.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Budget: ₹{(Number(p.budget) || 0).toLocaleString('en-IN')} • Target: {p.targetEndDate}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', fontVariantNumeric: 'tabular-nums' }}>Contract Value: ₹{(Number(p.budget) || 0).toLocaleString('en-IN')} • Milestone Target: {p.targetEndDate}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <span className="adm-badge adm-badge-primary">{p.status} ({p.progress}%)</span>
@@ -317,7 +317,7 @@ export const ClientsPage: React.FC = () => {
             <div style={{ marginBottom: '1.5rem' }}>
               <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <ShieldCheck size={16} color="var(--adm-success)" />
-                Signed Contracts & NDAs
+                Executed Legal Instruments, MSA & Confidentiality Covenants
               </h4>
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                 {(selectedClient.documents || []).map(doc => (
@@ -331,7 +331,7 @@ export const ClientsPage: React.FC = () => {
                 <div style={{ padding: '0.65rem 0.85rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <div>
                     <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#fff' }}>Master Service Agreement (MSA) 2026</div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>Contract • 2.4 MB • Fully Executed</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>Statutory Corporate Instrument • 2.4 MB • Bilaterally Executed</div>
                   </div>
                 </div>
               </div>
@@ -341,21 +341,21 @@ export const ClientsPage: React.FC = () => {
             <div>
               <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <MessageSquare size={16} color="var(--adm-warning)" />
-                Internal Account Notes & Logs
+                Institutional Account Communication & Executive Audit Trail
               </h4>
 
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.85rem' }}>
                 <input
                   type="text"
                   className="adm-input"
-                  placeholder="Add a new client communication log or meeting note..."
+                  placeholder="Record executive correspondence, minutes of meeting, or audit notice..."
                   value={newNoteText}
                   onChange={e => setNewNoteText(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleAddNote(selectedClient.id); }}
                 />
                 <button className="adm-btn adm-btn-primary" onClick={() => handleAddNote(selectedClient.id)}>
                   <Send size={14} />
-                  <span>Post</span>
+                  <span>Record Entry</span>
                 </button>
               </div>
 
@@ -377,7 +377,7 @@ export const ClientsPage: React.FC = () => {
         <div className="adm-modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Register New Corporate Client</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Onboard Institutional Client Account</h3>
               <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
@@ -386,55 +386,55 @@ export const ClientsPage: React.FC = () => {
             <form onSubmit={handleCreateSubmit}>
               <div className="adm-grid-2">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Company Name *</label>
-                  <input className="adm-input" required value={formName} onChange={e => setFormName(e.target.value)} placeholder="Enterprise Company Name" />
+                  <label className="adm-form-label">Legal Corporate Entity Name *</label>
+                  <input className="adm-input" required value={formName} onChange={e => setFormName(e.target.value)} placeholder="e.g. Reliance Strategic Tech Ltd" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Industry Sector</label>
-                  <input className="adm-input" value={formIndustry} onChange={e => setFormIndustry(e.target.value)} placeholder="Industry Sector" />
+                  <label className="adm-form-label">Industrial Vertical / Domain</label>
+                  <input className="adm-input" value={formIndustry} onChange={e => setFormIndustry(e.target.value)} placeholder="e.g. Enterprise FinTech & BFSI" />
                 </div>
               </div>
 
               <div className="adm-grid-2">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">GSTIN / Tax Registration</label>
+                  <label className="adm-form-label">Statutory GSTIN / Tax Identifier</label>
                   <input className="adm-input" value={formGstin} onChange={e => setFormGstin(e.target.value)} placeholder="27AAACB2212P1ZX" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Website URL</label>
-                  <input className="adm-input" value={formWebsite} onChange={e => setFormWebsite(e.target.value)} placeholder="https://company.com" />
+                  <label className="adm-form-label">Official Corporate Domain URL</label>
+                  <input className="adm-input" value={formWebsite} onChange={e => setFormWebsite(e.target.value)} placeholder="https://corporate-domain.com" />
                 </div>
               </div>
 
               <div className="adm-grid-3">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Primary Contact Person *</label>
-                  <input className="adm-input" required value={formContactName} onChange={e => setFormContactName(e.target.value)} placeholder="Primary Contact Name" />
+                  <label className="adm-form-label">Principal Authorized Signatory *</label>
+                  <input className="adm-input" required value={formContactName} onChange={e => setFormContactName(e.target.value)} placeholder="Full Legal Name" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Designation</label>
-                  <input className="adm-input" value={formContactRole} onChange={e => setFormContactRole(e.target.value)} placeholder="Designation / Role" />
+                  <label className="adm-form-label">Executive Designation</label>
+                  <input className="adm-input" value={formContactRole} onChange={e => setFormContactRole(e.target.value)} placeholder="e.g. Chief Technology Officer" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Contact Email *</label>
-                  <input className="adm-input" type="email" required value={formEmail} onChange={e => setFormEmail(e.target.value)} placeholder="contact@company.com" />
+                  <label className="adm-form-label">Corporate Email Address *</label>
+                  <input className="adm-input" type="email" required value={formEmail} onChange={e => setFormEmail(e.target.value)} placeholder="signatory@domain.com" />
                 </div>
               </div>
 
               <div className="adm-grid-2">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Phone Number</label>
-                  <input className="adm-input" value={formPhone} onChange={e => setFormPhone(e.target.value)} placeholder="+91-98XXXXXXXX" />
+                  <label className="adm-form-label">Direct Contact / Remittance Telephone</label>
+                  <input className="adm-input" value={formPhone} onChange={e => setFormPhone(e.target.value)} placeholder="+91-XXXXXXXXXX" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">City</label>
-                  <input className="adm-input" value={formCity} onChange={e => setFormCity(e.target.value)} placeholder="Mumbai, Pune, Chhatrapati Sambhajinagar" />
+                  <label className="adm-form-label">Registered Corporate Jurisdiction / City</label>
+                  <input className="adm-input" value={formCity} onChange={e => setFormCity(e.target.value)} placeholder="Mumbai, Pune, Bengaluru" />
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
-                <button type="submit" className="adm-btn adm-btn-primary">Register Client</button>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowAddModal(false)}>Discard</button>
+                <button type="submit" className="adm-btn adm-btn-primary">Execute Account Onboarding</button>
               </div>
             </form>
           </div>
