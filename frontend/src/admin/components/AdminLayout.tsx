@@ -3,13 +3,6 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { useLanguage } from '../i18n/LanguageContext';
 import {
-  registerServiceWorker,
-  isPushSupported,
-  getPushPermissionState,
-  requestPushPermission,
-  sendNativePushNotification
-} from '../utils/pushNotifications';
-import {
   LayoutDashboard,
   Users,
   Briefcase,
@@ -34,7 +27,6 @@ import {
   Sun,
   Moon,
   Languages,
-  Smartphone,
   Sparkles
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
@@ -68,26 +60,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [pushState, setPushState] = useState<NotificationPermission>(() => getPushPermissionState());
-
-  // Auto-register PWA service worker on mount
-  useEffect(() => {
-    registerServiceWorker();
-    setPushState(getPushPermissionState());
-  }, []);
-
-  const handleTogglePush = async () => {
-    const perm = await requestPushPermission();
-    setPushState(perm);
-    if (perm === 'granted') {
-      showToast('Push Enabled', 'Native mobile and desktop push notifications activated.', 'success');
-      sendNativePushNotification('Enterprenex EWMS Notifications Active', {
-        body: 'Real-time shift alerts, task handovers, and approval updates enabled.'
-      });
-    } else {
-      showToast('Permissions Required', 'Please enable notifications in your browser permission bar.', 'warning');
-    }
-  };
 
   // Live Portal Theme (Default to clean Light minimalism, with instant toggle)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -514,29 +486,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               )}
             </div>
 
-            {/* Mobile / Browser Push Notification Toggle */}
-            <button
-              className="adm-topbar-btn"
-              onClick={handleTogglePush}
-              title={pushState === 'granted' ? 'Native Mobile & Desktop Push Notifications Active' : 'Enable Native Push Notifications'}
-              style={{ position: 'relative' }}
-            >
-              <Smartphone size={16} color={pushState === 'granted' ? 'var(--adm-success)' : undefined} />
-              {pushState === 'granted' && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    background: '#10B981',
-                    boxShadow: '0 0 6px #10B981'
-                  }}
-                />
-              )}
-            </button>
 
             {/* Live Minimalist Theme Toggle (Light / Dark) */}
             <button
