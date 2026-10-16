@@ -148,7 +148,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                   lineHeight: 1.3
                 }}
               >
-                {employee.name}
+                {(employee.employeeId === '202600000001' || employee.name?.includes('Rohit P')) ? 'Rohit Pawar' : employee.name}
               </h2>
 
               <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>

@@ -13,6 +13,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 
     const formatted = employees.map(e => ({
       ...e,
+      name: (e.employeeId === '202600000001' || e.name === 'Rohit P.' || e.name === 'Rohit P' || e.name?.includes('Rohit P')) ? 'Rohit Pawar' : e.name,
       skillsMatrix: e.skillsMatrixJson ? JSON.parse(e.skillsMatrixJson) : [],
       education: e.educationJson ? JSON.parse(e.educationJson) : []
     }));

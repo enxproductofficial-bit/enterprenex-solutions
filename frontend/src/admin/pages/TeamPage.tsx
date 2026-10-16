@@ -153,6 +153,22 @@ export const TeamPage: React.FC = () => {
   const canManageTeam = isDirector || isManagerOrHr;
   const isRegularEmployee = !canManageTeam;
 
+  const getDisplayName = (emp: { name?: string; employeeId?: string; email?: string } | null | undefined): string => {
+    if (!emp) return '';
+    const n = (emp.name || '').trim();
+    if (
+      n === 'Rohit P.' ||
+      n === 'Rohit P' ||
+      n.startsWith('Rohit P.') ||
+      n.startsWith('Rohit P ') ||
+      emp.employeeId === '202600000001' ||
+      emp.email === 'director@enterprenex.solutions'
+    ) {
+      return 'Rohit Pawar';
+    }
+    return n.replace(/\bRohit\s+P(\.|\b)/gi, 'Rohit Pawar');
+  };
+
   const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves' | 'payroll' | 'policies' | 'workload' | 'skills' | 'kpis'>(isRegularEmployee ? 'attendance' : 'roster');
   const [selectedKpiEmpId, setSelectedKpiEmpId] = useState<string>(kpis[0]?.employeeId || 'EPX-DIR-001');
   const [skillCategoryFilter, setSkillCategoryFilter] = useState<string>('All');
@@ -1586,7 +1602,7 @@ export const TeamPage: React.FC = () => {
                       </div>
 
                       <div style={{ flex: 1, overflow: 'hidden' }}>
-                        <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--adm-text)' }}>{emp.name}</div>
+                        <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--adm-text)' }}>{getDisplayName(emp)}</div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{emp.role}</div>
                         <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{emp.department}</div>
                       </div>
@@ -3216,7 +3232,7 @@ export const TeamPage: React.FC = () => {
                                 style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover' }}
                               />
                               <div>
-                                <div style={{ fontWeight: 600, color: 'var(--adm-text)', fontSize: '0.85rem' }}>{emp.name}</div>
+                                <div style={{ fontWeight: 600, color: 'var(--adm-text)', fontSize: '0.85rem' }}>{getDisplayName(emp)}</div>
                                 <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
                                   {emp.role} &bull; <span style={{ fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
                                 </div>
@@ -3337,7 +3353,7 @@ export const TeamPage: React.FC = () => {
                           style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
                         />
                         <div>
-                          <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.9rem' }}>{emp.name}</div>
+                          <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.9rem' }}>{getDisplayName(emp)}</div>
                           <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
                             {emp.role} &bull; <span style={{ fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
                           </div>

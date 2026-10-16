@@ -250,6 +250,64 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
   }, []);
 
+  // Name normalization helper: enforce "Rohit Pawar" universally
+  const normalizeRohitName = (name?: string | null): string => {
+    if (!name) return '';
+    return name.replace(/\bRohit\s+P(\.|\b)/gi, 'Rohit Pawar');
+  };
+
+  const sanitizeEmployeeRecord = (emp: any, idx?: number): Employee => {
+    let item = { ...emp };
+    const n = (item.name || '').trim();
+    if (
+      n === 'Rohit P.' ||
+      n === 'Rohit P' ||
+      n.startsWith('Rohit P.') ||
+      n.startsWith('Rohit P ') ||
+      n === 'Rohit Pawar (Managing Director)' ||
+      item.employeeId === '202600000001' ||
+      item.id === 'emp-1' ||
+      item.email === 'director@enterprenex.solutions' ||
+      item.email === 'director@enterprenexsolution.com'
+    ) {
+      item.name = 'Rohit Pawar';
+    } else if (item.name) {
+      item.name = normalizeRohitName(item.name);
+    }
+    if (item.approvedBy) {
+      item.approvedBy = normalizeRohitName(item.approvedBy);
+    }
+    if (item.kycVerifiedBy) {
+      item.kycVerifiedBy = normalizeRohitName(item.kycVerifiedBy);
+    }
+    if (item.email === 'abvpcsnagar@gmail.com' || item.phone?.includes('7020443880')) {
+      item = {
+        ...item,
+        name: 'Rohit Pawar',
+        email: 'director@enterprenex.solutions',
+        phone: '+91-9226860060'
+      };
+    }
+    if (!item.employeeId && idx !== undefined) {
+      item.employeeId = `2026${(idx + 1).toString().padStart(8, '0')}`;
+    }
+    if (!item.approvalStatus) {
+      item.approvalStatus = 'Approved';
+    }
+    if (!item.kycStatus) {
+      item.kycStatus = 'Verified';
+    }
+    if (!item.panNumber && item.employeeId === '202600000002') {
+      item.panNumber = 'PRRPS8209K';
+      item.aadhaarNumber = '674389012345';
+    }
+    if (!item.panNumber && (item.email === 'director@enterprenex.solutions' || item.email === 'director@enterprenexsolution.com' || item.id === 'emp-1' || item.employeeId === '202600000001')) {
+      item.panNumber = 'AAXPE1206M';
+      item.aadhaarNumber = '782390124567';
+    }
+    return item;
+  };
+
   // Sync live EWMS data from backend API server (Port 5000)
   useEffect(() => {
     const syncFromBackend = async () => {
@@ -267,22 +325,36 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         ]);
 
         if (tRes.status === 'fulfilled' && tRes.value.tasks?.length > 0) {
-          setTasks(tRes.value.tasks);
+          setTasks(tRes.value.tasks.map((t: any) => ({
+            ...t,
+            assignedTo: normalizeRohitName(t.assignedTo),
+            reviewer: normalizeRohitName(t.reviewer)
+          })));
         }
         if (eRes.status === 'fulfilled' && eRes.value.employees?.length > 0) {
-          setEmployees(eRes.value.employees);
+          setEmployees(eRes.value.employees.map((e: any, idx: number) => sanitizeEmployeeRecord(e, idx)));
         }
         if (aRes.status === 'fulfilled' && aRes.value.attendance?.length > 0) {
-          setAttendance(aRes.value.attendance);
+          setAttendance(aRes.value.attendance.map((a: any) => ({
+            ...a,
+            employeeName: a.employeeId === '202600000001' ? 'Rohit Pawar' : normalizeRohitName(a.employeeName)
+          })));
         }
         if (kRes.status === 'fulfilled' && kRes.value.kpis?.length > 0) {
           setKpis(kRes.value.kpis);
         }
         if (oRes.status === 'fulfilled' && oRes.value.okrs?.length > 0) {
-          setOkrs(oRes.value.okrs);
+          setOkrs(oRes.value.okrs.map((o: any) => ({
+            ...o,
+            ownerName: normalizeRohitName(o.ownerName)
+          })));
         }
         if (lRes.status === 'fulfilled' && lRes.value.leaves?.length > 0) {
-          setLeaves(lRes.value.leaves);
+          setLeaves(lRes.value.leaves.map((l: any) => ({
+            ...l,
+            employeeName: normalizeRohitName(l.employeeName),
+            approvedBy: normalizeRohitName(l.approvedBy)
+          })));
         }
       } catch (err) {
         console.warn('Backend live sync fallback to local cache:', err);
@@ -312,44 +384,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.invoices && parsed.invoices.length > 0) setInvoices(parsed.invoices);
         if (parsed.expenses && parsed.expenses.length > 0) setExpenses(parsed.expenses);
         if (parsed.employees) {
-          const sanitized = parsed.employees.map((emp: any, idx: number) => {
-            let item = { ...emp };
-            if (item.name === 'Rohit P.' || item.name?.includes('Rohit P.')) {
-              item.name = item.name.replace(/Rohit P\./g, 'Rohit Pawar');
-            }
-            if (item.approvedBy?.includes('Rohit P.')) {
-              item.approvedBy = item.approvedBy.replace(/Rohit P\./g, 'Rohit Pawar');
-            }
-            if (item.kycVerifiedBy?.includes('Rohit P.')) {
-              item.kycVerifiedBy = item.kycVerifiedBy.replace(/Rohit P\./g, 'Rohit Pawar');
-            }
-            if (item.email === 'abvpcsnagar@gmail.com' || item.phone?.includes('7020443880')) {
-              item = {
-                ...item,
-                name: 'Rohit Pawar',
-                email: 'director@enterprenex.solutions',
-                phone: '+91-9226860060'
-              };
-            }
-            if (!item.employeeId) {
-              item.employeeId = `2026${(idx + 1).toString().padStart(8, '0')}`;
-            }
-            if (!item.approvalStatus) {
-              item.approvalStatus = 'Approved';
-            }
-            if (!item.kycStatus) {
-              item.kycStatus = 'Verified';
-            }
-            if (!item.panNumber && item.employeeId === '202600000002') {
-              item.panNumber = 'PRRPS8209K';
-              item.aadhaarNumber = '674389012345';
-            }
-            if (!item.panNumber && (item.email === 'director@enterprenex.solutions' || item.email === 'director@enterprenexsolution.com' || item.id === 'emp-1')) {
-              item.panNumber = 'AAXPE1206M';
-              item.aadhaarNumber = '782390124567';
-            }
-            return item;
-          });
+          const sanitized = parsed.employees.map((emp: any, idx: number) => sanitizeEmployeeRecord(emp, idx));
 
           // Ensure permanent initial employees exist across all devices/sessions
           INITIAL_EMPLOYEES.forEach(initEmp => {
@@ -396,7 +431,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.meetings && parsed.meetings.length > 0) {
           const sanitizedMeet = parsed.meetings.map((m: any) => ({
             ...m,
-            attendees: (m.attendees || []).map((att: string) => att.replace(/Rohit P\./g, 'Rohit Pawar'))
+            attendees: (m.attendees || []).map((att: string) => normalizeRohitName(att))
           }));
           setMeetings(sanitizedMeet);
         } else {
@@ -405,7 +440,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.announcements && parsed.announcements.length > 0) {
           const sanitizedAnn = parsed.announcements.map((a: any) => ({
             ...a,
-            authorName: a.authorName?.replace(/Rohit P\./g, 'Rohit Pawar') || a.authorName
+            authorName: normalizeRohitName(a.authorName) || a.authorName
           }));
           setAnnouncements(sanitizedAnn);
         } else {
@@ -414,8 +449,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.chatMessages && parsed.chatMessages.length > 0) {
           const sanitizedChat = parsed.chatMessages.map((m: any) => ({
             ...m,
-            senderName: m.senderName?.replace(/Rohit P\./g, 'Rohit Pawar') || m.senderName,
-            recipientName: m.recipientName?.replace(/Rohit P\./g, 'Rohit Pawar') || m.recipientName
+            senderName: normalizeRohitName(m.senderName) || m.senderName,
+            recipientName: normalizeRohitName(m.recipientName) || m.recipientName
           }));
           setChatMessages(sanitizedChat);
         } else {
@@ -426,13 +461,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.apiKeys) setApiKeys(parsed.apiKeys);
         if (parsed.currentUser) {
           const cur = parsed.currentUser;
-          if (cur.name === 'Rohit P.' || cur.name?.includes('Rohit P.')) {
-            cur.name = cur.name.replace(/Rohit P\./g, 'Rohit Pawar');
+          const curName = (cur.name || '').trim();
+          if (
+            curName === 'Rohit P.' ||
+            curName === 'Rohit P' ||
+            curName.startsWith('Rohit P.') ||
+            curName.startsWith('Rohit P ') ||
+            cur.employeeId === '202600000001' ||
+            cur.email === 'director@enterprenex.solutions' ||
+            cur.email === 'director@enterprenexsolution.com'
+          ) {
+            cur.name = 'Rohit Pawar';
+          } else if (cur.name) {
+            cur.name = normalizeRohitName(cur.name);
           }
           if (cur.email === 'abvpcsnagar@gmail.com' || cur.phone?.includes('7020443880')) {
             setCurrentUser({
               ...cur,
-              name: 'Company Director',
+              name: 'Rohit Pawar',
               email: 'director@enterprenex.solutions',
               phone: '+91-9226860060'
             });
