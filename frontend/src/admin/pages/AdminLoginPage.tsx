@@ -46,7 +46,7 @@ export const AdminLoginPage: React.FC = () => {
     if (isDirector || isHr || isManager) {
       const authenticatedUser: AdminUser = {
         id: isDirector ? 'usr-dir' : isHr ? 'usr-hr' : 'usr-mgr',
-        name: isDirector ? 'Rohit P. (Managing Director)' : isHr ? 'HR Administrator' : 'Operations Manager',
+        name: isDirector ? 'Rohit Pawar (Managing Director)' : isHr ? 'HR Administrator' : 'Operations Manager',
         email: inputEmail,
         role: isDirector ? 'Super Admin' : 'Project Manager',
         avatar: isDirector
@@ -69,7 +69,7 @@ export const AdminLoginPage: React.FC = () => {
       if (matchedEmp.approvalStatus === 'Pending Director Approval') {
         setTimeout(() => {
           setIsLoading(false);
-          setError(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} is awaiting approval from Managing Director (Rohit P.).`);
+          setError(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} is awaiting approval from Managing Director (Rohit Pawar).`);
         }, 400);
         return;
       }

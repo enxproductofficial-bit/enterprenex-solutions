@@ -26,7 +26,7 @@ import type {
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-1',
-    name: 'Rohit P.',
+    name: 'Rohit Pawar',
     email: 'director@enterprenex.solutions',
     role: 'Super Admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
@@ -174,7 +174,7 @@ export const INITIAL_PROJECTS: Project[] = [
     expenses: 620000,
     startDate: '2026-01-20',
     targetEndDate: '2026-06-30',
-    assignedTeam: ['Rohit P.', 'POLAMREDDY REVANTH REDDY'],
+    assignedTeam: ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
     techStack: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker'],
     serviceCategory: 'Custom Enterprise Software',
     description: 'Multi-tenant enterprise ERP modernization with real-time financial reconciliation and RBAC security.',
@@ -198,7 +198,7 @@ export const INITIAL_PROJECTS: Project[] = [
     expenses: 850000,
     startDate: '2026-02-10',
     targetEndDate: '2026-08-15',
-    assignedTeam: ['Rohit P.', 'POLAMREDDY REVANTH REDDY'],
+    assignedTeam: ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
     techStack: ['Python', 'FastAPI', 'React', 'TimescaleDB', 'Redis'],
     serviceCategory: 'AI/ML Solutions',
     description: 'Sub-millisecond trade analytics ingestion pipeline and predictive volatility monitoring engine.',
@@ -383,7 +383,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     id: 'emp-1',
     employeeId: '202600000001',
     password: 'Enx_sol_121006',
-    name: 'Rohit P.',
+    name: 'Rohit Pawar',
     role: 'Managing Director & Lead Architect',
     department: 'Engineering',
     email: 'director@enterprenex.solutions',
@@ -435,23 +435,23 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     performanceRating: 5.0,
     status: 'Active',
     approvalStatus: 'Approved',
-    approvedBy: 'Rohit P. (Managing Director)',
+    approvedBy: 'Rohit Pawar (Managing Director)',
     panNumber: 'PRRPS8209K',
     aadhaarNumber: '674389012345',
     kycStatus: 'Verified',
-    kycVerifiedBy: 'Rohit P. (Managing Director)',
+    kycVerifiedBy: 'Rohit Pawar (Managing Director)',
     kycVerifiedAt: '2026-10-10T08:00:00.000Z',
     employmentType: 'Full Time',
     workMode: 'Hybrid',
     kpiScore: 91.5,
     okrScore: 88.0,
     skillsMatrix: [
-      { name: 'React & Next.js', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' },
-      { name: 'TypeScript & JavaScript', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' },
-      { name: 'Node.js & Express', category: 'Backend', level: 'Intermediate', rating: 4, verifiedRating: 3, isVerified: true, verifiedBy: 'Rohit P.' },
-      { name: 'PostgreSQL & Database Architecture', category: 'Database', level: 'Intermediate', rating: 3, verifiedRating: 3, isVerified: true, verifiedBy: 'Rohit P.' },
-      { name: 'Tailwind CSS & Minimalist Design', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P.' },
-      { name: 'Cloud Deployment & Vercel', category: 'DevOps', level: 'Intermediate', rating: 3, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' }
+      { name: 'React & Next.js', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'TypeScript & JavaScript', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'Node.js & Express', category: 'Backend', level: 'Intermediate', rating: 4, verifiedRating: 3, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'PostgreSQL & Database Architecture', category: 'Database', level: 'Intermediate', rating: 3, verifiedRating: 3, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'Tailwind CSS & Minimalist Design', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'Cloud Deployment & Vercel', category: 'DevOps', level: 'Intermediate', rating: 3, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
     ],
     education: [
       { degree: 'B.Tech in Computer Science & Engineering', institute: 'Engineering Institute of Technology', specialization: 'Software Systems & AI', startYear: '2022', endYear: '2026', score: '8.4 CGPA' }
@@ -475,19 +475,19 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     performanceRating: 4.9,
     status: 'Active',
     approvalStatus: 'Approved',
-    approvedBy: 'Rohit P. (Managing Director)',
+    approvedBy: 'Rohit Pawar (Managing Director)',
     panNumber: 'AMRPK7892L',
     aadhaarNumber: '890123456789',
     kycStatus: 'Verified',
-    kycVerifiedBy: 'Rohit P. (Managing Director)',
+    kycVerifiedBy: 'Rohit Pawar (Managing Director)',
     kycVerifiedAt: '2026-01-15T09:00:00.000Z',
     employmentType: 'Full Time',
     workMode: 'Hybrid',
     kpiScore: 94.0,
     okrScore: 92.5,
     skillsMatrix: [
-      { name: 'Sprint & Agile Leadership', category: 'Management', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P.' },
-      { name: 'Full Stack Architecture', category: 'Architecture', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' }
+      { name: 'Sprint & Agile Leadership', category: 'Management', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'Full Stack Architecture', category: 'Architecture', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
     ],
     education: [
       { degree: 'B.E. in Information Technology', institute: 'Pune University', specialization: 'Software Engineering', startYear: '2017', endYear: '2021', score: '8.8 CGPA' }
@@ -511,19 +511,19 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     performanceRating: 4.8,
     status: 'Active',
     approvalStatus: 'Approved',
-    approvedBy: 'Rohit P. (Managing Director)',
+    approvedBy: 'Rohit Pawar (Managing Director)',
     panNumber: 'SNPPB6543M',
     aadhaarNumber: '901234567890',
     kycStatus: 'Verified',
-    kycVerifiedBy: 'Rohit P. (Managing Director)',
+    kycVerifiedBy: 'Rohit Pawar (Managing Director)',
     kycVerifiedAt: '2026-02-01T09:00:00.000Z',
     employmentType: 'Full Time',
     workMode: 'Hybrid',
     kpiScore: 92.0,
     okrScore: 90.0,
     skillsMatrix: [
-      { name: 'Figma & Design Systems', category: 'Design', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P.' },
-      { name: 'React CSS Frameworks', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' }
+      { name: 'Figma & Design Systems', category: 'Design', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'React CSS Frameworks', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
     ],
     education: [
       { degree: 'B.Des in Digital Product Design', institute: 'National Institute of Design', specialization: 'Interaction Design', startYear: '2018', endYear: '2022', score: '9.0 CGPA' }
@@ -535,7 +535,7 @@ export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
   {
     id: 'att-1',
     employeeId: '202600000001',
-    employeeName: 'Rohit P.',
+    employeeName: 'Rohit Pawar',
     date: '2026-10-12',
     checkIn: '09:05 AM',
     checkOut: '-',
@@ -561,7 +561,7 @@ export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
     absenceReason: 'No Intimation Provided',
     absenceNotes: 'Awaiting check-in intimation. Direct outreach pending from HR Lead.',
     notifiedVia: ['WhatsApp'],
-    recordedBy: 'Rohit P. (Managing Director)',
+    recordedBy: 'Rohit Pawar (Managing Director)',
     recordedAt: '2026-10-12T10:15:00.000Z'
   }
 ];
@@ -569,7 +569,7 @@ export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
 export const INITIAL_LEAVES: LeaveRequest[] = [
   {
     id: 'lv-1',
-    employeeName: 'Rohit P.',
+    employeeName: 'Rohit Pawar',
     type: 'Casual Leave',
     startDate: '2026-10-15',
     endDate: '2026-10-16',
@@ -595,7 +595,7 @@ export const INITIAL_TASKS: Task[] = [
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
     assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit P.',
+    reviewer: 'Rohit Pawar',
     priority: 'High',
     status: 'In Progress',
     dueDate: '2026-10-14',
@@ -609,7 +609,7 @@ export const INITIAL_TASKS: Task[] = [
       { id: 'st-3', title: 'Auto-logging into cumulative task hours', completed: false }
     ],
     comments: [
-      { id: 'tc-1', author: 'Rohit P.', authorAvatar: '', text: 'Ensure the timer interface stays clean and minimalist without distracting the developer.', createdAt: 'Yesterday' }
+      { id: 'tc-1', author: 'Rohit Pawar', authorAvatar: '', text: 'Ensure the timer interface stays clean and minimalist without distracting the developer.', createdAt: 'Yesterday' }
     ]
   },
   {
@@ -619,7 +619,7 @@ export const INITIAL_TASKS: Task[] = [
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
     assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit P.',
+    reviewer: 'Rohit Pawar',
     priority: 'Urgent',
     status: 'In Progress',
     dueDate: '2026-10-15',
@@ -640,7 +640,7 @@ export const INITIAL_TASKS: Task[] = [
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
     assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit P.',
+    reviewer: 'Rohit Pawar',
     priority: 'Medium',
     status: 'In Review',
     dueDate: '2026-10-16',
@@ -662,8 +662,8 @@ export const INITIAL_TASKS: Task[] = [
     description: 'Implement weighted KPI formula (On-Time Delivery 25%, Quality 25%, Bug Rate 15%, Documentation 10%, etc.) out of 100.',
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
-    assignedTo: 'Rohit P.',
-    reviewer: 'Rohit P.',
+    assignedTo: 'Rohit Pawar',
+    reviewer: 'Rohit Pawar',
     priority: 'High',
     status: 'Done',
     dueDate: '2026-10-18',
@@ -676,7 +676,7 @@ export const INITIAL_TASKS: Task[] = [
       { id: 'st-9', title: 'Objective key results tracking bars', completed: true }
     ],
     comments: [
-      { id: 'tc-3', author: 'Rohit P.', authorAvatar: '', text: 'Architecture approved. Meets Section 15-17 EWMS blueprint.', createdAt: '2 days ago' }
+      { id: 'tc-3', author: 'Rohit Pawar', authorAvatar: '', text: 'Architecture approved. Meets Section 15-17 EWMS blueprint.', createdAt: '2 days ago' }
     ]
   },
   {
@@ -686,7 +686,7 @@ export const INITIAL_TASKS: Task[] = [
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
     assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit P.',
+    reviewer: 'Rohit Pawar',
     priority: 'Medium',
     status: 'To Do',
     dueDate: '2026-10-22',
@@ -721,7 +721,7 @@ export const INITIAL_KPIS: EmployeeKpiScorecard[] = [
   },
   {
     employeeId: '202600000001',
-    employeeName: 'Rohit P.',
+    employeeName: 'Rohit Pawar',
     roleTemplate: 'Software Developer',
     period: 'October 2026',
     updatedAt: '2026-10-12',
@@ -755,7 +755,7 @@ export const INITIAL_OKRS: ObjectiveKeyResult[] = [
     id: 'okr-2',
     objectiveTitle: 'Scale Enterprise Cloud Infrastructure & 99.9% High Availability',
     department: 'DevOps & Architecture',
-    ownerName: 'Rohit P.',
+    ownerName: 'Rohit Pawar',
     period: 'Q4 2026',
     progressPercent: 92,
     keyResults: [
@@ -803,7 +803,7 @@ export const INITIAL_MEETINGS: CalendarMeeting[] = [
     type: 'Sprint Planning',
     date: '2026-10-16',
     time: '11:00 AM - 12:00 PM',
-    attendees: ['Rohit P.', 'POLAMREDDY REVANTH REDDY', 'Aniket More', 'Sneha Patil'],
+    attendees: ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY', 'Aniket More', 'Sneha Patil'],
     location: 'Google Meet',
     meetUrl: 'https://meet.google.com/enx-sprint-sync',
     description: 'Sprint planning, deliverables review for Apex Global & EWMS feature milestones.'
@@ -814,7 +814,7 @@ export const INITIAL_MEETINGS: CalendarMeeting[] = [
     type: 'Client Presentation',
     date: '2026-10-17',
     time: '03:30 PM - 04:30 PM',
-    attendees: ['Anita Shenoy (Apex Global)', 'Rohit P.', 'POLAMREDDY REVANTH REDDY'],
+    attendees: ['Anita Shenoy (Apex Global)', 'Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
     location: 'Google Meet (Enterprise)',
     meetUrl: 'https://meet.google.com/enx-apex-demo',
     description: 'Architecture review & live demo of sub-millisecond telemetry ingestion engine.'
@@ -825,7 +825,7 @@ export const INITIAL_MEETINGS: CalendarMeeting[] = [
     type: 'Internal Sync',
     date: '2026-10-19',
     time: '02:00 PM - 02:45 PM',
-    attendees: ['Rohit P.', 'Aniket More', 'Executive Team'],
+    attendees: ['Rohit Pawar', 'Aniket More', 'Executive Team'],
     location: 'Enterprenex Executive Boardroom / Hybrid',
     meetUrl: 'https://meet.google.com/enx-exec-sync',
     description: 'Review quarterly deliverables, client satisfaction scores, and talent promotions.'
@@ -837,7 +837,7 @@ export const INITIAL_ANNOUNCEMENTS: CommunityAnnouncement[] = [
     id: 'ann-1',
     title: 'Welcome to Enterprenex Work Management System (EWMS) V2.4',
     content: 'Dear Enterprenex Family, we are proud to introduce our unified enterprise portal covering Daily Attendance Geo-Check, Automated Monthly Payroll, Direct WhatsApp Meeting Dispatch, and our new Company Community. All employees are requested to review project milestones and mark daily punch-in on time.',
-    authorName: 'Rohit P.',
+    authorName: 'Rohit Pawar',
     authorRole: 'Managing Director & Lead Architect',
     authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     isDirectorPost: true,
@@ -866,7 +866,7 @@ export const INITIAL_ANNOUNCEMENTS: CommunityAnnouncement[] = [
     id: 'ann-3',
     title: 'Team Appreciation & Upcoming Company Town Hall',
     content: 'Big congratulations to the Engineering Team for delivering the statutory Payroll Engine with 50-30-20 tax breakdown and the Official Certificate Verification Portal ahead of schedule! Refreshments will be hosted at HQ this Friday.',
-    authorName: 'Rohit P.',
+    authorName: 'Rohit Pawar',
     authorRole: 'Managing Director & Lead Architect',
     authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     isDirectorPost: true,
@@ -882,7 +882,7 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   {
     id: 'msg-1',
     senderId: '202600000001',
-    senderName: 'Rohit P.',
+    senderName: 'Rohit Pawar',
     senderRole: 'Managing Director',
     senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     channelId: 'general',
@@ -926,7 +926,7 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   {
     id: 'msg-5',
     senderId: '202600000001',
-    senderName: 'Rohit P.',
+    senderName: 'Rohit Pawar',
     senderRole: 'Managing Director',
     senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     channelId: 'general',
@@ -1014,7 +1014,7 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
   {
     id: 'log-1',
     userId: 'usr-1',
-    userName: 'Rohit P. (Director)',
+    userName: 'Rohit Pawar (Director)',
     userRole: 'Super Admin',
     action: 'Platform Active',
     module: 'Admin & Security',
@@ -1039,7 +1039,7 @@ export const INITIAL_API_KEYS: ApiKeyItem[] = [
 export const INITIAL_SESSIONS: UserSession[] = [
   {
     id: 'sess-1',
-    userName: 'Rohit P. (Director)',
+    userName: 'Rohit Pawar (Director)',
     device: 'Authorized Executive Workstation',
     ipAddress: '10.228.245.155',
     location: 'India',

@@ -305,7 +305,7 @@ export const TeamPage: React.FC = () => {
       startDate: certStartDate,
       completionDate: certEndDate,
       grade: certGrade,
-      mentor: 'Rohit P. (Managing Director)',
+      mentor: 'Rohit Pawar (Managing Director)',
       issuedBy: currentUser?.name || 'Managing Director',
       issuedAt: new Date().toISOString(),
     };
@@ -330,7 +330,7 @@ export const TeamPage: React.FC = () => {
       url: '#',
       employeeId: certRecipientEmpId.trim() || undefined,
       verificationStatus: 'Verified',
-      verifiedBy: 'Rohit P. (Managing Director)',
+      verifiedBy: 'Rohit Pawar (Managing Director)',
       verifiedAt: new Date().toISOString()
     });
 
@@ -422,7 +422,7 @@ export const TeamPage: React.FC = () => {
           <div class="footer-section">
             <!-- Managing Director Signature Block -->
             <div class="sig-block">
-              <div style="font-family: 'Dancing Script', cursive; font-size: 26px; font-weight: 700; color: #1e3a8a; transform: rotate(-3deg); margin-bottom: 2px;">Rohit P.</div>
+              <div style="font-family: 'Dancing Script', cursive; font-size: 26px; font-weight: 700; color: #1e3a8a; transform: rotate(-3deg); margin-bottom: 2px;">Rohit Pawar</div>
               <div style="font-size: 8px; color: #0284c7; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px;">✓ Digitally Certified</div>
               <div class="sig-line">MANAGING DIRECTOR</div>
               <div class="sig-role">Enterprenex Solutions Pvt Ltd</div>
@@ -734,7 +734,7 @@ export const TeamPage: React.FC = () => {
       performanceRating: 5.0,
       status: 'Active',
       approvalStatus: initialApprovalStatus,
-      approvedBy: initialApprovalStatus === 'Approved' ? (currentUser?.name || 'Rohit P. (Managing Director)') : undefined,
+      approvedBy: initialApprovalStatus === 'Approved' ? (currentUser?.name || 'Rohit Pawar (Managing Director)') : undefined,
       approvedAt: initialApprovalStatus === 'Approved' ? new Date().toISOString() : undefined,
       panNumber: finalPan || undefined,
       panDocUrl: panDocUrl || undefined,
@@ -774,7 +774,7 @@ export const TeamPage: React.FC = () => {
     if (initialApprovalStatus === 'Pending Director Approval') {
       showToast(
         'Employee Registered - Awaiting Director Approval',
-        `Employee ID ${finalEmpId} added. Awaiting Director Approval (Rohit P. - director@enterprenex.solutions) before workspace portal login is enabled.`,
+        `Employee ID ${finalEmpId} added. Awaiting Director Approval (Rohit Pawar - director@enterprenex.solutions) before workspace portal login is enabled.`,
         'info'
       );
     } else {
@@ -985,7 +985,7 @@ export const TeamPage: React.FC = () => {
                     <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '2px' }}>
                       {isDirector
                         ? 'Employees cannot log into the workspace portal until you approve their 12-digit Employee ID and credentials.'
-                        : 'Credentials registered by HR are awaiting approval from Managing Director (Rohit P. - director@enterprenex.solutions).'}
+                        : 'Credentials registered by HR are awaiting approval from Managing Director (Rohit Pawar - director@enterprenex.solutions).'}
                     </div>
                   </div>
                 </div>
@@ -999,7 +999,7 @@ export const TeamPage: React.FC = () => {
                         pendingEmployees.forEach(emp => {
                           updateEmployee(emp.id, {
                             approvalStatus: 'Approved',
-                            approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                            approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
                             approvedAt: new Date().toISOString()
                           });
                         });
@@ -1192,7 +1192,7 @@ export const TeamPage: React.FC = () => {
                         <p style={{ margin: '0 0 8px 0', fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.4 }}>
                           {isDirector
                             ? 'Employee was registered by HR. Click below to approve credentials and enable portal login.'
-                            : 'Waiting for Managing Director (Rohit P. - director@enterprenex.solutions) to approve login access.'}
+                            : 'Waiting for Managing Director (Rohit Pawar - director@enterprenex.solutions) to approve login access.'}
                         </p>
 
                         {isDirector ? (
@@ -1204,7 +1204,7 @@ export const TeamPage: React.FC = () => {
                               onClick={() => {
                                 updateEmployee(emp.id, {
                                   approvalStatus: 'Approved',
-                                  approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                                  approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
                                   approvedAt: new Date().toISOString()
                                 });
                                 showToast('Login Approved', `Authorized portal login for ${emp.name} (${displayEmpId}).`, 'success');
@@ -1234,7 +1234,7 @@ export const TeamPage: React.FC = () => {
                             onClick={() => {
                               const text =
                                 `*ENTERPRENEX APPROVAL REQUEST*\n\n` +
-                                `Managing Director Rohit P., please approve login for new employee:\n` +
+                                `Managing Director Rohit Pawar, please approve login for new employee:\n` +
                                 `*Name:* ${emp.name}\n` +
                                 `*Employee ID:* ${displayEmpId}\n` +
                                 `*Official Email:* ${emp.email}\n` +
@@ -1274,7 +1274,7 @@ export const TeamPage: React.FC = () => {
                             onClick={() => {
                               updateEmployee(emp.id, {
                                 approvalStatus: 'Approved',
-                                approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                                approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
                                 approvedAt: new Date().toISOString()
                               });
                               showToast('Login Approved', `Restored portal login for ${emp.name}.`, 'success');
@@ -2149,10 +2149,10 @@ export const TeamPage: React.FC = () => {
                       rating: 5,
                       verifiedRating: 5,
                       isVerified: true,
-                      verifiedBy: 'Rohit P. (Managing Director)'
+                      verifiedBy: 'Rohit Pawar (Managing Director)'
                     }))
                   : [
-                      { name: 'Full-Stack Development', category: 'Backend', level: 'Expert' as const, rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P. (Managing Director)' }
+                      { name: 'Full-Stack Development', category: 'Backend', level: 'Expert' as const, rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar (Managing Director)' }
                     ];
 
                 const filteredSkills = matrix.filter(s => {
@@ -3094,7 +3094,7 @@ export const TeamPage: React.FC = () => {
                   </span>
                 ) : (
                   <span>
-                    ⏳ <strong>Director Approval Required:</strong> As HR, after adding this team member, login access will be pending until Managing Director (Rohit P. - director@enterprenex.solutions) reviews and approves the credentials.
+                    ⏳ <strong>Director Approval Required:</strong> As HR, after adding this team member, login access will be pending until Managing Director (Rohit Pawar - director@enterprenex.solutions) reviews and approves the credentials.
                   </span>
                 )}
               </div>
@@ -3210,7 +3210,7 @@ export const TeamPage: React.FC = () => {
                         onClick={() => {
                           updateEmployee(credentialEmp.id, {
                             approvalStatus: 'Approved',
-                            approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                            approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
                             approvedAt: new Date().toISOString()
                           });
                           setCredentialEmp(prev => prev ? { ...prev, approvalStatus: 'Approved' } : null);
@@ -4235,7 +4235,7 @@ export const TeamPage: React.FC = () => {
                 </div>
 
                 <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--adm-border)', borderRadius: '8px', padding: '0.75rem', fontSize: '0.75rem', color: 'var(--adm-text-dim)', marginBottom: '1.25rem' }}>
-                  🛡️ <strong>Statutory Authority:</strong> Authorized by Managing Director (Rohit P.) & HR Governance. Once issued, this credential will be verifiable worldwide on the Enterprenex public portal.
+                  🛡️ <strong>Statutory Authority:</strong> Authorized by Managing Director (Rohit Pawar) & HR Governance. Once issued, this credential will be verifiable worldwide on the Enterprenex public portal.
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
@@ -4367,7 +4367,7 @@ export const TeamPage: React.FC = () => {
             onApproveLogin={emp => {
               updateEmployee(emp.id, {
                 approvalStatus: 'Approved',
-                approvedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+                approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
                 approvedAt: new Date().toISOString()
               });
               setSelectedEmployee(prev => (prev && prev.id === emp.id ? { ...prev, approvalStatus: 'Approved' } : prev));

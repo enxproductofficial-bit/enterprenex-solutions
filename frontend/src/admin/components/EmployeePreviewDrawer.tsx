@@ -230,7 +230,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                 } else {
                   onUpdateEmployee(employee.id, {
                     approvalStatus: 'Approved',
-                    approvedBy: 'Rohit P. (Managing Director)',
+                    approvedBy: 'Rohit Pawar (Managing Director)',
                     approvedAt: new Date().toISOString()
                   });
                 }

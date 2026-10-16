@@ -13,7 +13,7 @@ async function seed() {
     create: {
       email: 'director@enterprenex.solutions',
       password: defaultPasswordHash,
-      name: 'Rohit P.',
+      name: 'Rohit Pawar',
       role: 'Super Admin',
       employeeId: '202600000001',
       department: 'Engineering',
@@ -43,7 +43,7 @@ async function seed() {
     update: {},
     create: {
       employeeId: '202600000001',
-      name: 'Rohit P.',
+      name: 'Rohit Pawar',
       role: 'Managing Director & Lead Architect',
       department: 'Engineering',
       email: 'director@enterprenex.solutions',
@@ -96,12 +96,12 @@ async function seed() {
       kpiScore: 94.2,
       okrScore: 92.0,
       skillsMatrixJson: JSON.stringify([
-        { name: 'React 19 & Next.js', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P.' },
-        { name: 'TypeScript & JavaScript', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' },
-        { name: 'Node.js & Express', category: 'Backend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' },
-        { name: 'PostgreSQL & Database Architecture', category: 'Database', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' },
-        { name: 'Tailwind CSS & Minimalist Design', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit P.' },
-        { name: 'Cloud Deployment & Vercel', category: 'Cloud & DevOps', level: 'Intermediate', rating: 3, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit P.' }
+        { name: 'React 19 & Next.js', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
+        { name: 'TypeScript & JavaScript', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' },
+        { name: 'Node.js & Express', category: 'Backend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' },
+        { name: 'PostgreSQL & Database Architecture', category: 'Database', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' },
+        { name: 'Tailwind CSS & Minimalist Design', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
+        { name: 'Cloud Deployment & Vercel', category: 'Cloud & DevOps', level: 'Intermediate', rating: 3, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
       ]),
       joinDate: '2026-02-01'
     }
@@ -116,7 +116,7 @@ async function seed() {
         {
           id: 'att-1',
           employeeId: '202600000001',
-          employeeName: 'Rohit P.',
+          employeeName: 'Rohit Pawar',
           date: today,
           checkIn: '09:05 AM',
           checkOut: '-',
@@ -159,7 +159,7 @@ async function seed() {
           projectId: 'prj-1',
           projectName: 'Enterprise Web & AI Systems',
           assignedTo: 'POLAMREDDY REVANTH REDDY',
-          reviewer: 'Rohit P.',
+          reviewer: 'Rohit Pawar',
           priority: 'High',
           status: 'In Progress',
           dueDate: '2026-10-14',
@@ -179,7 +179,7 @@ async function seed() {
           projectId: 'prj-1',
           projectName: 'Enterprise Web & AI Systems',
           assignedTo: 'POLAMREDDY REVANTH REDDY',
-          reviewer: 'Rohit P.',
+          reviewer: 'Rohit Pawar',
           priority: 'Urgent',
           status: 'To Do',
           dueDate: '2026-10-15',
@@ -218,7 +218,7 @@ async function seed() {
         id: 'okr-1',
         objectiveTitle: 'Launch Enterprise EWMS v1.0 & Client Onboarding Platform',
         department: 'Engineering',
-        ownerName: 'Rohit P.',
+        ownerName: 'Rohit Pawar',
         period: 'Q1 2026',
         progressPercent: 88,
         keyResultsJson: JSON.stringify([

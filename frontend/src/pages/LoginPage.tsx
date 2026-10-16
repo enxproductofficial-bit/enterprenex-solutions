@@ -71,7 +71,7 @@ export const LoginPage: React.FC = () => {
         setStatusMessage('Authenticated successfully as DIRECTOR. Redirecting to Executive Suite...');
         login({
           id: 'usr-dir',
-          name: 'Rohit P. (Managing Director)',
+          name: 'Rohit Pawar (Managing Director)',
           email: inputEmail,
           role: 'Super Admin',
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
@@ -130,7 +130,7 @@ export const LoginPage: React.FC = () => {
 
         // Director Approval Check
         if (matchedEmp.approvalStatus === 'Pending Director Approval') {
-          setErrorMessage(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} has been registered by HR and is awaiting approval from the Managing Director (Rohit P.). Login will be enabled as soon as the Director approves.`);
+          setErrorMessage(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} has been registered by HR and is awaiting approval from the Managing Director (Rohit Pawar). Login will be enabled as soon as the Director approves.`);
           return;
         }
 

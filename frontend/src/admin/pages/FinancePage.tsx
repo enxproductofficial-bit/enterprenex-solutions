@@ -465,7 +465,7 @@ export const FinancePage: React.FC = () => {
                 </div>
 
                 <div class="sig-box">
-                  <div class="sig-script">Rohit P.</div>
+                  <div class="sig-script">Rohit Pawar</div>
                   <div class="sig-line">MANAGING DIRECTOR</div>
                   <div style="font-size: 9px; color: #64748b;">Enterprenex Solutions Pvt. Ltd.</div>
                 </div>

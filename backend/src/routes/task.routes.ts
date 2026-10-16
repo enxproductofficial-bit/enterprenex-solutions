@@ -34,7 +34,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
         projectId: data.projectId,
         projectName: data.projectName,
         assignedTo: data.assignedTo,
-        reviewer: data.reviewer || 'Rohit P.',
+        reviewer: data.reviewer || 'Rohit Pawar',
         priority: data.priority || 'Medium',
         status: data.status || 'To Do',
         dueDate: data.dueDate,

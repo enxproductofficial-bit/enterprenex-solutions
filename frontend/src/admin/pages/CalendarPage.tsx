@@ -139,7 +139,7 @@ export const CalendarPage: React.FC = () => {
       type: fType,
       date: fDate,
       time: fTime,
-      attendees: [currentUser?.name || 'Enterprenex Team', 'Rohit P.', 'POLAMREDDY REVANTH REDDY'],
+      attendees: [currentUser?.name || 'Enterprenex Team', 'Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
       location: fLocation,
       meetUrl: fMeetUrl,
       description: fDesc || 'Sprint sync & client roadmap discussion.'
@@ -165,7 +165,7 @@ export const CalendarPage: React.FC = () => {
     addAnnouncement({
       title: annTitle,
       content: annContent,
-      authorName: currentUser?.name || 'Rohit P.',
+      authorName: currentUser?.name || 'Rohit Pawar',
       authorRole: isDirector ? 'Managing Director & Lead Architect' : (currentUser?.role || 'Project Lead'),
       authorAvatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       isDirectorPost: isDirector,

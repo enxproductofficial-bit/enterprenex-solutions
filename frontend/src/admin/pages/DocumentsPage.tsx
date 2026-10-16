@@ -391,7 +391,7 @@ export const DocumentsPage: React.FC = () => {
       url: '#',
       employeeId: targetEmpId,
       verificationStatus: 'Verified',
-      verifiedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+      verifiedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
       verifiedAt: new Date().toISOString()
     };
 
@@ -603,7 +603,7 @@ export const DocumentsPage: React.FC = () => {
             <tr><td><strong>Designation & Governance Role:</strong></td><td>${emp?.role || 'Executive Team Member'}</td></tr>
             <tr><td><strong>Permanent Account Number (PAN):</strong></td><td><code>${panNum}</code> (Income Tax Department, Govt of India)</td></tr>
             <tr><td><strong>Aadhaar Card UID:</strong></td><td><code>${aadhaarNum}</code> (UIDAI Masked Format)</td></tr>
-            <tr><td><strong>Authorized Verification Officer:</strong></td><td>${doc.verifiedBy || 'Rohit P. (Managing Director)'} &bull; Enterprenex Solutions</td></tr>
+            <tr><td><strong>Authorized Verification Officer:</strong></td><td>${doc.verifiedBy || 'Rohit Pawar (Managing Director)'} &bull; Enterprenex Solutions</td></tr>
             <tr><td><strong>Timestamp & Vault ID:</strong></td><td>${doc.uploadDate || '2026-10-10'} &bull; Reference ID: ${doc.id}</td></tr>
           </table>
         </div>
@@ -685,7 +685,7 @@ export const DocumentsPage: React.FC = () => {
           <div class="sig-block">
             <div class="sig-box">
               <div class="sig-seal">Corporate<br/>Seal &bull; ENX<br/>Authorized</div>
-              <strong>Rohit P.</strong>
+              <strong>Rohit Pawar</strong>
               <span>Managing Director</span><br/>
               <span>Enterprenex Solutions Private Limited</span><br/>
               <span style="font-size: 0.7rem; color: #059669;">Digitally Signed & Validated</span>

@@ -118,7 +118,7 @@ export const HelpdeskPage: React.FC = () => {
         clientEmail: employeeEmail,
         priority: empPriority,
         status: 'Open',
-        assignedTo: 'HR Support / Rohit P.',
+        assignedTo: 'HR Support / Rohit Pawar',
         category: empCategory,
         slaHoursRemaining: empPriority === 'Critical' ? 2 : empPriority === 'High' ? 6 : 24
       });

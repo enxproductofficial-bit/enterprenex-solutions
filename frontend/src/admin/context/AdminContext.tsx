@@ -314,10 +314,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (parsed.employees) {
           const sanitized = parsed.employees.map((emp: any, idx: number) => {
             let item = { ...emp };
+            if (item.name === 'Rohit P.' || item.name?.includes('Rohit P.')) {
+              item.name = item.name.replace(/Rohit P\./g, 'Rohit Pawar');
+            }
+            if (item.approvedBy?.includes('Rohit P.')) {
+              item.approvedBy = item.approvedBy.replace(/Rohit P\./g, 'Rohit Pawar');
+            }
+            if (item.kycVerifiedBy?.includes('Rohit P.')) {
+              item.kycVerifiedBy = item.kycVerifiedBy.replace(/Rohit P\./g, 'Rohit Pawar');
+            }
             if (item.email === 'abvpcsnagar@gmail.com' || item.phone?.includes('7020443880')) {
               item = {
                 ...item,
-                name: 'Rohit P.',
+                name: 'Rohit Pawar',
                 email: 'director@enterprenex.solutions',
                 phone: '+91-9226860060'
               };
@@ -385,15 +394,41 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setDocuments(INITIAL_DOCUMENTS);
         }
         if (parsed.meetings && parsed.meetings.length > 0) {
-          setMeetings(parsed.meetings);
+          const sanitizedMeet = parsed.meetings.map((m: any) => ({
+            ...m,
+            attendees: (m.attendees || []).map((att: string) => att.replace(/Rohit P\./g, 'Rohit Pawar'))
+          }));
+          setMeetings(sanitizedMeet);
         } else {
           setMeetings(INITIAL_MEETINGS);
+        }
+        if (parsed.announcements && parsed.announcements.length > 0) {
+          const sanitizedAnn = parsed.announcements.map((a: any) => ({
+            ...a,
+            authorName: a.authorName?.replace(/Rohit P\./g, 'Rohit Pawar') || a.authorName
+          }));
+          setAnnouncements(sanitizedAnn);
+        } else {
+          setAnnouncements(INITIAL_ANNOUNCEMENTS);
+        }
+        if (parsed.chatMessages && parsed.chatMessages.length > 0) {
+          const sanitizedChat = parsed.chatMessages.map((m: any) => ({
+            ...m,
+            senderName: m.senderName?.replace(/Rohit P\./g, 'Rohit Pawar') || m.senderName,
+            recipientName: m.recipientName?.replace(/Rohit P\./g, 'Rohit Pawar') || m.recipientName
+          }));
+          setChatMessages(sanitizedChat);
+        } else {
+          setChatMessages(INITIAL_CHAT_MESSAGES);
         }
         if (parsed.cms) setCms(parsed.cms);
         if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
         if (parsed.apiKeys) setApiKeys(parsed.apiKeys);
         if (parsed.currentUser) {
           const cur = parsed.currentUser;
+          if (cur.name === 'Rohit P.' || cur.name?.includes('Rohit P.')) {
+            cur.name = cur.name.replace(/Rohit P\./g, 'Rohit Pawar');
+          }
           if (cur.email === 'abvpcsnagar@gmail.com' || cur.phone?.includes('7020443880')) {
             setCurrentUser({
               ...cur,

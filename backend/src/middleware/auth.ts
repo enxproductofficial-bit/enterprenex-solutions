@@ -29,7 +29,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
         email: 'director@enterprenex.solutions',
         role: 'Super Admin',
-        name: 'Rohit P.',
+        name: 'Rohit Pawar',
         employeeId: '202600000001'
       };
       next();
