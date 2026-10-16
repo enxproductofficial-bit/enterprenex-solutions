@@ -100,7 +100,7 @@ export const SecurityPage: React.FC = () => {
         <div className="adm-tabs" style={{ margin: 0, border: 'none' }}>
           <button className={`adm-tab-btn ${tab === 'ip' ? 'active' : ''}`} onClick={() => setTab('ip')}>
             <Globe size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
-            IP Whitelisting & Firewall ({ipSettings.allowedIps.length})
+            IP Whitelisting & Firewall ({(ipSettings?.allowedIps || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'rbac' ? 'active' : ''}`} onClick={() => setTab('rbac')}>
             RBAC Permission Matrix

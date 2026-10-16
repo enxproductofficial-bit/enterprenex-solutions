@@ -210,11 +210,11 @@ export const ServicesManagePage: React.FC = () => {
               {/* Tech Stack Pills */}
               <div style={{ marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                  {svc.technologies.slice(0, 4).map((t, idx) => (
+                  {(svc.technologies || []).slice(0, 4).map((t, idx) => (
                     <span key={idx} className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>{t}</span>
                   ))}
-                  {svc.technologies.length > 4 && (
-                    <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>+{svc.technologies.length - 4}</span>
+                  {(svc.technologies?.length || 0) > 4 && (
+                    <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>+{(svc.technologies?.length || 4) - 4}</span>
                   )}
                 </div>
               </div>

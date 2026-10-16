@@ -489,7 +489,8 @@ export const TasksPage: React.FC = () => {
 
               <div className="adm-kanban-cards-wrapper">
                 {colTasks.map(t => {
-                  const completedSubtasks = t.subtasks.filter(s => s.completed).length;
+                  const safeSubtasks = t.subtasks || [];
+                  const completedSubtasks = safeSubtasks.filter(s => s && s.completed).length;
                   const workloadInfo = getAssigneeWorkload(t.assignedTo);
                   const isThisTaskTimerActive = activeTimerTaskId === t.id && isTimerRunning;
 
@@ -569,7 +570,7 @@ export const TasksPage: React.FC = () => {
                       )}
 
                       {/* Subtasks Progress indicator */}
-                      {t.subtasks.length > 0 && (
+                      {safeSubtasks.length > 0 && (
                         <div style={{ marginBottom: '8px' }}>
                           <div
                             style={{
@@ -581,13 +582,13 @@ export const TasksPage: React.FC = () => {
                           >
                             <span>Subtasks</span>
                             <span>
-                              {completedSubtasks}/{t.subtasks.length}
+                              {completedSubtasks}/{safeSubtasks.length}
                             </span>
                           </div>
                           <div className="adm-progress-bar">
                             <div
                               className="adm-progress-fill"
-                              style={{ width: `${(completedSubtasks / t.subtasks.length) * 100}%` }}
+                              style={{ width: `${(completedSubtasks / safeSubtasks.length) * 100}%` }}
                             />
                           </div>
                         </div>

@@ -114,16 +114,16 @@ export const CmsPage: React.FC = () => {
             Hero Copy
           </button>
           <button className={`adm-tab-btn ${tab === 'portfolio' ? 'active' : ''}`} onClick={() => setTab('portfolio')}>
-            Portfolio & Case Studies ({cms.portfolioItems.length})
+            Portfolio & Case Studies ({(cms?.portfolioItems || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'blog' ? 'active' : ''}`} onClick={() => setTab('blog')}>
-            Blog Articles ({cms.blogPosts.length})
+            Blog Articles ({(cms?.blogPosts || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'testimonials' ? 'active' : ''}`} onClick={() => setTab('testimonials')}>
-            Testimonials ({cms.testimonials.length})
+            Testimonials ({(cms?.testimonials || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'enquiries' ? 'active' : ''}`} onClick={() => setTab('enquiries')}>
-            Contact Enquiries ({cms.contactEnquiries.length})
+            Contact Enquiries ({(cms?.contactEnquiries || []).length})
           </button>
           <button className={`adm-tab-btn ${tab === 'seo' ? 'active' : ''}`} onClick={() => setTab('seo')}>
             SEO Metadata

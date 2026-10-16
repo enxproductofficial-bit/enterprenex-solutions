@@ -34,12 +34,19 @@ export const ClientsPage: React.FC = () => {
   const [formCity, setFormCity] = useState('Mumbai');
   const [formAddress] = useState('Commercial Plaza');
 
-  // Filter clients
-  const filteredClients = clients.filter(c => {
-    const matchesSearch = c.companyName.toLowerCase().includes(search.toLowerCase()) ||
-      c.primaryContact.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.industry.toLowerCase().includes(search.toLowerCase()) ||
-      c.city.toLowerCase().includes(search.toLowerCase());
+  // Safe collections
+  const safeClients = clients || [];
+  const safeProjects = projects || [];
+  const safeInvoices = invoices || [];
+
+  // Filter clients with null safety
+  const filteredClients = safeClients.filter(c => {
+    if (!c) return false;
+    const matchesSearch = 
+      (c.companyName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.primaryContact?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.industry || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.city || '').toLowerCase().includes(search.toLowerCase());
 
     const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -77,7 +84,7 @@ export const ClientsPage: React.FC = () => {
 
   const handleAddNote = (clientId: string) => {
     if (!newNoteText.trim() || !selectedClient) return;
-    const updatedNotes = [newNoteText, ...selectedClient.notes];
+    const updatedNotes = [newNoteText, ...(selectedClient.notes || [])];
     updateClient(clientId, { notes: updatedNotes });
     setSelectedClient({ ...selectedClient, notes: updatedNotes });
     setNewNoteText('');
@@ -154,9 +161,9 @@ export const ClientsPage: React.FC = () => {
           </thead>
           <tbody>
             {filteredClients.map(c => {
-              const clientProjects = projects.filter(p => p.clientId === c.id || p.clientName === c.companyName);
-              const clientInvoices = invoices.filter(i => i.clientId === c.id || i.clientName === c.companyName);
-              const totalBilled = clientInvoices.reduce((sum, i) => sum + i.totalAmount, 0);
+              const clientProjects = safeProjects.filter(p => p && (p.clientId === c.id || p.clientName === c.companyName));
+              const clientInvoices = safeInvoices.filter(i => i && (i.clientId === c.id || i.clientName === c.companyName));
+              const totalBilled = clientInvoices.reduce((sum, i) => sum + (Number(i?.totalAmount) || 0), 0);
 
               return (
                 <tr key={c.id}>
@@ -164,33 +171,35 @@ export const ClientsPage: React.FC = () => {
                     <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>{c.companyName}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                       <Building2 size={12} />
-                      <span>{c.industry}</span>
+                      <span>{c.industry || 'Corporate'}</span>
                       {c.gstin && <span style={{ color: 'var(--adm-text-dim)' }}>• GSTIN: {c.gstin}</span>}
                     </div>
                   </td>
                   <td>
-                    <div style={{ fontWeight: 600, color: '#fff' }}>{c.primaryContact.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{c.primaryContact.role}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', marginTop: '2px' }}>{c.primaryContact.email}</div>
+                    <div style={{ fontWeight: 600, color: '#fff' }}>{c.primaryContact?.name || 'Authorized Contact'}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{c.primaryContact?.role || 'Executive'}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', marginTop: '2px' }}>{c.primaryContact?.email || '-'}</div>
                   </td>
                   <td>
-                    <div style={{ color: '#fff', fontSize: '0.85rem' }}>{c.city}, {c.country}</div>
-                    <a
-                      href={c.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ fontSize: '0.72rem', color: 'var(--adm-info)', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}
-                    >
-                      <Globe size={11} />
-                      {c.website.replace('https://', '')}
-                    </a>
+                    <div style={{ color: '#fff', fontSize: '0.85rem' }}>{c.city || 'Mumbai'}, {c.country || 'India'}</div>
+                    {c.website && (
+                      <a
+                        href={c.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontSize: '0.72rem', color: 'var(--adm-info)', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}
+                      >
+                        <Globe size={11} />
+                        {(c.website || '').replace('https://', '').replace('http://', '')}
+                      </a>
+                    )}
                   </td>
                   <td>
                     <span className={`adm-badge ${
                       c.status === 'Active' ? 'adm-badge-success' :
                       c.status === 'Onboarding' ? 'adm-badge-warning' : 'adm-badge-neutral'
                     }`}>
-                      {c.status}
+                      {c.status || 'Active'}
                     </span>
                   </td>
                   <td>
@@ -204,7 +213,7 @@ export const ClientsPage: React.FC = () => {
                   <td>
                     <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.72rem' }}>
                       <ShieldCheck size={12} color="var(--adm-success)" />
-                      {c.documents.length || 2} Docs Active
+                      {(c.documents?.length) ?? 2} Docs Active
                     </span>
                   </td>
                   <td>
@@ -259,26 +268,26 @@ export const ClientsPage: React.FC = () => {
             <div className="adm-grid-3" style={{ marginBottom: '1.5rem' }}>
               <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: 'var(--adm-radius)', border: '1px solid var(--adm-border)' }}>
                 <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Primary Contact</span>
-                <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.92rem', marginTop: '2px' }}>{selectedClient.primaryContact.name}</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)' }}>{selectedClient.primaryContact.email}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{selectedClient.primaryContact.phone}</div>
+                <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.92rem', marginTop: '2px' }}>{selectedClient.primaryContact?.name || 'Authorized Contact'}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)' }}>{selectedClient.primaryContact?.email || '-'}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{selectedClient.primaryContact?.phone || '-'}</div>
               </div>
 
               <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: 'var(--adm-radius)', border: '1px solid var(--adm-border)' }}>
                 <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Account Status</span>
                 <div style={{ marginTop: '4px' }}>
-                  <span className="adm-badge adm-badge-success">{selectedClient.status}</span>
+                  <span className="adm-badge adm-badge-success">{selectedClient.status || 'Active'}</span>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>Onboarded: {selectedClient.createdAt}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>Onboarded: {selectedClient.createdAt || 'N/A'}</div>
               </div>
 
               <div style={{ padding: '1rem', background: 'var(--adm-bg)', borderRadius: 'var(--adm-radius)', border: '1px solid var(--adm-border)' }}>
                 <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Total Billed Value</span>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-success)', marginTop: '2px' }}>
-                  ₹{invoices.filter(i => i.clientId === selectedClient.id).reduce((s, i) => s + i.totalAmount, 0).toLocaleString('en-IN')}
+                  ₹{safeInvoices.filter(i => i && i.clientId === selectedClient.id).reduce((s, i) => s + (Number(i?.totalAmount) || 0), 0).toLocaleString('en-IN')}
                 </div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
-                  {invoices.filter(i => i.clientId === selectedClient.id && i.status === 'Paid').length} Paid Invoices
+                  {safeInvoices.filter(i => i && i.clientId === selectedClient.id && i.status === 'Paid').length} Paid Invoices
                 </div>
               </div>
             </div>
@@ -290,11 +299,11 @@ export const ClientsPage: React.FC = () => {
                 Client Projects
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                {projects.filter(p => p.clientId === selectedClient.id || p.clientName === selectedClient.companyName).map(p => (
+                {safeProjects.filter(p => p && (p.clientId === selectedClient.id || p.clientName === selectedClient.companyName)).map(p => (
                   <div key={p.id} style={{ padding: '0.75rem 1rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.88rem' }}>{p.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Budget: ₹{p.budget.toLocaleString('en-IN')} • Target: {p.targetEndDate}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Budget: ₹{(Number(p.budget) || 0).toLocaleString('en-IN')} • Target: {p.targetEndDate}</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <span className="adm-badge adm-badge-primary">{p.status} ({p.progress}%)</span>
@@ -311,7 +320,7 @@ export const ClientsPage: React.FC = () => {
                 Signed Contracts & NDAs
               </h4>
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                {selectedClient.documents.map(doc => (
+                {(selectedClient.documents || []).map(doc => (
                   <div key={doc.id} style={{ padding: '0.65rem 0.85rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                     <div>
                       <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#fff' }}>{doc.title}</div>
@@ -351,7 +360,7 @@ export const ClientsPage: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {selectedClient.notes.map((note, idx) => (
+                {(selectedClient.notes || []).map((note, idx) => (
                   <div key={idx} style={{ padding: '0.65rem 0.85rem', background: 'var(--adm-bg)', borderRadius: '6px', fontSize: '0.82rem', color: 'var(--adm-text-muted)', borderLeft: '3px solid var(--adm-primary)' }}>
                     {note}
                   </div>
