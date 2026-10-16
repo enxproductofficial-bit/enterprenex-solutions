@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAdmin } from '../context/AdminContext';
 
 const EmployeePreviewDrawer = lazy(() =>
@@ -24,6 +24,7 @@ import {
   AlertCircle,
   Download,
   Printer,
+  Calendar,
   CalendarPlus,
   Trash2,
   Camera,
@@ -38,6 +39,22 @@ import {
 } from 'lucide-react';
 import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64 } from '../data/companyLogo';
 import type { Employee, LeaveRequest, AttendanceRecord } from '../types';
+
+export const ENTERPRENEX_HOLIDAYS_2026 = [
+  { name: 'Republic Day', date: '26 Jan 2026', day: 'Monday', type: 'National Holiday' },
+  { name: 'Maha Shivratri', date: '15 Feb 2026', day: 'Sunday', type: 'Festival' },
+  { name: 'Holi (Rang Panchami)', date: '25 Mar 2026', day: 'Wednesday', type: 'Festival' },
+  { name: 'Good Friday', date: '03 Apr 2026', day: 'Friday', type: 'Observance' },
+  { name: 'Eid-ul-Fitr', date: '10 Apr 2026', day: 'Friday', type: 'Festival' },
+  { name: 'Maharashtra Day / Labour Day', date: '01 May 2026', day: 'Friday', type: 'State Holiday' },
+  { name: 'Independence Day', date: '15 Aug 2026', day: 'Saturday', type: 'National Holiday' },
+  { name: 'Ganesh Chaturthi', date: '14 Sep 2026', day: 'Monday', type: 'Festival' },
+  { name: 'Mahatma Gandhi Jayanti', date: '02 Oct 2026', day: 'Friday', type: 'National Holiday' },
+  { name: 'Dussehra (Vijayadashami)', date: '20 Oct 2026', day: 'Tuesday', type: 'Festival' },
+  { name: 'Diwali (Laxmi Pujan)', date: '08 Nov 2026', day: 'Sunday', type: 'Festival' },
+  { name: 'Diwali (Balipratipada)', date: '10 Nov 2026', day: 'Tuesday', type: 'Festival' },
+  { name: 'Christmas Day', date: '25 Dec 2026', day: 'Friday', type: 'Festival' }
+];
 
 export const TeamPage: React.FC = () => {
   const {
@@ -82,7 +99,70 @@ export const TeamPage: React.FC = () => {
   const [rosterFilter, setRosterFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
+  const [showHolidayModal, setShowHolidayModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+
+  // Phase 1: Live ticking digital clock for precision attendance & shift duration tracking
+  const [liveClock, setLiveClock] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setLiveClock(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getShiftDuration = (checkInStr?: string | null, checkOutStr?: string | null) => {
+    if (!checkInStr) return null;
+    try {
+      const today = new Date();
+      const inParts = checkInStr.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
+      if (!inParts) return null;
+      let hours = parseInt(inParts[1], 10);
+      const minutes = parseInt(inParts[2], 10);
+      const meridiem = inParts[4];
+      if (meridiem) {
+        if (meridiem.toUpperCase() === 'PM' && hours < 12) hours += 12;
+        if (meridiem.toUpperCase() === 'AM' && hours === 12) hours = 0;
+      }
+      const inDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0);
+
+      let outDate = liveClock;
+      if (checkOutStr && checkOutStr !== '-') {
+        const outParts = checkOutStr.match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
+        if (outParts) {
+          let oH = parseInt(outParts[1], 10);
+          const oM = parseInt(outParts[2], 10);
+          const oMer = outParts[4];
+          if (oMer) {
+            if (oMer.toUpperCase() === 'PM' && oH < 12) oH += 12;
+            if (oMer.toUpperCase() === 'AM' && oH === 12) oH = 0;
+          }
+          outDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), oH, oM, 0);
+        }
+      }
+
+      const diffMs = Math.max(0, outDate.getTime() - inDate.getTime());
+      const diffSecs = Math.floor(diffMs / 1000);
+      const h = Math.floor(diffSecs / 3600);
+      const m = Math.floor((diffSecs % 3600) / 60);
+      const s = diffSecs % 60;
+      return `${h}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
+    } catch {
+      return null;
+    }
+  };
+
+  const isCheckInLate = (checkInStr?: string | null) => {
+    if (!checkInStr) return false;
+    const inParts = checkInStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+    if (!inParts) return false;
+    let hours = parseInt(inParts[1], 10);
+    const minutes = parseInt(inParts[2], 10);
+    const meridiem = inParts[3];
+    if (meridiem) {
+      if (meridiem.toUpperCase() === 'PM' && hours < 12) hours += 12;
+      if (meridiem.toUpperCase() === 'AM' && hours === 12) hours = 0;
+    }
+    return hours > 9 || (hours === 9 && minutes > 30);
+  };
 
   // Absence Incident & Outreach Modal State (RBAC Restricted to Director & HR)
   const [absenceModalAtt, setAbsenceModalAtt] = useState<AttendanceRecord | null>(null);
@@ -1548,16 +1628,40 @@ export const TeamPage: React.FC = () => {
                     <span className="adm-badge" style={{ background: 'rgba(5, 150, 105, 0.12)', color: 'var(--adm-success)', border: '1px solid rgba(5, 150, 105, 0.3)', fontSize: '0.75rem', fontWeight: 700 }}>
                       🌐 IP: {detectedIp || '10.228.245.155'} &bull; Verified Pune HQ Geo-Fence
                     </span>
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: 'rgba(234, 88, 12, 0.12)',
+                      border: '1px solid rgba(234, 88, 12, 0.3)',
+                      color: 'var(--adm-primary)',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      fontFamily: 'monospace',
+                      fontWeight: 800,
+                      fontSize: '0.8rem'
+                    }}>
+                      <Clock size={12} />
+                      <span>{liveClock.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })} IST</span>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
-                    Today: <strong style={{ color: 'var(--adm-text)' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong> &bull; Live Shift:{' '}
+                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span>Today: <strong style={{ color: 'var(--adm-text)' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong></span>
+                    <span>&bull;</span>
                     {
                       !myTodayAtt ? (
                         <span style={{ color: 'var(--adm-primary)', fontWeight: 700 }}>⏳ Not Checked In Yet (Awaiting Daily Punch)</span>
                       ) : myTodayAtt.checkOut && myTodayAtt.checkOut !== '-' ? (
-                        <span style={{ color: 'var(--adm-success)', fontWeight: 700 }}>✓ Shift Completed (In: {myTodayAtt.checkIn} &bull; Out: {myTodayAtt.checkOut})</span>
+                        <span style={{ color: 'var(--adm-success)', fontWeight: 700 }}>
+                          ✓ Shift Completed (In: {myTodayAtt.checkIn} &bull; Out: {myTodayAtt.checkOut} &bull; Duration: {getShiftDuration(myTodayAtt.checkIn, myTodayAtt.checkOut)})
+                        </span>
                       ) : (
-                        <span style={{ color: 'var(--adm-success)', fontWeight: 700 }}>⚡ Active Shift Running &bull; In: {myTodayAtt.checkIn} &bull; Web GPS Verified</span>
+                        <span style={{ color: 'var(--adm-success)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          ⚡ Active Shift Running &bull; In: {myTodayAtt.checkIn} &bull; Active: {getShiftDuration(myTodayAtt.checkIn)}
+                          {isCheckInLate(myTodayAtt.checkIn) && (
+                            <span className="adm-badge adm-badge-warning" style={{ fontSize: '0.65rem' }}>Late Punch (&gt; 09:30 AM)</span>
+                          )}
+                        </span>
                       )
                     }
                   </div>
@@ -1595,7 +1699,16 @@ export const TeamPage: React.FC = () => {
                 </button>
                 <button
                   className="adm-btn adm-btn-secondary"
-                  style={{ padding: '0.7rem 1.3rem', fontSize: '0.88rem', fontWeight: 700, borderRadius: '10px' }}
+                  style={{ padding: '0.7rem 1.2rem', fontSize: '0.88rem', fontWeight: 700, borderRadius: '10px' }}
+                  onClick={() => setShowHolidayModal(true)}
+                  title="View 2026 Enterprenex Official Holidays"
+                >
+                  <Calendar size={17} color="var(--adm-success)" />
+                  <span>Holiday Calendar</span>
+                </button>
+                <button
+                  className="adm-btn adm-btn-secondary"
+                  style={{ padding: '0.7rem 1.2rem', fontSize: '0.88rem', fontWeight: 700, borderRadius: '10px' }}
                   onClick={openApplyLeaveModal}
                 >
                   <CalendarPlus size={17} color="var(--adm-primary)" />
@@ -1787,6 +1900,61 @@ export const TeamPage: React.FC = () => {
 
         return (
           <div>
+            {/* Employee Annual Leave Quota Balances Card Strip */}
+            <div className="adm-grid-4" style={{ marginBottom: '1.25rem' }}>
+              <div className="adm-kpi-card" style={{ padding: '1rem 1.15rem' }}>
+                <div className="adm-kpi-header" style={{ marginBottom: '0.4rem' }}>
+                  <span className="adm-kpi-label">Casual Leave (CL)</span>
+                  <div className="adm-kpi-icon" style={{ background: 'var(--adm-primary-soft)', color: 'var(--adm-primary)' }}>
+                    <CalendarPlus size={16} />
+                  </div>
+                </div>
+                <div className="adm-kpi-value" style={{ fontSize: '1.35rem' }}>12 Days</div>
+                <div className="adm-kpi-footer" style={{ marginTop: '0.35rem' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>Personal & Urgent Affairs</span>
+                </div>
+              </div>
+
+              <div className="adm-kpi-card" style={{ padding: '1rem 1.15rem' }}>
+                <div className="adm-kpi-header" style={{ marginBottom: '0.4rem' }}>
+                  <span className="adm-kpi-label">Sick Leave (SL)</span>
+                  <div className="adm-kpi-icon" style={{ background: 'var(--adm-danger-soft)', color: 'var(--adm-danger)' }}>
+                    <AlertCircle size={16} />
+                  </div>
+                </div>
+                <div className="adm-kpi-value" style={{ fontSize: '1.35rem' }}>8 Days</div>
+                <div className="adm-kpi-footer" style={{ marginTop: '0.35rem' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>Medical & Health Recovery</span>
+                </div>
+              </div>
+
+              <div className="adm-kpi-card" style={{ padding: '1rem 1.15rem' }}>
+                <div className="adm-kpi-header" style={{ marginBottom: '0.4rem' }}>
+                  <span className="adm-kpi-label">Earned / Privilege (EL)</span>
+                  <div className="adm-kpi-icon" style={{ background: 'var(--adm-success-soft)', color: 'var(--adm-success)' }}>
+                    <CheckCircle2 size={16} />
+                  </div>
+                </div>
+                <div className="adm-kpi-value" style={{ fontSize: '1.35rem' }}>15 Days</div>
+                <div className="adm-kpi-footer" style={{ marginTop: '0.35rem' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--adm-success)' }}>Paid Annual Vacation</span>
+                </div>
+              </div>
+
+              <div className="adm-kpi-card" style={{ padding: '1rem 1.15rem' }}>
+                <div className="adm-kpi-header" style={{ marginBottom: '0.4rem' }}>
+                  <span className="adm-kpi-label">Work From Home (WFH)</span>
+                  <div className="adm-kpi-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#38bdf8' }}>
+                    <Clock size={16} />
+                  </div>
+                </div>
+                <div className="adm-kpi-value" style={{ fontSize: '1.35rem' }}>12 Days</div>
+                <div className="adm-kpi-footer" style={{ marginTop: '0.35rem' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#38bdf8' }}>Remote Shift Allowance</span>
+                </div>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
@@ -1801,6 +1969,10 @@ export const TeamPage: React.FC = () => {
                 )}
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => setShowHolidayModal(true)}>
+                  <Calendar size={13} color="var(--adm-success)" />
+                  <span>Holidays (2026)</span>
+                </button>
                 <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportLeavesCsv}>
                   <Download size={13} />
                   <span>Export CSV</span>
@@ -2647,6 +2819,61 @@ export const TeamPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── ENTERPRENEX OFFICIAL HOLIDAY CALENDAR MODAL ── */}
+      {showHolidayModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowHolidayModal(false)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '680px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Calendar size={20} color="var(--adm-primary)" />
+                  <span>Enterprenex Official Holiday Calendar (2026)</span>
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  Corporate & Pan-India Calendar &bull; 13 Official Public & Gazetted Holidays
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setShowHolidayModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ maxHeight: '460px', overflowY: 'auto', marginTop: '1rem', border: '1px solid var(--adm-border)', borderRadius: '10px' }}>
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th>Holiday / Festival</th>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>Classification</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ENTERPRENEX_HOLIDAYS_2026.map((hol, idx) => (
+                    <tr key={idx}>
+                      <td style={{ fontWeight: 700, color: 'var(--adm-text)' }}>{hol.name}</td>
+                      <td style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--adm-primary)' }}>{hol.date}</td>
+                      <td style={{ color: 'var(--adm-text-muted)' }}>{hol.day}</td>
+                      <td>
+                        <span className={`adm-badge ${hol.type === 'National Holiday' ? 'adm-badge-primary' : hol.type === 'Festival' ? 'adm-badge-success' : 'adm-badge-neutral'}`}>
+                          {hol.type}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+              <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowHolidayModal(false)}>
+                Close Calendar
+              </button>
+            </div>
           </div>
         </div>
       )}

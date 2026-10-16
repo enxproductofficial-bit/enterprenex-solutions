@@ -60,7 +60,10 @@ router.post('/punch', authenticateToken, async (req: AuthRequest, res: Response)
         // Punch out
         const updated = await prisma.attendanceRecord.update({
           where: { id: existing.id },
-          data: { checkOut: timeStr }
+          data: { 
+            checkOut: timeStr,
+            status: status !== 'Present' ? status : existing.status
+          }
         });
         res.json({ message: `Check-out recorded at ${timeStr}.`, record: updated });
         return;

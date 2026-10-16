@@ -834,11 +834,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const dateStr = now.toISOString().split('T')[0];
 
-    // Async backend sync
-    api.punchAttendance(status).catch(err => {
-      console.warn('Backend punch deferred (saved locally):', err);
-    });
-
     const existingIndex = attendance.findIndex(
       a => a.date === dateStr && (
         a.employeeId === currentUser.id ||
@@ -849,19 +844,67 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (existingIndex >= 0) {
       const existing = attendance[existingIndex];
       if (!existing.checkOut || existing.checkOut === '-') {
+        // Calculate working hours between checkIn and now
+        let isHalfDay = false;
+        if (existing.checkIn) {
+          try {
+            const inParts = existing.checkIn.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+            if (inParts) {
+              let h = parseInt(inParts[1], 10);
+              const m = parseInt(inParts[2], 10);
+              const mer = inParts[3];
+              if (mer) {
+                if (mer.toUpperCase() === 'PM' && h < 12) h += 12;
+                if (mer.toUpperCase() === 'AM' && h === 12) h = 0;
+              }
+              const inDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+              const diffHours = (now.getTime() - inDate.getTime()) / (1000 * 60 * 60);
+              if (diffHours < 4.5) {
+                isHalfDay = true;
+              }
+            }
+          } catch {
+            // fallback
+          }
+        }
+
+        const finalStatus = isHalfDay ? 'Half Day' : existing.status;
         const updated = [...attendance];
         updated[existingIndex] = {
           ...existing,
-          checkOut: timeStr
+          checkOut: timeStr,
+          status: finalStatus
         };
         setAttendance(updated);
-        showToast('Punch Out Recorded', `Checked out at ${timeStr}. Great work today!`, 'success');
+
+        // Async backend sync
+        api.punchAttendance(finalStatus).catch(err => {
+          console.warn('Backend punch deferred (saved locally):', err);
+        });
+
+        showToast(
+          'Punch Out Recorded',
+          `Checked out at ${timeStr}.${isHalfDay ? ' (Recorded as Half Day - under 4.5 hours)' : ' Great work today!'}`,
+          isHalfDay ? 'warning' : 'success'
+        );
         return;
       } else {
         showToast('Attendance Complete', `You have already checked in at ${existing.checkIn} and checked out at ${existing.checkOut} today.`, 'info');
         return;
       }
     }
+
+    // Auto calculate late mark if past 9:30 AM
+    let initialStatus = status;
+    const isLate = now.getHours() > 9 || (now.getHours() === 9 && now.getMinutes() > 30);
+    if (initialStatus === 'Present' && isLate) {
+      initialStatus = 'Late';
+    }
+
+    // Async backend sync
+    api.punchAttendance(initialStatus).catch(err => {
+      console.warn('Backend punch deferred (saved locally):', err);
+    });
 
     const newAtt: AttendanceRecord = {
       id: 'att-' + Date.now(),
@@ -870,10 +913,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       date: dateStr,
       checkIn: timeStr,
       checkOut: '-',
-      status
+      status: initialStatus
     };
     setAttendance(prev => [newAtt, ...prev]);
-    showToast('Attendance Checked In', `Marked as ${status} at ${timeStr} (IP: ${detectedIp}).`, 'success');
+    showToast(
+      'Attendance Checked In',
+      `Marked as ${initialStatus} at ${timeStr}${initialStatus === 'Late' ? ' (Late Punch > 09:30 AM)' : ''} (IP: ${detectedIp}).`,
+      initialStatus === 'Late' ? 'warning' : 'success'
+    );
   };
 
   const updateAttendanceRecord = (recordId: string, updates: Partial<AttendanceRecord>) => {
