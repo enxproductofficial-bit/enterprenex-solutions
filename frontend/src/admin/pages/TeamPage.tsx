@@ -196,7 +196,6 @@ export const TeamPage: React.FC = () => {
 
   // Topic C: My Payslip & Form 16
   const [selectedPayMonth, setSelectedPayMonth] = useState('October 2026');
-  const [showForm16Modal, setShowForm16Modal] = useState(false);
 
   // Topic D: Company Policies & Document Vault
   const [selectedPolicyModal, setSelectedPolicyModal] = useState<typeof ENTERPRENEX_POLICIES[0] | null>(null);
