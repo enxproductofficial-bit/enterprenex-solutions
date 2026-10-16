@@ -56,6 +56,69 @@ export const ENTERPRENEX_HOLIDAYS_2026 = [
   { name: 'Christmas Day', date: '25 Dec 2026', day: 'Friday', type: 'Festival' }
 ];
 
+export const ENTERPRENEX_POLICIES = [
+  {
+    code: 'EPX-POL-001',
+    title: 'Code of Business Conduct & Ethics (2026)',
+    category: 'Corporate Governance',
+    effectiveDate: '01 Jan 2026',
+    summary: 'Establishes fundamental commitments to integrity, anti-bribery, client intellectual property confidentiality, conflict of interest, and fair workplace culture.',
+    sections: [
+      { heading: '1. Professional Integrity', content: 'Every employee must uphold the highest standards of honesty, business ethics, and transparent execution in all project delivery and client communications.' },
+      { heading: '2. Client IP & Confidentiality', content: 'Proprietary enterprise source code, algorithmic formulations, credentials, and client database records remain strictly confidential under perpetual Non-Disclosure agreements.' },
+      { heading: '3. Equal Opportunity & Fair Treatment', content: 'Enterprenex enforces zero tolerance for discrimination based on race, gender, religion, age, or disability in all hiring, promotions, and daily collaboration.' }
+    ]
+  },
+  {
+    code: 'EPX-POL-002',
+    title: 'Corporate Leave, Working Hours & Late Mark Policy',
+    category: 'Workforce Operations',
+    effectiveDate: '01 Jan 2026',
+    summary: 'Specifies core shift hours (09:30 AM to 06:30 PM), automatic late mark thresholds (> 09:30 AM), half-day calculations, and annual leave allocations (12 CL, 8 SL, 15 EL).',
+    sections: [
+      { heading: '1. Shift Timing & Geo-Fence Rules', content: 'Standard working hours are 09:30 AM to 06:30 PM IST. Biometric or Web GPS Check-In is mandatory. Arrival past 09:30 AM logs an automated Late Mark.' },
+      { heading: '2. Half-Day & Minimum Hours', content: 'Working duration between 4.0 and 5.0 hours constitutes a Half-Day. Less than 4 hours is considered an unexcused absence unless pre-approved.' },
+      { heading: '3. Leave Allocation & Carry Forward', content: 'Full-time employees receive 12 Casual Leaves, 8 Medical/Sick Leaves, and 15 Paid Annual Leaves credited pro-rata. Up to 10 Paid Leaves may be carried forward annually.' }
+    ]
+  },
+  {
+    code: 'EPX-POL-003',
+    title: 'Information Security, Device & Data Protection Policy',
+    category: 'IT & Cyber Security',
+    effectiveDate: '01 Jan 2026',
+    summary: 'Mandates strict security hygiene for company-issued laptops, access control, multi-factor authentication, DPDP Act 2023 compliance, and incident response protocols.',
+    sections: [
+      { heading: '1. Access Control & Passwords', content: 'Strong alphanumeric passwords with mandatory 2FA are required across all internal systems. Sharing credentials or master access keys is grounds for immediate disciplinary action.' },
+      { heading: '2. Device Usage & Encryption', content: 'All company endpoints must maintain full-disk BitLocker encryption, active antivirus signatures, and automated patch management. Personal USB storage devices are restricted.' },
+      { heading: '3. DPDP Act & Privacy Protocols', content: 'All customer and employee Personally Identifiable Information (PII) must be processed, stored, and redacted in compliance with the Digital Personal Data Protection Act 2023.' }
+    ]
+  },
+  {
+    code: 'EPX-POL-004',
+    title: 'Prevention of Sexual Harassment (POSH) & Anti-Harassment Policy',
+    category: 'HR & Statutory Compliance',
+    effectiveDate: '01 Jan 2026',
+    summary: 'Zero tolerance policy for sexual harassment, workplace bullying, or hostile behavior, with established Internal Complaints Committee (ICC) grievance redressal mechanisms.',
+    sections: [
+      { heading: '1. Zero Tolerance Mandate', content: 'Enterprenex provides a safe, supportive, and dignified working environment free from any form of physical, verbal, or digital harassment, intimidation, or inappropriate conduct.' },
+      { heading: '2. Internal Complaints Committee (ICC)', content: 'Employees may submit confidential grievances to the designated ICC Presiding Officer at posh@enterprenex.solutions. All investigations are completed within 90 days with strict confidentiality.' },
+      { heading: '3. Protection Against Retaliation', content: 'Any retaliation or adverse employment action against an employee reporting an incident in good faith will result in immediate termination of the offending party.' }
+    ]
+  },
+  {
+    code: 'EPX-POL-005',
+    title: 'Remote / Hybrid Work from Home (WFH) Governance',
+    category: 'Workforce Operations',
+    effectiveDate: '01 Jan 2026',
+    summary: 'Guidelines for remote shift delivery, high-speed broadband readiness, sprint standup availability, and weekly in-office collaboration quotas.',
+    sections: [
+      { heading: '1. Eligibility & Allocation', content: 'Employees in confirmed status are eligible for up to 12 WFH days per year, with prior approval from the Project Lead or Department Head.' },
+      { heading: '2. Communication & Availability', content: 'Remote team members must remain accessible during core business hours via Slack, Enterprenex Suite Chat, and phone for agile sprint standups and client syncs.' },
+      { heading: '3. Data Security on Home Networks', content: 'WFH employees must use company VPN and WPA2/WPA3 secured home Wi-Fi networks. Operating from public open Wi-Fi networks (cafes, transit) is prohibited.' }
+    ]
+  }
+];
+
 export const TeamPage: React.FC = () => {
   const {
     employees,
@@ -90,7 +153,7 @@ export const TeamPage: React.FC = () => {
   const canManageTeam = isDirector || isManagerOrHr;
   const isRegularEmployee = !canManageTeam;
 
-  const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves' | 'workload' | 'skills' | 'kpis'>(isRegularEmployee ? 'attendance' : 'roster');
+  const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves' | 'payroll' | 'policies' | 'workload' | 'skills' | 'kpis'>(isRegularEmployee ? 'attendance' : 'roster');
   const [selectedKpiEmpId, setSelectedKpiEmpId] = useState<string>(kpis[0]?.employeeId || 'EPX-DIR-001');
   const [skillCategoryFilter, setSkillCategoryFilter] = useState<string>('All');
   const [editingMetricId, setEditingMetricId] = useState<string | null>(null);
@@ -101,6 +164,33 @@ export const TeamPage: React.FC = () => {
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
   const [showHolidayModal, setShowHolidayModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+
+  // Topic A: Attendance View Mode & Regularization
+  const [attendanceViewMode, setAttendanceViewMode] = useState<'register' | 'calendar'>('register');
+  const [showRegularizationModal, setShowRegularizationModal] = useState(false);
+  const [regDate, setRegDate] = useState(new Date().toISOString().split('T')[0]);
+  const [regInTime, setRegInTime] = useState('09:30 AM');
+  const [regOutTime, setRegOutTime] = useState('06:30 PM');
+  const [regReason, setRegReason] = useState('Biometric / Network Sync Delay');
+
+  // Topic B: Half-day Leave Toggle
+  const [leaveDuration, setLeaveDuration] = useState<'Full Day' | 'Half Day (First Half: 09:30 AM - 01:30 PM)' | 'Half Day (Second Half: 02:00 PM - 06:30 PM)'>('Full Day');
+
+  // Topic C: My Payslip & Form 16
+  const [selectedPayMonth, setSelectedPayMonth] = useState('October 2026');
+  const [showForm16Modal, setShowForm16Modal] = useState(false);
+
+  // Topic D: Company Policies & Document Vault
+  const [selectedPolicyModal, setSelectedPolicyModal] = useState<typeof ENTERPRENEX_POLICIES[0] | null>(null);
+  const [showUploadVaultModal, setShowUploadVaultModal] = useState(false);
+  const [newVaultDocName, setNewVaultDocName] = useState('');
+  const [newVaultDocCat, setNewVaultDocCat] = useState('Identity & Address Proof');
+  const [vaultDocs, setVaultDocs] = useState([
+    { name: 'EPX_Signed_Offer_Letter.pdf', category: 'Offer & Contract', size: '240 KB', date: '2026-07-01', verified: true },
+    { name: 'Degree_Certificate_BE_CSE.pdf', category: 'Education', size: '1.2 MB', date: '2026-07-02', verified: true },
+    { name: 'Government_PAN_Card.pdf', category: 'Statutory KYC', size: '410 KB', date: '2026-07-02', verified: true },
+    { name: 'Aadhaar_Card_Copy.pdf', category: 'Statutory KYC', size: '520 KB', date: '2026-07-02', verified: true }
+  ]);
 
   // Phase 1: Live ticking digital clock for precision attendance & shift duration tracking
   const [liveClock, setLiveClock] = useState(new Date());
@@ -162,6 +252,236 @@ export const TeamPage: React.FC = () => {
       if (meridiem.toUpperCase() === 'AM' && hours === 12) hours = 0;
     }
     return hours > 9 || (hours === 9 && minutes > 30);
+  };
+
+  const checkLeaveClash = (applicant: string, start: string, end: string) => {
+    if (!applicant || !start || !end) return null;
+    const applicantEmp = employees.find(e => e.name.toLowerCase() === applicant.toLowerCase());
+    if (!applicantEmp) return null;
+
+    const clashingLeave = leaves.find(l => {
+      if (l.employeeName.toLowerCase() === applicant.toLowerCase()) return false;
+      if (l.status === 'Rejected') return false;
+      const otherEmp = employees.find(e => e.name.toLowerCase() === l.employeeName.toLowerCase());
+      if (!otherEmp || otherEmp.department !== applicantEmp.department) return false;
+      return start <= l.endDate && end >= l.startDate;
+    });
+
+    if (clashingLeave) {
+      return {
+        clashingEmployee: clashingLeave.employeeName,
+        department: applicantEmp.department,
+        dates: `${clashingLeave.startDate} to ${clashingLeave.endDate}`,
+        type: clashingLeave.type
+      };
+    }
+    return null;
+  };
+
+  const printOfficialPayslip = (emp: Employee, payMonth: string = 'October 2026') => {
+    const gross = emp.salaryMonthly || 50000;
+    const basic = Math.round(gross * 0.5);
+    const hra = Math.round(gross * 0.2);
+    const specialAllowance = gross - basic - hra;
+    const pf = Math.round(basic * 0.12);
+    const pt = 200;
+    const tds = gross > 75000 ? Math.round(gross * 0.05) : 0;
+    const totalDeductions = pf + pt + tds;
+    const netPay = gross - totalDeductions;
+    const empId = emp.employeeId || 'EPX-EMP-001';
+    const pan = emp.panNumber || 'PRRPS8209K';
+    const uan = '1019' + empId.replace(/\D/g, '').padEnd(8, '0');
+    const bankAc = '•••• •••• ' + (empId.slice(-4) || '8492');
+
+    const win = window.open('', '_blank');
+    if (!win) {
+      showToast('Popup Blocked', 'Please allow popups to view and print your official salary slip.', 'warning');
+      return;
+    }
+
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Payslip - ${emp.name} - ${payMonth}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+            @page { size: A4 portrait; margin: 15mm; }
+            body { font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; background: #f8fafc; margin: 0; padding: 20px; }
+            .slip-card { position: relative; max-width: 800px; margin: 0 auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 32px 36px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+            .header-table { width: 100%; border-bottom: 2px solid #ea580c; padding-bottom: 14px; margin-bottom: 18px; }
+            .company-name { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; }
+            .company-sub { font-size: 11px; color: #64748b; margin-top: 3px; }
+            .slip-badge { display: inline-block; background: #fff7ed; color: #c2410c; border: 1px solid #fdba74; font-weight: 800; font-size: 12px; padding: 4px 12px; border-radius: 6px; text-transform: uppercase; }
+            .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; font-size: 11.5px; margin-bottom: 20px; }
+            .salary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+            .salary-table th { background: #0f172a; color: #fff; padding: 9px 12px; text-align: left; }
+            .salary-table td { padding: 9px 12px; border-bottom: 1px solid #e2e8f0; }
+            .net-box { background: #ecfdf5; border: 1.5px solid #10b981; border-radius: 6px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+            .net-val { font-size: 22px; font-weight: 800; color: #047857; }
+            .footer-sig { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 16px; border-top: 1px dashed #cbd5e1; font-size: 11px; color: #64748b; }
+          </style>
+        </head>
+        <body>
+          <div class="slip-card">
+            <table class="header-table">
+              <tr>
+                <td>
+                  <h1 class="company-name">ENTERPRENEX SOLUTIONS PRIVATE LIMITED</h1>
+                  <div class="company-sub">CIN: U72900PN2023PTC221940 &bull; Corporate Headquarters, Pune, Maharashtra</div>
+                  <div class="company-sub">Official Payroll & Statutory Salary Advice Slip</div>
+                </td>
+                <td style="text-align: right;">
+                  <span class="slip-badge">PAYSLIP - ${payMonth.toUpperCase()}</span>
+                </td>
+              </tr>
+            </table>
+
+            <div class="meta-grid">
+              <div>
+                <div><strong>Employee Name:</strong> ${emp.name}</div>
+                <div style="margin-top: 4px;"><strong>Employee ID:</strong> ${empId}</div>
+                <div style="margin-top: 4px;"><strong>Designation:</strong> ${emp.role}</div>
+                <div style="margin-top: 4px;"><strong>Department:</strong> ${emp.department}</div>
+              </div>
+              <div>
+                <div><strong>PAN Number:</strong> ${pan}</div>
+                <div style="margin-top: 4px;"><strong>UAN (EPFO):</strong> ${uan}</div>
+                <div style="margin-top: 4px;"><strong>Bank Account:</strong> ${bankAc}</div>
+                <div style="margin-top: 4px;"><strong>Pay Period:</strong> ${payMonth}</div>
+              </div>
+            </div>
+
+            <table class="salary-table">
+              <thead>
+                <tr>
+                  <th>EARNINGS HEAD</th>
+                  <th style="text-align: right;">AMOUNT (₹)</th>
+                  <th>STATUTORY DEDUCTIONS</th>
+                  <th style="text-align: right;">AMOUNT (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Basic Salary (50%)</td>
+                  <td style="text-align: right;">₹${basic.toLocaleString('en-IN')}</td>
+                  <td>Provident Fund (PF - 12%)</td>
+                  <td style="text-align: right;">₹${pf.toLocaleString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <td>House Rent Allowance (HRA - 20%)</td>
+                  <td style="text-align: right;">₹${hra.toLocaleString('en-IN')}</td>
+                  <td>Professional Tax (PT)</td>
+                  <td style="text-align: right;">₹${pt.toLocaleString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <td>Special Allowance (30%)</td>
+                  <td style="text-align: right;">₹${specialAllowance.toLocaleString('en-IN')}</td>
+                  <td>Income Tax (TDS)</td>
+                  <td style="text-align: right;">₹${tds.toLocaleString('en-IN')}</td>
+                </tr>
+                <tr style="font-weight: 700; background: #f8fafc;">
+                  <td>TOTAL GROSS EARNINGS</td>
+                  <td style="text-align: right; color: #047857;">₹${gross.toLocaleString('en-IN')}</td>
+                  <td>TOTAL DEDUCTIONS</td>
+                  <td style="text-align: right; color: #dc2626;">₹${totalDeductions.toLocaleString('en-IN')}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="net-box">
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; color: #047857; font-weight: 700;">NET SALARY DISBURSED (TAKE HOME)</div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Direct NEFT Transfer to Bank Account</div>
+              </div>
+              <div class="net-val">₹${netPay.toLocaleString('en-IN')}</div>
+            </div>
+
+            <div class="footer-sig">
+              <div>
+                <div>This is a computer-generated official payslip issued under corporate seal.</div>
+                <div>Authorized by: <strong>Rohit Pawar (Managing Director)</strong></div>
+              </div>
+              <div style="text-align: right;">
+                <div>Enterprenex Enterprise Work Management Suite</div>
+                <div>Status: <strong>PROCESSED & DISBURSED ✓</strong></div>
+              </div>
+            </div>
+          </div>
+          <script>window.onload = function() { window.print(); };</script>
+        </body>
+      </html>
+    `);
+    win.document.close();
+  };
+
+  const printForm16Summary = (emp: Employee) => {
+    const gross = (emp.salaryMonthly || 50000) * 12;
+    const stdDeduction = 75000;
+    const netTaxable = Math.max(0, gross - stdDeduction);
+    const taxDeducted = gross > 900000 ? Math.round(netTaxable * 0.08) : 0;
+    const empId = emp.employeeId || 'EPX-EMP-001';
+
+    const win = window.open('', '_blank');
+    if (!win) {
+      showToast('Popup Blocked', 'Please allow popups to view Form 16 certificate.', 'warning');
+      return;
+    }
+
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Form 16 Summary - ${emp.name} - FY 2025-26</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+            @page { size: A4 portrait; margin: 15mm; }
+            body { font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; background: #fff; margin: 0; padding: 24px; }
+            .cert-box { border: 2px solid #0f172a; padding: 28px; max-width: 800px; margin: 0 auto; }
+            h2 { text-align: center; margin: 0; color: #0f172a; }
+            .sub { text-align: center; font-size: 12px; color: #64748b; margin-top: 4px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 12px; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+            th { background: #f8fafc; font-weight: 700; }
+          </style>
+        </head>
+        <body>
+          <div class="cert-box">
+            <h2>FORM NO. 16 (PART B SUMMARY)</h2>
+            <div class="sub">Certificate under section 203 of the Income-tax Act, 1961 for tax deducted at source on salary</div>
+            <div class="sub" style="margin-top: 6px; font-weight: 700; color: #ea580c;">ENTERPRENEX SOLUTIONS PRIVATE LIMITED &bull; TAN: PNTE02918K &bull; PAN: AAXPE1206M</div>
+
+            <table style="margin-top: 20px;">
+              <tr><th>Employee Name</th><td>${emp.name}</td><th>Employee ID</th><td>${empId}</td></tr>
+              <tr><th>PAN of Employee</th><td>${emp.panNumber || 'PRRPS8209K'}</td><th>Assessment Year</th><td>2026-2027</td></tr>
+              <tr><th>Period with Employer</th><td>01-Apr-2025 to 31-Mar-2026</td><th>Tax Regime</th><td>New Tax Regime u/s 115BAC</td></tr>
+            </table>
+
+            <h3 style="margin-top: 24px; font-size: 14px;">Summary of Taxable Income & Deductions</h3>
+            <table>
+              <tr><th>1. Gross Salary under section 17(1)</th><td style="text-align: right; font-weight: 700;">₹${gross.toLocaleString('en-IN')}</td></tr>
+              <tr><td>Less: Standard Deduction u/s 16(ia)</td><td style="text-align: right; color: #dc2626;">(-) ₹${stdDeduction.toLocaleString('en-IN')}</td></tr>
+              <tr style="background: #f8fafc;"><th>2. Net Taxable Income (1 - Standard Deduction)</th><td style="text-align: right; font-weight: 800; color: #047857;">₹${netTaxable.toLocaleString('en-IN')}</td></tr>
+              <tr><th>3. Total Tax Deducted at Source (TDS Deposited to Central Govt)</th><td style="text-align: right; font-weight: 800; color: #ea580c;">₹${taxDeducted.toLocaleString('en-IN')}</td></tr>
+            </table>
+
+            <div style="margin-top: 36px; display: flex; justify-content: space-between; font-size: 11px;">
+              <div>
+                <div>Place: <strong>Pune, Maharashtra</strong></div>
+                <div>Date of Issuance: <strong>${new Date().toLocaleDateString('en-IN')}</strong></div>
+              </div>
+              <div style="text-align: right;">
+                <div>For <strong>ENTERPRENEX SOLUTIONS PRIVATE LIMITED</strong></div>
+                <div style="margin-top: 24px; font-weight: 700;">Rohit Pawar (Managing Director)</div>
+                <div style="color: #64748b;">Authorized Signatory</div>
+              </div>
+            </div>
+          </div>
+          <script>window.onload = function() { window.print(); };</script>
+        </body>
+      </html>
+    `);
+    win.document.close();
   };
 
   // Absence Incident & Outreach Modal State (RBAC Restricted to Director & HR)
@@ -879,16 +1199,21 @@ export const TeamPage: React.FC = () => {
       return;
     }
 
+    const finalReason = leaveDuration !== 'Full Day'
+      ? `[${leaveDuration}] ${leaveReason.trim()}`
+      : leaveReason.trim();
+
     addLeaveRequest({
       employeeName: applicantName.trim(),
       type: leaveType,
       startDate,
       endDate,
-      reason: leaveReason.trim()
+      reason: finalReason
     });
 
     setShowApplyLeaveModal(false);
     setLeaveReason('');
+    setLeaveDuration('Full Day');
     setTab('leaves');
   };
 
@@ -978,6 +1303,40 @@ export const TeamPage: React.FC = () => {
               </button>
             </>
           )}
+
+          {tab === 'payroll' && (
+            <>
+              <button
+                className="adm-btn adm-btn-secondary"
+                onClick={() => {
+                  const targetEmp = employees.find(e => e.email === currentUser?.email) || employees[0];
+                  if (targetEmp) printForm16Summary(targetEmp);
+                }}
+                title="Print Form 16 Part B Summary Certificate"
+              >
+                <FileText size={15} />
+                <span>Form 16 Summary</span>
+              </button>
+              <button
+                className="adm-btn adm-btn-primary"
+                onClick={() => {
+                  const targetEmp = employees.find(e => e.email === currentUser?.email) || employees[0];
+                  if (targetEmp) printOfficialPayslip(targetEmp, selectedPayMonth);
+                }}
+                title="Print Official Payslip"
+              >
+                <Printer size={15} />
+                <span>Download Payslip</span>
+              </button>
+            </>
+          )}
+
+          {tab === 'policies' && (
+            <button className="adm-btn adm-btn-primary" onClick={() => setShowUploadVaultModal(true)}>
+              <Upload size={15} />
+              <span>Upload to Vault</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -1008,6 +1367,12 @@ export const TeamPage: React.FC = () => {
                 {pendingLeavesCount} Pending
               </span>
             )}
+          </button>
+          <button className={`adm-tab-btn ${tab === 'payroll' ? 'active' : ''}`} onClick={() => setTab('payroll')}>
+            💵 My Payslips & Form 16
+          </button>
+          <button className={`adm-tab-btn ${tab === 'policies' ? 'active' : ''}`} onClick={() => setTab('policies')}>
+            📜 Company Policies & Vault
           </button>
         </div>
       </div>
@@ -1717,11 +2082,60 @@ export const TeamPage: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
-                {isRegularEmployee ? 'MY ATTENDANCE HISTORY' : 'DAILY BIOMETRIC ATTENDANCE LOGS'} ({displayedAttendance.length} RECORDS)
-              </span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
+                  VIEW MODE:
+                </span>
+                <div style={{ display: 'inline-flex', background: 'var(--adm-surface)', border: '1px solid var(--adm-border)', borderRadius: '8px', padding: '2px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceViewMode('register')}
+                    style={{
+                      padding: '0.35rem 0.75rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: attendanceViewMode === 'register' ? 'var(--adm-primary)' : 'transparent',
+                      color: attendanceViewMode === 'register' ? '#fff' : 'var(--adm-text)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    Daily Register ({displayedAttendance.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAttendanceViewMode('calendar')}
+                    style={{
+                      padding: '0.35rem 0.75rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: attendanceViewMode === 'calendar' ? 'var(--adm-primary)' : 'transparent',
+                      color: attendanceViewMode === 'calendar' ? '#fff' : 'var(--adm-text)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    📅 Monthly Calendar Grid
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-sm"
+                  style={{ background: 'rgba(234, 88, 12, 0.12)', color: '#ea580c', border: '1px solid rgba(234, 88, 12, 0.35)', fontWeight: 700 }}
+                  onClick={() => setShowRegularizationModal(true)}
+                  title="Request Attendance Regularization for Missed Punch / Outdoor Duty"
+                >
+                  <Clock size={13} />
+                  <span>Missed Punch / Regularize</span>
+                </button>
                 <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={handleExportAttendanceCsv}>
                   <Download size={13} />
                   <span>Export CSV</span>
@@ -1737,8 +2151,179 @@ export const TeamPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="adm-table-container">
-              <table className="adm-table">
+            {attendanceViewMode === 'calendar' ? (
+              <div className="adm-card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Calendar size={18} color="var(--adm-primary)" />
+                      October 2026 &bull; Monthly Attendance & Biometric Grid
+                    </h4>
+                    <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
+                      Shift timing: 09:30 AM to 06:30 PM IST &bull; 9.0 hrs standard shift &bull; Pune Corporate HQ
+                    </p>
+                  </div>
+                  {/* Legend */}
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.72rem', fontWeight: 600 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(5, 150, 105, 0.1)', color: '#059669' }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#059669' }}></span> Present (Full)
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.1)', color: '#d97706' }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d97706' }}></span> Late Mark (&gt;09:30)
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(139, 92, 246, 0.1)', color: '#7c3aed' }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7c3aed' }}></span> Half Day
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.1)', color: '#2563eb' }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2563eb' }}></span> Holiday (2)
+                    </span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.1)', color: '#dc2626' }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#dc2626' }}></span> Missed Punch
+                    </span>
+                  </div>
+                </div>
+
+                {/* Weekday Column Headers */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center', fontWeight: 700, fontSize: '0.78rem', color: 'var(--adm-text-dim)', marginBottom: '8px' }}>
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                    <div key={day} style={{ padding: '6px', background: 'var(--adm-surface)', borderRadius: '6px' }}>
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* 31-Day Calendar Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
+                  {/* October 2026 starts on Thursday -> 3 leading blank slots (Mon, Tue, Wed) */}
+                  {[null, null, null].map((_, i) => (
+                    <div key={`blank-${i}`} style={{ minHeight: '82px', background: 'transparent' }} />
+                  ))}
+
+                  {Array.from({ length: 31 }, (_, i) => {
+                    const dayNum = i + 1;
+                    const dateFormatted = `2026-10-${dayNum.toString().padStart(2, '0')}`;
+                    // Day of week for Oct 2026: (3 + dayNum - 1) % 7 where 0=Mon, 5=Sat, 6=Sun
+                    const dow = (3 + dayNum - 1) % 7;
+                    const isWeekend = dow === 5 || dow === 6;
+                    
+                    // Check official holidays
+                    const holiday = ENTERPRENEX_HOLIDAYS_2026.find(h => {
+                      const dayStr = dayNum.toString().padStart(2, '0');
+                      return h.date.startsWith(`${dayStr} Oct`);
+                    });
+
+                    // Check attendance records
+                    const dayAtt = displayedAttendance.find(a => 
+                      a.date === dateFormatted || 
+                      a.date === `${dayNum} Oct 2026` || 
+                      a.date?.startsWith(`2026-10-${dayNum.toString().padStart(2, '0')}`)
+                    );
+
+                    const isToday = dayNum === 16;
+                    const isPast = dayNum < 16;
+                    const isMissedPunch = isPast && !isWeekend && !holiday && (!dayAtt || dayAtt.status === 'Absent');
+
+                    let bg = 'var(--adm-surface)';
+                    let border = '1px solid var(--adm-border)';
+                    if (isToday) {
+                      border = '2px solid #ea580c';
+                      bg = 'rgba(234, 88, 12, 0.04)';
+                    } else if (holiday) {
+                      bg = 'rgba(59, 130, 246, 0.05)';
+                      border = '1px solid rgba(59, 130, 246, 0.25)';
+                    } else if (isWeekend) {
+                      bg = 'rgba(100, 116, 139, 0.04)';
+                    }
+
+                    return (
+                      <div
+                        key={dayNum}
+                        style={{
+                          minHeight: '82px',
+                          background: bg,
+                          border,
+                          borderRadius: '8px',
+                          padding: '7px 8px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          position: 'relative',
+                          transition: 'transform 0.15s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: isToday ? '#ea580c' : 'var(--adm-text)' }}>
+                            {dayNum}
+                          </span>
+                          {isToday && (
+                            <span style={{ fontSize: '0.6rem', fontWeight: 800, background: '#ea580c', color: '#fff', padding: '1px 5px', borderRadius: '4px' }}>
+                              TODAY
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ marginTop: '4px' }}>
+                          {holiday ? (
+                            <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#2563eb', lineHeight: 1.2 }}>
+                              🎉 {holiday.name}
+                            </div>
+                          ) : isWeekend ? (
+                            <div style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--adm-text-dim)' }}>
+                              Off (Weekend)
+                            </div>
+                          ) : dayAtt ? (
+                            <div>
+                              <div style={{
+                                fontSize: '0.68rem',
+                                fontWeight: 700,
+                                color: dayAtt.status === 'Present' ? '#059669' : dayAtt.status === 'Late' ? '#d97706' : '#7c3aed'
+                              }}>
+                                {dayAtt.status === 'Present' ? '✓ Present' : dayAtt.status === 'Late' ? '⏱ Late Mark' : '🌓 Half Day'}
+                              </div>
+                              <div style={{ fontSize: '0.62rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
+                                {dayAtt.checkIn || '09:30 AM'} - {dayAtt.checkOut || '06:30 PM'}
+                              </div>
+                            </div>
+                          ) : isMissedPunch ? (
+                            <div>
+                              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#dc2626' }}>
+                                ⚠️ Missed Punch
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRegDate(dateFormatted);
+                                  setShowRegularizationModal(true);
+                                }}
+                                style={{
+                                  marginTop: '2px',
+                                  fontSize: '0.62rem',
+                                  fontWeight: 700,
+                                  color: '#ea580c',
+                                  background: 'none',
+                                  border: 'none',
+                                  padding: 0,
+                                  cursor: 'pointer',
+                                  textDecoration: 'underline'
+                                }}
+                              >
+                                Regularize ➔
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '0.65rem', color: 'var(--adm-text-dim)' }}>
+                              Scheduled (09:30 AM)
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="adm-table-container">
+                <table className="adm-table">
                 <thead>
                   <tr>
                     <th>Team Member</th>
@@ -1888,9 +2473,10 @@ export const TeamPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
-        );
-      })()}
+          )}
+        </div>
+      );
+    })()}
 
       {/* ── 3. LEAVE APPROVALS ── */}
       {tab === 'leaves' && (() => {
@@ -2106,6 +2692,411 @@ export const TeamPage: React.FC = () => {
         </div>
       );
     })()}
+
+      {/* ── MY PAYSLIPS & FORM 16 (TOPIC C) ── */}
+      {tab === 'payroll' && (() => {
+        const targetEmp = employees.find(e => e.email === currentUser?.email) || employees[0] || {
+          id: 'EPX-001',
+          name: currentUser?.name || 'Rohit Pawar',
+          role: 'Managing Director',
+          department: 'Executive Management',
+          salaryMonthly: 125000,
+          employeeId: 'EPX-DIR-001',
+          panNumber: 'AAXPE1206M'
+        };
+
+        const gross = targetEmp.salaryMonthly || 50000;
+        const basic = Math.round(gross * 0.5);
+        const hra = Math.round(gross * 0.2);
+        const specialAllowance = gross - basic - hra;
+        const pf = Math.round(basic * 0.12);
+        const pt = 200;
+        const tds = gross > 75000 ? Math.round(gross * 0.05) : 0;
+        const totalDeductions = pf + pt + tds;
+        const netPay = gross - totalDeductions;
+
+        const pastMonths = [
+          { month: 'October 2026', status: 'Disbursed', date: '31 Oct 2026', ref: 'NEFT-EPX-90812' },
+          { month: 'September 2026', status: 'Disbursed', date: '30 Sep 2026', ref: 'NEFT-EPX-88219' },
+          { month: 'August 2026', status: 'Disbursed', date: '31 Aug 2026', ref: 'NEFT-EPX-86410' },
+          { month: 'July 2026', status: 'Disbursed', date: '31 Jul 2026', ref: 'NEFT-EPX-84192' },
+          { month: 'June 2026', status: 'Disbursed', date: '30 Jun 2026', ref: 'NEFT-EPX-81093' },
+          { month: 'May 2026', status: 'Disbursed', date: '31 May 2026', ref: 'NEFT-EPX-79281' },
+        ];
+
+        return (
+          <div>
+            {/* Top 4 KPI Metric Strip */}
+            <div className="adm-grid-4" style={{ marginBottom: '1.25rem' }}>
+              <div className="adm-kpi-card" style={{ padding: '1rem 1.15rem' }}>
+                <span className="adm-kpi-title">Gross Monthly CTC</span>
+                <span className="adm-kpi-value" style={{ color: 'var(--adm-text)', fontSize: '1.35rem' }}>
+                  ₹{gross.toLocaleString('en-IN')}
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>
+                  Base compensation structure
+                </span>
+              </div>
+              <div className="adm-kpi-card" style={{ padding: '1rem 1.15rem' }}>
+                <span className="adm-kpi-title">Statutory Deductions</span>
+                <span className="adm-kpi-value" style={{ color: '#ef4444', fontSize: '1.35rem' }}>
+                  ₹{totalDeductions.toLocaleString('en-IN')}
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>
+                  PF (12%) + PT (₹200) + TDS
+                </span>
+              </div>
+              <div className="adm-kpi-card" style={{ padding: '1rem 1.15rem', background: 'rgba(5, 150, 105, 0.05)', borderColor: 'rgba(5, 150, 105, 0.25)' }}>
+                <span className="adm-kpi-title" style={{ color: '#059669' }}>Net Disbursed Take-Home</span>
+                <span className="adm-kpi-value" style={{ color: '#059669', fontSize: '1.35rem' }}>
+                  ₹{netPay.toLocaleString('en-IN')}
+                </span>
+                <span style={{ fontSize: '0.72rem', color: '#059669', marginTop: '4px' }}>
+                  Direct NEFT Bank Transfer
+                </span>
+              </div>
+              <div className="adm-kpi-card" style={{ padding: '1rem 1.15rem' }}>
+                <span className="adm-kpi-title">Form 16 Tax Regime</span>
+                <span className="adm-kpi-value" style={{ color: 'var(--adm-primary)', fontSize: '1.2rem' }}>
+                  New (u/s 115BAC)
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>
+                  Std. Deduction ₹75,000 eligible
+                </span>
+              </div>
+            </div>
+
+            {/* Current Month Advice & Actions */}
+            <div className="adm-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FileText size={20} color="var(--adm-primary)" />
+                    Salary Advice & Breakdown &bull; {selectedPayMonth}
+                  </h3>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                    Employee: <strong>{targetEmp.name}</strong> ({targetEmp.employeeId || 'EPX-001'}) &bull; Designation: {targetEmp.role} &bull; Dept: {targetEmp.department}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <select
+                    className="adm-select"
+                    value={selectedPayMonth}
+                    onChange={e => setSelectedPayMonth(e.target.value)}
+                    style={{ minWidth: '150px' }}
+                  >
+                    <option value="October 2026">October 2026</option>
+                    <option value="September 2026">September 2026</option>
+                    <option value="August 2026">August 2026</option>
+                    <option value="July 2026">July 2026</option>
+                    <option value="June 2026">June 2026</option>
+                    <option value="May 2026">May 2026</option>
+                  </select>
+                  <button
+                    className="adm-btn adm-btn-secondary"
+                    onClick={() => printForm16Summary(targetEmp as any)}
+                    title="View and print official Form 16 Part B Tax Certificate"
+                  >
+                    <FileText size={15} />
+                    <span>Form 16 Summary</span>
+                  </button>
+                  <button
+                    className="adm-btn adm-btn-primary"
+                    onClick={() => printOfficialPayslip(targetEmp as any, selectedPayMonth)}
+                    title="Print and download official PDF Payslip"
+                  >
+                    <Printer size={15} />
+                    <span>Print Official Payslip</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Two Column Earnings vs Deductions Table */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem', border: '1px solid var(--adm-border)', borderRadius: '10px', overflow: 'hidden' }}>
+                {/* Left: Earnings */}
+                <div style={{ padding: '1.25rem', background: 'var(--adm-surface)' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#059669', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--adm-border)', paddingBottom: '0.5rem' }}>
+                    Earnings Head (Gross: ₹{gross.toLocaleString('en-IN')})
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Basic Salary (50%)</span>
+                      <strong style={{ color: 'var(--adm-text)' }}>₹{basic.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>House Rent Allowance (HRA - 20%)</span>
+                      <strong style={{ color: 'var(--adm-text)' }}>₹{hra.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Special / Project Allowance (30%)</span>
+                      <strong style={{ color: 'var(--adm-text)' }}>₹{specialAllowance.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed var(--adm-border)', paddingTop: '0.6rem', fontWeight: 800 }}>
+                      <span>Total Gross Earnings</span>
+                      <span style={{ color: '#059669' }}>₹{gross.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Deductions */}
+                <div style={{ padding: '1.25rem', background: 'var(--adm-surface)' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--adm-border)', paddingBottom: '0.5rem' }}>
+                    Statutory Deductions (Total: ₹{totalDeductions.toLocaleString('en-IN')})
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Employee Provident Fund (EPF 12%)</span>
+                      <strong style={{ color: 'var(--adm-text)' }}>₹{pf.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Professional Tax (Maharashtra PT)</span>
+                      <strong style={{ color: 'var(--adm-text)' }}>₹{pt.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>TDS / Income Tax Withholding</span>
+                      <strong style={{ color: 'var(--adm-text)' }}>₹{tds.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed var(--adm-border)', paddingTop: '0.6rem', fontWeight: 800 }}>
+                      <span>Total Deductions</span>
+                      <span style={{ color: '#ef4444' }}>₹{totalDeductions.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Net Banner */}
+              <div
+                style={{
+                  marginTop: '1.25rem',
+                  padding: '1rem 1.25rem',
+                  borderRadius: '8px',
+                  background: 'rgba(5, 150, 105, 0.08)',
+                  border: '1.5px solid #059669',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem'
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#059669', textTransform: 'uppercase' }}>
+                    Net Disbursed Take-Home Pay
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
+                    Official Salary Disbursed via Electronic Bank Transfer (NEFT) &bull; Enterprenex Corporate Seal Applied
+                  </div>
+                </div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#059669' }}>
+                  ₹{netPay.toLocaleString('en-IN')}
+                </div>
+              </div>
+            </div>
+
+            {/* Historical Payslips Table */}
+            <div className="adm-card" style={{ padding: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text)' }}>
+                  Historical Salary Advice Archive (FY 2026-27)
+                </h4>
+                <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
+                  6 Statements Available
+                </span>
+              </div>
+              <div className="adm-table-container">
+                <table className="adm-table">
+                  <thead>
+                    <tr>
+                      <th>Pay Period</th>
+                      <th>Disbursement Date</th>
+                      <th>Reference ID</th>
+                      <th>Net Disbursed</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pastMonths.map(p => (
+                      <tr key={p.month}>
+                        <td style={{ fontWeight: 700, color: 'var(--adm-text)' }}>{p.month}</td>
+                        <td>{p.date}</td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{p.ref}</td>
+                        <td style={{ fontWeight: 800, color: '#059669' }}>₹{netPay.toLocaleString('en-IN')}</td>
+                        <td>
+                          <span className="adm-badge adm-badge-success">{p.status}</span>
+                        </td>
+                        <td>
+                          <button
+                            className="adm-btn adm-btn-sm adm-btn-secondary"
+                            onClick={() => printOfficialPayslip(targetEmp as any, p.month)}
+                            title="Download/Print Payslip"
+                          >
+                            <Printer size={13} />
+                            <span>Download Payslip</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── COMPANY POLICIES & DOCUMENT VAULT (TOPIC D) ── */}
+      {tab === 'policies' && (() => {
+        return (
+          <div>
+            {/* Header info card */}
+            <div className="adm-card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.25rem', background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.05), rgba(5, 150, 105, 0.05))', border: '1px solid var(--adm-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldCheck size={20} color="var(--adm-primary)" />
+                    Official Enterprenex Corporate Policies (2026 Governance)
+                  </h3>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                    Statutory corporate bylaws, IT security compliance, POSH guidelines, and personal employee document repository.
+                  </p>
+                </div>
+                <button className="adm-btn adm-btn-primary" onClick={() => setShowUploadVaultModal(true)}>
+                  <Upload size={15} />
+                  <span>Upload to Vault</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 5 Official Policies Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
+              {ENTERPRENEX_POLICIES.map(pol => (
+                <div
+                  key={pol.code}
+                  className="adm-card"
+                  style={{
+                    padding: '1.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    border: '1px solid var(--adm-border)',
+                    borderRadius: '12px'
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                      <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.7rem', fontWeight: 800 }}>
+                        {pol.code}
+                      </span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                        Effective: {pol.effectiveDate}
+                      </span>
+                    </div>
+                    <h4 style={{ margin: '0 0 0.4rem 0', fontSize: '1.02rem', fontWeight: 800, color: 'var(--adm-text)' }}>
+                      {pol.title}
+                    </h4>
+                    <span style={{ display: 'inline-block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--adm-primary)', marginBottom: '0.6rem' }}>
+                      Category: {pol.category}
+                    </span>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--adm-text-dim)', lineHeight: 1.5 }}>
+                      {pol.summary}
+                    </p>
+                  </div>
+
+                  <div style={{ marginTop: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                      {pol.sections.length} Key Clauses
+                    </span>
+                    <button
+                      className="adm-btn adm-btn-sm adm-btn-secondary"
+                      onClick={() => setSelectedPolicyModal(pol)}
+                      style={{ fontSize: '0.75rem', fontWeight: 700 }}
+                    >
+                      <span>Read Policy Guidelines</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Employee Document Vault Section */}
+            <div className="adm-card" style={{ padding: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Lock size={18} color="#059669" />
+                    Personal Employee Document Vault (DPDP Act 2023 Compliant)
+                  </h4>
+                  <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
+                    End-to-end encrypted repository for personal credentials, degrees, contracts, and identity KYC.
+                  </p>
+                </div>
+                <button className="adm-btn adm-btn-sm adm-btn-primary" onClick={() => setShowUploadVaultModal(true)}>
+                  <Upload size={13} />
+                  <span>Upload Document</span>
+                </button>
+              </div>
+
+              <div className="adm-table-container">
+                <table className="adm-table">
+                  <thead>
+                    <tr>
+                      <th>Document Name</th>
+                      <th>Category</th>
+                      <th>File Size</th>
+                      <th>Upload Date</th>
+                      <th>Verification Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {vaultDocs.map(doc => (
+                      <tr key={doc.name}>
+                        <td style={{ fontWeight: 700, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <FileText size={15} color="var(--adm-primary)" />
+                          {doc.name}
+                        </td>
+                        <td>{doc.category}</td>
+                        <td style={{ fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>{doc.size}</td>
+                        <td>{doc.date}</td>
+                        <td>
+                          <span
+                            className="adm-badge adm-badge-success"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <CheckCircle size={11} />
+                            Verified by HR & Director
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button
+                              className="adm-btn adm-btn-sm adm-btn-secondary"
+                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.72rem' }}
+                              onClick={() => showToast('Opening Preview', `Viewing document ${doc.name} in secure sandbox.`, 'info')}
+                            >
+                              <Eye size={12} />
+                              <span>View</span>
+                            </button>
+                            <button
+                              className="adm-btn adm-btn-sm adm-btn-secondary"
+                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.72rem' }}
+                              onClick={() => showToast('Download Started', `Downloading ${doc.name}`, 'success')}
+                            >
+                              <Download size={12} />
+                              <span>Download</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── 4. WORKLOAD & CAPACITY ENGINE ── */}
       {tab === 'workload' && (() => {
@@ -2740,7 +3731,7 @@ export const TeamPage: React.FC = () => {
                   Submit Leave Application
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
-                  Request sick leave, casual time off, or personal days for review
+                  Request sick leave, casual time off, half-day shifts, or personal days for review
                 </p>
               </div>
               <button className="adm-modal-close" onClick={() => setShowApplyLeaveModal(false)}>
@@ -2748,54 +3739,106 @@ export const TeamPage: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleApplyLeaveSubmit} style={{ marginTop: '1rem' }}>
-              <div className="adm-form-group">
-                <label className="adm-form-label">Applicant Name *</label>
-                <input
-                  className="adm-input"
-                  required
-                  value={applicantName}
-                  onChange={e => setApplicantName(e.target.value)}
-                  placeholder="Enter employee or staff name"
-                />
-              </div>
+            {(() => {
+              const clashInfo = checkLeaveClash(applicantName, startDate, endDate);
+              return (
+                <form onSubmit={handleApplyLeaveSubmit} style={{ marginTop: '1rem' }}>
+                  {clashInfo && (
+                    <div
+                      style={{
+                        background: 'rgba(234, 88, 12, 0.08)',
+                        border: '1px solid rgba(234, 88, 12, 0.35)',
+                        borderRadius: '8px',
+                        padding: '0.75rem 1rem',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                      }}
+                    >
+                      <AlertCircle size={20} color="#ea580c" style={{ flexShrink: 0 }} />
+                      <div style={{ fontSize: '0.78rem', color: 'var(--adm-text)', lineHeight: 1.4 }}>
+                        <strong style={{ color: '#ea580c' }}>Department Leave Clash Notice:</strong>{' '}
+                        <strong>{clashInfo.clashingEmployee}</strong> from <strong>{clashInfo.department}</strong> is already scheduled for {clashInfo.type} during {clashInfo.dates}. This application will flag a departmental overlap for Director approval.
+                      </div>
+                    </div>
+                  )}
 
-              <div className="adm-form-group">
-                <label className="adm-form-label">Leave Category *</label>
-                <select
-                  className="adm-select"
-                  value={leaveType}
-                  onChange={e => setLeaveType(e.target.value as any)}
-                >
-                  <option value="Casual Leave">Casual Leave (CL - Personal / Urgent Affair)</option>
-                  <option value="Sick Leave">Sick Leave (SL - Medical / Health Recovery)</option>
-                  <option value="Paid Leave">Earned Leave (EL - Privilege Annual Paid Leave)</option>
-                  <option value="Unpaid">Loss of Pay / Unpaid Leave</option>
-                </select>
-              </div>
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Applicant Name *</label>
+                    <input
+                      className="adm-input"
+                      required
+                      value={applicantName}
+                      onChange={e => setApplicantName(e.target.value)}
+                      placeholder="Enter employee or staff name"
+                    />
+                  </div>
 
-              <div className="adm-grid-2">
-                <div className="adm-form-group">
-                  <label className="adm-form-label">Start Date *</label>
-                  <input
-                    className="adm-input"
-                    type="date"
-                    required
-                    value={startDate}
-                    onChange={e => setStartDate(e.target.value)}
-                  />
-                </div>
-                <div className="adm-form-group">
-                  <label className="adm-form-label">End Date *</label>
-                  <input
-                    className="adm-input"
-                    type="date"
-                    required
-                    value={endDate}
-                    onChange={e => setEndDate(e.target.value)}
-                  />
-                </div>
-              </div>
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Leave Category *</label>
+                    <select
+                      className="adm-select"
+                      value={leaveType}
+                      onChange={e => setLeaveType(e.target.value as any)}
+                    >
+                      <option value="Casual Leave">Casual Leave (CL - Personal / Urgent Affair)</option>
+                      <option value="Sick Leave">Sick Leave (SL - Medical / Health Recovery)</option>
+                      <option value="Paid Leave">Earned Leave (EL - Privilege Annual Paid Leave)</option>
+                      <option value="Unpaid">Loss of Pay / Unpaid Leave</option>
+                    </select>
+                  </div>
+
+                  <div className="adm-grid-2">
+                    <div className="adm-form-group">
+                      <label className="adm-form-label">Start Date *</label>
+                      <input
+                        className="adm-input"
+                        type="date"
+                        required
+                        value={startDate}
+                        onChange={e => setStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="adm-form-group">
+                      <label className="adm-form-label">End Date *</label>
+                      <input
+                        className="adm-input"
+                        type="date"
+                        required
+                        value={endDate}
+                        onChange={e => setEndDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Half-Day Toggle (First Half vs Second Half vs Full Day) */}
+                  <div className="adm-form-group">
+                    <label className="adm-form-label">Duration & Shift Scope</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginTop: '0.35rem' }}>
+                      {(['Full Day', 'Half Day (First Half: 09:30 AM - 01:30 PM)', 'Half Day (Second Half: 02:00 PM - 06:30 PM)'] as const).map(dur => (
+                        <button
+                          key={dur}
+                          type="button"
+                          onClick={() => setLeaveDuration(dur)}
+                          style={{
+                            padding: '0.55rem 0.5rem',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                            border: leaveDuration === dur ? '1.5px solid #ea580c' : '1px solid var(--adm-border)',
+                            background: leaveDuration === dur ? 'rgba(234, 88, 12, 0.1)' : 'var(--adm-surface)',
+                            color: leaveDuration === dur ? '#ea580c' : 'var(--adm-text)',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {dur === 'Full Day' ? '☀️ Full Day' : dur.includes('First') ? '🌅 First Half (AM)' : '🌇 Second Half (PM)'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
               <div className="adm-form-group">
                 <label className="adm-form-label">Reason & Justification *</label>
@@ -2819,6 +3862,8 @@ export const TeamPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          );
+        })()}
           </div>
         </div>
       )}
@@ -2874,6 +3919,271 @@ export const TeamPage: React.FC = () => {
                 Close Calendar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MISSED PUNCH / ATTENDANCE REGULARIZATION MODAL (TOPIC A) ── */}
+      {showRegularizationModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowRegularizationModal(false)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Clock size={19} color="#ea580c" />
+                  <span>Attendance Regularization Request</span>
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  Submit punch adjustment for biometric delay, offsite duty, or missing record
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setShowRegularizationModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                if (!regReason.trim()) {
+                  showToast('Validation Error', 'Please provide a justification for punch regularization.', 'error');
+                  return;
+                }
+
+                // Add or regularize attendance record
+                markAttendanceToday('Present');
+                showToast(
+                  'Regularization Submitted',
+                  `Regularization for ${regDate} (${regInTime} - ${regOutTime}) logged for Director / HR approval.`,
+                  'success'
+                );
+                setShowRegularizationModal(false);
+              }}
+              style={{ marginTop: '1rem' }}
+            >
+              <div className="adm-form-group">
+                <label className="adm-form-label">Regularization Date *</label>
+                <input
+                  type="date"
+                  className="adm-input"
+                  required
+                  value={regDate}
+                  onChange={e => setRegDate(e.target.value)}
+                />
+              </div>
+
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Actual Punch In Time *</label>
+                  <input
+                    type="text"
+                    className="adm-input"
+                    required
+                    value={regInTime}
+                    onChange={e => setRegInTime(e.target.value)}
+                    placeholder="e.g. 09:30 AM"
+                  />
+                </div>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Actual Punch Out Time *</label>
+                  <input
+                    type="text"
+                    className="adm-input"
+                    required
+                    value={regOutTime}
+                    onChange={e => setRegOutTime(e.target.value)}
+                    placeholder="e.g. 06:30 PM"
+                  />
+                </div>
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-form-label">Reason / Justification *</label>
+                <select
+                  className="adm-select"
+                  value={regReason}
+                  onChange={e => setRegReason(e.target.value)}
+                  style={{ marginBottom: '0.5rem' }}
+                >
+                  <option value="Biometric / Network Sync Delay">Biometric / Network Sync Delay</option>
+                  <option value="Client Onsite / Client Meeting Duty">Client Onsite / Client Meeting Duty</option>
+                  <option value="WFH Emergency Approval">WFH Emergency Pre-Approved Shift</option>
+                  <option value="Device Hardware Malfunction">Biometric Scanner Malfunction</option>
+                  <option value="Other Business Justification">Other Business Justification</option>
+                </select>
+                <textarea
+                  className="adm-textarea"
+                  rows={2}
+                  value={regReason}
+                  onChange={e => setRegReason(e.target.value)}
+                  placeholder="Elaborate details for HR & Managing Director review..."
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.25rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowRegularizationModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="adm-btn adm-btn-primary">
+                  <CheckCircle2 size={15} />
+                  <span>Submit Regularization</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── COMPANY POLICY VIEWER MODAL (TOPIC D) ── */}
+      {selectedPolicyModal && (
+        <div className="adm-modal-overlay" onClick={() => setSelectedPolicyModal(null)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '680px' }}>
+            <div className="adm-modal-header" style={{ borderBottom: '2px solid #ea580c', paddingBottom: '0.75rem' }}>
+              <div>
+                <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.7rem', fontWeight: 800 }}>
+                  {selectedPolicyModal.code} &bull; {selectedPolicyModal.category}
+                </span>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-text)', margin: '6px 0 0 0' }}>
+                  {selectedPolicyModal.title}
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
+                  Effective Date: {selectedPolicyModal.effectiveDate} &bull; Approved by: Rohit Pawar (Managing Director)
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setSelectedPolicyModal(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ maxHeight: '480px', overflowY: 'auto', marginTop: '1.25rem', paddingRight: '0.5rem' }}>
+              <div style={{ background: 'rgba(234, 88, 12, 0.05)', border: '1px solid rgba(234, 88, 12, 0.25)', borderRadius: '8px', padding: '0.85rem 1rem', marginBottom: '1.25rem' }}>
+                <strong style={{ fontSize: '0.82rem', color: '#ea580c' }}>Executive Summary:</strong>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text)', lineHeight: 1.5 }}>
+                  {selectedPolicyModal.summary}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {selectedPolicyModal.sections.map((sec, idx) => (
+                  <div key={idx} style={{ background: 'var(--adm-surface)', border: '1px solid var(--adm-border)', borderRadius: '8px', padding: '1rem' }}>
+                    <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '0.92rem', fontWeight: 800, color: 'var(--adm-text)' }}>
+                      {sec.heading}
+                    </h5>
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--adm-text-dim)', lineHeight: 1.55 }}>
+                      {sec.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: '1.5rem', padding: '0.85rem 1rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.75rem', color: '#64748b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Issued under Enterprenex Corporate Seal &bull; CIN: U72900PN2023PTC221940</span>
+                <strong style={{ color: '#047857' }}>✓ Statutorily Active</strong>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+              <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setSelectedPolicyModal(null)}>
+                Close Policy Guidelines
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── UPLOAD DOCUMENT TO VAULT MODAL (TOPIC D) ── */}
+      {showUploadVaultModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowUploadVaultModal(false)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Upload size={18} color="var(--adm-primary)" />
+                  <span>Upload to Personal Document Vault</span>
+                </h3>
+                <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
+                  DPDP Act 2023 Encrypted &bull; Tamper-evident repository
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setShowUploadVaultModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                if (!newVaultDocName.trim()) {
+                  showToast('Validation Error', 'Please enter a valid document name.', 'error');
+                  return;
+                }
+                const formattedName = newVaultDocName.trim().endsWith('.pdf')
+                  ? newVaultDocName.trim()
+                  : `${newVaultDocName.trim()}.pdf`;
+
+                setVaultDocs(prev => [
+                  {
+                    name: formattedName,
+                    category: newVaultDocCat,
+                    size: '380 KB',
+                    date: new Date().toISOString().split('T')[0],
+                    verified: true
+                  },
+                  ...prev
+                ]);
+                showToast('Document Vaulted', `${formattedName} uploaded and verified successfully in your vault.`, 'success');
+                setNewVaultDocName('');
+                setShowUploadVaultModal(false);
+              }}
+              style={{ marginTop: '1rem' }}
+            >
+              <div className="adm-form-group">
+                <label className="adm-form-label">Document Title / File Name *</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  required
+                  value={newVaultDocName}
+                  onChange={e => setNewVaultDocName(e.target.value)}
+                  placeholder="e.g. Master_Degree_Certificate.pdf"
+                />
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-form-label">Document Category *</label>
+                <select
+                  className="adm-select"
+                  value={newVaultDocCat}
+                  onChange={e => setNewVaultDocCat(e.target.value)}
+                >
+                  <option value="Statutory KYC">Statutory KYC (PAN / Aadhaar / Passport)</option>
+                  <option value="Education">Academic & Degree Certificates</option>
+                  <option value="Offer & Contract">Offer Letter & Employment Agreements</option>
+                  <option value="Identity & Address Proof">Identity & Address Proof</option>
+                  <option value="Certificates & Awards">Professional Certifications & Awards</option>
+                </select>
+              </div>
+
+              <div style={{ border: '2px dashed var(--adm-border)', borderRadius: '10px', padding: '1.5rem', textAlign: 'center', margin: '1rem 0', background: 'var(--adm-surface)' }}>
+                <FileText size={32} color="var(--adm-text-dim)" style={{ margin: '0 auto 8px auto', display: 'block' }} />
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text)' }}>
+                  Drag & Drop Document Here or Browse Files
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>
+                  Supports PDF, JPG, PNG up to 10 MB &bull; AES-256 Bit Encrypted
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.25rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowUploadVaultModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="adm-btn adm-btn-primary">
+                  <Upload size={15} />
+                  <span>Upload & Vault Document</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
