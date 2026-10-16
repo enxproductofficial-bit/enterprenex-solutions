@@ -96,6 +96,25 @@ class ApiClient {
     });
   }
 
+  // 3b. Leave Management Endpoints
+  async getLeaves() {
+    return this.request<{ leaves: any[] }>('/leaves');
+  }
+
+  async applyLeave(leaveData: { employeeName?: string; type: string; startDate: string; endDate: string; reason: string }) {
+    return this.request<{ message: string; leave: any }>('/leaves', {
+      method: 'POST',
+      body: JSON.stringify(leaveData)
+    });
+  }
+
+  async updateLeaveStatus(leaveId: string, status: 'Approved' | 'Rejected' | 'Pending') {
+    return this.request<{ message: string; leave: any }>(`/leaves/${leaveId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    });
+  }
+
   // 4. Task Endpoints
   async getTasks() {
     return this.request<{ tasks: any[] }>('/tasks');

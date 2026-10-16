@@ -244,12 +244,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const isOnline = await api.checkBackendHealth();
         if (!isOnline) return;
 
-        const [tRes, eRes, aRes, kRes, oRes] = await Promise.allSettled([
+        const [tRes, eRes, aRes, kRes, oRes, lRes] = await Promise.allSettled([
           api.getTasks(),
           api.getEmployees(),
           api.getAttendance(),
           api.getKpis(),
-          api.getOkrs()
+          api.getOkrs(),
+          api.getLeaves()
         ]);
 
         if (tRes.status === 'fulfilled' && tRes.value.tasks?.length > 0) {
@@ -266,6 +267,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
         if (oRes.status === 'fulfilled' && oRes.value.okrs?.length > 0) {
           setOkrs(oRes.value.okrs);
+        }
+        if (lRes.status === 'fulfilled' && lRes.value.leaves?.length > 0) {
+          setLeaves(lRes.value.leaves);
         }
       } catch (err) {
         console.warn('Backend live sync fallback to local cache:', err);
@@ -753,12 +757,22 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setLeaves(prev => [newLeave, ...prev]);
     logAction('Leave Requested', 'Team Management', `${newLeave.employeeName} applied for ${newLeave.type} (${newLeave.startDate} to ${newLeave.endDate})`);
     showToast('Leave Submitted', `Leave request for ${newLeave.employeeName} has been submitted.`, 'success');
+
+    // Async backend sync
+    api.applyLeave(leaveData).catch(err => {
+      console.warn('Backend sync for leave deferred (saved locally):', err);
+    });
   };
 
   const updateLeaveStatus = (id: string, status: 'Approved' | 'Rejected') => {
     setLeaves(prev => prev.map(l => l.id === id ? { ...l, status } : l));
     logAction('Leave Request Processed', 'Team Management', `Leave ID ${id} set to ${status}`);
     showToast('Leave Request', `Leave request has been ${status}.`, 'info');
+
+    // Async backend sync
+    api.updateLeaveStatus(id, status).catch(err => {
+      console.warn('Backend sync for leave status update deferred (saved locally):', err);
+    });
   };
 
   const deleteLeaveRequest = (id: string) => {
@@ -771,6 +785,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const dateStr = now.toISOString().split('T')[0];
+
+    // Async backend sync
+    api.punchAttendance(status).catch(err => {
+      console.warn('Backend punch deferred (saved locally):', err);
+    });
 
     const existingIndex = attendance.findIndex(
       a => a.date === dateStr && (
@@ -806,7 +825,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       status
     };
     setAttendance(prev => [newAtt, ...prev]);
-    showToast('Attendance Checked In', `Marked as ${status} at ${timeStr}.`, 'success');
+    showToast('Attendance Checked In', `Marked as ${status} at ${timeStr} (IP: ${detectedIp}).`, 'success');
   };
 
   const updateAttendanceRecord = (recordId: string, updates: Partial<AttendanceRecord>) => {

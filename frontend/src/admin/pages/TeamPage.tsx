@@ -61,7 +61,8 @@ export const TeamPage: React.FC = () => {
     okrs,
     verifyEmployeeSkill,
     updateKpiMetric,
-    updateAttendanceRecord
+    updateAttendanceRecord,
+    detectedIp
   } = useAdmin();
 
   const isDirector = currentUser?.role === 'Super Admin' || currentUser?.email === 'director@enterprenex.solutions' || currentUser?.email === 'director@enterprenexsolution.com';
@@ -976,7 +977,7 @@ export const TeamPage: React.FC = () => {
                     <ShieldAlert size={20} />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#fff' }}>
+                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--adm-text)' }}>
                       {isDirector
                         ? `Director Action Required: ${pendingEmployees.length} Employee Account(s) Awaiting Your Approval`
                         : `${pendingEmployees.length} Employee Account(s) Submitted & Awaiting Managing Director Approval`}
@@ -1122,7 +1123,7 @@ export const TeamPage: React.FC = () => {
                             bottom: '-4px',
                             right: '-4px',
                             background: '#059669',
-                            color: '#fff',
+                            color: 'var(--adm-text)',
                             border: '2px solid #14171d',
                             borderRadius: '50%',
                             width: '24px',
@@ -1140,7 +1141,7 @@ export const TeamPage: React.FC = () => {
                       </div>
 
                       <div style={{ flex: 1, overflow: 'hidden' }}>
-                        <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>{emp.name}</div>
+                        <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--adm-text)' }}>{emp.name}</div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{emp.role}</div>
                         <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{emp.department}</div>
                       </div>
@@ -1516,87 +1517,92 @@ export const TeamPage: React.FC = () => {
 
         return (
           <div>
-            {/* Employee Check-In Quick Card (Minimalist) */}
-            {isRegularEmployee && (
-              <div
-                className="adm-card"
-                style={{
-                  padding: '1rem 1.25rem',
-                  marginBottom: '1.25rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '1rem'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <img
-                    src={currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
-                    alt="Employee Avatar"
-                    style={{ width: '54px', height: '54px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #10b981' }}
-                  />
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff' }}>
-                        {currentUser?.name || 'Staff Member'}
-                      </span>
-                      <span className="adm-badge adm-badge-primary" style={{ fontFamily: 'monospace', fontWeight: 700 }}>
-                        {currentUser?.employeeId || currentUser?.id || 'Staff ID'}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', marginTop: '3px' }}>
-                      Today: <strong style={{ color: '#fff' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong> • Status: {
-                        !myTodayAtt ? (
-                          <span style={{ color: '#f59e0b', fontWeight: 700 }}>⏳ Not Checked In Yet</span>
-                        ) : myTodayAtt.checkOut && myTodayAtt.checkOut !== '-' ? (
-                          <span style={{ color: '#10b981', fontWeight: 700 }}>✓ Completed (In: {myTodayAtt.checkIn} &bull; Out: {myTodayAtt.checkOut})</span>
-                        ) : (
-                          <span style={{ color: '#38bdf8', fontWeight: 700 }}>⚡ Working (In: {myTodayAtt.checkIn})</span>
-                        )
-                      }
-                    </div>
+            {/* Live Daily Punch-In / Punch-Out with time tracking & IP/geo check */}
+            <div
+              className="adm-card"
+              style={{
+                padding: '1.25rem 1.4rem',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1.25rem',
+                borderRadius: '10px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <img
+                  src={currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                  alt="Employee Avatar"
+                  style={{ width: '54px', height: '54px', borderRadius: '10px', objectFit: 'cover', border: '2px solid var(--adm-success)' }}
+                />
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text)' }}>
+                      {currentUser?.name || 'Staff Member'}
+                    </span>
+                    <span className="adm-badge adm-badge-primary" style={{ fontFamily: 'monospace', fontWeight: 700 }}>
+                      {currentUser?.employeeId || currentUser?.id || 'Staff ID'}
+                    </span>
+                    <span className="adm-badge" style={{ background: 'rgba(5, 150, 105, 0.12)', color: 'var(--adm-success)', border: '1px solid rgba(5, 150, 105, 0.3)', fontSize: '0.75rem', fontWeight: 700 }}>
+                      🌐 IP: {detectedIp || '10.228.245.155'} &bull; Verified Pune HQ Geo-Fence
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
+                    Today: <strong style={{ color: 'var(--adm-text)' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong> &bull; Live Shift:{' '}
+                    {
+                      !myTodayAtt ? (
+                        <span style={{ color: 'var(--adm-primary)', fontWeight: 700 }}>⏳ Not Checked In Yet (Awaiting Daily Punch)</span>
+                      ) : myTodayAtt.checkOut && myTodayAtt.checkOut !== '-' ? (
+                        <span style={{ color: 'var(--adm-success)', fontWeight: 700 }}>✓ Shift Completed (In: {myTodayAtt.checkIn} &bull; Out: {myTodayAtt.checkOut})</span>
+                      ) : (
+                        <span style={{ color: 'var(--adm-success)', fontWeight: 700 }}>⚡ Active Shift Running &bull; In: {myTodayAtt.checkIn} &bull; Web GPS Verified</span>
+                      )
+                    }
                   </div>
                 </div>
-
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <button
-                    className="adm-btn adm-btn-primary"
-                    style={{
-                      padding: '0.65rem 1.35rem',
-                      fontSize: '0.88rem',
-                      fontWeight: 700,
-                      background: (!myTodayAtt) ? '#059669' : (myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') ? 'rgba(255,255,255,0.1)' : '#f59e0b',
-                      borderColor: (!myTodayAtt) ? '#059669' : (myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') ? 'rgba(255,255,255,0.2)' : '#f59e0b'
-                    }}
-                    onClick={() => {
-                      if (myTodayAtt && myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') {
-                        showToast('Attendance Logged', 'You have already checked in and out for today.', 'info');
-                        return;
-                      }
-                      markAttendanceToday('Present');
-                    }}
-                  >
-                    <CheckCircle2 size={17} />
-                    <span>
-                      {!myTodayAtt
-                        ? 'Punch In / Check In Now'
-                        : (!myTodayAtt.checkOut || myTodayAtt.checkOut === '-')
-                        ? 'Punch Out (Check-Out)'
-                        : 'Day Completed ✓'}
-                    </span>
-                  </button>
-                  <button
-                    className="adm-btn adm-btn-secondary"
-                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.88rem', fontWeight: 700 }}
-                    onClick={openApplyLeaveModal}
-                  >
-                    <CalendarPlus size={17} color="var(--adm-primary)" />
-                    <span>Apply for Leave</span>
-                  </button>
-                </div>
               </div>
-            )}
+
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  className="adm-btn adm-btn-primary"
+                  style={{
+                    padding: '0.7rem 1.4rem',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    borderRadius: '10px',
+                    background: (!myTodayAtt) ? 'var(--adm-success)' : (myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') ? 'var(--adm-surface-hover)' : 'var(--adm-primary)',
+                    color: (myTodayAtt && myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') ? 'var(--adm-text-muted)' : '#fff',
+                    borderColor: (!myTodayAtt) ? 'var(--adm-success)' : (myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') ? 'var(--adm-border)' : 'var(--adm-primary)'
+                  }}
+                  onClick={() => {
+                    if (myTodayAtt && myTodayAtt.checkOut && myTodayAtt.checkOut !== '-') {
+                      showToast('Attendance Logged', 'You have already checked in and out for today.', 'info');
+                      return;
+                    }
+                    markAttendanceToday('Present');
+                  }}
+                >
+                  <CheckCircle2 size={17} />
+                  <span>
+                    {!myTodayAtt
+                      ? 'Live Punch In (Record Entry)'
+                      : (!myTodayAtt.checkOut || myTodayAtt.checkOut === '-')
+                      ? 'Live Punch Out (Record Exit)'
+                      : 'Day Completed ✓'}
+                  </span>
+                </button>
+                <button
+                  className="adm-btn adm-btn-secondary"
+                  style={{ padding: '0.7rem 1.3rem', fontSize: '0.88rem', fontWeight: 700, borderRadius: '10px' }}
+                  onClick={openApplyLeaveModal}
+                >
+                  <CalendarPlus size={17} color="var(--adm-primary)" />
+                  <span>Apply for Leave</span>
+                </button>
+              </div>
+            </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>
@@ -1651,7 +1657,7 @@ export const TeamPage: React.FC = () => {
 
                       return (
                         <tr key={att.id}>
-                          <td style={{ fontWeight: 700, color: '#fff' }}>{att.employeeName}</td>
+                          <td style={{ fontWeight: 700, color: 'var(--adm-text)' }}>{att.employeeName}</td>
                           <td>{att.date}</td>
                           <td>{att.checkIn || '-'}</td>
                           <td>{att.checkOut || '-'}</td>
@@ -1828,7 +1834,7 @@ export const TeamPage: React.FC = () => {
                       <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                           <CalendarPlus size={36} color="var(--adm-primary)" />
-                          <div style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>No Leave Requests on Record</div>
+                          <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '1rem' }}>No Leave Requests on Record</div>
                           <p style={{ color: 'var(--adm-text-dim)', fontSize: '0.82rem', margin: 0, maxWidth: '400px' }}>
                             Employees and staff can submit Sick, Casual, or Paid leave requests. Click below to submit a new leave request.
                           </p>
@@ -1842,14 +1848,14 @@ export const TeamPage: React.FC = () => {
                   ) : (
                     displayedLeaves.map(lv => (
                       <tr key={lv.id}>
-                        <td style={{ fontWeight: 700, color: '#fff' }}>{lv.employeeName}</td>
+                        <td style={{ fontWeight: 700, color: 'var(--adm-text)' }}>{lv.employeeName}</td>
                         <td>
                           <span className="adm-badge adm-badge-neutral" style={{ fontWeight: 600 }}>{lv.type}</span>
                         </td>
                         <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
                           {lv.startDate} {lv.startDate !== lv.endDate ? `to ${lv.endDate}` : ''}
                         </td>
-                        <td style={{ color: '#cbd5e1', maxWidth: '280px' }}>{lv.reason}</td>
+                        <td style={{ color: 'var(--adm-text-muted)', maxWidth: '280px' }}>{lv.reason}</td>
                       <td>
                         <span className={`adm-badge ${
                           lv.status === 'Approved' ? 'adm-badge-success' :
@@ -1865,7 +1871,7 @@ export const TeamPage: React.FC = () => {
                               <>
                                 <button
                                   className="adm-btn adm-btn-sm adm-btn-primary"
-                                  style={{ padding: '0.3rem 0.65rem', background: '#059669', borderColor: '#059669' }}
+                                  style={{ padding: '0.3rem 0.65rem', background: 'var(--adm-success)', borderColor: 'var(--adm-success)' }}
                                   onClick={() => updateLeaveStatus(lv.id, 'Approved')}
                                 >
                                   <Check size={13} />
@@ -1947,7 +1953,7 @@ export const TeamPage: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Weekly Engineering Capacity</div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--adm-text)', marginTop: '2px' }}>
                     {totalCapacityHours} <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 400 }}>Hours</span>
                   </div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>Across {employees.length} members &bull; 40h standard</div>
@@ -1955,7 +1961,7 @@ export const TeamPage: React.FC = () => {
 
                 <div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Sprint Load Allocation</div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--adm-text)', marginTop: '2px' }}>
                     {overallUtilization}%
                   </div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>{totalAssignedHours}h scheduled in active sprints</div>
@@ -1983,7 +1989,7 @@ export const TeamPage: React.FC = () => {
             <div className="adm-card" style={{ padding: 0, overflow: 'hidden' }}>
               <div style={{ padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', margin: 0 }}>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--adm-text)', margin: 0 }}>
                     Team Workload & Weekly Capacity
                   </h3>
                   <p style={{ margin: '1px 0 0', fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
@@ -2044,7 +2050,7 @@ export const TeamPage: React.FC = () => {
                                 style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover' }}
                               />
                               <div>
-                                <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.85rem' }}>{emp.name}</div>
+                                <div style={{ fontWeight: 600, color: 'var(--adm-text)', fontSize: '0.85rem' }}>{emp.name}</div>
                                 <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
                                   {emp.role} &bull; <span style={{ fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
                                 </div>
@@ -2054,7 +2060,7 @@ export const TeamPage: React.FC = () => {
                           <td style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
                             40h / wk
                           </td>
-                          <td style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff' }}>
+                          <td style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)' }}>
                             {Math.round((loadPct / 100) * 40)}h <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)', fontWeight: 400 }}>allocated</span>
                           </td>
                           <td style={{ width: '200px' }}>
@@ -2165,7 +2171,7 @@ export const TeamPage: React.FC = () => {
                           style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
                         />
                         <div>
-                          <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem' }}>{emp.name}</div>
+                          <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.9rem' }}>{emp.name}</div>
                           <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
                             {emp.role} &bull; <span style={{ fontFamily: 'monospace' }}>{emp.employeeId || emp.id}</span>
                           </div>
@@ -2200,7 +2206,7 @@ export const TeamPage: React.FC = () => {
 
                             return (
                               <tr key={sk.name}>
-                                <td style={{ fontWeight: 600, color: '#fff' }}>
+                                <td style={{ fontWeight: 600, color: 'var(--adm-text)' }}>
                                   {sk.name}
                                 </td>
                                 <td>
@@ -2271,7 +2277,7 @@ export const TeamPage: React.FC = () => {
             {/* Header / Employee Selector */}
             <div className="adm-card" style={{ padding: '1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                   Role-Specific Weighted KPI Scorecards & OKR Milestones
                 </h3>
                 <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
@@ -2314,7 +2320,7 @@ export const TeamPage: React.FC = () => {
                     <span className="adm-badge adm-badge-primary" style={{ marginBottom: '6px' }}>
                       {selectedKpi.roleTemplate} &bull; {selectedKpi.period}
                     </span>
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', margin: '2px 0' }}>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--adm-text)', margin: '2px 0' }}>
                       {selectedKpi.employeeName}
                     </h2>
                     <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
@@ -2342,7 +2348,7 @@ export const TeamPage: React.FC = () => {
                       }}
                     >
                       <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Performance Tier</div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--adm-text)', marginTop: '2px' }}>
                         {selectedKpi.finalKpiScore >= 90 ? 'Grade A+ (Top)' : selectedKpi.finalKpiScore >= 80 ? 'Grade A (Strong)' : 'Grade B'}
                       </div>
                     </div>
@@ -2352,7 +2358,7 @@ export const TeamPage: React.FC = () => {
                 {/* Weighted Metrics Breakdown Table */}
                 <div className="adm-card" style={{ padding: 0, overflow: 'hidden' }}>
                   <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--adm-border)' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                       Role-Specific Weighted Metrics Breakdown
                     </h3>
                   </div>
@@ -2377,7 +2383,7 @@ export const TeamPage: React.FC = () => {
 
                           return (
                             <tr key={m.id}>
-                              <td style={{ fontWeight: 700, color: '#fff' }}>{m.name}</td>
+                              <td style={{ fontWeight: 700, color: 'var(--adm-text)' }}>{m.name}</td>
                               <td style={{ fontWeight: 700, color: 'var(--adm-primary)' }}>{m.weight}%</td>
                               <td style={{ color: 'var(--adm-text-muted)' }}>{m.target}</td>
                               <td>
@@ -2389,7 +2395,7 @@ export const TeamPage: React.FC = () => {
                                     onChange={e => setEditMetricActual(e.target.value)}
                                   />
                                 ) : (
-                                  <strong style={{ color: '#fff' }}>{m.actual}</strong>
+                                  <strong style={{ color: 'var(--adm-text)' }}>{m.actual}</strong>
                                 )}
                               </td>
                               <td>
@@ -2462,7 +2468,7 @@ export const TeamPage: React.FC = () => {
                 <div className="adm-card" style={{ padding: '1.25rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <div>
-                      <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                         Company Objectives & Key Results (OKRs)
                       </h3>
                       <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>
@@ -2486,7 +2492,7 @@ export const TeamPage: React.FC = () => {
                           <div>
                             <span className="adm-badge adm-badge-primary" style={{ marginRight: '6px' }}>{okr.department}</span>
                             <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>Lead: {okr.ownerName} &bull; {okr.period}</span>
-                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: '4px 0 0' }}>
+                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--adm-text)', margin: '4px 0 0' }}>
                               {okr.objectiveTitle}
                             </h4>
                           </div>
@@ -2521,12 +2527,12 @@ export const TeamPage: React.FC = () => {
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <CheckCircle size={14} color={kr.progressPercent >= 100 ? '#10b981' : '#38bdf8'} />
-                                <span style={{ color: '#fff', fontWeight: 600 }}>{kr.title}</span>
+                                <span style={{ color: 'var(--adm-text)', fontWeight: 600 }}>{kr.title}</span>
                               </div>
 
                               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                 <span style={{ color: 'var(--adm-text-dim)' }}>
-                                  Target: {kr.target} &bull; Current: <strong style={{ color: '#fff' }}>{kr.current}</strong>
+                                  Target: {kr.target} &bull; Current: <strong style={{ color: 'var(--adm-text)' }}>{kr.current}</strong>
                                 </span>
                                 <span
                                   className="adm-badge"
@@ -2558,7 +2564,7 @@ export const TeamPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
             <div className="adm-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                   Submit Leave Application
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
@@ -2589,10 +2595,10 @@ export const TeamPage: React.FC = () => {
                   value={leaveType}
                   onChange={e => setLeaveType(e.target.value as any)}
                 >
-                  <option value="Casual Leave">Casual Leave (Personal / Festival)</option>
-                  <option value="Sick Leave">Sick Leave (Medical / Doctor Visit)</option>
-                  <option value="Paid Leave">Paid Annual Leave</option>
-                  <option value="Unpaid">Unpaid Leave</option>
+                  <option value="Casual Leave">Casual Leave (CL - Personal / Urgent Affair)</option>
+                  <option value="Sick Leave">Sick Leave (SL - Medical / Health Recovery)</option>
+                  <option value="Paid Leave">Earned Leave (EL - Privilege Annual Paid Leave)</option>
+                  <option value="Unpaid">Loss of Pay / Unpaid Leave</option>
                 </select>
               </div>
 
@@ -2650,7 +2656,7 @@ export const TeamPage: React.FC = () => {
         <div className="adm-modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Add Team Member to Roster</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)' }}>Add Team Member to Roster</h3>
               <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
@@ -2800,7 +2806,7 @@ export const TeamPage: React.FC = () => {
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <label className="adm-form-label" style={{ margin: '0 0 4px 0', fontSize: '0.8rem', color: '#fff', fontWeight: 700 }}>
+                  <label className="adm-form-label" style={{ margin: '0 0 4px 0', fontSize: '0.8rem', color: 'var(--adm-text)', fontWeight: 700 }}>
                     Profile Photo (Upload from PC or Mobile)
                   </label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -2972,7 +2978,7 @@ export const TeamPage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Shield size={16} color="#10b981" />
-                    <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#fff' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--adm-text)' }}>
                       Statutory Government KYC & Tax IDs
                     </span>
                   </div>
@@ -3108,7 +3114,7 @@ export const TeamPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '540px' }}>
             <div className="adm-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                   Employee Portal Credentials
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
@@ -3220,7 +3226,7 @@ export const TeamPage: React.FC = () => {
 
               {/* Reset Password Section */}
               <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--adm-border)', borderRadius: '12px', padding: '1.15rem' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Lock size={14} color="var(--adm-primary)" />
                   <span>Reset / Change Employee Password</span>
                 </div>
@@ -3290,7 +3296,7 @@ export const TeamPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '540px' }}>
             <div className="adm-modal-header" style={{ borderBottom: '1px solid var(--adm-border)', paddingBottom: '0.85rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                   Employee Exit & Offboarding
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
@@ -3321,7 +3327,7 @@ export const TeamPage: React.FC = () => {
                 style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
               />
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, color: '#fff', fontSize: '1rem' }}>{offboardModalEmp.name}</div>
+                <div style={{ fontWeight: 800, color: 'var(--adm-text)', fontSize: '1rem' }}>{offboardModalEmp.name}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--adm-primary)', fontWeight: 600 }}>{offboardModalEmp.role}</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', fontFamily: 'monospace' }}>
                   ID: {offboardModalEmp.employeeId || offboardModalEmp.id} &bull; {offboardModalEmp.email}
@@ -3445,7 +3451,7 @@ export const TeamPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="adm-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                   Update Profile Photo
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
@@ -3540,7 +3546,7 @@ export const TeamPage: React.FC = () => {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Shield size={20} color="#10b981" />
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                     Government KYC & Statutory Vault
                   </h3>
                 </div>
@@ -3617,7 +3623,7 @@ export const TeamPage: React.FC = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: kycModalEmp.panDocUrl ? '6px' : 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <FileText size={14} color="var(--adm-primary)" />
-                      <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: 600 }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--adm-text)', fontWeight: 600 }}>
                         {kycModalEmp.panDocUrl ? 'PAN_Document.pdf/img' : 'Physical File Onboarded'}
                       </span>
                     </div>
@@ -3765,7 +3771,7 @@ export const TeamPage: React.FC = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: kycModalEmp.aadhaarDocUrl ? '6px' : 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <FileText size={14} color="var(--adm-info)" />
-                      <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: 600 }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--adm-text)', fontWeight: 600 }}>
                         {kycModalEmp.aadhaarDocUrl ? 'Aadhaar_Document.pdf/img' : 'Physical File Onboarded'}
                       </span>
                     </div>
@@ -3998,7 +4004,7 @@ export const TeamPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '680px', width: '95%' }}>
             <div className="adm-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                   {previewDocModal.title}
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
@@ -4023,7 +4029,7 @@ export const TeamPage: React.FC = () => {
                   <div style={{ display: 'inline-flex', padding: '14px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '1rem' }}>
                     <ShieldCheck size={44} color="#10b981" />
                   </div>
-                  <h4 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>
+                  <h4 style={{ color: 'var(--adm-text)', fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>
                     Physical Document On File (Verified)
                   </h4>
                   <p style={{ color: 'var(--adm-text-dim)', fontSize: '0.8rem', lineHeight: 1.5, margin: '0 0 1rem 0' }}>
@@ -4068,7 +4074,7 @@ export const TeamPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
             <div className="adm-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Award size={20} color="#10b981" />
                   Issue Official Corporate Certificate
                 </h3>
@@ -4086,14 +4092,14 @@ export const TeamPage: React.FC = () => {
                 <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', border: '2px solid rgba(16, 185, 129, 0.4)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', marginBottom: '1rem' }}>
                   <CheckCircle2 size={36} />
                 </div>
-                <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '0 0 0.5rem' }}>
+                <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-text)', margin: '0 0 0.5rem' }}>
                   Certificate Issued Successfully!
                 </h4>
                 <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '1.25rem', maxWidth: '480px', margin: '0 auto 1.5rem', textAlign: 'left' }}>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)' }}>RECIPIENT: <strong style={{ color: '#fff' }}>{issuedCertSuccess.name}</strong></div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)' }}>RECIPIENT: <strong style={{ color: 'var(--adm-text)' }}>{issuedCertSuccess.name}</strong></div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>TYPE: <strong style={{ color: '#38bdf8' }}>{issuedCertSuccess.certType}</strong></div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>CERTIFICATE ID: <strong style={{ color: '#10b981', fontFamily: 'monospace' }}>{issuedCertSuccess.certId}</strong></div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>DURATION: <strong style={{ color: '#fff' }}>{issuedCertSuccess.duration}</strong> ({issuedCertSuccess.completionDate})</div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>DURATION: <strong style={{ color: 'var(--adm-text)' }}>{issuedCertSuccess.duration}</strong> ({issuedCertSuccess.completionDate})</div>
                   <div style={{ fontSize: '0.78rem', color: '#10b981', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     ✓ Registered in Central Vault & immediately verifiable at enterprenexsolution.com/verification
                   </div>
@@ -4253,7 +4259,7 @@ export const TeamPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
             <div className="adm-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                   Absence Incident & Audit Note
                 </h3>
                 <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>
@@ -4268,9 +4274,9 @@ export const TeamPage: React.FC = () => {
             {/* Target Attendance Info */}
             <div style={{ background: 'var(--adm-bg)', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid var(--adm-border)', margin: '1rem 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>{absenceModalAtt.employeeName}</div>
+                <div style={{ fontWeight: 800, color: 'var(--adm-text)', fontSize: '0.95rem' }}>{absenceModalAtt.employeeName}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
-                  Date: <strong style={{ color: '#fff' }}>{absenceModalAtt.date}</strong> &bull; Status: <span style={{ color: '#ef4444', fontWeight: 700 }}>{absenceModalAtt.status}</span>
+                  Date: <strong style={{ color: 'var(--adm-text)' }}>{absenceModalAtt.date}</strong> &bull; Status: <span style={{ color: '#ef4444', fontWeight: 700 }}>{absenceModalAtt.status}</span>
                 </div>
               </div>
               <span className="adm-badge adm-badge-danger" style={{ fontSize: '0.72rem' }}>

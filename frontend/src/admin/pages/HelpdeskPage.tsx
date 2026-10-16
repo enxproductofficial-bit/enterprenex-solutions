@@ -293,7 +293,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
             <LifeBuoy size={24} />
           </div>
           <div>
-            <div style={{ fontWeight: 800, color: '#fff', fontSize: '1rem' }}>
+            <div style={{ fontWeight: 800, color: 'var(--adm-text)', fontSize: '1rem' }}>
               Official Enterprise Support Channels
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
@@ -311,7 +311,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
             className="adm-btn"
             style={{
               background: '#25D366',
-              color: '#fff',
+              color: 'var(--adm-text)',
               border: 'none',
               fontWeight: 700,
               fontSize: '0.82rem',
@@ -424,7 +424,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                 <td colSpan={8} style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--adm-text-muted)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                     <FileQuestion size={36} color="var(--adm-primary)" />
-                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '1rem' }}>
                       {isEmployee ? 'No tickets raised yet' : 'No matching tickets found'}
                     </div>
                     <p style={{ margin: 0, fontSize: '0.85rem', maxWidth: '400px', color: 'var(--adm-text-dim)' }}>
@@ -590,7 +590,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
           <div className="adm-modal-content adm-modal-md" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                   {isEmployee ? 'Raise an Employee Support Ticket' : 'Open Support & Helpdesk Ticket'}
                 </h3>
                 <p style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', margin: '3px 0 0 0' }}>
@@ -623,7 +623,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <User size={16} color="var(--adm-primary)" />
                       <div>
-                        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff' }}>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)' }}>
                           {currentUser?.name || 'Staff Member'}
                         </div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
@@ -825,7 +825,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                 Ticket #{createdTicketInfo.ticketNumber} Raised Successfully
               </span>
 
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginTop: '0.75rem', marginBottom: '0.5rem' }}>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--adm-text)', marginTop: '0.75rem', marginBottom: '0.5rem' }}>
                 {createdTicketInfo.subject}
               </h2>
               <p style={{ color: 'var(--adm-text-muted)', fontSize: '0.85rem', maxWidth: '420px', margin: '0 auto 1.5rem' }}>
@@ -841,7 +841,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                   className="adm-btn"
                   style={{
                     background: '#25D366',
-                    color: '#fff',
+                    color: 'var(--adm-text)',
                     border: 'none',
                     fontWeight: 700,
                     padding: '0.75rem 1.25rem',
@@ -863,7 +863,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                   className="adm-btn"
                   style={{
                     background: 'var(--adm-primary)',
-                    color: '#fff',
+                    color: 'var(--adm-text)',
                     border: 'none',
                     fontWeight: 700,
                     padding: '0.75rem 1.25rem',

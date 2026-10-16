@@ -87,6 +87,15 @@ export const DocumentsPage: React.FC = () => {
   const [fVerificationStatus, setFVerificationStatus] = useState<'Verified' | 'Pending Verification' | 'Rejected'>('Pending Verification');
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
 
+  // HR Document Generator Modal State
+  const [showHrDocModal, setShowHrDocModal] = useState(false);
+  const [hrDocType, setHrDocType] = useState<'Offer Letter' | 'NDA' | 'Relieving & Experience'>('Offer Letter');
+  const [hrEmpId, setHrEmpId] = useState(employees[0]?.id || '');
+  const [hrCandidateName, setHrCandidateName] = useState('');
+  const [hrRole, setHrRole] = useState('Senior Software Engineer');
+  const [hrCtc, setHrCtc] = useState(1200000);
+  const [hrJoiningDate, setHrJoiningDate] = useState(new Date().toISOString().split('T')[0]);
+
   // Helper to extract or resolve Employee ID and Verification Status for any document
   const getDocEmployeeInfo = (doc: VaultDocument): {
     empId: string | undefined;
@@ -353,16 +362,184 @@ export const DocumentsPage: React.FC = () => {
     }
   };
 
+  // 1-Click Generation of Official Offer Letters, NDAs, and Experience Certificates
+  const handleGenerateHrDoc = (e: React.FormEvent) => {
+    e.preventDefault();
+    const selEmp = employees.find(emp => emp.id === hrEmpId || emp.employeeId === hrEmpId);
+    const targetName = selEmp ? selEmp.name : (hrCandidateName.trim() || 'Candidate');
+    const targetEmpId = selEmp?.employeeId || selEmp?.id || `2026${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const certUniqueId = `EPX-${hrDocType === 'Offer Letter' ? 'OFF' : hrDocType === 'NDA' ? 'NDA' : 'EXP'}-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newDocTitle =
+      hrDocType === 'Offer Letter'
+        ? `Official Offer Letter - ${targetName}`
+        : hrDocType === 'NDA'
+        ? `Employee Non-Disclosure Agreement - ${targetName}`
+        : `Experience & Relieving Certificate - ${targetName}`;
+
+    const newDocCategory: VaultDocument['category'] =
+      hrDocType === 'Offer Letter' ? 'Contracts' : hrDocType === 'NDA' ? 'NDA' : 'Employee Docs';
+
+    const newDocData: Omit<VaultDocument, 'id' | 'uploadDate' | 'uploadedBy'> = {
+      title: newDocTitle,
+      category: newDocCategory,
+      version: 'v1.0',
+      fileFormat: 'PDF',
+      fileSize: '240 KB',
+      accessPermission: 'Internal',
+      tags: [certUniqueId, 'HR Document', hrDocType, targetEmpId],
+      url: '#',
+      employeeId: targetEmpId,
+      verificationStatus: 'Verified',
+      verifiedBy: currentUser?.name || 'Rohit P. (Managing Director)',
+      verifiedAt: new Date().toISOString()
+    };
+
+    uploadDocument(newDocData);
+
+    const generatedDoc: VaultDocument = {
+      ...newDocData,
+      id: 'doc-' + Date.now(),
+      uploadDate: new Date().toISOString().split('T')[0],
+      uploadedBy: currentUser?.name || 'Managing Director'
+    };
+
+    setShowHrDocModal(false);
+    showToast(
+      'Document Generated & Registered',
+      `${newDocTitle} is now generated, recorded in Central Vault, and linked to /verification with ID ${certUniqueId}.`,
+      'success'
+    );
+
+    handlePrintPdf(generatedDoc);
+  };
+
   // Generate official HTML for document preview / PDF export
   const generateDocumentHtml = (doc: VaultDocument, emp?: Employee): string => {
-    const isMsa = doc.title.toLowerCase().includes('msa') || doc.category === 'Contracts';
+    const isMsa = doc.title.toLowerCase().includes('msa') || (doc.category === 'Contracts' && !doc.title.toLowerCase().includes('offer'));
     const isNda = doc.title.toLowerCase().includes('nda') || doc.category === 'NDA';
-    const isKyc = doc.category === 'Employee Docs' || doc.tags.includes('KYC');
+    const isOffer = doc.title.toLowerCase().includes('offer') || doc.tags.includes('Offer Letter');
+    const isExperienceOrRelieving = doc.title.toLowerCase().includes('experience') || doc.title.toLowerCase().includes('relieving') || doc.tags.includes('Relieving & Experience');
+    const isKyc = (doc.category === 'Employee Docs' && !isExperienceOrRelieving) || doc.tags.includes('KYC');
     const { empId, verificationStatus } = getDocEmployeeInfo(doc);
 
     let bodyContent = '';
 
-    if (isMsa) {
+    if (isOffer) {
+      const empName = emp?.name || doc.uploadedBy || 'Candidate';
+      const role = emp?.role || hrRole || 'Senior Software Engineer';
+      const grossMonthly = emp?.salaryMonthly || Math.round(hrCtc / 12) || 100000;
+      const ctcAnnual = grossMonthly * 12;
+      const basic = Math.round(grossMonthly * 0.5);
+      const hra = Math.round(grossMonthly * 0.3);
+      const special = grossMonthly - basic - hra;
+      const pf = Math.round(basic * 0.12);
+
+      bodyContent = `
+        <div class="legal-section">
+          <div style="font-size: 13px; font-weight: 700; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+            STRICTLY PRIVATE & CONFIDENTIAL &bull; LETTER OF APPOINTMENT
+          </div>
+          <p>Dear <strong>${empName}</strong>,</p>
+          <p>Following our comprehensive technical evaluation, <strong>ENTERPRENEX SOLUTIONS PRIVATE LIMITED</strong> is pleased to extend an offer of employment for the position of <strong>${role}</strong> within our Engineering & Technology Operations division.</p>
+        </div>
+
+        <div class="legal-section">
+          <h3>1. ROLE & COMMENCEMENT</h3>
+          <p>You shall assume active duties on or before your designated commencement date. You will report directly to the Engineering Leadership & Managing Director at our Pune Headquarters / Hybrid Delivery Centers.</p>
+        </div>
+
+        <div class="legal-section">
+          <h3>2. COMPENSATION & ANNUAL CTC BREAKDOWN</h3>
+          <p>Your Total Annual Cost-to-Company (CTC) is agreed at <strong>₹${ctcAnnual.toLocaleString('en-IN')} per annum</strong>, structured across statutory Indian payroll guidelines:</p>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11.5px;">
+            <thead>
+              <tr style="background: #0f172a; color: #ffffff;">
+                <th style="padding: 6px 10px; text-align: left;">Salary Component</th>
+                <th style="padding: 6px 10px; text-align: right;">Monthly (₹)</th>
+                <th style="padding: 6px 10px; text-align: right;">Annualized (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 6px 10px;">Basic Pay (50%)</td>
+                <td style="padding: 6px 10px; text-align: right;">₹${basic.toLocaleString('en-IN')}</td>
+                <td style="padding: 6px 10px; text-align: right;">₹${(basic * 12).toLocaleString('en-IN')}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 6px 10px;">House Rent Allowance (HRA 30%)</td>
+                <td style="padding: 6px 10px; text-align: right;">₹${hra.toLocaleString('en-IN')}</td>
+                <td style="padding: 6px 10px; text-align: right;">₹${(hra * 12).toLocaleString('en-IN')}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 6px 10px;">Special Statutory Allowance (20%)</td>
+                <td style="padding: 6px 10px; text-align: right;">₹${special.toLocaleString('en-IN')}</td>
+                <td style="padding: 6px 10px; text-align: right;">₹${(special * 12).toLocaleString('en-IN')}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 6px 10px;">Employer PF Contribution (12%)</td>
+                <td style="padding: 6px 10px; text-align: right;">₹${pf.toLocaleString('en-IN')}</td>
+                <td style="padding: 6px 10px; text-align: right;">₹${(pf * 12).toLocaleString('en-IN')}</td>
+              </tr>
+              <tr style="background: #f1f5f9; font-weight: 800; border-top: 2px solid #cbd5e1;">
+                <td style="padding: 8px 10px;">Total Cost to Company (CTC)</td>
+                <td style="padding: 8px 10px; text-align: right;">₹${grossMonthly.toLocaleString('en-IN')}</td>
+                <td style="padding: 8px 10px; text-align: right;">₹${ctcAnnual.toLocaleString('en-IN')}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="legal-section">
+          <h3>3. PROBATION & NOTICE COVENANTS</h3>
+          <p>Your employment will be subject to an initial probationary tenure of three (3) months. Following confirmation, either party may terminate the engagement by providing thirty (30) days written notice or compensation in lieu thereof.</p>
+        </div>
+
+        <div class="legal-section">
+          <h3>4. INTELLECTUAL PROPERTY & CODE OF CONDUCT</h3>
+          <p>All software architectures, code repositories, algorithmic designs, and client deliverables created during your tenure remain the exclusive intellectual property of Enterprenex Solutions Pvt Ltd. You agree to execute standard NDA and DPDP Act compliance covenants.</p>
+        </div>
+      `;
+    } else if (isExperienceOrRelieving) {
+      const empName = emp?.name || doc.uploadedBy || 'Team Member';
+      const effectiveEmpId = doc.employeeId || emp?.employeeId || 'EPX-EMP-001';
+      const certId = doc.tags.find(t => t.startsWith('EPX-') || t.startsWith('CERT-')) || `EPX-EXP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      bodyContent = `
+        <div class="kyc-badge-header">
+          <div class="kyc-tag">OFFICIAL CORPORATE SERVICE CREDENTIAL</div>
+          <div class="status-verified" style="color: #059669; font-weight: 800;">
+            &check; DIGITALLY VERIFIED AT /VERIFICATION
+          </div>
+        </div>
+
+        <div class="legal-section" style="margin-top: 14px;">
+          <h2 style="font-size: 16px; font-weight: 800; color: #0f172a; text-align: center; letter-spacing: 1px; margin-bottom: 16px; text-transform: uppercase;">
+            EXPERIENCE & RELIEVING CERTIFICATE
+          </h2>
+          <p style="font-size: 13px; line-height: 1.7; color: #334155;">
+            This is to certify that <strong>${empName}</strong> (Employee Registration ID: <code>${effectiveEmpId}</code>) was gainfully engaged with <strong>ENTERPRENEX SOLUTIONS PRIVATE LIMITED</strong> as <strong>${emp?.role || 'Software Engineer'}</strong> within the Engineering & Technology Division from <strong>${emp?.joinDate || '01 January 2025'}</strong> to <strong>${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>.
+          </p>
+          <p style="font-size: 13px; line-height: 1.7; color: #334155;">
+            During their tenure with Enterprenex Solutions, they demonstrated high engineering acumen, disciplined delivery, adherence to enterprise code quality, and exceptional teamwork. All company property, code repositories, and operational clearances have been duly transferred without encumbrance.
+          </p>
+          <p style="font-size: 13px; line-height: 1.7; color: #334155;">
+            We relieve them of their duties effective close of business today, with an exemplary character rating. We wish them continued excellence and success in their future professional endeavors.
+          </p>
+        </div>
+
+        <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">ONLINE VERIFICATION PORTAL KEY</div>
+            <div style="font-family: monospace; font-size: 14px; font-weight: 800; color: #ea580c; margin-top: 2px;">${certId}</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">Verify instantly at: https://www.enterprenexsolution.com/verification?id=${certId}</div>
+          </div>
+          <div style="text-align: right;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&margin=0&data=${encodeURIComponent(`https://www.enterprenexsolution.com/verification?id=${certId}`)}" alt="Verify QR" style="width: 60px; height: 60px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px; background: #ffffff;" />
+          </div>
+        </div>
+      `;
+    } else if (isMsa) {
       bodyContent = `
         <div class="legal-section">
           <h3>1. PURPOSE & SCOPE OF SERVICES</h3>
@@ -672,7 +849,17 @@ export const DocumentsPage: React.FC = () => {
               : 'Your verified internship and experience certificates, official credentials, and KYC verification records'}
           </p>
         </div>
-        <div className="adm-page-actions">
+        <div className="adm-page-actions" style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+          {canManageVerification && (
+            <button
+              className="adm-btn adm-btn-secondary"
+              onClick={() => setShowHrDocModal(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <FileCheck size={16} color="var(--adm-primary)" />
+              <span>Generate HR Document</span>
+            </button>
+          )}
           <button className="adm-btn adm-btn-primary" onClick={() => setShowUploadModal(true)}>
             <UploadCloud size={16} />
             <span>{canManageVerification ? 'Upload Document' : 'Upload My KYC / File'}</span>
@@ -702,7 +889,7 @@ export const DocumentsPage: React.FC = () => {
               height: '34px',
               borderRadius: '8px',
               background: 'var(--adm-primary)',
-              color: '#fff',
+              color: 'var(--adm-text)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -711,7 +898,7 @@ export const DocumentsPage: React.FC = () => {
             <Shield size={18} />
           </div>
           <div>
-            <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.88rem' }}>
+            <div style={{ fontWeight: 800, color: 'var(--adm-text)', fontSize: '0.88rem' }}>
               {canManageVerification
                 ? `Vault Clearance & KYC Management: Active for ${currentUser?.name} \u2022 ${currentUser?.role}`
                 : `Verified Document Vault: ${currentUser?.name} \u2022 ${currentUser?.employeeId || 'Staff ID'}`}
@@ -1106,7 +1293,7 @@ export const DocumentsPage: React.FC = () => {
           >
             <UploadCloud size={30} />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '0 0 0.5rem 0' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-text)', margin: '0 0 0.5rem 0' }}>
             No Documents Found Matching Filter
           </h3>
           <p style={{ color: 'var(--adm-text-muted)', fontSize: '0.85rem', maxWidth: '420px', margin: '0 auto 1.5rem auto' }}>
@@ -1172,7 +1359,7 @@ export const DocumentsPage: React.FC = () => {
             <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
               <div className="adm-modal-header">
                 <div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Share Document via Email</h3>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)' }}>Share Document via Email</h3>
                   <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
                     Dispatch official document access packet directly to Director, HR, Manager or Staff
                   </p>
@@ -1183,7 +1370,7 @@ export const DocumentsPage: React.FC = () => {
               </div>
 
               <div style={{ padding: '0.85rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)', marginBottom: '1.25rem' }}>
-                <div style={{ fontWeight: 800, color: '#fff' }}>{emailModalDoc.title}</div>
+                <div style={{ fontWeight: 800, color: 'var(--adm-text)' }}>{emailModalDoc.title}</div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--adm-primary)', marginTop: '3px' }}>
                   {emailModalDoc.category} &bull; Employee ID: {empId || 'N/A'} &bull; Status: {verificationStatus}
                 </div>
@@ -1201,7 +1388,7 @@ export const DocumentsPage: React.FC = () => {
                 >
                   <Building size={16} color="var(--adm-primary)" />
                   <div style={{ textAlign: 'left', marginLeft: '6px' }}>
-                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Managing Director</div>
+                    <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.82rem' }}>Managing Director</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>director@enterprenex.solutions</div>
                   </div>
                 </button>
@@ -1213,7 +1400,7 @@ export const DocumentsPage: React.FC = () => {
                 >
                   <UserCheck size={16} color="var(--adm-info)" />
                   <div style={{ textAlign: 'left', marginLeft: '6px' }}>
-                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>HR Operations & Compliance</div>
+                    <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.82rem' }}>HR Operations & Compliance</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>hr@enterprenex.solutions</div>
                   </div>
                 </button>
@@ -1225,7 +1412,7 @@ export const DocumentsPage: React.FC = () => {
                 >
                   <Shield size={16} color="var(--adm-warning)" />
                   <div style={{ textAlign: 'left', marginLeft: '6px' }}>
-                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Project & Operations Manager</div>
+                    <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.82rem' }}>Project & Operations Manager</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>manager@enterprenex.solutions</div>
                   </div>
                 </button>
@@ -1238,7 +1425,7 @@ export const DocumentsPage: React.FC = () => {
                   >
                     <Mail size={16} color="var(--adm-success)" />
                     <div style={{ textAlign: 'left', marginLeft: '6px' }}>
-                      <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.82rem' }}>Send to Myself ({currentUser.name})</div>
+                      <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.82rem' }}>Send to Myself ({currentUser.name})</div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>{currentUser.email}</div>
                     </div>
                   </button>
@@ -1282,7 +1469,7 @@ export const DocumentsPage: React.FC = () => {
           <div className="adm-modal-content adm-modal-lg" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Upload Document to Vault</h3>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)' }}>Upload Document to Vault</h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
                   Securely store records with Employee ID linkage and Verification Status tracking
                 </p>
@@ -1325,7 +1512,7 @@ export const DocumentsPage: React.FC = () => {
                       <FileCheck size={36} color="var(--adm-success)" />
                     )}
                     <div>
-                      <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.95rem' }}>{selectedFile.name}</div>
+                      <div style={{ fontWeight: 800, color: 'var(--adm-text)', fontSize: '0.95rem' }}>{selectedFile.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
                         {fSize} &bull; {fFormat} Record &bull; <span style={{ color: '#10b981', fontWeight: 700 }}>✓ Verified for Upload</span>
                       </div>
@@ -1337,7 +1524,7 @@ export const DocumentsPage: React.FC = () => {
                 ) : (
                   <div>
                     <UploadCloud size={36} color="var(--adm-primary)" style={{ margin: '0 auto 8px auto' }} />
-                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.95rem' }}>
                       Click to Browse or Drag & Drop File Here
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
@@ -1458,6 +1645,165 @@ export const DocumentsPage: React.FC = () => {
                 <button type="submit" className="adm-btn adm-btn-primary">
                   <UploadCloud size={16} />
                   <span>Upload & Save Status</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── 1-CLICK HR DOCUMENT & CERTIFICATE GENERATION MODAL ── */}
+      {showHrDocModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowHrDocModal(false)}>
+          <div className="adm-modal-content" style={{ maxWidth: '640px' }} onClick={e => e.stopPropagation()}>
+            <div className="adm-modal-header">
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
+                  Generate Official HR Document & Certificate
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-dim)', margin: '4px 0 0 0' }}>
+                  One-click executive generation on Enterprenex letterhead &bull; Verifiable credentials linked to /verification
+                </p>
+              </div>
+              <button className="adm-modal-close" onClick={() => setShowHrDocModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleGenerateHrDoc}>
+              <div className="adm-form-group">
+                <label className="adm-form-label">Select Document Template *</label>
+                <select
+                  className="adm-select"
+                  value={hrDocType}
+                  onChange={e => setHrDocType(e.target.value as any)}
+                >
+                  <option value="Offer Letter">Official Offer Letter (Full Appointment Terms & CTC)</option>
+                  <option value="NDA">Employee Non-Disclosure Agreement (NDA & IP Assignment)</option>
+                  <option value="Relieving & Experience">Relieving & Experience Certificate (Verifiable ID)</option>
+                </select>
+              </div>
+
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Select Existing Employee</label>
+                  <select
+                    className="adm-select"
+                    value={hrEmpId}
+                    onChange={e => {
+                      setHrEmpId(e.target.value);
+                      const emp = employees.find(em => em.id === e.target.value || em.employeeId === e.target.value);
+                      if (emp) {
+                        setHrCandidateName(emp.name);
+                        setHrRole(emp.role);
+                        if (emp.salaryMonthly) setHrCtc(emp.salaryMonthly * 12);
+                      }
+                    }}
+                  >
+                    <option value="">-- New Candidate / Write-In --</option>
+                    {employees.map(emp => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.name} ({emp.employeeId || emp.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Candidate / Recipient Full Name *</label>
+                  <input
+                    className="adm-input"
+                    required
+                    value={hrCandidateName}
+                    onChange={e => setHrCandidateName(e.target.value)}
+                    placeholder="e.g. Rahul Sharma"
+                  />
+                </div>
+              </div>
+
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Designation / Role Title *</label>
+                  <input
+                    className="adm-input"
+                    required
+                    value={hrRole}
+                    onChange={e => setHrRole(e.target.value)}
+                    placeholder="e.g. Senior Fullstack Developer"
+                  />
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">
+                    {hrDocType === 'Offer Letter' ? 'Annual CTC (₹ / Year) *' : 'Effective / Relieving Date *'}
+                  </label>
+                  {hrDocType === 'Offer Letter' ? (
+                    <input
+                      className="adm-input"
+                      type="number"
+                      required
+                      value={hrCtc}
+                      onChange={e => setHrCtc(Number(e.target.value))}
+                    />
+                  ) : (
+                    <input
+                      className="adm-input"
+                      type="date"
+                      required
+                      value={hrJoiningDate}
+                      onChange={e => setHrJoiningDate(e.target.value)}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {hrDocType === 'Offer Letter' && (
+                <div
+                  style={{
+                    background: 'rgba(234, 88, 12, 0.08)',
+                    border: '1px solid rgba(234, 88, 12, 0.25)',
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    marginBottom: '1rem',
+                    fontSize: '0.8rem',
+                    color: 'var(--adm-text)'
+                  }}
+                >
+                  <div style={{ fontWeight: 700, color: 'var(--adm-primary)' }}>Statutory CTC Breakdown Preview:</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                    <span>Monthly Gross: <strong>₹{Math.round(hrCtc / 12).toLocaleString('en-IN')}</strong></span>
+                    <span>Basic (50%): <strong>₹{Math.round((hrCtc / 12) * 0.5).toLocaleString('en-IN')}</strong></span>
+                    <span>HRA (30%): <strong>₹{Math.round((hrCtc / 12) * 0.3).toLocaleString('en-IN')}</strong></span>
+                  </div>
+                </div>
+              )}
+
+              {hrDocType === 'Relieving & Experience' && (
+                <div
+                  style={{
+                    background: 'rgba(5, 150, 105, 0.08)',
+                    border: '1px solid rgba(5, 150, 105, 0.25)',
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    marginBottom: '1rem',
+                    fontSize: '0.8rem',
+                    color: 'var(--adm-text)'
+                  }}
+                >
+                  <div style={{ fontWeight: 700, color: 'var(--adm-success)' }}>Portal Verification Integration:</div>
+                  <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: 'var(--adm-text-muted)' }}>
+                    A unique Certificate ID will be assigned and instantly registered into the live portal at <code>/verification</code>.
+                  </p>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowHrDocModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="adm-btn adm-btn-primary">
+                  <Printer size={16} />
+                  <span>Generate & Open PDF</span>
                 </button>
               </div>
             </form>

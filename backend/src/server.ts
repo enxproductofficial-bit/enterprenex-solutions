@@ -9,6 +9,7 @@ import employeeRoutes from './routes/employee.routes';
 import attendanceRoutes from './routes/attendance.routes';
 import taskRoutes from './routes/task.routes';
 import kpiRoutes from './routes/kpi.routes';
+import leaveRoutes from './routes/leave.routes';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -186,6 +187,7 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/kpi', kpiRoutes);
+app.use('/api/leaves', leaveRoutes);
 
 // 404 handler
 app.use((req, res) => {
