@@ -298,7 +298,21 @@ export interface LeaveRequest {
 
 // 8. Tasks (EWMS Workflow)
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
-export type TaskColumn = 'To Do' | 'In Progress' | 'In Review' | 'Changes Required' | 'Approved' | 'Testing' | 'Done' | 'Blocked';
+
+// EWMS Section 10: 9-Stage Task Lifecycle Progression + backward compatibility
+export type TaskColumn =
+  | 'Backlog'
+  | 'Assigned'
+  | 'In Progress'
+  | 'Blocked'
+  | 'In Review'
+  | 'Changes Required'
+  | 'Approved'
+  | 'Completed'
+  | 'Cancelled'
+  | 'To Do'
+  | 'Done'
+  | 'Testing';
 
 export interface TaskComment {
   id: string;
@@ -306,6 +320,21 @@ export interface TaskComment {
   authorAvatar: string;
   text: string;
   createdAt: string;
+}
+
+export interface TaskAttachment {
+  id: string;
+  name: string;
+  size?: string;
+  url?: string;
+  type?: string;
+  uploadedAt?: string;
+}
+
+export interface TaskAcceptanceCriteria {
+  id: string;
+  text: string;
+  met: boolean;
 }
 
 export interface TaskTimeSession {
@@ -316,21 +345,29 @@ export interface TaskTimeSession {
   activityNote?: string;
 }
 
+// EWMS Section 10 Architecture Blueprint: 18 Specification Fields
 export interface Task {
   id: string;
-  title: string;
-  description: string;
-  projectId: string;
+  taskId?: string; // 1. Task ID (e.g. TSK-2026-001)
+  title: string; // 2. Task Title
+  description: string; // 3. Description
+  projectId: string; // 4. Project
   projectName: string;
-  assignedTo: string; // Employee name
-  reviewer?: string;
-  priority: TaskPriority;
-  status: TaskColumn;
-  dueDate: string;
+  module?: string; // 5. Module (e.g. Core Engine, Billing, Security)
+  assignedBy?: string; // 6. Assigned By (e.g. Rohit Pawar - Technical Director)
+  assignedTo: string; // 7. Assigned To (Employee name)
+  reviewer?: string; // 8. Reviewer (Peer/Lead Reviewer)
+  priority: TaskPriority; // 9. Priority
+  status: TaskColumn; // 10. Status (9-Stage Lifecycle)
+  startDate?: string; // 11. Start Date
+  dueDate: string; // 12. Due Date
+  estimatedHours: number; // 13. Estimated Hours
+  loggedHours: number; // 14. Actual Hours / Logged Hours
+  dependencies?: string[] | string; // 15. Dependencies (e.g. TSK-101)
+  attachments?: TaskAttachment[]; // 16. Attachments
+  comments: TaskComment[]; // 17. Comments
+  acceptanceCriteria?: TaskAcceptanceCriteria[]; // 18. Acceptance Criteria
   subtasks: { id: string; title: string; completed: boolean }[];
-  comments: TaskComment[];
-  loggedHours: number;
-  estimatedHours: number;
   tags: string[];
   createdAt: string;
   reviewNotes?: string;

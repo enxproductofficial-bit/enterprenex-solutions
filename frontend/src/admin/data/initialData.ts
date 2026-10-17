@@ -590,17 +590,30 @@ export const INITIAL_LEAVES: LeaveRequest[] = [
 export const INITIAL_TASKS: Task[] = [
   {
     id: 'tsk-101',
+    taskId: 'TSK-2026-001',
     title: 'Live Task Stopwatch & Time Tracker',
-    description: 'Implement real-time start/pause/stop stopwatch controls on active task cards with automatic session logging.',
+    description: 'Implement real-time start/pause/stop stopwatch controls on active task cards with automatic session logging and telemetry.',
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
+    module: 'Core Engine & Telemetry',
+    assignedBy: 'Rohit Pawar (Technical Director)',
     assignedTo: 'POLAMREDDY REVANTH REDDY',
     reviewer: 'Rohit Pawar',
     priority: 'High',
     status: 'In Progress',
-    dueDate: '2026-10-14',
+    startDate: '2026-10-11',
+    dueDate: '2026-10-18',
     loggedHours: 6.5,
     estimatedHours: 10,
+    dependencies: 'None - Root Sprint Epic',
+    attachments: [
+      { id: 'att-1', name: 'EWMS_Stopwatch_Architecture.pdf', size: '1.8 MB', type: 'PDF' }
+    ],
+    acceptanceCriteria: [
+      { id: 'ac-1', text: 'Real-time elapsed seconds counter with persistence in localStorage', met: true },
+      { id: 'ac-2', text: 'Auto-logging into cumulative task hours with confirmation toast', met: true },
+      { id: 'ac-3', text: 'Stopwatch active indicator visible across dashboard and drawers', met: true }
+    ],
     tags: ['Timer', 'Stopwatch', 'EWMS'],
     createdAt: '2026-10-11',
     subtasks: [
@@ -614,17 +627,29 @@ export const INITIAL_TASKS: Task[] = [
   },
   {
     id: 'tsk-102',
+    taskId: 'TSK-2026-002',
     title: 'Workload & Capacity Redistribution Engine',
     description: 'Calculate weekly capacity 40h vs assigned tasks. Display Available (<70%), Healthy (70-100%), and Overloaded (>100%) badges.',
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
+    module: 'Workforce & Capacity Ops',
+    assignedBy: 'Rohit Pawar (Technical Director)',
     assignedTo: 'POLAMREDDY REVANTH REDDY',
     reviewer: 'Rohit Pawar',
     priority: 'Urgent',
-    status: 'In Progress',
-    dueDate: '2026-10-15',
+    status: 'Assigned',
+    startDate: '2026-10-12',
+    dueDate: '2026-10-19',
     loggedHours: 2.0,
     estimatedHours: 8,
+    dependencies: 'TSK-2026-001',
+    attachments: [
+      { id: 'att-2', name: 'Capacity_Allocation_Matrix.xlsx', size: '540 KB', type: 'Excel' }
+    ],
+    acceptanceCriteria: [
+      { id: 'ac-4', text: 'Compute real-time weekly workload allocation per engineer', met: true },
+      { id: 'ac-5', text: 'Warning alert trigger when assigned task hours exceed 40 hrs/week', met: false }
+    ],
     tags: ['Capacity', 'Planning', 'Workload'],
     createdAt: '2026-10-11',
     subtasks: [
@@ -635,17 +660,29 @@ export const INITIAL_TASKS: Task[] = [
   },
   {
     id: 'tsk-103',
+    taskId: 'TSK-2026-003',
     title: 'IT Skill Matrix & Manager Verification Flow',
     description: 'Add skill matrix table comparing team competencies across stacks with Beginner to Expert badges and Manager ratings.',
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
+    module: 'Competency & Verification',
+    assignedBy: 'Rohit Pawar (Technical Director)',
     assignedTo: 'POLAMREDDY REVANTH REDDY',
     reviewer: 'Rohit Pawar',
     priority: 'Medium',
     status: 'In Review',
+    startDate: '2026-10-10',
     dueDate: '2026-10-16',
     loggedHours: 12.0,
     estimatedHours: 12,
+    dependencies: 'None',
+    attachments: [
+      { id: 'att-3', name: 'Competency_Skill_Rubric_v2.pdf', size: '2.1 MB', type: 'PDF' }
+    ],
+    acceptanceCriteria: [
+      { id: 'ac-6', text: 'Multi-stack competency matrix with Beginner to Expert ratings', met: true },
+      { id: 'ac-7', text: 'Director / Manager signature verification stage gate', met: true }
+    ],
     tags: ['Skills', 'Matrix', 'Verification'],
     createdAt: '2026-10-10',
     subtasks: [
@@ -658,17 +695,29 @@ export const INITIAL_TASKS: Task[] = [
   },
   {
     id: 'tsk-104',
+    taskId: 'TSK-2026-004',
     title: 'Role-Specific Weighted KPI & OKR Engine',
     description: 'Implement weighted KPI formula (On-Time Delivery 25%, Quality 25%, Bug Rate 15%, Documentation 10%, etc.) out of 100.',
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
+    module: 'KPI & Performance Engine',
+    assignedBy: 'Rohit Pawar (Technical Director)',
     assignedTo: 'Rohit Pawar',
     reviewer: 'Rohit Pawar',
     priority: 'High',
-    status: 'Done',
-    dueDate: '2026-10-18',
+    status: 'Completed',
+    startDate: '2026-10-05',
+    dueDate: '2026-10-12',
     loggedHours: 14.0,
     estimatedHours: 14,
+    dependencies: 'None',
+    attachments: [
+      { id: 'att-4', name: 'EWMS_KPI_Scoring_Formulas.pdf', size: '3.4 MB', type: 'PDF' }
+    ],
+    acceptanceCriteria: [
+      { id: 'ac-8', text: 'Mathematical weighted formula calculation verified', met: true },
+      { id: 'ac-9', text: 'Individual employee scorecard generation with grade bands', met: true }
+    ],
     tags: ['KPI', 'OKR', 'Analytics'],
     createdAt: '2026-10-09',
     subtasks: [
@@ -681,17 +730,27 @@ export const INITIAL_TASKS: Task[] = [
   },
   {
     id: 'tsk-105',
+    taskId: 'TSK-2026-005',
     title: 'Enterprise API Gateway & Security Policy Audit',
     description: 'Audit RBAC middleware and configure CORS & rate limiting rules for production API endpoints.',
     projectId: 'prj-1',
     projectName: 'Enterprise Web & AI Systems',
+    module: 'Security & RBAC Infrastructure',
+    assignedBy: 'Rohit Pawar (Technical Director)',
     assignedTo: 'POLAMREDDY REVANTH REDDY',
     reviewer: 'Rohit Pawar',
     priority: 'Medium',
-    status: 'To Do',
-    dueDate: '2026-10-22',
+    status: 'Backlog',
+    startDate: '2026-10-19',
+    dueDate: '2026-10-25',
     loggedHours: 0,
     estimatedHours: 6,
+    dependencies: 'TSK-2026-003',
+    attachments: [],
+    acceptanceCriteria: [
+      { id: 'ac-10', text: 'Verify statutory identity token validation with claims check', met: false },
+      { id: 'ac-11', text: 'Test rate limiter on public auth endpoints (100 req/min)', met: false }
+    ],
     tags: ['Security', 'API', 'Audit'],
     createdAt: '2026-10-14',
     subtasks: [
@@ -699,6 +758,73 @@ export const INITIAL_TASKS: Task[] = [
       { id: 'st-11', title: 'Test rate limiter on public auth endpoints', completed: false }
     ],
     comments: []
+  },
+  {
+    id: 'tsk-106',
+    taskId: 'TSK-2026-006',
+    title: 'Client Billing Invoice Webhook Integration',
+    description: 'Integrate automated webhook dispatching when tax invoices transition to Paid status.',
+    projectId: 'prj-1',
+    projectName: 'Enterprise Web & AI Systems',
+    module: 'Billing & Financial Operations',
+    assignedBy: 'Rohit Pawar (Technical Director)',
+    assignedTo: 'POLAMREDDY REVANTH REDDY',
+    reviewer: 'Rohit Pawar',
+    priority: 'High',
+    status: 'Changes Required',
+    startDate: '2026-10-12',
+    dueDate: '2026-10-18',
+    loggedHours: 7.5,
+    estimatedHours: 8,
+    dependencies: 'TSK-2026-001',
+    reviewNotes: 'Add signature validation and retry mechanism with exponential backoff for failed webhook deliveries.',
+    attachments: [],
+    acceptanceCriteria: [
+      { id: 'ac-12', text: 'HMAC-SHA256 signature header on outgoing payload', met: false },
+      { id: 'ac-13', text: 'Exponential retry policy with 3 attempts on HTTP 5xx', met: false }
+    ],
+    tags: ['Billing', 'Webhooks', 'Finance'],
+    createdAt: '2026-10-12',
+    subtasks: [
+      { id: 'st-12', title: 'Payload generation and signature encryption', completed: true },
+      { id: 'st-13', title: 'Dead-letter retry queue implementation', completed: false }
+    ],
+    comments: [
+      { id: 'tc-4', author: 'Rohit Pawar', authorAvatar: '', text: 'Please address review note regarding HMAC security signature.', createdAt: 'Yesterday' }
+    ]
+  },
+  {
+    id: 'tsk-107',
+    taskId: 'TSK-2026-007',
+    title: 'Production SSL Certificate & IP Restriction Sync',
+    description: 'Verify statutory office IP whitelist rules and enforce TLS 1.3 encryption across enterprise staging server.',
+    projectId: 'prj-1',
+    projectName: 'Enterprise Web & AI Systems',
+    module: 'DevOps & Cloud Infrastructure',
+    assignedBy: 'Rohit Pawar (Technical Director)',
+    assignedTo: 'POLAMREDDY REVANTH REDDY',
+    reviewer: 'Rohit Pawar',
+    priority: 'Urgent',
+    status: 'Blocked',
+    startDate: '2026-10-14',
+    dueDate: '2026-10-20',
+    loggedHours: 1.5,
+    estimatedHours: 4,
+    dependencies: 'Domain DNS Registrar propagation',
+    attachments: [],
+    acceptanceCriteria: [
+      { id: 'ac-14', text: 'TLS 1.3 cipher suite enforced without TLS 1.0/1.1 fallbacks', met: true },
+      { id: 'ac-15', text: 'Office IP CIDR blocks verified in NGINX configuration', met: false }
+    ],
+    tags: ['DevOps', 'Security', 'Blocked'],
+    createdAt: '2026-10-14',
+    subtasks: [
+      { id: 'st-14', title: 'Inspect SSL rating via Qualys SSL Labs', completed: true },
+      { id: 'st-15', title: 'Resolve DNS propagation delay with hosting provider', completed: false }
+    ],
+    comments: [
+      { id: 'tc-5', author: 'POLAMREDDY REVANTH REDDY', authorAvatar: '', text: 'Blocked awaiting DNS propagation response from cloud registry.', createdAt: '3 hours ago' }
+    ]
   }
 ];
 

@@ -8,9 +8,21 @@ import {
   MessageSquare,
   Send,
   MessageCircle,
-  Trash2
+  Trash2,
+  Edit,
+  Clock,
+  Calendar,
+  User,
+  ShieldCheck,
+  Paperclip,
+  CheckSquare,
+  AlertTriangle,
+  FolderGit2,
+  Layers,
+  ArrowRight,
+  Plus
 } from 'lucide-react';
-import type { Task } from '../types';
+import type { Task, TaskColumn } from '../types';
 
 interface TaskPreviewDrawerProps {
   task: Task;
@@ -33,7 +45,21 @@ interface TaskPreviewDrawerProps {
   isEmployee: boolean;
   onDeleteTask: (taskId: string) => void;
   onUpdateSelectedTask: (updated: Task) => void;
+  onEditTask?: (task: Task) => void;
+  onUpdateTaskStatus?: (taskId: string, status: TaskColumn) => void;
 }
+
+const NINE_STAGE_LIFECYCLE: { stage: TaskColumn; label: string; color: string }[] = [
+  { stage: 'Backlog', label: '1. Backlog', color: '#64748b' },
+  { stage: 'Assigned', label: '2. Assigned', color: '#0284c7' },
+  { stage: 'In Progress', label: '3. In Progress', color: '#3b82f6' },
+  { stage: 'Blocked', label: '4. Blocked', color: '#ef4444' },
+  { stage: 'In Review', label: '5. In Review', color: '#f59e0b' },
+  { stage: 'Changes Required', label: '6. Changes Req.', color: '#dc2626' },
+  { stage: 'Approved', label: '7. Approved', color: '#10b981' },
+  { stage: 'Completed', label: '8. Completed', color: '#059669' },
+  { stage: 'Cancelled', label: '9. Cancelled', color: '#94a3b8' }
+];
 
 export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
   task,
@@ -55,17 +81,33 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
   onAddComment,
   isEmployee,
   onDeleteTask,
-  onUpdateSelectedTask
+  onUpdateSelectedTask,
+  onEditTask,
+  onUpdateTaskStatus
 }) => {
   const [loggedHoursInput, setLoggedHoursInput] = useState<number>(1);
+  const [showAttachmentInput, setShowAttachmentInput] = useState(false);
+  const [newAttachmentName, setNewAttachmentName] = useState('');
+  const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
+
   const isThisTaskTimerActive = activeTimerTaskId === task.id && isTimerRunning;
-  const completedSubtasks = task.subtasks.filter(s => s.completed).length;
+  const safeSubtasks = task.subtasks || [];
+  const completedSubtasks = safeSubtasks.filter(s => s.completed).length;
   const hoursPercentage = Math.min(100, Math.round(((task.loggedHours || 0) / (task.estimatedHours || 1)) * 100));
+
+  const safeAcceptanceCriteria = task.acceptanceCriteria || [];
+  const completedCriteria = safeAcceptanceCriteria.filter(c => c.met).length;
 
   const handleSubtaskClick = (stId: string) => {
     onToggleSubtask(task.id, stId);
-    const updated = task.subtasks.map(s => (s.id === stId ? { ...s, completed: !s.completed } : s));
+    const updated = safeSubtasks.map(s => (s.id === stId ? { ...s, completed: !s.completed } : s));
     onUpdateSelectedTask({ ...task, subtasks: updated });
+  };
+
+  const handleToggleCriteria = (cId: string) => {
+    const updated = safeAcceptanceCriteria.map(c => (c.id === cId ? { ...c, met: !c.met } : c));
+    const nextTask = { ...task, acceptanceCriteria: updated };
+    onUpdateSelectedTask(nextTask);
   };
 
   const handleAddManualHours = () => {
@@ -82,7 +124,50 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
 
   const handleApprove = () => {
     onReviewTask(task.id, 'Approved');
-    onUpdateSelectedTask({ ...task, status: 'Done' });
+    onUpdateSelectedTask({ ...task, status: 'Approved' });
+  };
+
+  const handleStatusChange = (newStatus: TaskColumn) => {
+    if (onUpdateTaskStatus) {
+      onUpdateTaskStatus(task.id, newStatus);
+    }
+    onUpdateSelectedTask({ ...task, status: newStatus });
+  };
+
+  const handleAddAttachment = () => {
+    if (!newAttachmentName.trim()) return;
+    const newAtt = {
+      id: 'att-' + Date.now(),
+      name: newAttachmentName.trim(),
+      url: newAttachmentUrl.trim() || '#',
+      size: 'Document File',
+      uploadedAt: new Date().toISOString().split('T')[0]
+    };
+    const updatedAttachments = [...(task.attachments || []), newAtt];
+    onUpdateSelectedTask({ ...task, attachments: updatedAttachments });
+    setNewAttachmentName('');
+    setNewAttachmentUrl('');
+    setShowAttachmentInput(false);
+  };
+
+  const getStatusBadgeClass = (status: TaskColumn) => {
+    switch (status) {
+      case 'Completed':
+      case 'Done':
+      case 'Approved':
+        return 'adm-badge-success';
+      case 'In Progress':
+        return 'adm-badge-info';
+      case 'In Review':
+        return 'adm-badge-warning';
+      case 'Changes Required':
+      case 'Blocked':
+        return 'adm-badge-danger';
+      case 'Assigned':
+        return 'adm-badge-primary';
+      default:
+        return 'adm-badge-neutral';
+    }
   };
 
   return (
@@ -90,13 +175,46 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
       <div
         className="adm-preview-drawer"
         onClick={e => e.stopPropagation()}
-        style={{ width: 'clamp(440px, 56vw, 860px)' }}
+        style={{ width: 'clamp(460px, 62vw, 920px)' }}
       >
-        {/* ── Drawer Header ── */}
+        {/* ── Drawer Header: 18-Field Section 10 Specification ── */}
         <div className="adm-drawer-header">
           <div style={{ flex: 1, minWidth: 0, paddingRight: '0.5rem' }}>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
-              <span className="adm-badge adm-badge-primary">{task.projectName}</span>
+            {/* Top Tag Bar */}
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap' }}>
+              {/* Field 1: Task ID */}
+              <span
+                style={{
+                  fontFamily: 'monospace',
+                  fontWeight: 800,
+                  fontSize: '0.75rem',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  background: 'rgba(255, 107, 0, 0.12)',
+                  color: 'var(--adm-primary, #ff6b00)',
+                  border: '1px solid rgba(255, 107, 0, 0.3)'
+                }}
+              >
+                {task.taskId || task.id}
+              </span>
+
+              {/* Field 4: Associated Project */}
+              <span className="adm-badge adm-badge-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <FolderGit2 size={12} />
+                {task.projectName}
+              </span>
+
+              {/* Field 5: Module */}
+              <span
+                className="adm-badge adm-badge-neutral"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                title="System Module"
+              >
+                <Layers size={12} />
+                {task.module || 'Core Module'}
+              </span>
+
+              {/* Field 9: Priority */}
               <span
                 className={`adm-badge ${
                   task.priority === 'Urgent'
@@ -108,26 +226,17 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
               >
                 {task.priority} Priority
               </span>
-              <span
-                className={`adm-badge ${
-                  task.status === 'Done'
-                    ? 'adm-badge-success'
-                    : task.status === 'In Progress'
-                    ? 'adm-badge-info'
-                    : task.status === 'In Review'
-                    ? 'adm-badge-warning'
-                    : task.status === 'Changes Required'
-                    ? 'adm-badge-danger'
-                    : 'adm-badge-neutral'
-                }`}
-              >
-                {task.status}
+
+              {/* Field 10: Status (9-Stage Lifecycle) */}
+              <span className={`adm-badge ${getStatusBadgeClass(task.status)}`}>
+                ● {task.status}
               </span>
             </div>
 
+            {/* Field 2: Task Title */}
             <h2
               style={{
-                fontSize: '1.25rem',
+                fontSize: '1.3rem',
                 fontWeight: 800,
                 color: 'var(--adm-text, #1a1a1a)',
                 margin: '4px 0 0 0',
@@ -137,15 +246,24 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
             >
               {task.title}
             </h2>
-
-            <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
-              Assigned to: <strong style={{ color: 'var(--adm-text, #1a1a1a)' }}>{task.assignedTo}</strong> &bull; Due Date: {task.dueDate}
-            </div>
           </div>
 
-          <button className="adm-modal-close" onClick={onClose} title="Close Drawer (Esc)">
-            <X size={18} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {onEditTask && (
+              <button
+                className="adm-btn adm-btn-secondary adm-btn-sm"
+                onClick={() => onEditTask(task)}
+                title="Edit all 18 Task fields"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Edit size={14} />
+                <span>Edit Task</span>
+              </button>
+            )}
+            <button className="adm-modal-close" onClick={onClose} title="Close Drawer (Esc)">
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* ── Sticky Toolbar: Live Stopwatch & Quick Logging ── */}
@@ -162,7 +280,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+            <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)' }}>
               Logged: <strong style={{ color: 'var(--adm-text)', fontSize: '0.95rem' }}>{task.loggedHours}h</strong> / {task.estimatedHours}h
             </div>
             {isThisTaskTimerActive && (
@@ -238,41 +356,48 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
         </div>
 
         {/* ── Drawer Body: Screen-Adaptive Content ── */}
-        <div className="adm-drawer-body" style={{ padding: '1.25rem 1.5rem', background: 'var(--adm-bg, #fafafa)' }}>
-          {/* Review & Approval Status Ribbon */}
+        <div className="adm-drawer-body" style={{ padding: '1.25rem 1.5rem', background: 'var(--adm-bg, #fafafa)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          
+          {/* ── SECTION 10 LIFECYCLE CONTROLS: 9-STAGE PROGRESSION ── */}
           <div
             style={{
-              background:
-                task.status === 'In Review'
-                  ? 'rgba(245, 158, 11, 0.08)'
-                  : task.status === 'Changes Required'
-                  ? 'rgba(239, 68, 68, 0.08)'
-                  : 'var(--adm-surface, #ffffff)',
+              background: 'var(--adm-surface, #ffffff)',
               border: '1px solid var(--adm-border)',
               borderRadius: '12px',
-              padding: '0.9rem 1.1rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '0.75rem'
+              padding: '1rem',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
             }}
           >
-            <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
-                Sprint Review Pipeline
-              </div>
-              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '2px' }}>
-                Status: <span style={{ color: 'var(--adm-primary)' }}>{task.status}</span>
-              </div>
-              {task.reviewNotes && (
-                <div style={{ fontSize: '0.78rem', color: '#dc2626', marginTop: '3px', fontWeight: 500 }}>
-                  <strong>Rework Feedback:</strong> {task.reviewNotes}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div>
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--adm-text-muted)' }}>
+                  EWMS 9-Stage Lifecycle Pipeline (Section 10)
+                </span>
+                <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--adm-text)', marginTop: '2px' }}>
+                  Current Stage: <span style={{ color: 'var(--adm-primary)' }}>{task.status}</span>
                 </div>
-              )}
+              </div>
+
+              {/* Status Jump Dropdown */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Move Stage:</span>
+                <select
+                  className="adm-select"
+                  value={task.status}
+                  onChange={e => handleStatusChange(e.target.value as TaskColumn)}
+                  style={{ fontSize: '0.78rem', padding: '0.3rem 0.5rem', fontWeight: 700 }}
+                >
+                  {NINE_STAGE_LIFECYCLE.map(item => (
+                    <option key={item.stage} value={item.stage}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {/* Quick Action Ribbon */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
               {(task.status === 'In Progress' || task.status === 'Changes Required') && (
                 <button
                   className="adm-btn adm-btn-sm"
@@ -290,18 +415,150 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                     style={{ background: '#10b981', color: '#fff', border: 'none', fontWeight: 700 }}
                     onClick={handleApprove}
                   >
-                    ✓ Approve (Done)
+                    ✓ Approve (Verified)
                   </button>
                   <button
                     className="adm-btn adm-btn-sm"
                     style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#dc2626', border: '1px solid #ef4444', fontWeight: 700 }}
                     onClick={() => onRequestRework(task.id)}
                   >
-                    ↺ Request Changes
+                    ↺ Request Rework
                   </button>
                 </>
               )}
+
+              {task.status === 'Approved' && (
+                <button
+                  className="adm-btn adm-btn-sm"
+                  style={{ background: '#059669', color: '#fff', border: 'none', fontWeight: 700 }}
+                  onClick={() => handleStatusChange('Completed')}
+                >
+                  Mark Completed 🚀
+                </button>
+              )}
+
+              {task.status !== 'Blocked' && task.status !== 'Completed' && task.status !== 'Cancelled' && (
+                <button
+                  className="adm-btn adm-btn-secondary adm-btn-sm"
+                  onClick={() => handleStatusChange('Blocked')}
+                  style={{ color: '#dc2626', borderColor: 'rgba(220, 38, 38, 0.3)' }}
+                >
+                  <AlertTriangle size={12} />
+                  <span>Flag as Blocked</span>
+                </button>
+              )}
+
+              {task.status === 'Blocked' && (
+                <button
+                  className="adm-btn adm-btn-primary adm-btn-sm"
+                  onClick={() => handleStatusChange('In Progress')}
+                >
+                  Unblock & Resume (In Progress)
+                </button>
+              )}
             </div>
+
+            {task.reviewNotes && (
+              <div
+                style={{
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  marginTop: '0.75rem',
+                  fontSize: '0.8rem',
+                  color: '#dc2626'
+                }}
+              >
+                <strong>Lead Rework Feedback:</strong> {task.reviewNotes}
+              </div>
+            )}
+          </div>
+
+          {/* ── 18 FIELDS SPECIFICATION GRID (SECTION 10 & 11) ── */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+              gap: '0.75rem'
+            }}
+          >
+            {/* Field 6: Assigned By */}
+            <div className="adm-card" style={{ padding: '0.75rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <User size={12} /> Assigned By
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '3px' }}>
+                {task.assignedBy || 'Rohit Pawar (Director)'}
+              </div>
+            </div>
+
+            {/* Field 7: Assigned To */}
+            <div className="adm-card" style={{ padding: '0.75rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <User size={12} /> Assigned To (Employee)
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '3px' }}>
+                {task.assignedTo}
+              </div>
+            </div>
+
+            {/* Field 8: Reviewer */}
+            <div className="adm-card" style={{ padding: '0.75rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <ShieldCheck size={12} /> Reviewer / Lead
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '3px' }}>
+                {task.reviewer || 'Rohit Pawar'}
+              </div>
+            </div>
+
+            {/* Field 11 & 12: Start Date & Due Date */}
+            <div className="adm-card" style={{ padding: '0.75rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Calendar size={12} /> Timeline & SLA
+              </div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--adm-text)', marginTop: '3px' }}>
+                {task.startDate ? `${task.startDate} → ` : ''}{task.dueDate}
+              </div>
+            </div>
+
+            {/* Field 13 & 14: Estimated & Actual Hours */}
+            <div className="adm-card" style={{ padding: '0.75rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Clock size={12} /> Telemetry (Est / Actual)
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '3px' }}>
+                {task.estimatedHours}h est. / {task.loggedHours}h actual
+              </div>
+            </div>
+
+            {/* Field 15: Dependencies */}
+            <div className="adm-card" style={{ padding: '0.75rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+                Prerequisite Dependencies
+              </div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--adm-text)', marginTop: '3px' }}>
+                {Array.isArray(task.dependencies) ? task.dependencies.join(', ') : (task.dependencies || 'None')}
+              </div>
+            </div>
+          </div>
+
+          {/* Field 3: Task Description */}
+          <div
+            style={{
+              background: 'var(--adm-surface, #ffffff)',
+              border: '1px solid var(--adm-border)',
+              borderRadius: '12px',
+              padding: '1rem'
+            }}
+          >
+            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', margin: '0 0 0.5rem 0' }}>
+              Task Scope & Implementation Details
+            </h4>
+            <p style={{ fontSize: '0.85rem', color: 'var(--adm-text)', margin: 0, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {task.description || 'No detailed specifications supplied for this sprint task.'}
+            </p>
           </div>
 
           {/* Hours Allocation Progress Bar */}
@@ -317,7 +574,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--adm-text-muted)' }}>
-              <span>Hours Allocation & Burn rate</span>
+              <span>Hours Allocation & Burn rate ({task.loggedHours}h logged of {task.estimatedHours}h budget)</span>
               <strong style={{ color: 'var(--adm-text)' }}>{hoursPercentage}% Burned</strong>
             </div>
             <div className="adm-progress-bar" style={{ height: '8px', background: 'rgba(0,0,0,0.06)' }}>
@@ -329,6 +586,79 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                 }}
               />
             </div>
+          </div>
+
+          {/* Field 18: Acceptance Criteria (Section 10 Field 18) */}
+          <div
+            style={{
+              background: 'var(--adm-surface, #ffffff)',
+              border: '1px solid var(--adm-border)',
+              borderRadius: '12px',
+              padding: '1rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <h4
+                style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  color: 'var(--adm-text)',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <CheckSquare size={16} color="var(--adm-primary)" />
+                Acceptance Criteria Verification ({completedCriteria}/{safeAcceptanceCriteria.length})
+              </h4>
+              <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)' }}>
+                Section 10 Review Gate
+              </span>
+            </div>
+
+            {safeAcceptanceCriteria.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {safeAcceptanceCriteria.map(ac => (
+                  <div
+                    key={ac.id}
+                    onClick={() => handleToggleCriteria(ac.id)}
+                    style={{
+                      padding: '0.65rem 0.85rem',
+                      background: ac.met ? 'rgba(16, 185, 129, 0.08)' : 'var(--adm-bg, #fafafa)',
+                      border: '1px solid var(--adm-border)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={ac.met}
+                      onChange={() => {}}
+                      style={{ accentColor: '#10b981', cursor: 'pointer' }}
+                    />
+                    <span
+                      style={{
+                        fontSize: '0.82rem',
+                        color: ac.met ? '#059669' : 'var(--adm-text)',
+                        textDecoration: ac.met ? 'line-through' : 'none',
+                        fontWeight: ac.met ? 500 : 600
+                      }}
+                    >
+                      {ac.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontStyle: 'italic' }}>
+                No formal acceptance criteria listed. Edit task to add criteria gates.
+              </div>
+            )}
           </div>
 
           {/* Subtasks Checklist */}
@@ -356,12 +686,12 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                 Subtasks Checklist
               </h4>
               <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)' }}>
-                {completedSubtasks} of {task.subtasks.length} Completed
+                {completedSubtasks} of {safeSubtasks.length} Completed
               </span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {task.subtasks.map(st => (
+              {safeSubtasks.map(st => (
                 <div
                   key={st.id}
                   onClick={() => handleSubtaskClick(st.id)}
@@ -398,7 +728,105 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
             </div>
           </div>
 
-          {/* Collaboration Comments Thread */}
+          {/* Field 16: Attachments & Architectural Artifacts */}
+          <div
+            style={{
+              background: 'var(--adm-surface, #ffffff)',
+              border: '1px solid var(--adm-border)',
+              borderRadius: '12px',
+              padding: '1rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <h4
+                style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  color: 'var(--adm-text)',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Paperclip size={15} color="#6366f1" />
+                Attached Specifications & Artifacts ({(task.attachments || []).length})
+              </h4>
+              <button
+                className="adm-btn adm-btn-secondary adm-btn-sm"
+                onClick={() => setShowAttachmentInput(!showAttachmentInput)}
+                style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
+              >
+                <Plus size={12} />
+                <span>Attach File / Doc</span>
+              </button>
+            </div>
+
+            {showAttachmentInput && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                <input
+                  type="text"
+                  placeholder="Document Name (e.g. Api_Spec_v1.pdf)"
+                  className="adm-input"
+                  style={{ flex: 1, minWidth: '180px', fontSize: '0.8rem' }}
+                  value={newAttachmentName}
+                  onChange={e => setNewAttachmentName(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="URL / File Link (optional)"
+                  className="adm-input"
+                  style={{ flex: 1, minWidth: '180px', fontSize: '0.8rem' }}
+                  value={newAttachmentUrl}
+                  onChange={e => setNewAttachmentUrl(e.target.value)}
+                />
+                <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={handleAddAttachment}>
+                  Save Attachment
+                </button>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {(task.attachments || []).map(att => (
+                <div
+                  key={att.id}
+                  style={{
+                    padding: '0.6rem 0.85rem',
+                    background: 'var(--adm-bg, #fafafa)',
+                    border: '1px solid var(--adm-border)',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Paperclip size={14} color="var(--adm-primary)" />
+                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--adm-text)' }}>{att.name}</span>
+                    {att.size && <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>({att.size})</span>}
+                  </div>
+                  {att.url && att.url !== '#' && (
+                    <a
+                      href={att.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="adm-btn adm-btn-secondary adm-btn-sm"
+                      style={{ fontSize: '0.72rem', padding: '2px 8px' }}
+                    >
+                      View
+                    </a>
+                  )}
+                </div>
+              ))}
+              {(!task.attachments || task.attachments.length === 0) && (
+                <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontStyle: 'italic' }}>
+                  No files or technical documents attached yet.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Field 17: Collaboration Comments Thread */}
           <div
             style={{
               background: 'var(--adm-surface, #ffffff)',
@@ -465,10 +893,10 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
         </div>
 
         {/* ── Drawer Footer ── */}
-        <div className="adm-drawer-footer" style={{ padding: '0.9rem 1.5rem', background: 'var(--adm-surface, #ffffff)' }}>
+        <div className="adm-drawer-footer" style={{ padding: '0.9rem 1.5rem', background: 'var(--adm-surface, #ffffff)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
           <a
             href={`https://wa.me/919226860060?text=${encodeURIComponent(
-              `*ENTERPRENEX TASK STATUS UPDATE*\n\n*Task:* ${task.title}\n*Assignee:* ${task.assignedTo}\n*Status:* ${task.status}\n*Project:* ${task.projectName}\n*Logged Time:* ${task.loggedHours}h / ${task.estimatedHours}h\n*Due Date:* ${task.dueDate}\n\n*Portal Link:* https://www.enterprenexsolution.com/admin/tasks`
+              `*ENTERPRENEX TASK SPECIFICATION UPDATE*\n\n*Task ID:* ${task.taskId || task.id}\n*Title:* ${task.title}\n*Assignee:* ${task.assignedTo}\n*Reviewer:* ${task.reviewer || 'Rohit Pawar'}\n*Status:* ${task.status}\n*Project:* ${task.projectName}\n*Logged Time:* ${task.loggedHours}h / ${task.estimatedHours}h\n*Due Date:* ${task.dueDate}\n\n*Portal Link:* https://www.enterprenexsolution.com/admin/tasks`
             )}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -489,6 +917,15 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
           </a>
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {onEditTask && (
+              <button
+                className="adm-btn adm-btn-secondary adm-btn-sm"
+                onClick={() => onEditTask(task)}
+              >
+                <Edit size={13} />
+                <span>Edit</span>
+              </button>
+            )}
             {!isEmployee && (
               <button
                 className="adm-btn adm-btn-danger adm-btn-sm"
@@ -510,4 +947,5 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
     </div>
   );
 };
+
 export default TaskPreviewDrawer;

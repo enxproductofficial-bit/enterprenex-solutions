@@ -976,16 +976,18 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'comments' | 'loggedHours'>) => {
+    const generatedId = 'TSK-2026-' + Math.floor(100 + Math.random() * 900);
     const newTask: Task = {
       ...taskData,
       id: 'task-' + Date.now(),
+      taskId: taskData.taskId || generatedId,
       comments: [],
       loggedHours: 0,
       createdAt: new Date().toISOString().split('T')[0]
     };
     setTasks(prev => [newTask, ...prev]);
-    logAction('Created Task', 'Task Management', `Created task: ${newTask.title}`);
-    showToast('Task Created', `Added "${newTask.title}" to ${newTask.status}.`, 'success');
+    logAction('Created Task', 'Task Management', `Created task: ${newTask.taskId} - ${newTask.title}`);
+    showToast('Task Created', `Added "${newTask.title}" (${newTask.taskId}) to ${newTask.status}.`, 'success');
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
@@ -1045,7 +1047,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (t.id !== taskId) return t;
       return {
         ...t,
-        status: decision === 'Approved' ? 'Done' : 'Changes Required',
+        status: decision === 'Approved' ? 'Approved' : 'Changes Required',
         reviewNotes: notes || t.reviewNotes
       };
     }));
@@ -1053,7 +1055,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     logAction('Task Reviewed', 'Task Workflow', `Task ID ${taskId} was marked as ${decision}.`);
     showToast(
       decision === 'Approved' ? 'Task Approved' : 'Changes Requested',
-      decision === 'Approved' ? 'Task marked as Approved & Completed.' : 'Task returned with rework notes.',
+      decision === 'Approved' ? 'Task marked as Approved & Verified.' : 'Task returned with rework notes.',
       decision === 'Approved' ? 'success' : 'warning'
     );
   };
