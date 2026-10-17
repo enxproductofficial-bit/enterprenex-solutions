@@ -134,8 +134,8 @@ export default function ExcellenceSection() {
                   y: -6,
                   scale: 1.02,
                   backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  borderColor: 'rgba(246, 97, 53, 0.6)',
-                  boxShadow: '0 12px 35px rgba(246, 97, 53, 0.18)'
+                  borderColor: 'rgba(16, 112, 200, 0.5)',
+                  boxShadow: '0 12px 35px rgba(16, 112, 200, 0.2)'
                 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 20 }}
               >

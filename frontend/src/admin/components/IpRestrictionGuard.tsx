@@ -163,7 +163,7 @@ export const IpRestrictionGuard: React.FC<IpRestrictionGuardProps> = ({ children
             }}
           >
             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Key size={14} color="#F66135" />
+              <Key size={14} color="var(--adm-primary, #1070C8)" />
               <span>Instant IP Authorization Unlock</span>
             </div>
             <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.85rem 0' }}>

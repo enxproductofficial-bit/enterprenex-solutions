@@ -847,13 +847,11 @@ export const CalendarPage: React.FC = () => {
       ══════════════════════════════════════════════════════════════ */}
       {activeTab === 'chat' && (
         <div
-          className="adm-card"
+          className="adm-card adm-chat-layout"
           style={{
             padding: 0,
             borderRadius: '12px',
             overflow: 'hidden',
-            display: 'grid',
-            gridTemplateColumns: '300px 1fr',
             minHeight: '620px'
           }}
         >

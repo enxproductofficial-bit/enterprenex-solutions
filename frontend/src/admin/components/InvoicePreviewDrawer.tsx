@@ -244,7 +244,7 @@ export const InvoicePreviewDrawer: React.FC<InvoicePreviewDrawerProps> = ({
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                borderBottom: '2px solid #F66135',
+                borderBottom: '2px solid #1070C8',
                 paddingBottom: '1.25rem',
                 marginBottom: '1.5rem',
                 gap: '1rem'
@@ -255,7 +255,7 @@ export const InvoicePreviewDrawer: React.FC<InvoicePreviewDrawerProps> = ({
                   ENTERPRENEX SOLUTIONS PVT. LTD.
                 </h2>
                 <div style={{ fontSize: '0.78rem', color: '#4b5563', marginTop: '4px', lineHeight: 1.5 }}>
-                  CIN: <strong>U72200MH2024PTC123456</strong> &bull; GSTIN: <strong style={{ color: '#F66135' }}>27AAACB2212P1ZX</strong>
+                  CIN: <strong>U72200MH2024PTC123456</strong> &bull; GSTIN: <strong style={{ color: '#1070C8' }}>27AAACB2212P1ZX</strong>
                 </div>
                 <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>
                   Waluj Mahanagar, Chhatrapati Sambhajinagar, Maharashtra 431136, India
@@ -266,7 +266,7 @@ export const InvoicePreviewDrawer: React.FC<InvoicePreviewDrawerProps> = ({
               </div>
 
               <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '1.35rem', fontWeight: 900, color: '#F66135', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <span style={{ fontSize: '1.35rem', fontWeight: 900, color: '#1070C8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {invoice.type}
                 </span>
                 <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#111827', marginTop: '4px' }}>
@@ -396,7 +396,7 @@ export const InvoicePreviewDrawer: React.FC<InvoicePreviewDrawerProps> = ({
                     borderTop: '2px solid #111827',
                     fontWeight: 900,
                     fontSize: '1.15rem',
-                    color: '#F66135',
+                    color: '#1070C8',
                     marginTop: '4px'
                   }}
                 >

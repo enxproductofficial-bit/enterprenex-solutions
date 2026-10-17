@@ -105,9 +105,9 @@ export default function ProcessSection() {
                 style={{
                   width: '100%',
                   height: '100%',
-                  background: 'linear-gradient(to bottom, #F66135 0%, #D94E22 100%)',
+                  background: 'linear-gradient(to bottom, #1070C8 0%, #1E6DB8 100%)',
                   transformOrigin: 'top',
-                  boxShadow: '0 0 10px rgba(246, 97, 53, 0.6)',
+                  boxShadow: '0 0 10px rgba(16, 112, 200, 0.5)',
                 }}
               />
             </div>
@@ -144,13 +144,13 @@ export default function ProcessSection() {
                     width: '3.5rem',
                     height: '3.5rem',
                     borderRadius: '50%',
-                    border: '2px solid #F66135',
-                    background: '#FFF3EF',
+                    border: '2px solid var(--primary, #1070C8)',
+                    background: 'var(--blue-light, #E6EDF5)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '1.35rem',
-                    boxShadow: '0 4px 14px rgba(246, 97, 53, 0.25)',
+                    boxShadow: '0 4px 14px rgba(16, 112, 200, 0.2)',
                   }}
                 >
                   {s.icon}
@@ -166,9 +166,9 @@ export default function ProcessSection() {
                         letterSpacing: '0.08em',
                         padding: '0.2rem 0.65rem',
                         borderRadius: '9999px',
-                        background: 'linear-gradient(135deg, #F66135 0%, #D94E22 100%)',
+                        background: 'linear-gradient(135deg, #1070C8 0%, #1E6DB8 100%)',
                         color: '#ffffff',
-                        boxShadow: '0 2px 8px rgba(246, 97, 53, 0.35)',
+                        boxShadow: '0 2px 8px rgba(16, 112, 200, 0.3)',
                       }}
                     >
                       {s.step}

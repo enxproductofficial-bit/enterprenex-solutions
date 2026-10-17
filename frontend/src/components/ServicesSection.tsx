@@ -60,7 +60,7 @@ const cardVariants = {
 
 const arrowVariants = {
   initial: { x: 0 },
-  hover: { x: 6, color: '#F66135' },
+  hover: { x: 6, color: 'var(--primary, #1070C8)' },
 };
 
 const iconVariants = {
@@ -123,8 +123,8 @@ export default function ServicesSection() {
                 scale: 1.02,
                 rotateX: 2,
                 rotateY: -2,
-                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12), 0 0 25px rgba(246, 97, 53, 0.3)',
-                borderColor: 'rgba(246, 97, 53, 0.6)',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12), 0 0 25px rgba(16, 112, 200, 0.25)',
+                borderColor: 'rgba(16, 112, 200, 0.5)',
               }}
               transition={{ type: 'spring', stiffness: 350, damping: 22 }}
             >
@@ -140,9 +140,9 @@ export default function ServicesSection() {
                     letterSpacing: '0.06em',
                     padding: '0.25rem 0.65rem',
                     borderRadius: '9999px',
-                    background: '#FFF3EF',
-                    color: '#F66135',
-                    border: '1px solid rgba(246, 97, 53, 0.2)',
+                    background: 'var(--blue-light, #E6EDF5)',
+                    color: 'var(--primary, #1070C8)',
+                    border: '1px solid var(--blue-soft, #C8E0F8)',
                   }}
                 >
                   {svc.badge}
@@ -171,7 +171,7 @@ export default function ServicesSection() {
                   gap: '0.375rem',
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  color: '#F66135',
+                  color: 'var(--primary, #1070C8)',
                 }}
               >
                 <span>Learn more</span>

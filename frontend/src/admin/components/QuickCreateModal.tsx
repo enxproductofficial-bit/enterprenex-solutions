@@ -617,7 +617,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               onClick={() => fileInputRef.current?.click()}
               style={{
                 border: '2px dashed var(--adm-primary)',
-                background: 'rgba(246, 97, 53, 0.04)',
+                background: 'rgba(16, 112, 200, 0.04)',
                 borderRadius: '16px',
                 padding: '1.5rem',
                 textAlign: 'center',

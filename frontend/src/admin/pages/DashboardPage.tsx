@@ -1232,8 +1232,8 @@ export const DashboardPage: React.FC = () => {
 
                   <defs>
                     <linearGradient id="revGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#F66135" />
-                      <stop offset="100%" stopColor="#D94E22" stopOpacity="0.6" />
+                      <stop offset="0%" stopColor="#1070C8" />
+                      <stop offset="100%" stopColor="#1E6DB8" stopOpacity="0.6" />
                     </linearGradient>
                   </defs>
                 </svg>

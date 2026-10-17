@@ -182,12 +182,12 @@ export default function VerificationPage() {
             alignItems: 'center',
             gap: '0.5rem',
             padding: '0.4rem 1rem',
-            background: 'rgba(246, 97, 53, 0.1)',
-            border: '1px solid rgba(246, 97, 53, 0.3)',
+            background: 'rgba(16, 112, 200, 0.1)',
+            border: '1px solid rgba(16, 112, 200, 0.3)',
             borderRadius: '9999px',
             fontSize: '0.82rem',
             fontWeight: 600,
-            color: '#F66135',
+            color: 'var(--primary, #1070C8)',
             marginBottom: '1rem'
           }}>
             <ShieldCheck size={16} />
@@ -234,13 +234,13 @@ export default function VerificationPage() {
                   fontSize: '0.92rem',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  border: isSelected ? '1px solid #F66135' : '1px solid rgba(255,255,255,0.08)',
-                  background: isSelected ? 'rgba(246, 97, 53, 0.15)' : 'rgba(15, 23, 42, 0.65)',
+                  border: isSelected ? '1px solid var(--primary, #1070C8)' : '1px solid rgba(255,255,255,0.08)',
+                  background: isSelected ? 'rgba(16, 112, 200, 0.15)' : 'rgba(15, 23, 42, 0.65)',
                   color: isSelected ? '#ffffff' : '#94a3b8',
-                  boxShadow: isSelected ? '0 4px 20px rgba(246, 97, 53, 0.2)' : 'none'
+                  boxShadow: isSelected ? '0 4px 20px rgba(16, 112, 200, 0.25)' : 'none'
                 }}
               >
-                <span style={{ color: isSelected ? '#F66135' : '#64748b' }}>{tab.icon}</span>
+                <span style={{ color: isSelected ? 'var(--primary, #1070C8)' : '#64748b' }}>{tab.icon}</span>
                 {tab.label}
               </button>
             );
@@ -286,7 +286,7 @@ export default function VerificationPage() {
                     outline: 'none',
                     transition: 'border 0.2s',
                   }}
-                  onFocus={e => (e.currentTarget.style.borderColor = '#F66135')}
+                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--primary, #1070C8)')}
                   onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
                 />
               </div>
@@ -295,7 +295,7 @@ export default function VerificationPage() {
                 type="submit"
                 style={{
                   padding: '0.85rem 1.85rem',
-                  background: 'linear-gradient(135deg, #F66135 0%, #e04f24 100%)',
+                  background: 'linear-gradient(135deg, #1070C8 0%, #197ED8 100%)',
                   color: '#ffffff',
                   fontWeight: 700,
                   fontSize: '0.95rem',
@@ -305,7 +305,7 @@ export default function VerificationPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  boxShadow: '0 4px 16px rgba(246, 97, 53, 0.3)',
+                  boxShadow: '0 4px 16px rgba(16, 112, 200, 0.35)',
                   transition: 'transform 0.15s ease',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
@@ -513,7 +513,7 @@ export default function VerificationPage() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '0.45rem',
-                      color: '#F66135',
+                      color: 'var(--primary, #1070C8)',
                       fontWeight: 600,
                       fontSize: '0.9rem',
                       textDecoration: 'none'
@@ -531,7 +531,7 @@ export default function VerificationPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginTop: '3rem' }}>
           
           <div style={{ padding: '1.5rem', background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem', color: '#F66135', fontWeight: 700, fontSize: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem', color: 'var(--primary, #1070C8)', fontWeight: 700, fontSize: '1rem' }}>
               <Building2 size={20} />
               Third-Party BGV Support
             </div>
@@ -556,7 +556,7 @@ export default function VerificationPage() {
               Need Dedicated HR Verification?
             </div>
             <p style={{ fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.6, margin: 0 }}>
-              For custom verification letters on official company letterhead, write to <a href="mailto:contact@enterprenex.solutions" style={{ color: '#F66135', textDecoration: 'none', fontWeight: 600 }}>contact@enterprenex.solutions</a> with the Candidate ID.
+              For custom verification letters on official company letterhead, write to <a href="mailto:contact@enterprenex.solutions" style={{ color: 'var(--primary, #1070C8)', textDecoration: 'none', fontWeight: 600 }}>contact@enterprenex.solutions</a> with the Candidate ID.
             </p>
           </div>
 

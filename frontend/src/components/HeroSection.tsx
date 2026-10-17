@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import type { Variants } from 'framer-motion';
 
 const ROLES = [
-  { text: 'Cloud Engineers', gradient: 'linear-gradient(135deg, #FF7B54 0%, #F66135 100%)', glow: 'rgba(246, 97, 53, 0.5)' },
+  { text: 'Cloud Engineers', gradient: 'linear-gradient(135deg, #1070C8 0%, #197ED8 100%)', glow: 'rgba(16, 112, 200, 0.5)' },
   { text: 'AI & ML Developers', gradient: 'linear-gradient(135deg, #38BDF8 0%, #3B82F6 100%)', glow: 'rgba(59, 130, 246, 0.5)' },
   { text: 'Software Architects', gradient: 'linear-gradient(135deg, #34D399 0%, #059669 100%)', glow: 'rgba(16, 185, 129, 0.5)' },
   { text: 'Full-Stack Engineers', gradient: 'linear-gradient(135deg, #F472B6 0%, #E11D48 100%)', glow: 'rgba(225, 29, 72, 0.5)' },
@@ -248,7 +248,7 @@ export default function HeroSection() {
                   hidden: { opacity: 0, scale: 0.95, y: 20 },
                   visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
                 }}
-                whileHover={{ y: -6, borderColor: 'rgba(246, 97, 53, 0.4)' }}
+                whileHover={{ y: -6, borderColor: 'rgba(16, 112, 200, 0.4)' }}
               >
                 <div className="standard-card__icon">{feature.icon}</div>
                 <h3 className="standard-card__title">{feature.title}</h3>

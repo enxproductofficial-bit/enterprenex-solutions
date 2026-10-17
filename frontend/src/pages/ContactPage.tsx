@@ -255,11 +255,11 @@ export default function ContactPage() {
                   
                   <!-- HEADER -->
                   <tr>
-                    <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 32px; text-align: center; border-bottom: 4px solid #F66135;">
+                    <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 32px; text-align: center; border-bottom: 4px solid #1070C8;">
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                         <tr>
                           <td align="center">
-                            <span style="display: inline-block; background: rgba(246, 97, 53, 0.2); border: 1px solid rgba(246, 97, 53, 0.4); color: #F66135; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 14px; border-radius: 99px; margin-bottom: 12px;">
+                            <span style="display: inline-block; background: rgba(16, 112, 200, 0.2); border: 1px solid rgba(16, 112, 200, 0.4); color: #1070C8; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 14px; border-radius: 99px; margin-bottom: 12px;">
                               New Client Lead
                             </span>
                             <h1 style="margin: 8px 0 0; font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Enterprenex Solutions</h1>
@@ -275,7 +275,7 @@ export default function ContactPage() {
                     <td style="padding: 36px 32px; background-color: #ffffff;">
                       
                       <!-- CLIENT CONTACT DETAILS SECTION -->
-                      <h2 style="margin: 0 0 16px; font-size: 14px; font-weight: 800; color: #F66135; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #fff1ed; padding-bottom: 8px;">
+                      <h2 style="margin: 0 0 16px; font-size: 14px; font-weight: 800; color: #1070C8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #E6EDF5; padding-bottom: 8px;">
                         👤 Client Overview
                       </h2>
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 28px; border-collapse: separate; border-spacing: 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
@@ -290,7 +290,7 @@ export default function ContactPage() {
                         <tr>
                           <td style="padding: 12px 16px; background-color: #f8fafc; font-weight: 700; font-size: 13px; color: #475569; border-bottom: 1px solid #e2e8f0;">Email Address</td>
                           <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; border-bottom: 1px solid #e2e8f0;">
-                            <a href="mailto:${formData.email}" style="color: #F66135; font-weight: 700; text-decoration: none;">${formData.email}</a>
+                            <a href="mailto:${formData.email}" style="color: #1070C8; font-weight: 700; text-decoration: none;">${formData.email}</a>
                           </td>
                         </tr>
                         <tr>
@@ -300,7 +300,7 @@ export default function ContactPage() {
                       </table>
 
                       <!-- LOCATION & ADDRESS SECTION -->
-                      <h2 style="margin: 0 0 16px; font-size: 14px; font-weight: 800; color: #F66135; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #fff1ed; padding-bottom: 8px;">
+                      <h2 style="margin: 0 0 16px; font-size: 14px; font-weight: 800; color: #1070C8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #E6EDF5; padding-bottom: 8px;">
                         📍 Location & Address
                       </h2>
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 28px; border-collapse: separate; border-spacing: 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
@@ -323,7 +323,7 @@ export default function ContactPage() {
                       </table>
 
                       <!-- PROJECT SPECIFICATIONS SECTION -->
-                      <h2 style="margin: 0 0 16px; font-size: 14px; font-weight: 800; color: #F66135; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #fff1ed; padding-bottom: 8px;">
+                      <h2 style="margin: 0 0 16px; font-size: 14px; font-weight: 800; color: #1070C8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #E6EDF5; padding-bottom: 8px;">
                         💼 Project Scope & Budget
                       </h2>
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 28px; border-collapse: separate; border-spacing: 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
@@ -338,10 +338,10 @@ export default function ContactPage() {
                       </table>
 
                       <!-- PROJECT DESCRIPTION BOX -->
-                      <h2 style="margin: 0 0 12px; font-size: 14px; font-weight: 800; color: #F66135; text-transform: uppercase; letter-spacing: 1px;">
+                      <h2 style="margin: 0 0 12px; font-size: 14px; font-weight: 800; color: #1070C8; text-transform: uppercase; letter-spacing: 1px;">
                         📝 Detailed Project Description
                       </h2>
-                      <div style="background-color: #f8fafc; border-left: 4px solid #F66135; border-radius: 8px; padding: 20px; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                      <div style="background-color: #f8fafc; border-left: 4px solid #1070C8; border-radius: 8px; padding: 20px; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
                         <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #1e293b; white-space: pre-wrap;">${formData.description}</p>
                       </div>
 
@@ -349,7 +349,7 @@ export default function ContactPage() {
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 32px;">
                         <tr>
                           <td align="center">
-                            <a href="mailto:${formData.email}?subject=Re:%20Inquiry%20from%20Enterprenex%20Solutions" style="display: inline-block; background-color: #F66135; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 99px; box-shadow: 0 4px 14px rgba(246, 97, 53, 0.35);">
+                            <a href="mailto:${formData.email}?subject=Re:%20Inquiry%20from%20Enterprenex%20Solutions" style="display: inline-block; background-color: #1070C8; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 99px; box-shadow: 0 4px 14px rgba(16, 112, 200, 0.35);">
                               Reply Directly to Client →
                             </a>
                           </td>
@@ -398,9 +398,9 @@ export default function ContactPage() {
                   
                   <!-- HEADER -->
                   <tr>
-                    <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 32px; text-align: center; border-bottom: 4px solid #F66135;">
+                    <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 32px; text-align: center; border-bottom: 4px solid #1070C8;">
                       <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Enterprenex Solutions</h1>
-                      <p style="margin: 6px 0 0; font-size: 13px; color: #F66135; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Inquiry Confirmation & Receipt</p>
+                      <p style="margin: 6px 0 0; font-size: 13px; color: #1070C8; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Inquiry Confirmation & Receipt</p>
                     </td>
                   </tr>
 
@@ -413,7 +413,7 @@ export default function ContactPage() {
                       </p>
 
                       <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 28px;">
-                        <h3 style="margin: 0 0 14px; font-size: 14px; font-weight: 800; color: #F66135; text-transform: uppercase; letter-spacing: 1px;">
+                        <h3 style="margin: 0 0 14px; font-size: 14px; font-weight: 800; color: #1070C8; text-transform: uppercase; letter-spacing: 1px;">
                           📋 Summary of Your Submission
                         </h3>
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size: 14px;">
@@ -433,7 +433,7 @@ export default function ContactPage() {
                       </div>
 
                       <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 8px;">
-                        If you need to update any information or send additional documentation, feel free to reply directly to this email or reach us at <a href="mailto:contact@enterprenex.solutions" style="color: #F66135; font-weight: 700; text-decoration: none;">contact@enterprenex.solutions</a>.
+                        If you need to update any information or send additional documentation, feel free to reply directly to this email or reach us at <a href="mailto:contact@enterprenex.solutions" style="color: #1070C8; font-weight: 700; text-decoration: none;">contact@enterprenex.solutions</a>.
                       </p>
                     </td>
                   </tr>
@@ -565,17 +565,22 @@ export default function ContactPage() {
           text-decoration: none;
           cursor: pointer;
         }
+        .contact-address-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1.25rem;
+        }
         .contact-opt-icon-box {
           width: 54px;
           height: 54px;
           border-radius: 14px;
-          background: rgba(246,97,53,0.08);
-          border: 1.5px solid rgba(246,97,53,0.2);
+          background: rgba(16, 112, 200, 0.08);
+          border: 1.5px solid rgba(16, 112, 200, 0.2);
           display: flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 1rem;
-          color: #F66135;
+          color: var(--primary, #1070C8);
         }
         .contact-feature-card {
           padding: 1.75rem 1.5rem;
@@ -610,9 +615,9 @@ export default function ContactPage() {
           box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
         .form-input-field:focus {
-          border-color: #F66135;
+          border-color: var(--primary, #1070C8);
           background: #ffffff;
-          box-shadow: 0 0 0 4px rgba(246, 97, 53, 0.15), 0 4px 12px rgba(246, 97, 53, 0.08);
+          box-shadow: 0 0 0 4px rgba(16, 112, 200, 0.15), 0 4px 12px rgba(16, 112, 200, 0.08);
           transform: translateY(-1px);
         }
         .form-input-field.input-error {
@@ -642,6 +647,10 @@ export default function ContactPage() {
           .contact-grid-2 {
             grid-template-columns: 1fr !important;
             gap: 0.65rem !important;
+          }
+          .contact-address-grid {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
           }
           .contact-map-layout {
             grid-template-columns: 1fr !important;
@@ -737,7 +746,7 @@ export default function ContactPage() {
               width: '520px',
               height: '520px',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(246,97,53,0.22) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(16,112,200,0.18) 0%, transparent 70%)',
               filter: 'blur(80px)',
             }}
           />
@@ -751,7 +760,7 @@ export default function ContactPage() {
               width: '480px',
               height: '480px',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(246,97,53,0.16) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(16,112,200,0.12) 0%, transparent 70%)',
               filter: 'blur(90px)',
             }}
           />
@@ -763,9 +772,9 @@ export default function ContactPage() {
               variants={fadeUp}
               style={{
                 display: 'inline-block',
-                background: 'rgba(246,97,53,0.08)',
-                border: '1px solid rgba(246,97,53,0.2)',
-                color: '#F66135',
+                background: 'rgba(16, 112, 200, 0.08)',
+                border: '1px solid rgba(16, 112, 200, 0.2)',
+                color: 'var(--primary, #1070C8)',
                 fontSize: '0.8rem',
                 fontWeight: 700,
                 letterSpacing: '0.1em',
@@ -789,7 +798,7 @@ export default function ContactPage() {
               }}
             >
               Let's Build Something<br />
-              <span style={{ color: '#F66135' }}>Exceptional Together</span>
+              <span style={{ color: 'var(--primary, #1070C8)' }}>Exceptional Together</span>
             </motion.h1>
             <motion.p
               variants={fadeUp}
@@ -825,7 +834,7 @@ export default function ContactPage() {
                   transition: 'all 0.25s ease',
                 }}
               >
-                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" style={{ color: '#F66135' }}>
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--primary, #1070C8)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
                 Call +91 92268 60060
@@ -853,7 +862,7 @@ export default function ContactPage() {
                 rel={opt.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 custom={i}
                 variants={fadeUp}
-                whileHover={{ y: -7, scale: 1.01, boxShadow: '0 20px 40px rgba(246,97,53,0.12)', borderColor: 'rgba(246,97,53,0.4)' }}
+                whileHover={{ y: -7, scale: 1.01, boxShadow: '0 20px 40px rgba(16, 112, 200, 0.12)', borderColor: 'rgba(16, 112, 200, 0.4)' }}
                 className="contact-opt-card"
               >
                 <div className="contact-opt-icon-box">
@@ -861,7 +870,7 @@ export default function ContactPage() {
                 </div>
                 <h3 className="contact-opt-title" style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.4rem' }}>{opt.title}</h3>
                 <p className="contact-opt-desc" style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '1rem', lineHeight: 1.5 }}>{opt.description}</p>
-                <span className="contact-opt-val" style={{ fontSize: '0.88rem', fontWeight: 700, color: '#F66135', wordBreak: 'break-all', marginTop: 'auto' }}>{opt.value}</span>
+                <span className="contact-opt-val" style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--primary, #1070C8)', wordBreak: 'break-all', marginTop: 'auto' }}>{opt.value}</span>
               </motion.a>
             ))}
           </motion.div>
@@ -876,9 +885,9 @@ export default function ContactPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'rgba(16, 112, 200, 0.08)',
+                  border: '1px solid rgba(16, 112, 200, 0.2)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -891,7 +900,7 @@ export default function ContactPage() {
                 Why Enterprenex
               </span>
               <h2 className="contact-section-h2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.75rem)', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
-                Why Partner <span style={{ color: '#F66135' }}>With Us?</span>
+                Why Partner <span style={{ color: 'var(--primary, #1070C8)' }}>With Us?</span>
               </h2>
               <p className="contact-section-sub" style={{ fontSize: '1.05rem', color: '#64748b', maxWidth: '580px', margin: '0 auto', lineHeight: 1.6 }}>
                 We combine high-touch enterprise consulting with rapid startup iteration to deliver unmatched ROI.
@@ -904,7 +913,7 @@ export default function ContactPage() {
                   key={i}
                   custom={i}
                   variants={fadeUp}
-                  whileHover={{ y: -5, borderColor: 'rgba(246,97,53,0.35)', boxShadow: '0 16px 36px rgba(246,97,53,0.08)' }}
+                  whileHover={{ y: -5, borderColor: 'rgba(16, 112, 200, 0.35)', boxShadow: '0 16px 36px rgba(16, 112, 200, 0.08)' }}
                   className="contact-feature-card"
                 >
                   <div className="contact-feature-icon" style={{ fontSize: '2.2rem', marginBottom: '0.75rem' }}>{f.icon}</div>
@@ -919,8 +928,8 @@ export default function ContactPage() {
 
       {/* ── CONTACT FORM ── */}
       <section id="contact-form" className="contact-section-pad" style={{ background: '#f8fafc', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '450px', height: '450px', background: 'radial-gradient(circle, rgba(246,97,53,0.12) 0%, transparent 70%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '450px', height: '450px', background: 'radial-gradient(circle, rgba(246,97,53,0.10) 0%, transparent 70%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '450px', height: '450px', background: 'radial-gradient(circle, rgba(16, 112, 200, 0.12) 0%, transparent 70%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '450px', height: '450px', background: 'radial-gradient(circle, rgba(16, 112, 200, 0.10) 0%, transparent 70%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
 
         <div className="wrap" style={{ position: 'relative', zIndex: 10 }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
@@ -928,9 +937,9 @@ export default function ContactPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'rgba(16, 112, 200, 0.08)',
+                  border: '1px solid rgba(16, 112, 200, 0.2)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -943,7 +952,7 @@ export default function ContactPage() {
                 Inquiry Form
               </span>
               <h2 className="contact-section-h2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.75rem)', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
-                Partner with <span style={{ color: '#F66135' }}>Excellence</span>
+                Partner with <span style={{ color: 'var(--primary, #1070C8)' }}>Excellence</span>
               </h2>
               <p className="contact-section-sub" style={{ fontSize: '1.05rem', color: '#64748b', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
                 Fill in your project specifications and our strategic team will reach out with a detailed proposal.
@@ -1023,7 +1032,7 @@ export default function ContactPage() {
                       <motion.div animate={{ x: errors.fullName ? [-4, 4, -4, 4, 0] : 0 }} transition={{ duration: 0.3 }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                            Full Name <span style={{ color: '#F66135' }}>*</span>
+                            Full Name <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                           </span>
                           <input
                             type="text"
@@ -1058,7 +1067,7 @@ export default function ContactPage() {
                       <motion.div animate={{ x: errors.email ? [-4, 4, -4, 4, 0] : 0 }} transition={{ duration: 0.3 }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                            Business Email <span style={{ color: '#F66135' }}>*</span>
+                            Business Email <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                           </span>
                           <input
                             type="email"
@@ -1093,7 +1102,7 @@ export default function ContactPage() {
                     <motion.div animate={{ x: errors.address ? [-4, 4, -4, 4, 0] : 0 }} transition={{ duration: 0.3 }}>
                       <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                         <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                          Street Address <span style={{ color: '#F66135' }}>*</span>
+                          Street Address <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                         </span>
                         <input
                           type="text"
@@ -1107,13 +1116,13 @@ export default function ContactPage() {
                     </motion.div>
 
                     {/* Row 4: State / Province, City (State-wise options), Country */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.25rem' }}>
+                    <div className="contact-address-grid">
                       
                       {/* State Choice Dropdown */}
                       <motion.div animate={{ x: errors.state ? [-4, 4, -4, 4, 0] : 0 }} transition={{ duration: 0.3 }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                            State / Province <span style={{ color: '#F66135' }}>*</span>
+                            State / Province <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                           </span>
                           <select
                             className={`form-input-field ${errors.state ? 'input-error' : ''}`}
@@ -1140,7 +1149,7 @@ export default function ContactPage() {
                       <motion.div animate={{ x: errors.city ? [-4, 4, -4, 4, 0] : 0 }} transition={{ duration: 0.3 }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                            City <span style={{ color: '#F66135' }}>*</span>
+                            City <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                           </span>
                           <select
                             className={`form-input-field ${errors.city ? 'input-error' : ''}`}
@@ -1165,7 +1174,7 @@ export default function ContactPage() {
                       <motion.div animate={{ x: errors.country ? [-4, 4, -4, 4, 0] : 0 }} transition={{ duration: 0.3 }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                            Country <span style={{ color: '#F66135' }}>*</span>
+                            Country <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                           </span>
                           <select
                             className={`form-input-field ${errors.country ? 'input-error' : ''}`}
@@ -1194,7 +1203,7 @@ export default function ContactPage() {
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                            Specify Your City Name <span style={{ color: '#F66135' }}>*</span>
+                            Specify Your City Name <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                           </span>
                           <input
                             type="text"
@@ -1253,7 +1262,7 @@ export default function ContactPage() {
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                            Specify Your Custom Budget Amount (₹ INR) <span style={{ color: '#F66135' }}>*</span>
+                            Specify Your Custom Budget Amount (₹ INR) <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                           </span>
                           <input
                             type="text"
@@ -1269,7 +1278,7 @@ export default function ContactPage() {
                     <motion.div animate={{ x: errors.description ? [-4, 4, -4, 4, 0] : 0 }} transition={{ duration: 0.3 }}>
                       <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                         <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b' }}>
-                          Project Description <span style={{ color: '#F66135' }}>*</span>
+                          Project Description <span style={{ color: 'var(--primary, #1070C8)' }}>*</span>
                         </span>
                         <textarea
                           rows={4}
@@ -1293,7 +1302,7 @@ export default function ContactPage() {
                       <motion.button
                         type="submit"
                         disabled={isSubmitting}
-                        whileHover={{ scale: isSubmitting ? 1 : 1.02, boxShadow: '0 12px 28px rgba(246, 97, 53, 0.25)' }}
+                        whileHover={{ scale: isSubmitting ? 1 : 1.02, boxShadow: '0 12px 28px rgba(16, 112, 200, 0.25)' }}
                         whileTap={{ scale: 0.98 }}
                         className="btn btn-orange"
                         style={{
@@ -1344,9 +1353,9 @@ export default function ContactPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'rgba(16, 112, 200, 0.08)',
+                  border: '1px solid rgba(16, 112, 200, 0.2)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -1359,7 +1368,7 @@ export default function ContactPage() {
                 Physical Presence
               </span>
               <h2 className="contact-section-h2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.75rem)', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
-                Visit Our <span style={{ color: '#F66135' }}>Headquarters</span>
+                Visit Our <span style={{ color: 'var(--primary, #1070C8)' }}>Headquarters</span>
               </h2>
               <p className="contact-section-sub" style={{ fontSize: '1.05rem', color: '#64748b', maxWidth: '580px', margin: '0 auto', lineHeight: 1.6 }}>
                 Located in Chhatrapati Sambhajinagar. Drop in for coffee and an interactive discovery session.
@@ -1413,7 +1422,7 @@ export default function ContactPage() {
                     pointerEvents: 'none',
                   }}
                 >
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F66135' }} />
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary, #1070C8)' }} />
                   Interactive Map Location
                 </div>
               </div>
@@ -1437,13 +1446,13 @@ export default function ContactPage() {
                       width: '56px',
                       height: '56px',
                       borderRadius: '16px',
-                      background: 'rgba(246,97,53,0.1)',
-                      border: '1.5px solid rgba(246,97,53,0.2)',
+                      background: 'rgba(16, 112, 200, 0.1)',
+                      border: '1.5px solid rgba(16, 112, 200, 0.2)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: '1.5rem',
-                      color: '#F66135',
+                      color: 'var(--primary, #1070C8)',
                     }}
                   >
                     <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1502,7 +1511,7 @@ export default function ContactPage() {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: '#F66135' }}>
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: 'var(--primary, #1070C8)' }}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                     </svg>
                     Get Live Directions
@@ -1522,9 +1531,9 @@ export default function ContactPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'rgba(16, 112, 200, 0.08)',
+                  border: '1px solid rgba(16, 112, 200, 0.2)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -1537,7 +1546,7 @@ export default function ContactPage() {
                 Questions & Answers
               </span>
               <h2 className="contact-section-h2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
-                Frequently Asked <span style={{ color: '#F66135' }}>Questions</span>
+                Frequently Asked <span style={{ color: 'var(--primary, #1070C8)' }}>Questions</span>
               </h2>
               <p className="contact-section-sub" style={{ fontSize: '1.05rem', color: '#64748b' }}>Everything you need to know about working with Enterprenex.</p>
             </motion.div>
@@ -1552,10 +1561,10 @@ export default function ContactPage() {
                     variants={fadeUp}
                     style={{
                       background: isOpen ? '#ffffff' : 'rgba(255, 255, 255, 0.85)',
-                      border: isOpen ? '1.5px solid rgba(246,97,53,0.4)' : '1.5px solid #e2e8f0',
+                      border: isOpen ? '1.5px solid rgba(16, 112, 200, 0.4)' : '1.5px solid #e2e8f0',
                       borderRadius: '18px',
                       overflow: 'hidden',
-                      boxShadow: isOpen ? '0 12px 28px rgba(246,97,53,0.08)' : '0 2px 8px rgba(0,0,0,0.02)',
+                      boxShadow: isOpen ? '0 12px 28px rgba(16, 112, 200, 0.08)' : '0 2px 8px rgba(0,0,0,0.02)',
                       transition: 'all 0.3s ease',
                     }}
                   >
@@ -1574,7 +1583,7 @@ export default function ContactPage() {
                         gap: '1rem',
                       }}
                     >
-                      <span style={{ fontSize: '1.05rem', fontWeight: 700, color: isOpen ? '#F66135' : '#0f172a', lineHeight: 1.4 }}>
+                      <span style={{ fontSize: '1.05rem', fontWeight: 700, color: isOpen ? 'var(--primary, #1070C8)' : '#0f172a', lineHeight: 1.4 }}>
                         {faq.question}
                       </span>
                       <motion.div
@@ -1584,11 +1593,11 @@ export default function ContactPage() {
                           width: '32px',
                           height: '32px',
                           borderRadius: '50%',
-                          background: isOpen ? 'rgba(246,97,53,0.1)' : '#f1f5f9',
+                          background: isOpen ? 'rgba(16, 112, 200, 0.1)' : '#f1f5f9',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: isOpen ? '#F66135' : '#64748b',
+                          color: isOpen ? 'var(--primary, #1070C8)' : '#64748b',
                           flexShrink: 0,
                         }}
                       >

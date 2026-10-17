@@ -267,8 +267,8 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
         style={{
           padding: '1.25rem 1.5rem',
           marginBottom: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(246, 97, 53, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%)',
-          border: '1px solid rgba(246, 97, 53, 0.25)',
+          background: 'linear-gradient(135deg, rgba(16, 112, 200, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%)',
+          border: '1px solid rgba(16, 112, 200, 0.25)',
           borderRadius: '12px',
           display: 'flex',
           justifyContent: 'space-between',
@@ -283,7 +283,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
               width: '46px',
               height: '46px',
               borderRadius: '10px',
-              background: 'rgba(246, 97, 53, 0.15)',
+              background: 'rgba(16, 112, 200, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -552,7 +552,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                       <a
                         href={getTicketEmailUrl(tkt)}
                         className="adm-btn adm-btn-sm"
-                        style={{ background: 'rgba(246, 97, 53, 0.15)', color: 'var(--adm-primary)', border: '1px solid rgba(246, 97, 53, 0.3)', padding: '0.3rem 0.5rem' }}
+                        style={{ background: 'rgba(16, 112, 200, 0.15)', color: 'var(--adm-primary)', border: '1px solid rgba(16, 112, 200, 0.3)', padding: '0.3rem 0.5rem' }}
                         title="Send via Email (contact@enterprenex.solutions)"
                       >
                         <Mail size={13} />

@@ -597,7 +597,7 @@ export const DocumentsPage: React.FC = () => {
         </div>
         <div class="kyc-table-container">
           <table class="kyc-table">
-            <tr><td><strong>12-Digit Employee ID:</strong></td><td><code style="font-size: 1rem; color: #f66135; font-weight: 800;">${finalEmpId}</code></td></tr>
+            <tr><td><strong>12-Digit Employee ID:</strong></td><td><code style="font-size: 1rem; color: #1070C8; font-weight: 800;">${finalEmpId}</code></td></tr>
             <tr><td><strong>Employee Full Name:</strong></td><td>${empName}</td></tr>
             <tr><td><strong>Verification Status:</strong></td><td><strong style="color: ${statusColor}; text-transform: uppercase;">${verificationStatus}</strong></td></tr>
             <tr><td><strong>Designation & Governance Role:</strong></td><td>${emp?.role || 'Executive Team Member'}</td></tr>
@@ -632,16 +632,16 @@ export const DocumentsPage: React.FC = () => {
           <style>
             @page { size: A4; margin: 15mm; }
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #0f172a; line-height: 1.6; margin: 0; padding: 2.5rem; background: #fff; }
-            .header-bar { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #f66135; padding-bottom: 1.25rem; margin-bottom: 2rem; }
+            .header-bar { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1070C8; padding-bottom: 1.25rem; margin-bottom: 2rem; }
             .brand-name { font-size: 1.6rem; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
-            .brand-name span { color: #f66135; }
+            .brand-name span { color: #1070C8; }
             .brand-sub { font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 3px; }
             .doc-meta { text-align: right; font-size: 0.78rem; color: #64748b; line-height: 1.4; }
             .doc-title-block { text-align: center; margin: 1.75rem 0 2rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
             .doc-title-block h1 { font-size: 1.35rem; margin: 0; color: #0f172a; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-            .doc-title-block p { margin: 6px 0 0 0; font-size: 0.8rem; color: #f66135; font-weight: 700; }
+            .doc-title-block p { margin: 6px 0 0 0; font-size: 0.8rem; color: #1070C8; font-weight: 700; }
             .legal-section { margin-bottom: 1.5rem; }
-            .legal-section h3 { font-size: 0.95rem; font-weight: 800; color: #1e293b; margin: 0 0 0.4rem 0; border-left: 3px solid #f66135; padding-left: 8px; }
+            .legal-section h3 { font-size: 0.95rem; font-weight: 800; color: #1e293b; margin: 0 0 0.4rem 0; border-left: 3px solid #1070C8; padding-left: 8px; }
             .legal-section p { font-size: 0.85rem; color: #334155; margin: 0; text-align: justify; }
             .kyc-badge-header { display: flex; justify-content: space-between; align-items: center; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; }
             .kyc-tag { font-size: 0.75rem; font-weight: 800; color: #047857; letter-spacing: 0.5px; }
@@ -651,7 +651,7 @@ export const DocumentsPage: React.FC = () => {
             .sig-block { margin-top: 3.5rem; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1rem; }
             .sig-box { width: 45%; border-top: 1px solid #94a3b8; padding-top: 0.5rem; font-size: 0.8rem; color: #475569; }
             .sig-box strong { color: #0f172a; display: block; font-size: 0.88rem; }
-            .sig-seal { width: 90px; height: 90px; border-radius: 50%; border: 2px dashed #f66135; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: 0.65rem; font-weight: 800; color: #f66135; text-transform: uppercase; margin-bottom: 8px; }
+            .sig-seal { width: 90px; height: 90px; border-radius: 50%; border: 2px dashed #1070C8; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: 0.65rem; font-weight: 800; color: #1070C8; text-transform: uppercase; margin-bottom: 8px; }
             .footer-bar { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8; }
             @media print {
               body { padding: 0.5cm; }
@@ -870,8 +870,8 @@ export const DocumentsPage: React.FC = () => {
       {/* Role Clearance & Access Banner */}
       <div
         style={{
-          background: 'rgba(246, 97, 53, 0.08)',
-          border: '1px solid rgba(246, 97, 53, 0.25)',
+          background: 'rgba(16, 112, 200, 0.08)',
+          border: '1px solid rgba(16, 112, 200, 0.25)',
           borderRadius: '10px',
           padding: '0.85rem 1.25rem',
           marginBottom: '1.25rem',
@@ -1283,7 +1283,7 @@ export const DocumentsPage: React.FC = () => {
               width: '60px',
               height: '60px',
               borderRadius: '18px',
-              background: 'rgba(246, 97, 53, 0.1)',
+              background: 'rgba(16, 112, 200, 0.1)',
               color: 'var(--adm-primary)',
               display: 'inline-flex',
               alignItems: 'center',
@@ -1493,7 +1493,7 @@ export const DocumentsPage: React.FC = () => {
                 onClick={() => fileInputRef.current?.click()}
                 style={{
                   border: '2px dashed var(--adm-primary)',
-                  background: 'rgba(246, 97, 53, 0.04)',
+                  background: 'rgba(16, 112, 200, 0.04)',
                   borderRadius: '16px',
                   padding: '1.75rem',
                   textAlign: 'center',

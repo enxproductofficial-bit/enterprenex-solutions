@@ -125,9 +125,9 @@ export default function TechStackSection() {
                   fontSize: '0.875rem',
                   fontWeight: isActive ? 600 : 500,
                   color: isActive ? '#ffffff' : '#666666',
-                  background: isActive ? '#F66135' : '#ffffff',
-                  border: isActive ? '1px solid #F66135' : '1px solid #e8e8e8',
-                  boxShadow: isActive ? '0 4px 14px rgba(246, 97, 53, 0.35)' : 'none',
+                  background: isActive ? 'var(--primary, #1070C8)' : '#ffffff',
+                  border: isActive ? '1px solid var(--primary, #1070C8)' : '1px solid #e8e8e8',
+                  boxShadow: isActive ? '0 4px 14px rgba(16, 112, 200, 0.35)' : 'none',
                   cursor: 'pointer',
                   transition: 'all 0.25s ease',
                 }}
@@ -165,10 +165,10 @@ export default function TechStackSection() {
                 whileHover={{ 
                   scale: 1.08, 
                   y: -3,
-                  backgroundColor: '#FFF3EF', 
-                  color: '#F66135', 
-                  borderColor: '#F66135',
-                  boxShadow: '0 8px 20px rgba(246, 97, 53, 0.25)',
+                  backgroundColor: 'var(--blue-light, #E6EDF5)', 
+                  color: 'var(--primary, #1070C8)', 
+                  borderColor: 'var(--primary, #1070C8)',
+                  boxShadow: '0 8px 20px rgba(16, 112, 200, 0.25)',
                 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 18 }}
                 style={{
@@ -204,7 +204,7 @@ export default function TechStackSection() {
               <motion.span 
                 key={`a${i}`} 
                 className="ticker-tag"
-                whileHover={{ scale: 1.08, backgroundColor: '#FFF3EF', color: '#F66135', borderColor: '#F66135' }}
+                whileHover={{ scale: 1.08, backgroundColor: 'var(--blue-light, #E6EDF5)', color: 'var(--primary, #1070C8)', borderColor: 'var(--primary, #1070C8)' }}
                 transition={{ type: 'spring', stiffness: 350, damping: 20 }}
               >
                 {t}
@@ -220,7 +220,7 @@ export default function TechStackSection() {
               <motion.span 
                 key={`b${i}`} 
                 className="ticker-tag"
-                whileHover={{ scale: 1.08, backgroundColor: '#FFF3EF', color: '#F66135', borderColor: '#F66135' }}
+                whileHover={{ scale: 1.08, backgroundColor: 'var(--blue-light, #E6EDF5)', color: 'var(--primary, #1070C8)', borderColor: 'var(--primary, #1070C8)' }}
                 transition={{ type: 'spring', stiffness: 350, damping: 20 }}
               >
                 {t}
@@ -241,7 +241,7 @@ export default function TechStackSection() {
           href="#contact" 
           className="btn btn-orange" 
           id="tech-cta"
-          whileHover={{ scale: 1.05, boxShadow: '0 10px 25px rgba(246, 97, 53, 0.4)' }}
+          whileHover={{ scale: 1.05, boxShadow: '0 10px 25px rgba(16, 112, 200, 0.4)' }}
           whileTap={{ scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >

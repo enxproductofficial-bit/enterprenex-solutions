@@ -389,10 +389,10 @@ export const AiChatbotWidget: React.FC = () => {
             gap: '10px',
             padding: '12px 20px',
             borderRadius: '50px',
-            background: 'linear-gradient(135deg, #F66135 0%, #EA580C 100%)',
+            background: 'linear-gradient(135deg, var(--adm-primary, #1070C8) 0%, var(--adm-primary-highlight, #197ED8) 100%)',
             color: '#ffffff',
             border: '2px solid rgba(255, 255, 255, 0.3)',
-            boxShadow: '0 10px 25px rgba(246, 97, 53, 0.45)',
+            boxShadow: '0 10px 25px rgba(16, 112, 200, 0.45)',
             cursor: 'pointer',
             fontWeight: 700,
             fontSize: '0.9rem',
@@ -408,7 +408,7 @@ export const AiChatbotWidget: React.FC = () => {
               height: '26px',
               borderRadius: '50%',
               background: '#ffffff',
-              color: '#F66135',
+              color: 'var(--adm-primary, #1070C8)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -444,7 +444,7 @@ export const AiChatbotWidget: React.FC = () => {
             background: 'var(--adm-surface, #ffffff)',
             border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.12))',
             borderRadius: '16px',
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(246, 97, 53, 0.2)',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(16, 112, 200, 0.2)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -455,7 +455,7 @@ export const AiChatbotWidget: React.FC = () => {
           <div
             style={{
               padding: '14px 18px',
-              background: 'linear-gradient(135deg, rgba(246, 97, 53, 0.12) 0%, var(--adm-surface, #ffffff) 100%)',
+              background: 'linear-gradient(135deg, rgba(16, 112, 200, 0.12) 0%, var(--adm-surface, #ffffff) 100%)',
               borderBottom: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
               display: 'flex',
               alignItems: 'center',
@@ -468,12 +468,12 @@ export const AiChatbotWidget: React.FC = () => {
                   width: '34px',
                   height: '34px',
                   borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #F66135 0%, #EA580C 100%)',
+                  background: 'linear-gradient(135deg, var(--adm-primary, #1070C8) 0%, var(--adm-primary-highlight, #197ED8) 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  boxShadow: '0 4px 10px rgba(246, 97, 53, 0.35)'
+                  boxShadow: '0 4px 10px rgba(16, 112, 200, 0.35)'
                 }}
               >
                 <Bot size={18} />
@@ -589,8 +589,8 @@ export const AiChatbotWidget: React.FC = () => {
                       width: '26px',
                       height: '26px',
                       borderRadius: '50%',
-                      background: 'var(--adm-primary-soft, rgba(246, 97, 53, 0.12))',
-                      color: 'var(--adm-primary, #F66135)',
+                      background: 'var(--adm-primary-soft, rgba(16, 112, 200, 0.12))',
+                      color: 'var(--adm-primary, #1070C8)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -604,7 +604,7 @@ export const AiChatbotWidget: React.FC = () => {
                 <div
                   style={{
                     background: msg.sender === 'user'
-                      ? 'linear-gradient(135deg, #F66135 0%, #EA580C 100%)'
+                      ? 'linear-gradient(135deg, var(--adm-primary, #1070C8) 0%, var(--adm-primary-highlight, #197ED8) 100%)'
                       : 'var(--adm-surface, #ffffff)',
                     color: msg.sender === 'user'
                       ? '#ffffff'
@@ -614,7 +614,7 @@ export const AiChatbotWidget: React.FC = () => {
                     fontSize: '0.82rem',
                     lineHeight: '1.55',
                     border: msg.sender === 'user' ? 'none' : '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
-                    boxShadow: msg.sender === 'user' ? '0 2px 8px rgba(246, 97, 53, 0.3)' : '0 2px 6px rgba(0, 0, 0, 0.04)',
+                    boxShadow: msg.sender === 'user' ? '0 2px 8px rgba(16, 112, 200, 0.3)' : '0 2px 6px rgba(0, 0, 0, 0.04)',
                     whiteSpace: 'pre-line'
                   }}
                 >
@@ -640,8 +640,8 @@ export const AiChatbotWidget: React.FC = () => {
                     width: '26px',
                     height: '26px',
                     borderRadius: '50%',
-                    background: 'var(--adm-primary-soft, rgba(246, 97, 53, 0.12))',
-                    color: 'var(--adm-primary, #F66135)',
+                    background: 'var(--adm-primary-soft, rgba(16, 112, 200, 0.12))',
+                    color: 'var(--adm-primary, #1070C8)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -796,7 +796,7 @@ export const AiChatbotWidget: React.FC = () => {
                 width: '34px',
                 height: '34px',
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #F66135 0%, #EA580C 100%)',
+                background: 'linear-gradient(135deg, var(--adm-primary, #1070C8) 0%, var(--adm-primary-highlight, #197ED8) 100%)',
                 color: '#ffffff',
                 border: 'none',
                 display: 'flex',
@@ -804,7 +804,7 @@ export const AiChatbotWidget: React.FC = () => {
                 justifyContent: 'center',
                 cursor: 'pointer',
                 flexShrink: 0,
-                boxShadow: '0 2px 6px rgba(246, 97, 53, 0.35)'
+                boxShadow: '0 2px 6px rgba(16, 112, 200, 0.35)'
               }}
             >
               <Send size={15} />

@@ -126,8 +126,8 @@ export default function AboutPage() {
           height: 24px;
           border-radius: 50%;
           background: #ffffff;
-          border: 4px solid #F66135;
-          box-shadow: 0 0 0 4px rgba(246, 97, 53, 0.15);
+          border: 4px solid var(--primary, #1070C8);
+          box-shadow: 0 0 0 4px rgba(16, 112, 200, 0.15);
           z-index: 10;
         }
 
@@ -224,9 +224,9 @@ export default function AboutPage() {
               variants={fadeUp}
               style={{
                 display: 'inline-block',
-                background: 'rgba(246,97,53,0.08)',
-                border: '1px solid rgba(246,97,53,0.2)',
-                color: '#F66135',
+                background: 'var(--blue-light, #E6EDF5)',
+                border: '1px solid var(--blue-soft, #C8E0F8)',
+                color: 'var(--primary, #1070C8)',
                 fontSize: '0.8rem',
                 fontWeight: 700,
                 letterSpacing: '0.1em',
@@ -250,7 +250,7 @@ export default function AboutPage() {
               }}
             >
               We Don't Just Write Code.<br />
-              <span style={{ color: '#F66135' }}>We Engineer Competitive Advantages.</span>
+              <span style={{ color: 'var(--primary, #1070C8)' }}>We Engineer Competitive Advantages.</span>
             </motion.h1>
             <motion.p
               variants={fadeUp}
@@ -310,9 +310,9 @@ export default function AboutPage() {
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e' }} />
               <span style={{ marginLeft: 'auto', fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600 }}>Enterprenex Core Engine</span>
             </div>
-            <div style={{ padding: '1.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', background: 'rgba(246,97,53,0.015)' }}>
+            <div style={{ padding: '1.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', background: 'var(--blue-light, rgba(16,112,200,0.03))' }}>
               {[
-                { title: 'System Velocity', metric: '99.98%', highlight: '#F66135' },
+                { title: 'System Velocity', metric: '99.98%', highlight: 'var(--primary, #1070C8)' },
                 { title: 'Security Audit', metric: 'Passed A+', highlight: '#16a34a' },
                 { title: 'Deployment Speed', metric: '4x Faster', highlight: '#0284c7' },
               ].map((item, i) => (
@@ -348,7 +348,7 @@ export default function AboutPage() {
           >
             {STATS.map((s, i) => (
               <motion.div key={i} custom={i} variants={fadeUp}>
-                <div style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.2rem)', fontWeight: 800, color: '#F66135', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                <div style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.2rem)', fontWeight: 800, color: 'var(--primary, #1070C8)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
                   {s.isText ? s.textValue : <AnimatedCounter target={s.numericValue!} suffix={s.suffix} />}
                 </div>
                 <div style={{ fontSize: '0.92rem', color: '#64748b', marginTop: '0.4rem', fontWeight: 600 }}>{s.label}</div>
@@ -366,9 +366,9 @@ export default function AboutPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'var(--blue-light, #E6EDF5)',
+                  border: '1px solid var(--blue-soft, #C8E0F8)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -383,7 +383,7 @@ export default function AboutPage() {
               <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.75rem)', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
                 Who We Are
               </h2>
-              <div style={{ width: '48px', height: '4px', background: '#F66135', borderRadius: '999px', margin: '0 auto' }} />
+              <div style={{ width: '48px', height: '4px', background: 'var(--primary, #1070C8)', borderRadius: '999px', margin: '0 auto' }} />
             </motion.div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -410,9 +410,9 @@ export default function AboutPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'var(--blue-light, #E6EDF5)',
+                  border: '1px solid var(--blue-soft, #C8E0F8)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -479,9 +479,9 @@ export default function AboutPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'var(--blue-light, #E6EDF5)',
+                  border: '1px solid var(--blue-soft, #C8E0F8)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -509,7 +509,7 @@ export default function AboutPage() {
                   whileInView={{ height: '100%' }}
                   viewport={{ once: true, margin: '-100px' }}
                   transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ width: '100%', background: '#F66135' }}
+                  style={{ width: '100%', background: 'var(--primary, #1070C8)' }}
                 />
               </div>
 
@@ -528,7 +528,7 @@ export default function AboutPage() {
                       }}
                     >
                       <motion.div
-                        whileHover={{ y: -4, borderColor: 'rgba(246,97,53,0.4)', boxShadow: '0 16px 32px rgba(246,97,53,0.08)' }}
+                        whileHover={{ y: -4, borderColor: 'rgba(16, 112, 200, 0.4)', boxShadow: '0 16px 32px rgba(16, 112, 200, 0.08)' }}
                         style={{
                           padding: '1.75rem 2rem',
                           background: '#f8fafc',
@@ -537,7 +537,7 @@ export default function AboutPage() {
                           transition: 'all 0.3s ease',
                         }}
                       >
-                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#F66135', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary, #1070C8)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                           {stage.year}
                         </span>
                         <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: '0.25rem 0 0.5rem' }}>{stage.title}</h3>
@@ -560,9 +560,9 @@ export default function AboutPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'var(--blue-light, #E6EDF5)',
+                  border: '1px solid var(--blue-soft, #C8E0F8)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -630,9 +630,9 @@ export default function AboutPage() {
               <span
                 style={{
                   display: 'inline-block',
-                  background: 'rgba(246,97,53,0.08)',
-                  border: '1px solid rgba(246,97,53,0.2)',
-                  color: '#F66135',
+                  background: 'var(--blue-light, #E6EDF5)',
+                  border: '1px solid var(--blue-soft, #C8E0F8)',
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -851,9 +851,9 @@ export default function AboutPage() {
             <span
               style={{
                 display: 'inline-block',
-                background: 'rgba(246,97,53,0.08)',
-                border: '1px solid rgba(246,97,53,0.2)',
-                color: '#F66135',
+                background: 'var(--blue-light, #E6EDF5)',
+                border: '1px solid var(--blue-soft, #C8E0F8)',
+                color: 'var(--primary, #1070C8)',
                 fontSize: '0.78rem',
                 fontWeight: 700,
                 letterSpacing: '0.1em',
@@ -867,7 +867,7 @@ export default function AboutPage() {
             </span>
             <h2 style={{ fontSize: 'clamp(2rem, 4.5vw, 3.4rem)', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.025em', lineHeight: 1.15, marginBottom: '1.25rem' }}>
               Let's Build Something<br />
-              <span style={{ color: '#F66135' }}>Exceptional Together</span>
+              <span style={{ color: 'var(--primary, #1070C8)' }}>Exceptional Together</span>
             </h2>
             <p style={{ fontSize: '1.1rem', color: '#64748b', lineHeight: 1.7, maxWidth: '600px', margin: '0 auto 2.25rem' }}>
               Ready to elevate your digital presence? Our senior strategy team is standing by to guide your roadmap.

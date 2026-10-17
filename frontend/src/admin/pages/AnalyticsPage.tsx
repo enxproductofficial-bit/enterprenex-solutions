@@ -70,7 +70,7 @@ export const AnalyticsPage: React.FC = () => {
   const serviceStats = serviceCategories.map((cat, idx) => {
     const catProjects = projects.filter(p => p.serviceCategory === cat);
     const catRevenue = catProjects.reduce((acc, p) => acc + (p.budget || 0), 0);
-    const colors = ['#F66135', '#3b82f6', '#10b981', '#8b5cf6', '#eab308', '#ec4899'];
+    const colors = ['#1070C8', '#3b82f6', '#10b981', '#8b5cf6', '#eab308', '#06b6d4'];
     return {
       service: cat,
       revenue: catRevenue,
@@ -219,7 +219,7 @@ export const AnalyticsPage: React.FC = () => {
                     className="adm-progress-fill"
                     style={{
                       width: `${st.pct}%`,
-                      background: `rgba(246, 97, 53, ${1 - idx * 0.15})`
+                      background: `rgba(16, 112, 200, ${1 - idx * 0.15})`
                     }}
                   />
                 </div>

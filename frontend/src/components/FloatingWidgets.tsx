@@ -41,7 +41,7 @@ export default function FloatingWidgets() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(246, 97, 53, 0.4)',
+              boxShadow: '0 8px 24px rgba(16, 112, 200, 0.4)',
               cursor: 'pointer',
               border: 'none',
             }}

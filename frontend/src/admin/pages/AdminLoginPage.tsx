@@ -111,27 +111,27 @@ export const AdminLoginPage: React.FC = () => {
     <div
       style={{
         minHeight: '100vh',
-        background: '#0a0c10',
+        background: 'var(--background, #F2F3F5)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.5rem',
+        padding: '2rem 1rem',
         fontFamily: "'Outfit', sans-serif"
       }}
     >
       <div
         style={{
           width: '100%',
-          maxWidth: '440px',
-          background: '#14171d',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '24px',
+          maxWidth: '460px',
+          background: 'var(--surface, #FFFFFF)',
+          border: '1px solid var(--border, #E8E8E8)',
+          borderRadius: 'var(--radius-card, 16px)',
           padding: '2.5rem',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7)'
+          boxShadow: '0 20px 50px rgba(16, 112, 200, 0.07)'
         }}
       >
         {/* Brand Logo & Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div
             style={{
               width: '64px',
@@ -139,16 +139,19 @@ export const AdminLoginPage: React.FC = () => {
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '1rem'
+              marginBottom: '0.75rem',
+              background: 'var(--blue-light, #E6EDF5)',
+              borderRadius: '16px',
+              border: '1px solid var(--blue-soft, #C8E0F8)'
             }}
           >
-            <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
+            <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
           </div>
-          <h1 style={{ fontSize: '1.55rem', fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
-            Enterprenex Admin
+          <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary, #111827)', margin: 0, letterSpacing: '-0.02em' }}>
+            Director & HR Portal
           </h1>
-          <p style={{ fontSize: '0.82rem', color: '#9ba3af', marginTop: '0.35rem' }}>
-            Authorized Personnel & Operations Access Portal
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #6B7280)', marginTop: '0.35rem' }}>
+            Authorized Executive & Institutional Access Portal
           </p>
         </div>
 
@@ -156,11 +159,11 @@ export const AdminLoginPage: React.FC = () => {
         {error && (
           <div
             style={{
-              background: 'rgba(239, 68, 68, 0.12)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
               borderRadius: '10px',
               padding: '0.75rem 1rem',
-              color: '#ef4444',
+              color: '#dc2626',
               fontSize: '0.82rem',
               display: 'flex',
               alignItems: 'center',
@@ -175,30 +178,34 @@ export const AdminLoginPage: React.FC = () => {
 
         {/* Login Form */}
         <form onSubmit={handleFormLogin}>
-          <div className="adm-form-group">
-            <label className="adm-form-label" style={{ color: '#9ba3af' }}>Authorized Email or Employee ID</label>
+          <div className="adm-form-group" style={{ marginBottom: '1.15rem' }}>
+            <label className="adm-form-label" style={{ color: 'var(--text-secondary, #6B7280)', fontSize: '0.82rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+              Official Email or Employee ID
+            </label>
             <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <Mail size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted, #9CA3AF)' }} />
               <input
                 type="text"
-                className="adm-input"
+                className="reg-input"
                 style={{ paddingLeft: '2.5rem' }}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="Enter your authorized email or 12-digit Employee ID"
+                placeholder="director@enterprenex.solutions"
                 required
                 autoFocus
               />
             </div>
           </div>
 
-          <div className="adm-form-group">
-            <label className="adm-form-label" style={{ color: '#9ba3af' }}>Password / Access Key</label>
+          <div className="adm-form-group" style={{ marginBottom: '1.15rem' }}>
+            <label className="adm-form-label" style={{ color: 'var(--text-secondary, #6B7280)', fontSize: '0.82rem', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+              Security Password / Master Passkey
+            </label>
             <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <Lock size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted, #9CA3AF)' }} />
               <input
                 type="password"
-                className="adm-input"
+                className="reg-input"
                 style={{ paddingLeft: '2.5rem' }}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -215,11 +222,11 @@ export const AdminLoginPage: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '0.65rem 0.85rem',
-              background: 'rgba(5, 150, 105, 0.08)',
-              border: '1px solid rgba(5, 150, 105, 0.25)',
-              borderRadius: '10px',
+              background: 'var(--blue-light, #E6EDF5)',
+              border: '1px solid var(--blue-soft, #C8E0F8)',
+              borderRadius: '8px',
               fontSize: '0.8rem',
-              marginBottom: '1rem',
+              marginBottom: '1.25rem',
               flexWrap: 'wrap',
               gap: '6px'
             }}
@@ -230,10 +237,10 @@ export const AdminLoginPage: React.FC = () => {
                 id="adm-terms-checkbox"
                 checked={agreeTerms}
                 onChange={e => setAgreeTerms(e.target.checked)}
-                style={{ width: '15px', height: '15px', accentColor: '#10b981', cursor: 'pointer' }}
+                style={{ width: '15px', height: '15px', accentColor: 'var(--primary, #1070C8)', cursor: 'pointer' }}
               />
-              <label htmlFor="adm-terms-checkbox" style={{ color: '#cbd5e1', cursor: 'pointer', fontWeight: 500 }}>
-                Agree to Terms & Conditions
+              <label htmlFor="adm-terms-checkbox" style={{ color: 'var(--text-primary, #111827)', cursor: 'pointer', fontWeight: 600 }}>
+                Agree to Governance Terms
               </label>
             </div>
 
@@ -243,33 +250,33 @@ export const AdminLoginPage: React.FC = () => {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#34d399',
+                color: 'var(--primary, #1070C8)',
                 fontWeight: 700,
                 textDecoration: 'underline',
                 cursor: 'pointer',
-                fontSize: '0.8rem'
+                fontSize: '0.78rem'
               }}
             >
-              View All Terms & Conditions
+              View Institutional Policies
             </button>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="adm-btn adm-btn-primary"
-            style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', justifyContent: 'center' }}
+            className="reg-btn-primary"
+            style={{ width: '100%', padding: '0.8rem', fontSize: '0.95rem', justifyContent: 'center' }}
           >
-            <span>{isLoading ? 'Verifying Credentials...' : 'Authenticate & Sign In'}</span>
+            <span>{isLoading ? 'Verifying Executive Clearance...' : 'Authenticate & Open Workspace'}</span>
             {!isLoading && <ArrowRight size={16} />}
           </button>
         </form>
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.25rem' }}>
-          <Link to="/login" style={{ fontSize: '0.82rem', color: '#34d399', textDecoration: 'none', fontWeight: 600 }}>
-            ← Go to Main Workspace Portal (Director / Employee / HR)
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--border, #E8E8E8)', paddingTop: '1.25rem' }}>
+          <Link to="/login" style={{ fontSize: '0.82rem', color: 'var(--primary, #1070C8)', textDecoration: 'none', fontWeight: 700 }}>
+            ← Switch to Workforce & Staff Sign In
           </Link>
-          <Link to="/" style={{ fontSize: '0.78rem', color: '#64748b', textDecoration: 'none' }}>
+          <Link to="/" style={{ fontSize: '0.78rem', color: 'var(--text-muted, #9CA3AF)', textDecoration: 'none' }}>
             Back to Public Website
           </Link>
         </div>

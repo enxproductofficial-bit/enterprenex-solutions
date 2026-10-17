@@ -295,7 +295,7 @@ export const CmsPage: React.FC = () => {
           {cms.testimonials.map(tst => (
             <div key={tst.id} className="adm-card">
               <div style={{ display: 'flex', gap: '2px', marginBottom: '8px' }}>
-                {[...Array(tst.rating)].map((_, i) => <Star key={i} size={14} fill="#F66135" color="#F66135" />)}
+                {[...Array(tst.rating)].map((_, i) => <Star key={i} size={14} fill="var(--adm-warning, #f59e0b)" color="var(--adm-warning, #f59e0b)" />)}
               </div>
               <p style={{ fontSize: '0.85rem', color: '#fff', fontStyle: 'italic', lineHeight: 1.6, marginBottom: '1rem' }}>
                 "{tst.quote}"

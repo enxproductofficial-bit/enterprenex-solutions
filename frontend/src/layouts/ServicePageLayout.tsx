@@ -138,9 +138,9 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   gap: '0.5rem', 
                   padding: '0.4rem 1rem', 
                   borderRadius: '9999px', 
-                  background: 'rgba(246,97,53,0.15)', 
-                  border: '1px solid rgba(246,97,53,0.4)', 
-                  color: '#F66135',
+                  background: 'rgba(16,112,200,0.15)', 
+                  border: '1px solid rgba(16,112,200,0.4)', 
+                  color: 'var(--primary, #1070C8)',
                   fontSize: '0.8125rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -163,7 +163,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                 <motion.a 
                   href="/contact" 
                   className="btn btn-orange"
-                  whileHover={{ scale: 1.04, boxShadow: '0 12px 28px rgba(246, 97, 53, 0.45)' }}
+                  whileHover={{ scale: 1.04, boxShadow: '0 12px 28px rgba(16, 112, 200, 0.35)' }}
                   whileTap={{ scale: 0.96 }}
                   style={{ borderRadius: '9999px', padding: '0.875rem 2rem', fontSize: '1rem', fontWeight: 600 }}
                 >
@@ -232,8 +232,8 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                 }}
                 className="desktop-floating-badge"
               >
-                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(246,97,53,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={13} color="#F66135" />
+                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(16,112,200,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon size={13} color="#1070C8" />
                 </div>
                 <span>{badge.text}</span>
               </motion.div>
@@ -287,11 +287,11 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   hidden: { opacity: 0, y: 25 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.45 } }
                 }}
-                whileHover={{ y: -6, borderColor: '#F66135', boxShadow: '0 16px 36px rgba(246, 97, 53, 0.12)' }}
+                whileHover={{ y: -6, borderColor: 'var(--primary, #1070C8)', boxShadow: '0 16px 36px rgba(16, 112, 200, 0.15)' }}
                 style={{ background: '#fff', borderRadius: '16px', border: '1.5px solid var(--gray-200)', transition: 'all 0.3s ease' }}
               >
-                <div className="svc-icon" style={{ background: 'rgba(246,97,53,0.08)', borderRadius: '12px', width: '3.25rem', height: '3.25rem' }}>
-                  <Shield size={24} color="#F66135" />
+                <div className="svc-icon" style={{ background: 'rgba(16,112,200,0.08)', borderRadius: '12px', width: '3.25rem', height: '3.25rem' }}>
+                  <Shield size={24} color="var(--primary, #1070C8)" />
                 </div>
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginTop: '1rem', color: '#0a0a0a' }}>Advantage 0{idx + 1}</h3>
                 <p style={{ color: 'var(--gray-600)', lineHeight: 1.65, fontSize: '0.95rem', marginTop: '0.5rem' }}>{desc}</p>
@@ -329,7 +329,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
                   whileHover={{ 
                     y: -6, 
-                    borderColor: '#F66135', 
+                    borderColor: 'var(--primary, #1070C8)', 
                     boxShadow: '0 20px 40px rgba(0,0,0,0.08)' 
                   }}
                   style={{ 
@@ -337,7 +337,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                     color: isFeatured ? '#ffffff' : '#0a0a0a',
                     padding: 'clamp(1.5rem, 3vw, 2.25rem)', 
                     borderRadius: '20px', 
-                    border: isFeatured ? '1px solid rgba(246,97,53,0.3)' : '1px solid var(--gray-200)',
+                    border: isFeatured ? '1px solid rgba(16,112,200,0.3)' : '1px solid var(--gray-200)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
@@ -348,7 +348,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                 >
                   {/* Background Accent Glow for Featured */}
                   {isFeatured && (
-                    <div style={{ position: 'absolute', top: '-20%', right: '-20%', width: '220px', height: '220px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,97,53,0.25) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', top: '-20%', right: '-20%', width: '220px', height: '220px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,112,200,0.25) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
                   )}
 
                   <div>
@@ -358,7 +358,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                         width: '3.25rem', 
                         height: '3.25rem', 
                         borderRadius: '14px', 
-                        background: isFeatured ? 'rgba(246,97,53,0.2)' : 'rgba(246,97,53,0.08)', 
+                        background: isFeatured ? 'rgba(16,112,200,0.2)' : 'rgba(16,112,200,0.08)', 
                         display: 'flex', 
                         alignItems: 'center', 
                         justifyContent: 'center' 
@@ -369,7 +369,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                           viewport={{ once: true }}
                           transition={{ type: 'spring', stiffness: 300, damping: 15, delay: idx * 0.1 + 0.2 }}
                         >
-                          <Target size={26} color="#F66135" />
+                          <Target size={26} color="var(--primary, #1070C8)" />
                         </motion.div>
                       </div>
 
@@ -380,7 +380,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                         padding: '0.3rem 0.75rem', 
                         borderRadius: '9999px',
                         background: isFeatured ? 'rgba(255,255,255,0.1)' : 'var(--gray-100)',
-                        color: isFeatured ? '#F66135' : 'var(--gray-600)'
+                        color: isFeatured ? 'var(--primary, #1070C8)' : 'var(--gray-600)'
                       }}>
                         PROBLEM 0{idx + 1}
                       </span>
@@ -399,11 +399,11 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: isFeatured ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <motion.div 
                       whileHover={{ scale: 1.2 }}
-                      style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F66135', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--primary, #1070C8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                       <Check size={14} color="#fff" strokeWidth={3} />
                     </motion.div>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: isFeatured ? '#F66135' : 'var(--primary)' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary, #1070C8)' }}>
                       Solved with Custom Architecture
                     </span>
                   </div>
@@ -450,11 +450,11 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   hidden: { opacity: 0, scale: 0.95, y: 20 },
                   visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.4 } }
                 }}
-                whileHover={{ y: -6, borderColor: '#F66135', boxShadow: '0 16px 36px rgba(246, 97, 53, 0.12)' }}
+                whileHover={{ y: -6, borderColor: 'var(--primary, #1070C8)', boxShadow: '0 16px 36px rgba(16, 112, 200, 0.15)' }}
                 style={{ background: '#fff', borderRadius: '16px', border: '1.5px solid var(--gray-200)', transition: 'all 0.3s ease' }}
               >
-                <div className="svc-icon" style={{ background: 'rgba(246,97,53,0.08)', borderRadius: '12px', width: '3.25rem', height: '3.25rem' }}>
-                  <Zap size={24} color="#F66135" />
+                <div className="svc-icon" style={{ background: 'rgba(16,112,200,0.08)', borderRadius: '12px', width: '3.25rem', height: '3.25rem' }}>
+                  <Zap size={24} color="var(--primary, #1070C8)" />
                 </div>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '1rem', color: '#0a0a0a' }}>{title}</h3>
                 <p style={{ color: 'var(--gray-600)', lineHeight: 1.6, fontSize: '0.92rem', marginTop: '0.5rem' }}>
@@ -521,9 +521,9 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   <motion.div 
                     className="pstep__icon"
                     animate={{ 
-                      backgroundColor: isOpen ? '#F66135' : '#ffffff', 
+                      backgroundColor: isOpen ? 'var(--primary, #1070C8)' : '#ffffff', 
                       color: isOpen ? '#ffffff' : '#0a0a0a',
-                      borderColor: isOpen ? '#F66135' : 'var(--gray-200)'
+                      borderColor: isOpen ? 'var(--primary, #1070C8)' : 'var(--gray-200)'
                     }}
                     transition={{ duration: 0.3 }}
                     style={{ fontWeight: 700 }}
@@ -544,11 +544,11 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
-                        <span className="pstep__over" style={{ color: isOpen ? '#F66135' : 'var(--gray-400)' }}>Phase {step.step}</span>
+                        <span className="pstep__over" style={{ color: isOpen ? 'var(--primary, #1070C8)' : 'var(--gray-400)' }}>Phase {step.step}</span>
                         <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{step.title}</h3>
                       </div>
                       <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                        <ChevronDown size={20} color={isOpen ? '#F66135' : 'var(--gray-500)'} />
+                        <ChevronDown size={20} color={isOpen ? 'var(--primary, #1070C8)' : 'var(--gray-500)'} />
                       </motion.div>
                     </div>
 
@@ -566,7 +566,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                           style={{ overflow: 'hidden' }}
                         >
                           <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--gray-200)', fontSize: '0.875rem', color: 'var(--gray-700)', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                            <CheckCircle size={16} color="#F66135" style={{ flexShrink: 0, marginTop: '2px' }} />
+                            <CheckCircle size={16} color="var(--primary, #1070C8)" style={{ flexShrink: 0, marginTop: '2px' }} />
                             <span><strong>Deliverables:</strong> {step.details}</span>
                           </div>
                         </motion.div>
@@ -590,7 +590,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-40px' }}
           >
-            <span className="section-eyebrow t-overline" style={{ color: '#F66135' }}>Technologies</span>
+            <span className="section-eyebrow t-overline" style={{ color: 'var(--primary, #1070C8)' }}>Technologies</span>
             <h2 className="section-h2" style={{ color: '#fff' }}>Modern Technology <span className="dot">Stack</span></h2>
             <p style={{ color: 'rgba(255,255,255,0.65)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
               We build with battle-tested frameworks and cutting-edge cloud infrastructure.
@@ -624,7 +624,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   hidden: { opacity: 0, scale: 0.8 },
                   visible: { opacity: 1, scale: 1 }
                 }}
-                whileHover={{ scale: 1.08, backgroundColor: 'rgba(246,97,53,0.2)', borderColor: '#F66135', color: '#ffffff' }}
+                whileHover={{ scale: 1.08, backgroundColor: 'rgba(16,112,200,0.2)', borderColor: 'var(--primary, #1070C8)', color: '#ffffff' }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
               >
                 {tech}
@@ -674,10 +674,10 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   hidden: { opacity: 0, y: 20 },
                   visible: { opacity: 1, y: 0 }
                 }}
-                whileHover={{ scale: 1.03, borderColor: '#F66135', backgroundColor: '#ffffff', boxShadow: '0 12px 24px rgba(246,97,53,0.1)' }}
+                whileHover={{ scale: 1.03, borderColor: 'var(--primary, #1070C8)', backgroundColor: '#ffffff', boxShadow: '0 12px 24px rgba(16,112,200,0.1)' }}
               >
-                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(246,97,53,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <CheckCircle size={16} color="#F66135" />
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(16,112,200,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <CheckCircle size={16} color="var(--primary, #1070C8)" />
                 </div>
                 <span style={{ fontWeight: 700, color: 'var(--gray-800)', fontSize: '0.95rem' }}>{industry}</span>
               </motion.div>
@@ -715,8 +715,8 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                   style={{ 
                     background: '#ffffff', 
                     borderRadius: '16px', 
-                    border: isOpen ? '1.5px solid #F66135' : '1px solid var(--gray-200)',
-                    boxShadow: isOpen ? '0 12px 30px rgba(246, 97, 53, 0.08)' : '0 2px 6px rgba(0,0,0,0.02)',
+                    border: isOpen ? '1.5px solid var(--primary, #1070C8)' : '1px solid var(--gray-200)',
+                    boxShadow: isOpen ? '0 12px 30px rgba(16, 112, 200, 0.08)' : '0 2px 6px rgba(0,0,0,0.02)',
                     overflow: 'hidden',
                     transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
                   }}
@@ -736,7 +736,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                       cursor: 'pointer'
                     }}
                   >
-                    <span style={{ fontSize: '1.0625rem', fontWeight: 700, color: isOpen ? '#F66135' : 'var(--gray-900)', lineHeight: 1.4 }}>
+                    <span style={{ fontSize: '1.0625rem', fontWeight: 700, color: isOpen ? 'var(--primary, #1070C8)' : 'var(--gray-900)', lineHeight: 1.4 }}>
                       {faq.question}
                     </span>
                     <motion.div 
@@ -746,14 +746,14 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                         width: '32px', 
                         height: '32px', 
                         borderRadius: '50%', 
-                        background: isOpen ? 'rgba(246,97,53,0.1)' : 'var(--gray-100)',
+                        background: isOpen ? 'rgba(16,112,200,0.1)' : 'var(--gray-100)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0
                       }}
                     >
-                      <ChevronDown size={18} color={isOpen ? '#F66135' : 'var(--gray-600)'} />
+                      <ChevronDown size={18} color={isOpen ? 'var(--primary, #1070C8)' : 'var(--gray-600)'} />
                     </motion.div>
                   </button>
 
@@ -779,7 +779,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
       </section>
 
       {/* ── 9. CONTACT / CONSULTATION CTA ── */}
-      <section id="contact" className="cta-banner" style={{ background: 'linear-gradient(135deg, #F66135 0%, #D94E22 100%)', padding: 'clamp(4rem, 7vw, 6rem) 1rem', textAlign: 'center', color: '#fff' }}>
+      <section id="contact" className="cta-banner" style={{ background: 'linear-gradient(135deg, var(--primary, #1070C8) 0%, #1E6DB8 100%)', padding: 'clamp(4rem, 7vw, 6rem) 1rem', textAlign: 'center', color: '#fff' }}>
         <div className="wrap">
           <motion.div
             initial={{ opacity: 0, y: 25 }}
@@ -800,7 +800,7 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
                 className="btn"
                 whileHover={{ scale: 1.05, boxShadow: '0 12px 28px rgba(0,0,0,0.25)' }}
                 whileTap={{ scale: 0.95 }}
-                style={{ background: '#ffffff', color: '#F66135', borderRadius: '9999px', padding: '0.875rem 2.25rem', fontWeight: 700, fontSize: '1rem' }}
+                style={{ background: '#ffffff', color: 'var(--primary, #1070C8)', borderRadius: '9999px', padding: '0.875rem 2.25rem', fontWeight: 700, fontSize: '1rem' }}
               >
                 Get Free Consultation
               </motion.a>

@@ -16,6 +16,7 @@ import AboutPage from './pages/AboutPage';
 import VerificationPage from './pages/VerificationPage';
 import FloatingWidgets from './components/FloatingWidgets';
 import LoginPage from './pages/LoginPage';
+import { CreateNewPasswordPage } from './pages/CreateNewPasswordPage';
 
 // Admin Context, Layout & IP Guard
 import { AdminProvider, useAdmin } from './admin/context/AdminContext';
@@ -66,10 +67,10 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
     return <Navigate to="/login" replace />;
   }
 
-  // If user is Employee (Team Member / Developer) attempting to access Executive Dashboard (/admin),
-  // redirect them directly to their primary workspace (My Attendance & Leave: /admin/team)
-  if ((currentUser.role === 'Team Member' || currentUser.role === 'Developer') && location.pathname === '/admin') {
-    return <Navigate to="/admin/team" replace />;
+  // Mandatory First-Time Password Setup Guard:
+  // Employees cannot access the dashboard or any enterprise module until they complete password setup
+  if (currentUser.mustChangePassword) {
+    return <Navigate to="/create-new-password" replace />;
   }
 
   // If role is not authorized for this specific module
@@ -160,7 +161,7 @@ function PublicWebsiteLayout({ children }: { children: React.ReactNode }) {
 
 function MainAppRoutes() {
   const { pathname } = useLocation();
-  const isAuthOrOnboardingRoute = pathname.startsWith('/admin') || pathname === '/register' || pathname === '/login';
+  const isAuthOrOnboardingRoute = pathname.startsWith('/admin') || pathname === '/register' || pathname === '/login' || pathname === '/create-new-password' || pathname === '/change-password';
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
@@ -183,7 +184,7 @@ function MainAppRoutes() {
             left: 0,
             right: 0,
             height: '4px',
-            background: 'linear-gradient(to right, #F66135, #ff9575)',
+            background: 'linear-gradient(to right, var(--primary, #1070C8), var(--primary-light, #197ED8))',
             transformOrigin: '0%',
             zIndex: 10000,
           }}
@@ -222,6 +223,8 @@ function MainAppRoutes() {
         {/* ── STAFF AUTH PORTAL (Approach A: Internal Onboarding Only) ── */}
         <Route path="/register" element={<Navigate to="/login?notice=internal_only" replace />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/create-new-password" element={<CreateNewPasswordPage />} />
+        <Route path="/change-password" element={<CreateNewPasswordPage />} />
 
         {/* ── ADMIN LOGIN (Protected by IP Restriction Guard) ── */}
         <Route path="/admin/login" element={<IpRestrictionGuard><AdminLoginPage /></IpRestrictionGuard>} />
@@ -230,7 +233,7 @@ function MainAppRoutes() {
         {/* 1. Dashboard: Director & Managers/HR */}
         <Route path="/admin" element={
           <IpRestrictionGuard>
-            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'HR Manager', 'Sales Lead', 'Finance Officer']} moduleName="Executive Dashboard">
+            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'HR Manager', 'Sales Lead', 'Finance Officer', 'Team Member', 'Developer']} moduleName="Operations Dashboard">
               <DashboardPage />
             </AdminRouteGuard>
           </IpRestrictionGuard>

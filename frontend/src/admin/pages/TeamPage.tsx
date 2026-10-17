@@ -1072,8 +1072,9 @@ export const TeamPage: React.FC = () => {
 
   const openAddMemberModal = () => {
     fetchServerEmployeeId('Engineering').then(id => setEmpId(id));
-    setEmpPassword('');
-    setShowEmpPassword(false);
+    const randomChars = Math.random().toString(36).slice(2, 6).toUpperCase() + Math.floor(100 + Math.random() * 900);
+    setEmpPassword(`Enx@${randomChars}`);
+    setShowEmpPassword(true);
     setName('');
     setRole('');
     setDesignation('');
@@ -1113,7 +1114,7 @@ export const TeamPage: React.FC = () => {
   const handleCreateEmployee = (e: React.FormEvent) => {
     e.preventDefault();
     const finalEmpId = empId.trim() || 'ZCX-EMP-' + (employees.length + 1).toString().padStart(4, '0');
-    const finalPassword = empPassword.trim() || undefined;
+    const finalPassword = empPassword.trim() || `Enx@${Math.random().toString(36).slice(2, 6).toUpperCase()}82`;
 
     // Duplicate check validation
     const alreadyExists = employees.some(
@@ -1140,6 +1141,8 @@ export const TeamPage: React.FC = () => {
     addEmployee({
       employeeId: finalEmpId,
       password: finalPassword,
+      temporaryPassword: finalPassword,
+      mustChangePassword: true,
       name,
       role: role ? `${role} (${governanceRole})` : `${governanceRole}`,
       designation: designation || role || 'Software Engineer',
@@ -1168,6 +1171,32 @@ export const TeamPage: React.FC = () => {
       kycVerifiedBy: (finalPan && finalAadhaar && isDirector) ? (currentUser?.name || 'Managing Director') : undefined,
       kycVerifiedAt: (finalPan && finalAadhaar && isDirector) ? new Date().toISOString() : undefined
     });
+
+    // Sync with backend API
+    try {
+      const token = localStorage.getItem('ewms_token');
+      fetch('http://localhost:5000/api/employees', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          employeeId: finalEmpId,
+          password: finalPassword,
+          name,
+          role: role ? `${role} (${governanceRole})` : `${governanceRole}`,
+          department,
+          email: email || `${name.toLowerCase().replace(/\s+/g, '')}@enterprenex.com`,
+          phone: phone || '+91-9876543210',
+          salaryMonthly: Number(salary),
+          workloadPercentage: Number(workload || 100),
+          approvalStatus: initialApprovalStatus
+        })
+      }).catch(() => {});
+    } catch {
+      // offline
+    }
 
     if (panDocUrl) {
       uploadDocument({
@@ -1198,11 +1227,11 @@ export const TeamPage: React.FC = () => {
     if (initialApprovalStatus === 'Pending Director Approval') {
       showToast(
         'Employee Registered - Awaiting Director Approval',
-        `Employee ID ${finalEmpId} added. Awaiting Director Approval (Rohit Pawar - director@enterprenex.solutions) before workspace portal login is enabled.`,
+        `Employee ID ${finalEmpId} added. Temporary Password: ${finalPassword}. Awaiting Director approval.`,
         'info'
       );
     } else {
-      showToast('Employee Added', `Assigned Unique 12-Digit Employee ID: ${finalEmpId} with active portal access.`, 'success');
+      showToast('Employee Added', `Employee ID: ${finalEmpId} | Temp Password: ${finalPassword}. First-time password setup is required on login.`, 'success');
     }
 
     setShowAddModal(false);

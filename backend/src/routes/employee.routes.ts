@@ -89,6 +89,8 @@ router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager
         kycStatus: data.kycStatus || 'Not Submitted',
         employmentType: data.employmentType || 'Full Time',
         workMode: data.workMode || 'Hybrid',
+        mustChangePassword: true,
+        temporaryPassword: rawPassword,
         skillsMatrixJson: JSON.stringify(data.skillsMatrix || []),
         educationJson: JSON.stringify(data.education || []),
         joinDate: data.joinDate || new Date().toISOString().split('T')[0]
@@ -100,7 +102,9 @@ router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager
       where: { email: data.email },
       update: {
         name: data.name,
-        employeeId: data.employeeId,
+        employeeId: assignedEmployeeId,
+        password: hashedPassword,
+        mustChangePassword: true,
         role: data.role.includes('Director') ? 'Super Admin' : (data.role.includes('Manager') || data.role.includes('HR')) ? 'Project Manager' : 'Team Member',
         department: data.department,
         status: initialApprovalStatus === 'Approved' ? 'Active' : 'Inactive'
@@ -109,7 +113,8 @@ router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager
         email: data.email,
         password: hashedPassword,
         name: data.name,
-        employeeId: data.employeeId,
+        employeeId: assignedEmployeeId,
+        mustChangePassword: true,
         role: data.role.includes('Director') ? 'Super Admin' : (data.role.includes('Manager') || data.role.includes('HR')) ? 'Project Manager' : 'Team Member',
         department: data.department,
         avatar: data.avatar,
@@ -121,7 +126,7 @@ router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager
     await logAuditSecurityEntry({
       action: 'EMPLOYEE_PROVISIONED',
       category: 'Human Capital Governance',
-      details: `Provisioned employee record ${assignedEmployeeId} (${data.name}, ${data.department}) with status ${initialApprovalStatus}`,
+      details: `Provisioned employee record ${assignedEmployeeId} (${data.name}, ${data.department}) with status ${initialApprovalStatus}. Mandatory first-time password setup required.`,
       actor: req.user?.name || req.user?.email || 'Authorized Lead'
     });
 
@@ -129,7 +134,8 @@ router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager
       message: isDirector
         ? 'Employee account provisioned and active.'
         : 'Employee record created. Pending Managing Director approval before login is enabled.',
-      employee: newEmp
+      employee: newEmp,
+      temporaryPassword: rawPassword
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });

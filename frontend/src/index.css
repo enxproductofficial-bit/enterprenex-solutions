@@ -15,22 +15,47 @@
   font-weight: 700; font-style: normal; font-display: swap;
 }
 
-/* ── Tokens ──────────────────────────────────────────────── */
+/* ── Global Design Tokens ────────────────────────────────── */
 :root {
-  --primary:     #F66135;
-  --primary-d:   #D94E22;
-  --primary-l:   #FFF3EF;
+  --primary: #1070C8;
+  --primary-hover: #1E6DB8;
+  --primary-highlight: #197ED8;
+
+  --primary-rgb: 16, 112, 200;
+  --primary-hover-rgb: 30, 109, 184;
+  --primary-highlight-rgb: 25, 126, 216;
+
+  --background: #F2F3F5;
+  --surface: #FFFFFF;
+  --surface-secondary: #F8F8F8;
+
+  --border: #E8E8E8;
+  --border-strong: #D8D8D8;
+
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+
+  --blue-light: #E6EDF5;
+  --blue-soft: #C8E0F8;
+  --blue-light-rgb: 230, 237, 245;
+  --blue-soft-rgb: 200, 224, 248;
+
+  --radius-card: 16px;
+  --radius-button: 8px;
+
+  /* Neutral Greys & Legacy Compatibility */
   --black:       #0a0a0a;
-  --gray-900:    #1a1a1a;
-  --gray-800:    #333333;
-  --gray-700:    #4d4d4d;
-  --gray-600:    #666666;
-  --gray-500:    #8f8f8f;
-  --gray-400:    #b8b8b8;
-  --gray-200:    #e8e8e8;
-  --gray-100:    #f0f0f0;
-  --gray-50:     #f8f8f8;
-  --white:       #ffffff;
+  --gray-900:    #111827;
+  --gray-800:    #1f2937;
+  --gray-700:    #374151;
+  --gray-600:    #4b5563;
+  --gray-500:    #6B7280;
+  --gray-400:    #9CA3AF;
+  --gray-200:    #E8E8E8;
+  --gray-100:    #F2F3F5;
+  --gray-50:     #F8F8F8;
+  --white:       #FFFFFF;
   --font:        'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --radius:      8px;
   --radius-lg:   16px;
@@ -173,16 +198,18 @@ button, input, select, textarea {
   min-height: 44px;
 }
 
-.btn-orange {
-  background: var(--primary);
+.btn-orange,
+.btn-primary {
+  background: var(--primary, #1070C8);
   color: var(--white);
-  box-shadow: 0 4px 14px rgba(246, 97, 53, 0.35);
+  box-shadow: 0 4px 14px rgba(16, 112, 200, 0.3);
 }
 
-.btn-orange:hover {
-  background: var(--primary-d);
+.btn-orange:hover,
+.btn-primary:hover {
+  background: var(--primary-hover, #1E6DB8);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(246, 97, 53, 0.45);
+  box-shadow: 0 8px 24px rgba(16, 112, 200, 0.4);
 }
 
 .btn-dark {
@@ -198,7 +225,7 @@ button, input, select, textarea {
 .btn-white {
   background: var(--white);
   color: var(--primary);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .btn-white:hover {
@@ -226,7 +253,7 @@ button, input, select, textarea {
 }
 
 .btn-link:hover {
-  color: var(--primary-d);
+  color: var(--primary-hover);
 }
 
 /* ── HERO SECTION ────────────────────────────────────────── */
@@ -276,9 +303,9 @@ button, input, select, textarea {
   gap: 0.5rem;
   padding: 0.35rem 1rem;
   border-radius: 9999px;
-  background: rgba(246, 97, 53, 0.15);
-  border: 1px solid rgba(246, 97, 53, 0.3);
-  color: var(--primary);
+  background: var(--blue-light, rgba(16, 112, 200, 0.12));
+  border: 1px solid var(--blue-soft, rgba(16, 112, 200, 0.28));
+  color: var(--primary, #1070C8);
   font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -358,12 +385,13 @@ button, input, select, textarea {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: rgba(246, 97, 53, 0.15);
-  border: 1px solid rgba(246, 97, 53, 0.3);
+  background: var(--blue-light, rgba(16, 112, 200, 0.12));
+  border: 1px solid var(--blue-soft, rgba(16, 112, 200, 0.28));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
+  color: var(--primary, #1070C8);
 }
 
 .hero-badge__content {
@@ -446,8 +474,8 @@ button, input, select, textarea {
 
 .ex-card:hover {
   transform: translateY(-6px);
-  border-color: rgba(246, 97, 53, 0.4);
-  box-shadow: 0 16px 40px rgba(246, 97, 53, 0.1);
+  border-color: rgba(16, 112, 200, 0.4);
+  box-shadow: 0 16px 40px rgba(16, 112, 200, 0.1);
 }
 
 .ex-metrics {
@@ -484,8 +512,8 @@ button, input, select, textarea {
 }
 
 .svc-card:hover {
-  border-color: rgba(246, 97, 53, 0.5);
-  box-shadow: 0 16px 36px rgba(246, 97, 53, 0.12);
+  border-color: rgba(16, 112, 200, 0.5);
+  box-shadow: 0 16px 36px rgba(16, 112, 200, 0.12);
   transform: translateY(-6px);
 }
 
@@ -493,12 +521,13 @@ button, input, select, textarea {
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: rgba(246, 97, 53, 0.08);
-  border: 1px solid rgba(246, 97, 53, 0.2);
+  background: var(--blue-light, rgba(16, 112, 200, 0.1));
+  border: 1px solid var(--blue-soft, rgba(16, 112, 200, 0.25));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
+  color: var(--primary, #1070C8);
   margin-bottom: 1.25rem;
 }
 
@@ -622,7 +651,7 @@ button, input, select, textarea {
   justify-content: center;
   font-size: 1.35rem;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(246, 97, 53, 0.2);
+  box-shadow: 0 4px 14px rgba(16, 112, 200, 0.2);
 }
 
 .pstep__body {
@@ -861,5 +890,98 @@ button, input, select, textarea {
   }
   .desktop-schedule-btn {
     display: none !important;
+  }
+}
+
+/* ── Mobile Layout, Padding & Spacing Consistency (All Pages) ── */
+@media (max-width: 768px) {
+  .section {
+    padding: 3rem 0;
+  }
+
+  .section-h2 {
+    font-size: 1.85rem;
+    line-height: 1.2;
+  }
+
+  .section-sub {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-top: 0.5rem;
+  }
+
+  .section-header {
+    margin-bottom: 2rem;
+  }
+
+  .btn {
+    padding: 0.65rem 1.4rem;
+    font-size: 0.9rem;
+    min-height: 42px;
+  }
+
+  .hero__cta-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .hero__cta-group .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .services-grid,
+  .excellence-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .ex-card,
+  .svc-card {
+    padding: 1.5rem 1.25rem;
+    border-radius: 14px;
+  }
+
+  .process-timeline {
+    left: 20px;
+  }
+
+  .pstep {
+    gap: 1rem;
+  }
+
+  .pstep__icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .mobile-drawer {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrap {
+    padding: 0 0.85rem;
+  }
+
+  .section-h2 {
+    font-size: 1.6rem;
+  }
+
+  .hero__h1 {
+    font-size: 2rem;
+    line-height: 1.15;
+  }
+
+  .ex-metric-card {
+    padding: 1.25rem 1rem;
   }
 }

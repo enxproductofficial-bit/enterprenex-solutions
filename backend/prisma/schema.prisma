@@ -17,9 +17,10 @@ model User {
   employeeId  String?  @unique
   avatar      String?
   department  String?  @default("Engineering")
-  status      String   @default("Active") // "Active" | "Inactive" | "Suspended"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status             String   @default("Active") // "Active" | "Inactive" | "Suspended"
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 // 2. EWMS Employee Profile & KYC Vault
@@ -27,6 +28,8 @@ model Employee {
   id                 String   @id @default(uuid())
   employeeId         String   @unique
   password           String?
+  mustChangePassword Boolean  @default(false)
+  temporaryPassword  String?
   name               String
   role               String
   department         String   @default("Engineering")

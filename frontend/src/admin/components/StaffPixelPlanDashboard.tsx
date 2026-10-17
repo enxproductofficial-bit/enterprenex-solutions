@@ -54,8 +54,48 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
   safeAnnouncements
 }) => {
   const navigate = useNavigate();
+  const [calendarYear, setCalendarYear] = useState<number>(2026);
+  const [calendarMonth, setCalendarMonth] = useState<number>(9); // 9 = October (0-indexed)
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<number>(17);
-  const [calendarMonthName] = useState<string>('October 2026');
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const handlePrevMonth = () => {
+    if (calendarMonth === 0) {
+      setCalendarMonth(11);
+      setCalendarYear(y => y - 1);
+    } else {
+      setCalendarMonth(m => m - 1);
+    }
+    setCalendarSelectedDate(1);
+  };
+
+  const handleNextMonth = () => {
+    if (calendarMonth === 11) {
+      setCalendarMonth(0);
+      setCalendarYear(y => y + 1);
+    } else {
+      setCalendarMonth(m => m + 1);
+    }
+    setCalendarSelectedDate(1);
+  };
+
+  const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+  const firstDayOfWeek = new Date(calendarYear, calendarMonth, 1).getDay(); // 0 = Sun
+  const prevMonthTotalDays = new Date(calendarYear, calendarMonth, 0).getDate();
+
+  const leadingDays = Array.from(
+    { length: firstDayOfWeek },
+    (_, i) => prevMonthTotalDays - firstDayOfWeek + i + 1
+  );
+  const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const selectedDateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(calendarSelectedDate).padStart(2, '0')}`;
+  const meetingsOnSelectedDate = (safeMeetings || []).filter(m => m && m.date === selectedDateStr);
+  const tasksDueOnSelectedDate = (myTasks || []).filter(t => t && t.dueDate === selectedDateStr);
 
   const myTasksCompleted = myTasks.filter(t => t.status === 'Completed' || t.status === 'Approved');
   const myTasksInProgress = myTasks.filter(t => t.status === 'In Progress');
@@ -683,39 +723,63 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
           </div>
         </div>
 
-        {/* COLUMN 2: My Calendar (Compact Month Interactive Calendar) */}
+        {/* COLUMN 2: My Calendar (Fully Dynamic & Interactive Month Calendar) */}
         <div
           className="adm-card"
           style={{
             padding: '1.4rem',
             borderRadius: '18px',
-            border: '1px solid var(--adm-border)',
+            border: '1px solid var(--border, #E8E8E8)',
+            background: 'var(--surface, #FFFFFF)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between'
           }}
         >
           <div>
-            {/* Header Month Switcher */}
+            {/* Header: Month Switcher & Quick Navigation */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
-                My Calendar
-              </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <button className="adm-btn adm-btn-secondary" style={{ padding: '2px 5px', border: 'none', background: 'transparent' }}>
-                  <ChevronLeft size={15} />
+              <div
+                onClick={() => navigate('/admin/calendar')}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+                title="Click to open Full Corporate Calendar"
+              >
+                <div style={{ width: '26px', height: '26px', borderRadius: '6px', background: 'var(--blue-light, #E6EDF5)', color: 'var(--primary, #1070C8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Calendar size={14} />
+                </div>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary, #111827)', margin: 0 }}>
+                  My Calendar
+                </h3>
+              </div>
+
+              {/* Month Navigation Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  className="adm-btn adm-btn-secondary"
+                  title="Previous Month"
+                  style={{ padding: '3px 6px', border: '1px solid var(--border, #E8E8E8)', background: 'var(--surface-secondary, #F8F8F8)', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                >
+                  <ChevronLeft size={14} />
                 </button>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-text)' }}>
-                  {calendarMonthName}
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary, #111827)', minWidth: '95px', textAlign: 'center' }}>
+                  {monthNames[calendarMonth]} {calendarYear}
                 </span>
-                <button className="adm-btn adm-btn-secondary" style={{ padding: '2px 5px', border: 'none', background: 'transparent' }}>
-                  <ChevronRight size={15} />
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  className="adm-btn adm-btn-secondary"
+                  title="Next Month"
+                  style={{ padding: '3px 6px', border: '1px solid var(--border, #E8E8E8)', background: 'var(--surface-secondary, #F8F8F8)', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                >
+                  <ChevronRight size={14} />
                 </button>
               </div>
             </div>
 
-            {/* Days of week */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', fontSize: '0.68rem', fontWeight: 700, color: 'var(--adm-text-dim)', marginBottom: '8px' }}>
+            {/* Days of week header */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted, #9CA3AF)', marginBottom: '8px' }}>
               <span>Sun</span>
               <span>Mon</span>
               <span>Tue</span>
@@ -725,19 +789,21 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
               <span>Sat</span>
             </div>
 
-            {/* 31-day October 2026 grid (Starts on Thu Oct 1) */}
+            {/* Dynamic Month Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center', fontSize: '0.75rem' }}>
-              {/* Leading 4 days of prev month */}
-              <span style={{ padding: '6px 0', color: 'var(--adm-text-dim)', opacity: 0.3 }}>27</span>
-              <span style={{ padding: '6px 0', color: 'var(--adm-text-dim)', opacity: 0.3 }}>28</span>
-              <span style={{ padding: '6px 0', color: 'var(--adm-text-dim)', opacity: 0.3 }}>29</span>
-              <span style={{ padding: '6px 0', color: 'var(--adm-text-dim)', opacity: 0.3 }}>30</span>
+              {/* Preceding month padding days */}
+              {leadingDays.map((pDay, idx) => (
+                <span key={`lead-${idx}`} style={{ padding: '6px 0', color: 'var(--text-muted, #9CA3AF)', opacity: 0.35, fontSize: '0.72rem' }}>
+                  {pDay}
+                </span>
+              ))}
 
-              {/* Days 1 to 31 */}
-              {Array.from({ length: 31 }, (_, i) => i + 1).map(day => {
-                const isToday = day === 17;
-                const isMeetingDay = day === 18;
-                const isMilestone = day === 3 || day === 13 || day === 25 || day === 27;
+              {/* Days of Current Month */}
+              {monthDays.map(day => {
+                const dayDateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = calendarYear === 2026 && calendarMonth === 9 && day === 17;
+                const hasMeeting = (safeMeetings || []).some(m => m && m.date === dayDateStr);
+                const hasTask = (myTasks || []).some(t => t && t.dueDate === dayDateStr);
                 const isSelected = calendarSelectedDate === day;
 
                 return (
@@ -745,44 +811,114 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
                     key={day}
                     onClick={() => setCalendarSelectedDate(day)}
                     style={{
-                      padding: '6px 0',
+                      padding: '5px 0',
                       borderRadius: '50%',
                       width: '28px',
                       height: '28px',
                       margin: '0 auto',
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      fontWeight: isToday || isSelected ? 800 : isMilestone ? 700 : 500,
-                      background: isToday
-                        ? '#2563eb'
-                        : isSelected
-                        ? 'rgba(37, 99, 235, 0.15)'
+                      fontWeight: isToday || isSelected ? 800 : hasMeeting || hasTask ? 700 : 500,
+                      background: isSelected
+                        ? 'var(--primary, #1070C8)'
+                        : isToday
+                        ? 'var(--blue-light, #E6EDF5)'
                         : 'transparent',
-                      color: isToday
+                      color: isSelected
                         ? '#ffffff'
-                        : isMeetingDay
-                        ? '#2563eb'
-                        : isMilestone
-                        ? 'var(--adm-text)'
-                        : 'var(--adm-text)',
-                      border: isMeetingDay && !isToday ? '1px solid #2563eb' : 'none'
+                        : isToday
+                        ? 'var(--primary, #1070C8)'
+                        : 'var(--text-primary, #111827)',
+                      border: isToday && !isSelected
+                        ? '1.5px solid var(--primary, #1070C8)'
+                        : hasMeeting && !isSelected
+                        ? '1px dashed var(--primary-highlight, #197ED8)'
+                        : 'none',
+                      position: 'relative',
+                      transition: 'all 0.15s ease'
                     }}
+                    title={`${day} ${monthNames[calendarMonth]} ${calendarYear}${hasMeeting ? ' (Meeting Scheduled)' : ''}${hasTask ? ' (Task Due)' : ''}`}
                   >
-                    {day}
+                    <span>{day}</span>
+                    {/* Event Indicator Dot */}
+                    {hasMeeting && !isSelected && (
+                      <span style={{ position: 'absolute', bottom: '2px', width: '3px', height: '3px', borderRadius: '50%', background: 'var(--primary, #1070C8)' }} />
+                    )}
                   </div>
                 );
               })}
             </div>
           </div>
 
-          <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#2563eb', fontWeight: 700 }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563eb' }} />
-              Today (17 Oct)
-            </span>
-            <span style={{ color: 'var(--adm-text-dim)' }}>Tomorrow 7 PM All-Hands</span>
+          {/* Interactive Selected Day Event Details */}
+          <div style={{ marginTop: '0.85rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border, #E8E8E8)', fontSize: '0.74rem' }}>
+            {meetingsOnSelectedDate.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 800, color: 'var(--primary, #1070C8)' }}>
+                    📅 {calendarSelectedDate} {monthNames[calendarMonth].slice(0, 3)}: {meetingsOnSelectedDate[0].title}
+                  </span>
+                  {meetingsOnSelectedDate[0].meetUrl && (
+                    <a
+                      href={meetingsOnSelectedDate[0].meetUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="adm-btn adm-btn-primary"
+                      style={{ padding: '2px 8px', fontSize: '0.68rem', borderRadius: '4px', textDecoration: 'none' }}
+                    >
+                      Join
+                    </a>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary, #6B7280)' }}>
+                  {meetingsOnSelectedDate[0].time} &bull; {meetingsOnSelectedDate[0].location}
+                </div>
+              </div>
+            ) : tasksDueOnSelectedDate.length > 0 ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontWeight: 700, color: '#f59e0b' }}>⚠️ Task Due ({calendarSelectedDate} {monthNames[calendarMonth].slice(0, 3)}):</span>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary, #6B7280)' }}>{tasksDueOnSelectedDate[0].title}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onSelectTask(tasksDueOnSelectedDate[0])}
+                  className="adm-btn adm-btn-secondary"
+                  style={{ padding: '2px 8px', fontSize: '0.68rem', borderRadius: '4px' }}
+                >
+                  View
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: 'var(--text-muted, #9CA3AF)', fontSize: '0.72rem' }}>
+                  {calendarSelectedDate} {monthNames[calendarMonth].slice(0, 3)}: No sessions scheduled
+                </span>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <button
+                    type="button"
+                    onClick={onOpenMeetModal}
+                    className="adm-btn adm-btn-secondary"
+                    style={{ padding: '2px 7px', fontSize: '0.68rem', borderRadius: '4px' }}
+                    title="Schedule a new meeting"
+                  >
+                    + Schedule
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/admin/calendar')}
+                    className="adm-btn adm-btn-primary"
+                    style={{ padding: '2px 7px', fontSize: '0.68rem', borderRadius: '4px' }}
+                    title="Open Full Corporate Calendar"
+                  >
+                    Full View
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

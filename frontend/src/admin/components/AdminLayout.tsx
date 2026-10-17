@@ -58,6 +58,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   } = useAdmin();
   const { language, setLanguage, t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
@@ -78,6 +79,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   // Safe array references to prevent any undefined crashes
   const safeTickets = tickets || [];
@@ -184,11 +190,20 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       {/* Quick Create Universal Modal */}
       <QuickCreateModal isOpen={showQuickCreate} onClose={() => setShowQuickCreate(false)} />
 
+      {/* Mobile Drawer Backdrop */}
+      {mobileOpen && (
+        <div
+          className="adm-mobile-backdrop"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close Mobile Navigation"
+        />
+      )}
+
       {/* ── SIDEBAR ── */}
-      <aside className={`adm-sidebar ${collapsed ? 'collapsed' : ''}`}>
+      <aside className={`adm-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         {/* Sidebar Brand Header */}
         <div className="adm-sidebar-header">
-          <NavLink to={isEmployee ? '/admin/team' : '/admin'} className="adm-brand-link">
+          <NavLink to={isEmployee ? '/admin/team' : '/admin'} className="adm-brand-link" onClick={() => setMobileOpen(false)}>
             <div className="adm-brand-logo" style={{ background: 'transparent', boxShadow: 'none', padding: '2px' }}>
               <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
             </div>
@@ -214,15 +229,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             }
 
             const Icon = item.icon!;
-            const isActive = item.exact 
-              ? location.pathname === item.to 
-              : location.pathname.startsWith(item.to!);
+            const isItemExact = item.to === '/admin' || Boolean(item.exact);
 
             return (
               <NavLink
                 key={item.to}
                 to={item.to!}
-                className={`adm-nav-link ${isActive ? 'active' : ''}`}
+                end={isItemExact}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) => `adm-nav-link ${isActive ? 'active' : ''}`}
                 title={collapsed ? item.label : undefined}
               >
                 <div className="adm-nav-icon">
@@ -268,7 +283,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         {/* Topbar */}
         <header className="adm-topbar">
           <div className="adm-topbar-left">
-            <button className="adm-toggle-btn" onClick={() => setCollapsed(!collapsed)} title="Toggle Sidebar">
+            <button
+              className="adm-toggle-btn"
+              onClick={() => {
+                if (window.innerWidth <= 768) {
+                  setMobileOpen(prev => !prev);
+                } else {
+                  setCollapsed(prev => !prev);
+                }
+              }}
+              title="Toggle Sidebar Navigation"
+              aria-label="Toggle Navigation"
+            >
               <Menu size={18} />
             </button>
 

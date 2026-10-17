@@ -13,6 +13,7 @@ export interface AdminUser {
   lastLogin: string;
   phone?: string;
   employeeId?: string;
+  mustChangePassword?: boolean;
 }
 
 // 1. Dashboard Metrics
@@ -225,6 +226,8 @@ export interface Employee {
   id: string;
   employeeId: string;
   password?: string;
+  mustChangePassword?: boolean;
+  temporaryPassword?: string;
   name: string;
   role: string;
   designation?: string;

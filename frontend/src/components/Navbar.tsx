@@ -93,8 +93,8 @@ export function Header() {
           backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.88)' : 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          padding: isScrolled ? '0 1.25rem' : '0 2rem',
-          boxShadow: isScrolled ? '0 8px 32px -4px rgba(246, 97, 53, 0.14), 0 2px 8px -2px rgba(0, 0, 0, 0.04)' : 'none',
+          padding: isScrolled ? '0 clamp(1rem, 2.5vw, 1.25rem)' : '0 clamp(1rem, 3vw, 2rem)',
+          boxShadow: isScrolled ? '0 8px 32px -4px rgba(16, 112, 200, 0.12), 0 2px 8px -2px rgba(0, 0, 0, 0.04)' : 'none',
         }}
       >
         {/* Logo */}
@@ -111,7 +111,7 @@ export function Header() {
               alignItems: 'center',
             }}
           >
-            Enterpre<span style={{ color: '#F66135' }}>nex</span>
+            Enterpre<span style={{ color: 'var(--primary, #1070C8)' }}>nex</span>
             <span className="logo-text-solutions" style={{ color: '#8f8f8f', fontWeight: 400, marginLeft: '0.25rem' }}>Solutions</span>
           </span>
         </Link>
@@ -135,7 +135,7 @@ export function Header() {
                   padding: '0 0.875rem',
                   fontSize: '0.9rem',
                   fontWeight: 600,
-                  color: isActive ? '#F66135' : '#333',
+                  color: isActive ? 'var(--primary, #1070C8)' : '#333',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                 }}
@@ -205,7 +205,7 @@ export function Header() {
                               gap: '.4rem',
                             }}
                           >
-                            <span style={{ width: '.5rem', height: '.5rem', borderRadius: '2px', background: '#F66135', display: 'inline-block', flexShrink: 0 }} />
+                            <span style={{ width: '.5rem', height: '.5rem', borderRadius: '2px', background: 'var(--primary, #1070C8)', display: 'inline-block', flexShrink: 0 }} />
                             {col.heading}
                           </p>
                         )}
@@ -216,7 +216,7 @@ export function Header() {
                               to={linkObj.to}
                               onClick={handleNavClick}
                               style={{ fontSize: '.875rem', fontWeight: 500, color: '#666', transition: 'color .15s', padding: '.375rem 0', minHeight: '44px', display: 'flex', alignItems: 'center' }}
-                              onMouseEnter={(e) => (e.currentTarget.style.color = '#F66135')}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary, #1070C8)')}
                               onMouseLeave={(e) => (e.currentTarget.style.color = '#666')}
                             >
                               {linkObj.label}
@@ -269,15 +269,15 @@ export function Header() {
                           whiteSpace: 'nowrap',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#fff7f4';
-                          e.currentTarget.style.color = '#F66135';
+                          e.currentTarget.style.backgroundColor = 'var(--blue-light, #E6EDF5)';
+                          e.currentTarget.style.color = 'var(--primary, #1070C8)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = 'transparent';
                           e.currentTarget.style.color = '#1e293b';
                         }}
                       >
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#F66135', opacity: 0.8 }} />
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary, #1070C8)', opacity: 0.8 }} />
                         {sub.label}
                       </Link>
                     ))}
@@ -299,7 +299,7 @@ export function Header() {
               fontSize: '.875rem',
               borderRadius: '9999px',
               fontWeight: 600,
-              boxShadow: '0 4px 14px rgba(246,97,53,0.3)',
+              boxShadow: '0 4px 14px rgba(16, 112, 200, 0.3)',
               transition: 'all 0.3s ease',
               minHeight: '40px',
               display: 'inline-flex',
@@ -335,7 +335,7 @@ export function Header() {
           <Link to="/" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minHeight: '44px' }}>
             <img src="/images/logo.svg" alt="Enterprenex Solutions" style={{ height: '32px', width: 'auto' }} />
             <span style={{ fontWeight: 700, fontSize: '1.125rem', color: '#0a0a0a' }}>
-              Enterpre<span style={{ color: '#F66135' }}>nex</span>
+              Enterpre<span style={{ color: 'var(--primary, #1070C8)' }}>nex</span>
             </span>
           </Link>
           <button

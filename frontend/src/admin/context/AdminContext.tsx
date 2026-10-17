@@ -145,6 +145,7 @@ interface AdminContextType {
   addEmployee: (employee: Omit<Employee, 'id'>) => void;
   updateEmployee: (id: string, updates: Partial<Employee>) => void;
   deleteEmployee: (id: string, purgeDocuments?: boolean) => void;
+  completePasswordSetup: (employeeIdOrEmail: string, newPassword: string) => void;
   addLeaveRequest: (leave: Omit<LeaveRequest, 'id' | 'status'>) => void;
   updateLeaveStatus: (id: string, status: 'Approved' | 'Rejected') => void;
   deleteLeaveRequest: (id: string) => void;
@@ -796,11 +797,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addEmployee = (empData: Omit<Employee, 'id'>) => {
     const newEmp: Employee = {
       ...empData,
-      id: 'emp-' + Date.now()
+      id: 'emp-' + Date.now(),
+      mustChangePassword: empData.mustChangePassword !== undefined ? empData.mustChangePassword : true
     };
     setEmployees(prev => [...prev, newEmp]);
-    logAction('Added Employee', 'Team Management', `Added ${newEmp.name} to ${newEmp.department}`);
-    showToast('Team Member Added', `${newEmp.name} added to the organization roster.`, 'success');
+    logAction('Added Employee', 'Team Management', `Added ${newEmp.name} to ${newEmp.department} (Initial temporary password assigned)`);
+    showToast('Team Member Added', `${newEmp.name} added to the organization roster with temporary credentials.`, 'success');
   };
 
   const updateEmployee = (id: string, updates: Partial<Employee>) => {
@@ -817,6 +819,34 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       })
     );
     showToast('Employee Updated', 'Employee record updated.', 'success');
+  };
+
+  const completePasswordSetup = (employeeIdOrEmail: string, newPassword: string) => {
+    const clean = employeeIdOrEmail.trim().toLowerCase();
+    setEmployees(prev =>
+      prev.map(e => {
+        if (
+          (e.employeeId && e.employeeId.toLowerCase() === clean) ||
+          e.id.toLowerCase() === clean ||
+          (e.email && e.email.toLowerCase() === clean)
+        ) {
+          return {
+            ...e,
+            password: newPassword,
+            mustChangePassword: false,
+            temporaryPassword: undefined,
+            status: 'Active'
+          };
+        }
+        return e;
+      })
+    );
+
+    if (currentUser) {
+      setCurrentUser(prevUser => (prevUser ? { ...prevUser, mustChangePassword: false } : null));
+    }
+    logAction('Password Setup Completed', 'Authentication', `Permanent password configured for ${employeeIdOrEmail}. Temporary password invalidated.`);
+    showToast('Password Configured', 'Your permanent password has been set. Workspace unlocked.', 'success');
   };
 
   const deleteEmployee = (id: string, purgeDocuments = false) => {
@@ -1377,6 +1407,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addEmployee,
         updateEmployee,
         deleteEmployee,
+        completePasswordSetup,
         addLeaveRequest,
         updateLeaveStatus,
         deleteLeaveRequest,
