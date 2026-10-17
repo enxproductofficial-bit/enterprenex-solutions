@@ -908,21 +908,40 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <div
               className="adm-modal"
               onClick={e => e.stopPropagation()}
-              style={{ maxWidth: '560px', width: '92%' }}
+              style={{
+                maxWidth: '560px',
+                width: '92%',
+                background: 'var(--adm-surface)',
+                borderRadius: '16px',
+                border: '1px solid var(--adm-border)',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+                overflow: 'hidden'
+              }}
             >
               {/* Header */}
-              <div className="adm-modal-header" style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--adm-border)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                className="adm-modal-header"
+                style={{
+                  padding: '1.25rem 1.5rem',
+                  borderBottom: '1px solid var(--adm-border)',
+                  background: 'var(--adm-surface)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  margin: 0
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <img
                     src={currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
                     alt={currentUser?.name || 'User'}
-                    style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--adm-primary)' }}
+                    style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--adm-primary)' }}
                   />
                   <div>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
                       My Profile & Personal Contact
                     </h3>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
                       {currentUser?.name} &bull; {currentEmpRecord?.employeeId || currentUser?.employeeId || 'EPX Staff'} &bull; {currentUser?.role}
                     </div>
                   </div>
@@ -938,9 +957,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
               {/* Form Body */}
               <form onSubmit={handleSaveMyProfile}>
-                <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--adm-surface)' }}>
                   {/* Corporate Overview */}
-                  <div style={{ padding: '0.85rem', background: 'var(--adm-bg)', borderRadius: '10px', border: '1px solid var(--adm-border)', fontSize: '0.78rem' }}>
+                  <div style={{ padding: '0.85rem 1rem', background: 'var(--adm-bg)', borderRadius: '12px', border: '1px solid var(--adm-border)', fontSize: '0.78rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <span style={{ color: 'var(--adm-text-dim)' }}>Corporate Email:</span>
                       <strong style={{ color: 'var(--adm-text)' }}>{currentUser?.email}</strong>
@@ -958,14 +977,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   {/* Private Personal Contact Section */}
                   <div
                     style={{
-                      background: 'rgba(56, 189, 248, 0.05)',
-                      border: '1px dashed rgba(56, 189, 248, 0.35)',
-                      borderRadius: '10px',
+                      background: 'var(--adm-bg)',
+                      border: '1px solid var(--adm-border)',
+                      borderRadius: '12px',
                       padding: '1rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0284c7', display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Shield size={14} /> Personal Contact Details
                       </span>
                       <span className="adm-badge adm-badge-success" style={{ fontSize: '0.62rem' }}>
@@ -1008,9 +1027,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                           value={myPersonalPhone}
                           onChange={e => setMyPersonalPhone(e.target.value)}
                           placeholder="+91-9876543210"
-                          style={{ paddingLeft: '2rem' }}
+                          style={{ paddingLeft: '2.5rem', background: 'var(--adm-surface)' }}
                         />
-                        <Phone size={14} color="#38bdf8" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                        <Phone size={14} color="#0284c7" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
                       </div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', marginTop: '3px' }}>
                         Clicking the phone number or WhatsApp icon anywhere in the portal directly opens WhatsApp chat.
@@ -1047,9 +1066,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                           value={myPersonalEmail}
                           onChange={e => setMyPersonalEmail(e.target.value)}
                           placeholder="e.g. employee.personal@gmail.com"
-                          style={{ paddingLeft: '2rem' }}
+                          style={{ paddingLeft: '2.5rem', background: 'var(--adm-surface)' }}
                         />
-                        <Mail size={14} color="#f59e0b" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                        <Mail size={14} color="#f59e0b" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
                       </div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', marginTop: '3px' }}>
                         Clicking the email address directly triggers your system's email application.
@@ -1059,7 +1078,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '0.75rem 1.25rem', background: 'var(--adm-bg)', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <div style={{ padding: '1rem 1.5rem', background: 'var(--adm-bg)', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                   <button
                     type="button"
                     onClick={() => setShowProfileModal(false)}
