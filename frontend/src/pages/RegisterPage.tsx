@@ -19,7 +19,6 @@ import {
   Tag,
   ArrowRight,
   CheckCircle2,
-  Sparkles,
   RefreshCw,
 } from 'lucide-react';
 import './register/register.css';
