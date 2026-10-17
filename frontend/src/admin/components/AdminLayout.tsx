@@ -123,7 +123,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
 
         { section: t('sec.commercial', 'Commercial Governance') },
-        { to: '/admin/services', label: t('nav.services', 'Enterprise Services Catalogue'), icon: Layers },
         { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
 
         { section: t('sec.humanCapital', 'Human Capital & Delivery') },
@@ -146,7 +145,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
 
       { section: t('sec.commercial', 'Commercial Governance') },
-      { to: '/admin/services', label: t('nav.services', 'Enterprise Services Catalogue'), icon: Layers },
       { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
       { to: '/admin/finance', label: t('nav.finance', 'Fiscal Operations & Invoicing'), icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
 

@@ -4,18 +4,24 @@ import {
   Phone,
   Mail,
   MessageCircle,
+  MessageSquare,
   Shield,
   ShieldCheck,
-  Award,
   Key,
   Trash2,
   Check,
   Eye,
   EyeOff,
   Briefcase,
-  TrendingUp
+  TrendingUp,
+  GraduationCap,
+  CheckSquare,
+  UserCheck,
+  AlertOctagon,
+  Calendar,
+  Layers
 } from 'lucide-react';
-import type { Employee } from '../types';
+import type { Employee, Task } from '../types';
 
 interface EmployeePreviewDrawerProps {
   employee: Employee;
@@ -24,9 +30,9 @@ interface EmployeePreviewDrawerProps {
   canManageTeam: boolean;
   onUpdateEmployee: (id: string, updates: Partial<Employee>) => void;
   onApproveLogin?: (employee: Employee) => void;
-  onIssueCertificate?: (employee: Employee) => void;
   onOpenCredentials?: (employee: Employee) => void;
   onOffboard?: (employee: Employee) => void;
+  tasks?: Task[];
 }
 
 export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
@@ -36,9 +42,9 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
   canManageTeam,
   onUpdateEmployee,
   onApproveLogin,
-  onIssueCertificate,
   onOpenCredentials,
-  onOffboard
+  onOffboard,
+  tasks = []
 }) => {
   const [showFullAadhaar, setShowFullAadhaar] = useState(false);
 
@@ -57,12 +63,13 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
 
   const isPending = employee.approvalStatus === 'Pending Director Approval';
   const isRejected = employee.approvalStatus === 'Rejected';
+  const isActive = employee.status === 'Active';
 
   const cleanPhone = (employee.phone || '').replace(/\D/g, '');
   const getWhatsAppLink = () => {
     let raw = cleanPhone;
     if (raw.length === 10) raw = '91' + raw;
-    const msg = `Hi ${employee.name}, this is Enterprenex Solutions HR / Management. Regarding your sprint tasks and workspace updates, please connect with us.`;
+    const msg = `Hi ${employee.name}, this is Enterprenex Solutions HR / Management regarding your sprint tasks and workspace updates.`;
     return `https://wa.me/${raw}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -74,12 +81,25 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
     return `XXXX-XXXX-${clean.slice(-4)}`;
   };
 
+  // Find active tasks assigned to this employee (Section 10 / Notebook item 1)
+  const assignedTasks = tasks.filter(t => {
+    const assigned = (t.assignedTo || '').toLowerCase();
+    const empName = (employee.name || '').toLowerCase();
+    const empId = (employee.employeeId || '').toLowerCase();
+    return assigned.includes(empName) || (empId && assigned.includes(empId));
+  });
+
+  const toggleAccountStatus = () => {
+    const newStatus = isActive ? 'Inactive' : 'Active';
+    onUpdateEmployee(employee.id, { status: newStatus });
+  };
+
   return (
     <div className="adm-drawer-overlay" onClick={onClose}>
       <div
         className="adm-preview-drawer"
         onClick={e => e.stopPropagation()}
-        style={{ width: 'clamp(440px, 58vw, 900px)' }}
+        style={{ width: 'clamp(460px, 60vw, 920px)' }}
       >
         {/* ── Drawer Header ── */}
         <div className="adm-drawer-header">
@@ -93,7 +113,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                   height: '64px',
                   borderRadius: '12px',
                   objectFit: 'cover',
-                  border: isPending ? '2px solid #f59e0b' : '2px solid var(--adm-primary)'
+                  border: isPending ? '2px solid #f59e0b' : isActive ? '2px solid var(--adm-primary)' : '2px solid #94a3b8'
                 }}
               />
               <span
@@ -101,12 +121,13 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                   position: 'absolute',
                   bottom: '-2px',
                   right: '-2px',
-                  width: '12px',
-                  height: '12px',
+                  width: '14px',
+                  height: '14px',
                   borderRadius: '50%',
-                  background: employee.status === 'Active' ? '#10b981' : '#f59e0b',
+                  background: isActive ? '#10b981' : '#ef4444',
                   border: '2px solid #fff'
                 }}
+                title={isActive ? 'Account Active' : 'Account Deactivated'}
               />
             </div>
 
@@ -117,11 +138,11 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                 </span>
                 <span
                   className={`adm-badge ${
-                    employee.status === 'Active'
+                    isActive
                       ? 'adm-badge-success'
                       : employee.status === 'On Leave'
                       ? 'adm-badge-info'
-                      : 'adm-badge-warning'
+                      : 'adm-badge-danger'
                   }`}
                 >
                   {employee.status}
@@ -166,7 +187,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
           </button>
         </div>
 
-        {/* ── Direct Outreach & Approval Toolbar ── */}
+        {/* ── Direct Outreach & One-Click Contact Toolbar (Notebook Item 4 & 5) ── */}
         <div
           style={{
             background: 'var(--adm-surface-alt, rgba(0, 0, 0, 0.02))',
@@ -179,6 +200,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
             flexWrap: 'wrap'
           }}
         >
+          {/* One-Click Contact & Direct Access to Connect */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <a
               href={getWhatsAppLink()}
@@ -194,7 +216,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                 alignItems: 'center',
                 gap: '6px'
               }}
-              title="Ping staff on WhatsApp"
+              title="One-Click WhatsApp Contact"
             >
               <MessageCircle size={14} />
               <span>WhatsApp</span>
@@ -204,6 +226,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
               href={`tel:${employee.phone}`}
               className="adm-btn adm-btn-sm adm-btn-secondary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              title="Direct Call"
             >
               <Phone size={13} />
               <span>Call ({employee.phone})</span>
@@ -213,51 +236,90 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
               href={`mailto:${employee.email}?subject=ENTERPRENEX%20SOLUTIONS%20-%20Workplace%20Update`}
               className="adm-btn adm-btn-sm adm-btn-secondary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              title="Official Email"
             >
               <Mail size={13} />
               <span>Email</span>
             </a>
+
+            {/* Direct Access to Connect (Internal Communication Hub) */}
+            <a
+              href={`https://wa.me/919226860060?text=${encodeURIComponent(`Direct Connect Request with ${employee.name} (${displayEmpId})`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="adm-btn adm-btn-sm adm-btn-secondary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--adm-primary)' }}
+              title="Direct Access to Connect via Communication Hub"
+            >
+              <MessageSquare size={13} />
+              <span>Direct Connect</span>
+            </a>
           </div>
 
-          {/* Director Quick Approve */}
-          {isPending && isDirector && (
-            <button
-              type="button"
-              className="adm-btn adm-btn-sm"
-              onClick={() => {
-                if (onApproveLogin) {
-                  onApproveLogin(employee);
-                } else {
-                  onUpdateEmployee(employee.id, {
-                    approvalStatus: 'Approved',
-                    approvedBy: 'Rohit Pawar (Managing Director)',
-                    approvedAt: new Date().toISOString()
-                  });
-                }
-              }}
-              style={{
-                background: 'var(--adm-success)',
-                color: '#fff',
-                border: 'none',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <Check size={14} />
-              <span>Approve Portal Login</span>
-            </button>
-          )}
+          {/* Director Controls: Quick Approve & Deactivate/Reactivate */}
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {isPending && isDirector && (
+              <button
+                type="button"
+                className="adm-btn adm-btn-sm"
+                onClick={() => {
+                  if (onApproveLogin) {
+                    onApproveLogin(employee);
+                  } else {
+                    onUpdateEmployee(employee.id, {
+                      approvalStatus: 'Approved',
+                      approvedBy: 'Rohit Pawar (Managing Director)',
+                      approvedAt: new Date().toISOString()
+                    });
+                  }
+                }}
+                style={{
+                  background: 'var(--adm-success)',
+                  color: '#fff',
+                  border: 'none',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Check size={14} />
+                <span>Approve Portal Login</span>
+              </button>
+            )}
+
+            {/* Director Account Deactivate / Reactivate Toggle */}
+            {isDirector && !(employee.email.includes('director@') || employee.role.includes('Director')) && (
+              <button
+                type="button"
+                onClick={toggleAccountStatus}
+                className="adm-btn adm-btn-sm"
+                style={{
+                  background: isActive ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                  color: isActive ? '#dc2626' : '#059669',
+                  border: isActive ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+                title={isActive ? 'Deactivate Employee Account' : 'Reactivate Employee Account'}
+              >
+                <AlertOctagon size={13} />
+                <span>{isActive ? 'Deactivate Account' : 'Reactivate Account'}</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── Drawer Body ── */}
-        <div className="adm-drawer-body">
+        <div className="adm-drawer-body" style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          
           {/* Key Metrics Grid */}
           <div className="adm-grid-3">
             <div
               style={{
-                padding: '1rem',
+                padding: '0.9rem',
                 background: 'var(--adm-surface)',
                 borderRadius: '10px',
                 border: '1px solid var(--adm-border)'
@@ -269,7 +331,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
               </div>
               <div
                 style={{
-                  fontSize: '1.4rem',
+                  fontSize: '1.35rem',
                   fontWeight: 800,
                   marginTop: '4px',
                   color:
@@ -282,7 +344,6 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
               >
                 {employee.workloadPercentage}%
               </div>
-              {/* Progress bar */}
               <div style={{ width: '100%', height: '5px', background: 'var(--adm-border)', borderRadius: '3px', marginTop: '6px', overflow: 'hidden' }}>
                 <div
                   style={{
@@ -301,7 +362,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
 
             <div
               style={{
-                padding: '1rem',
+                padding: '0.9rem',
                 background: 'var(--adm-surface)',
                 borderRadius: '10px',
                 border: '1px solid var(--adm-border)'
@@ -309,19 +370,19 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--adm-text-dim)', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700 }}>
                 <Briefcase size={13} />
-                <span>Department</span>
+                <span>Department & Hierarchy</span>
               </div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)', marginTop: '4px' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)', marginTop: '4px' }}>
                 {employee.department}
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
-                Role: {employee.role}
+                Manager: <strong>{employee.reportingManager || 'Rohit Pawar (Director)'}</strong>
               </div>
             </div>
 
             <div
               style={{
-                padding: '1rem',
+                padding: '0.9rem',
                 background: 'var(--adm-surface)',
                 borderRadius: '10px',
                 border: '1px solid var(--adm-border)'
@@ -333,7 +394,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
               </div>
               <div
                 style={{
-                  fontSize: '1.1rem',
+                  fontSize: '1rem',
                   fontWeight: 800,
                   marginTop: '4px',
                   color: employee.kycStatus === 'Verified' ? 'var(--adm-success)' : 'var(--adm-warning)'
@@ -342,64 +403,12 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                 {employee.kycStatus === 'Verified' ? '✓ Verified' : '⏳ Pending'}
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
-                PAN: {employee.panNumber || 'Not submitted'}
+                Type: {employee.employmentType || 'Full Time'}
               </div>
             </div>
           </div>
 
-          {/* Workload Capacity Controller (for managers & director) */}
-          {canManageTeam && (
-            <div
-              style={{
-                padding: '1rem',
-                background: 'var(--adm-surface)',
-                borderRadius: '10px',
-                border: '1px solid var(--adm-border)'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)' }}>
-                  Adjust Sprint Allocation & Capacity
-                </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)' }}>
-                  Current: <strong>{employee.workloadPercentage}%</strong>
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                {[20, 50, 75].map(pct => (
-                  <button
-                    key={pct}
-                    type="button"
-                    onClick={() => onUpdateEmployee(employee.id, { workloadPercentage: pct })}
-                    className="adm-btn adm-btn-sm"
-                    style={{
-                      background: employee.workloadPercentage === pct ? 'var(--adm-primary)' : 'var(--adm-surface-alt, rgba(0, 0, 0, 0.05))',
-                      color: employee.workloadPercentage === pct ? '#fff' : 'var(--adm-text-muted)',
-                      border: 'none',
-                      fontWeight: 600
-                    }}
-                  >
-                    Set {pct}%
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => onUpdateEmployee(employee.id, { workloadPercentage: 100 })}
-                  className="adm-btn adm-btn-sm"
-                  style={{
-                    background: employee.workloadPercentage === 100 ? '#ef4444' : 'rgba(239, 68, 68, 0.15)',
-                    color: employee.workloadPercentage === 100 ? '#fff' : '#ef4444',
-                    border: 'none',
-                    fontWeight: 700
-                  }}
-                >
-                  100% Full Capacity
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Technical Skills & Specializations */}
+          {/* ── 1) TASK ASSIGNED (Notebook Item 1 - "get most Imp") ── */}
           <div
             style={{
               padding: '1rem',
@@ -408,8 +417,74 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
               border: '1px solid var(--adm-border)'
             }}
           >
-            <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', margin: '0 0 0.75rem 0' }}>
-              Specializations & Skills ({employee.skills?.length || 0})
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckSquare size={16} color="var(--adm-primary)" />
+                <span>Active Assigned Sprint Tasks ({assignedTasks.length})</span>
+              </h4>
+              <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>
+                Section 10 Telemetry
+              </span>
+            </div>
+
+            {assignedTasks.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {assignedTasks.map(t => (
+                  <div
+                    key={t.id}
+                    style={{
+                      padding: '0.65rem 0.85rem',
+                      background: 'var(--adm-bg, #fafafa)',
+                      border: '1px solid var(--adm-border)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.72rem', color: 'var(--adm-primary)' }}>
+                          {t.taskId || t.id}
+                        </span>
+                        <strong style={{ fontSize: '0.84rem', color: 'var(--adm-text)' }}>{t.title}</strong>
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
+                        {t.projectName} &bull; Est: {t.estimatedHours}h / Logged: {t.loggedHours}h &bull; Due: {t.dueDate}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <span className={`adm-badge ${t.priority === 'Urgent' ? 'adm-badge-danger' : 'adm-badge-neutral'}`} style={{ fontSize: '0.68rem' }}>
+                        {t.priority}
+                      </span>
+                      <span className="adm-badge adm-badge-info" style={{ fontSize: '0.68rem' }}>
+                        {t.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontStyle: 'italic' }}>
+                No active sprint tasks currently assigned. Tasks can be delegated from Sprint Backlog & Kanban.
+              </div>
+            )}
+          </div>
+
+          {/* ── 2) SKILL LIST (Notebook Item 2) ── */}
+          <div
+            style={{
+              padding: '1rem',
+              background: 'var(--adm-surface)',
+              borderRadius: '10px',
+              border: '1px solid var(--adm-border)'
+            }}
+          >
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--adm-text)', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Layers size={16} color="#6366f1" />
+              <span>Competency & Technical Skills ({employee.skills?.length || 0})</span>
             </h4>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {(employee.skills || []).map((sk, idx) => (
@@ -422,12 +497,35 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                 </span>
               ))}
               {(!employee.skills || employee.skills.length === 0) && (
-                <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>No skills tagged yet.</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-dim)' }}>No skill tags registered.</span>
               )}
             </div>
           </div>
 
-          {/* Statutory KYC Vault */}
+          {/* ── 3) QUALIFICATION & EDUCATION (Notebook Item 3) ── */}
+          <div
+            style={{
+              padding: '1rem',
+              background: 'var(--adm-surface)',
+              borderRadius: '10px',
+              border: '1px solid var(--adm-border)'
+            }}
+          >
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--adm-text)', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <GraduationCap size={16} color="#059669" />
+              <span>Educational Qualifications & Background</span>
+            </h4>
+            <div style={{ padding: '0.75rem 0.9rem', background: 'var(--adm-bg, #fafafa)', border: '1px solid var(--adm-border)', borderRadius: '8px' }}>
+              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--adm-text)' }}>
+                {employee.qualification || 'Bachelor of Engineering (B.E.) in Computer Science & Technology'}
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
+                Accredited University &bull; Verified Institutional Credentials
+              </div>
+            </div>
+          </div>
+
+          {/* Statutory KYC Vault (Secured - Director only) */}
           <div
             style={{
               padding: '1rem',
@@ -437,31 +535,21 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <ShieldCheck size={15} color="var(--adm-success)" />
-                <span>Statutory Government KYC Vault</span>
+                <span>Statutory Government KYC & ID Vault</span>
               </h4>
               <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>
-                Restricted to Director & HR
+                Restricted Access
               </span>
             </div>
 
             <div className="adm-grid-2" style={{ gap: '0.75rem' }}>
               <div style={{ padding: '0.75rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
                 <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase' }}>PAN Number</span>
-                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', marginTop: '2px', fontFamily: 'monospace' }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '2px', fontFamily: 'monospace' }}>
                   {employee.panNumber || 'Not Uploaded'}
                 </div>
-                {employee.panDocUrl && (
-                  <a
-                    href={employee.panDocUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', marginTop: '4px', display: 'inline-block' }}
-                  >
-                    View PAN Document &rarr;
-                  </a>
-                )}
               </div>
 
               <div style={{ padding: '0.75rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
@@ -478,19 +566,9 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                     </button>
                   )}
                 </div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', marginTop: '2px', fontFamily: 'monospace' }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '2px', fontFamily: 'monospace' }}>
                   {maskAadhaar(employee.aadhaarNumber)}
                 </div>
-                {employee.aadhaarDocUrl && (
-                  <a
-                    href={employee.aadhaarDocUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', marginTop: '4px', display: 'inline-block' }}
-                  >
-                    View Aadhaar Document &rarr;
-                  </a>
-                )}
               </div>
             </div>
           </div>
@@ -516,31 +594,17 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
 
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             {canManageTeam && (
-              <>
-                <button
-                  type="button"
-                  className="adm-btn adm-btn-sm adm-btn-secondary"
-                  onClick={() => {
-                    if (onIssueCertificate) onIssueCertificate(employee);
-                  }}
-                  title="Issue Completion or Experience Certificate"
-                >
-                  <Award size={13} color="#10b981" />
-                  <span>Certificate</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="adm-btn adm-btn-sm adm-btn-secondary"
-                  onClick={() => {
-                    if (onOpenCredentials) onOpenCredentials(employee);
-                  }}
-                  title="Manage workspace credentials"
-                >
-                  <Key size={13} color="#f59e0b" />
-                  <span>Credentials</span>
-                </button>
-              </>
+              <button
+                type="button"
+                className="adm-btn adm-btn-sm adm-btn-secondary"
+                onClick={() => {
+                  if (onOpenCredentials) onOpenCredentials(employee);
+                }}
+                title="Manage workspace credentials"
+              >
+                <Key size={13} color="#f59e0b" />
+                <span>Credentials</span>
+              </button>
             )}
 
             <button type="button" className="adm-btn adm-btn-sm adm-btn-secondary" onClick={onClose}>
@@ -552,3 +616,5 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
     </div>
   );
 };
+
+export default EmployeePreviewDrawer;

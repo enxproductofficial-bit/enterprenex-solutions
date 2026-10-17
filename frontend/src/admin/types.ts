@@ -227,7 +227,10 @@ export interface Employee {
   password?: string;
   name: string;
   role: string;
+  designation?: string;
   department: 'Engineering' | 'AI & ML' | 'Design' | 'Product' | 'Sales & Marketing' | 'Finance & HR';
+  reportingManager?: string;
+  qualification?: string;
   email: string;
   phone: string;
   avatar: string;

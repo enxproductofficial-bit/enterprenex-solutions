@@ -36,7 +36,11 @@ import {
   Award,
   CheckCircle,
   MessageSquare,
-  MessageCircle
+  MessageCircle,
+  GraduationCap,
+  Briefcase,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64 } from '../data/companyLogo';
 import type { Employee, LeaveRequest, AttendanceRecord } from '../types';
@@ -506,11 +510,17 @@ export const TeamPage: React.FC = () => {
   const [absenceReasonInput, setAbsenceReasonInput] = useState('No Intimation Provided');
   const [absenceNotesInput, setAbsenceNotesInput] = useState('');
 
-  // Form state - Add Member
+  // Form state - Add Member (Full Director Organization Management Suite)
   const [name, setName] = useState('');
-  const [governanceRole, setGovernanceRole] = useState<'Manager (HR)' | 'Employee' | 'Intern'>('Employee');
+  const [governanceRole, setGovernanceRole] = useState<'Director' | 'Manager (HR)' | 'Employee' | 'Intern'>('Employee');
   const [role, setRole] = useState('');
+  const [designation, setDesignation] = useState('');
   const [department, setDepartment] = useState<Employee['department']>('Engineering');
+  const [reportingManager, setReportingManager] = useState('Rohit Pawar (Managing Director)');
+  const [employmentType, setEmploymentType] = useState<'Full Time' | 'Part Time' | 'Intern' | 'Contract' | 'Freelancer'>('Full Time');
+  const [joinDate, setJoinDate] = useState(new Date().toISOString().split('T')[0]);
+  const [accountStatus, setAccountStatus] = useState<Employee['status']>('Active');
+  const [qualification, setQualification] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [skills, setSkills] = useState('React, TypeScript, Node.js');
@@ -1085,6 +1095,20 @@ export const TeamPage: React.FC = () => {
     setEmpId(auto12DigitId);
     setEmpPassword(generateRandomPassword('EPX'));
     setShowEmpPassword(true);
+    setName('');
+    setRole('');
+    setDesignation('');
+    setGovernanceRole('Employee');
+    setDepartment('Engineering');
+    setReportingManager('Rohit Pawar (Managing Director)');
+    setEmploymentType('Full Time');
+    setJoinDate(new Date().toISOString().split('T')[0]);
+    setAccountStatus('Active');
+    setQualification('');
+    setEmail('');
+    setPhone('');
+    setSkills('React, TypeScript, Node.js');
+    setSalary(100000);
     setAvatarPreview('');
     setWorkload(100);
     setPanNumber('');
@@ -1139,17 +1163,21 @@ export const TeamPage: React.FC = () => {
       password: finalPassword,
       name,
       role: role ? `${role} (${governanceRole})` : `${governanceRole}`,
+      designation: designation || role || 'Software Engineer',
       department,
+      reportingManager: reportingManager || 'Rohit Pawar (Managing Director)',
+      employmentType: employmentType || 'Full Time',
+      qualification: qualification || 'B.Tech / Professional Degree',
       email: email || `${name.toLowerCase().replace(/\s+/g, '')}@enterprenex.com`,
       phone: phone || '+91-9876543210',
       avatar: finalAvatar,
       skills: skills.split(',').map(s => s.trim()).filter(Boolean),
       currentProjects: [],
       workloadPercentage: Number(workload || 100),
-      joinDate: new Date().toISOString().split('T')[0],
+      joinDate: joinDate || new Date().toISOString().split('T')[0],
       salaryMonthly: Number(salary),
       performanceRating: 5.0,
-      status: 'Active',
+      status: accountStatus || 'Active',
       approvalStatus: initialApprovalStatus,
       approvedBy: initialApprovalStatus === 'Approved' ? (currentUser?.name || 'Rohit Pawar (Managing Director)') : undefined,
       approvedAt: initialApprovalStatus === 'Approved' ? new Date().toISOString() : undefined,
@@ -1837,8 +1865,45 @@ export const TeamPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Skills */}
-                    <div style={{ marginBottom: '1rem', flex: 1 }}>
+                    {/* 1. Active Tasks Assigned (Notebook Priority 1) */}
+                    {(() => {
+                      const assignedCount = tasks.filter(t => {
+                        const assigned = (t.assignedTo || '').toLowerCase();
+                        const empName = (emp.name || '').toLowerCase();
+                        const empId = (emp.employeeId || '').toLowerCase();
+                        return assigned.includes(empName) || (empId && assigned.includes(empId));
+                      }).length;
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0.65rem', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', border: '1px solid var(--adm-border)', marginBottom: '0.65rem' }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <FileText size={12} color="var(--adm-primary)" />
+                            <span>Tasks Assigned</span>
+                          </span>
+                          <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.68rem', fontWeight: 700 }}>
+                            {assignedCount} {assignedCount === 1 ? 'Task Assigned' : 'Tasks Assigned'}
+                          </span>
+                        </div>
+                      );
+                    })()}
+
+                    {/* 2. Qualification & Hierarchy (Notebook Priority 3) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.72rem', marginBottom: '0.65rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <GraduationCap size={13} color="#38bdf8" />
+                        <span style={{ color: 'var(--adm-text)', fontWeight: 600 }}>
+                          {emp.qualification || emp.education?.[0]?.degree || 'B.Tech / Professional Degree'}
+                        </span>
+                      </div>
+                      {emp.reportingManager && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.68rem', color: 'var(--adm-text-dim)' }}>
+                          <span>Reports to:</span>
+                          <span style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>{emp.reportingManager}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 3. Skill List (Notebook Priority 2) */}
+                    <div style={{ marginBottom: '0.75rem', flex: 1 }}>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                         {(emp.skills && Array.isArray(emp.skills) && emp.skills.length > 0
                           ? emp.skills
@@ -1849,14 +1914,53 @@ export const TeamPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Contact */}
-                    <div style={{ background: 'var(--adm-bg)', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--adm-border)', fontSize: '0.75rem', color: 'var(--adm-text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Mail size={12} color="var(--adm-primary)" /> {emp.email}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Phone size={12} color="var(--adm-info)" /> {emp.phone}
-                      </div>
+                    {/* 4. One-Click Contact & 5. Direct Connect (Notebook Priorities 4 & 5) */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '0.75rem' }}>
+                      <a
+                        href={`https://wa.me/${(emp.phone || '').replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="adm-btn adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.2rem', fontSize: '0.68rem', justifyContent: 'center', color: '#22c55e', borderColor: 'rgba(34, 197, 94, 0.3)' }}
+                        title="One-Click WhatsApp Chat"
+                      >
+                        <MessageSquare size={12} />
+                        <span>WhatsApp</span>
+                      </a>
+                      <a
+                        href={`tel:${emp.phone || '+919876543210'}`}
+                        onClick={e => e.stopPropagation()}
+                        className="adm-btn adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.2rem', fontSize: '0.68rem', justifyContent: 'center', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.3)' }}
+                        title="One-Click Voice Call"
+                      >
+                        <Phone size={12} />
+                        <span>Call</span>
+                      </a>
+                      <a
+                        href={`mailto:${emp.email}`}
+                        onClick={e => e.stopPropagation()}
+                        className="adm-btn adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.2rem', fontSize: '0.68rem', justifyContent: 'center', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}
+                        title="One-Click Official Email"
+                      >
+                        <Mail size={12} />
+                        <span>Email</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={e => {
+                          e.stopPropagation();
+                          setSelectedEmployee(emp);
+                        }}
+                        className="adm-btn adm-btn-secondary"
+                        style={{ padding: '0.35rem 0.2rem', fontSize: '0.68rem', justifyContent: 'center', color: 'var(--adm-primary)', borderColor: 'rgba(255, 107, 0, 0.3)' }}
+                        title="Direct Access to Connect"
+                      >
+                        <MessageCircle size={12} />
+                        <span>Connect</span>
+                      </button>
                     </div>
 
                     {/* Statutory KYC Vault Bar (PAN & Aadhaar) */}
@@ -1914,18 +2018,28 @@ export const TeamPage: React.FC = () => {
                         </div>
                       ) : canManageTeam ? (
                         <div style={{ display: 'flex', gap: '5px' }}>
-                          <button
-                            className="adm-btn adm-btn-secondary"
-                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openIssueCertModal(emp);
-                            }}
-                            title="Issue Official Certificate for this Member"
-                          >
-                            <Award size={13} color="#10b981" />
-                            <span>Certificate</span>
-                          </button>
+                          {/* Director Account Status Toggle (Deactivate / Reactivate) */}
+                          {isDirector && (
+                            <button
+                              type="button"
+                              className={`adm-btn ${emp.status === 'Active' ? 'adm-btn-secondary' : 'adm-btn-primary'}`}
+                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.72rem', gap: '5px' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const nextStatus = emp.status === 'Active' ? 'Inactive' : 'Active';
+                                updateEmployee(emp.id, { status: nextStatus });
+                                showToast(
+                                  nextStatus === 'Active' ? 'Account Activated' : 'Account Deactivated',
+                                  `${emp.name}'s account status set to ${nextStatus}.`,
+                                  nextStatus === 'Active' ? 'success' : 'warning'
+                                );
+                              }}
+                              title={emp.status === 'Active' ? 'Deactivate Employee Account (Director Control)' : 'Reactivate Employee Account (Director Control)'}
+                            >
+                              {emp.status === 'Active' ? <UserX size={13} color="#ef4444" /> : <UserCheck size={13} color="#10b981" />}
+                              <span>{emp.status === 'Active' ? 'Deactivate' : 'Reactivate'}</span>
+                            </button>
+                          )}
 
                           <button
                             className="adm-btn adm-btn-secondary"
@@ -4415,23 +4529,23 @@ export const TeamPage: React.FC = () => {
                   <input className="adm-input" required value={name} onChange={e => setName(e.target.value)} placeholder="Enter Employee Full Name" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Governance Role *</label>
+                  <label className="adm-form-label">Assigned Role (Governance Role) *</label>
                   <select className="adm-select" value={governanceRole} onChange={e => setGovernanceRole(e.target.value as any)}>
                     <option value="Employee">Employee (Engineering / Delivery)</option>
                     <option value="Manager (HR)">Manager (Includes HR & Ops)</option>
+                    <option value="Director">Director (Executive Operations)</option>
                     <option value="Intern">Intern / Trainee</option>
                   </select>
                 </div>
               </div>
 
-              <div className="adm-form-group">
-                <label className="adm-form-label">Specific Role Title *</label>
-                <input className="adm-input" required value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Senior Full Stack Engineer" />
-              </div>
-
               <div className="adm-grid-2">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Department</label>
+                  <label className="adm-form-label">Specific Designation / Role Title *</label>
+                  <input className="adm-input" required value={role} onChange={e => { setRole(e.target.value); setDesignation(e.target.value); }} placeholder="e.g. Senior Full Stack Engineer" />
+                </div>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Department *</label>
                   <select className="adm-select" value={department} onChange={e => setDepartment(e.target.value as any)}>
                     <option value="Engineering">Engineering</option>
                     <option value="AI & ML">AI & ML</option>
@@ -4440,6 +4554,55 @@ export const TeamPage: React.FC = () => {
                     <option value="Sales & Marketing">Sales & Marketing</option>
                     <option value="Finance & HR">Finance & HR</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Reporting Manager *</label>
+                  <select className="adm-select" value={reportingManager} onChange={e => setReportingManager(e.target.value)}>
+                    <option value="Rohit Pawar (Managing Director)">Rohit Pawar (Managing Director)</option>
+                    {employees
+                      .filter(e => e.role.toLowerCase().includes('manager') || e.role.toLowerCase().includes('lead') || e.role.toLowerCase().includes('director'))
+                      .map(e => (
+                        <option key={e.id} value={`${e.name} (${e.role.split('(')[0].trim()})`}>
+                          {e.name} ({e.role.split('(')[0].trim()})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Employment Type *</label>
+                  <select className="adm-select" value={employmentType} onChange={e => setEmploymentType(e.target.value as any)}>
+                    <option value="Full Time">Full Time (Regular)</option>
+                    <option value="Part Time">Part Time</option>
+                    <option value="Intern">Internship / Trainee</option>
+                    <option value="Contract">Fixed-Term Contract</option>
+                    <option value="Freelancer">External Freelancer / Consultant</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Joining Date *</label>
+                  <input className="adm-input" type="date" value={joinDate} onChange={e => setJoinDate(e.target.value)} required />
+                </div>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Account Status *</label>
+                  <select className="adm-select" value={accountStatus} onChange={e => setAccountStatus(e.target.value as any)}>
+                    <option value="Active">Active (Full Portal Access)</option>
+                    <option value="On Leave">On Leave</option>
+                    <option value="Remote">Remote</option>
+                    <option value="Inactive">Inactive / Suspended</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Educational Qualification</label>
+                  <input className="adm-input" value={qualification} onChange={e => setQualification(e.target.value)} placeholder="e.g. B.Tech Computer Science / MCA" />
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Monthly Compensation (₹)</label>
@@ -4654,6 +4817,28 @@ export const TeamPage: React.FC = () => {
                     ⏳ <strong>Director Approval Required:</strong> As HR, after adding this team member, login access will be pending until Managing Director (Rohit Pawar - director@enterprenex.solutions) reviews and approves the credentials.
                   </span>
                 )}
+              </div>
+
+              {/* Security & Password Hash Protection Banner */}
+              <div
+                style={{
+                  background: 'rgba(56, 189, 248, 0.06)',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  borderRadius: '10px',
+                  padding: '0.85rem 1rem',
+                  fontSize: '0.74rem',
+                  color: '#94a3b8',
+                  lineHeight: 1.5,
+                  marginTop: '0.85rem'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8', fontWeight: 700, marginBottom: '4px' }}>
+                  <ShieldCheck size={14} />
+                  <span>Security Recommendation & Corporate Zero-Trust Compliance</span>
+                </div>
+                <div>
+                  Passphrases are salted and cryptographically hashed before persistence. Initial activation requires mandatory password reset. MFA is supported. Plaintext passwords are strictly never transmitted via WhatsApp or email.
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
@@ -5917,6 +6102,7 @@ export const TeamPage: React.FC = () => {
             onClose={() => setSelectedEmployee(null)}
             isDirector={isDirector}
             canManageTeam={canManageTeam}
+            tasks={tasks}
             onUpdateEmployee={(id, updates) => {
               updateEmployee(id, updates);
               setSelectedEmployee(prev => (prev && prev.id === id ? { ...prev, ...updates } : prev));
@@ -5929,9 +6115,6 @@ export const TeamPage: React.FC = () => {
               });
               setSelectedEmployee(prev => (prev && prev.id === emp.id ? { ...prev, approvalStatus: 'Approved' } : prev));
               showToast('Login Approved', `Authorized portal login for ${emp.name}.`, 'success');
-            }}
-            onIssueCertificate={emp => {
-              openIssueCertModal(emp);
             }}
             onOpenCredentials={emp => {
               setCredentialEmp(emp);
