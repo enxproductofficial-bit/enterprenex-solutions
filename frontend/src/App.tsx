@@ -41,6 +41,7 @@ import { CalendarPage } from './admin/pages/CalendarPage';
 import { CmsPage } from './admin/pages/CmsPage';
 import { AnalyticsPage } from './admin/pages/AnalyticsPage';
 import { SecurityPage } from './admin/pages/SecurityPage';
+import { EmailsPage } from './admin/pages/EmailsPage';
 
 function ScrollToTopOnRoute() {
   const { pathname, search } = useLocation();
@@ -298,6 +299,15 @@ function MainAppRoutes() {
           <IpRestrictionGuard>
             <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'Team Member', 'Developer', 'Sales Lead', 'HR Manager', 'Finance Officer']} moduleName="Task Kanban & Sprints">
               <TasksPage />
+            </AdminRouteGuard>
+          </IpRestrictionGuard>
+        } />
+
+        {/* Enterprise Operations: Overall Emails & Communications */}
+        <Route path="/admin/emails" element={
+          <IpRestrictionGuard>
+            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'HR Manager', 'Sales Lead', 'Finance Officer', 'Team Member', 'Developer']} moduleName="Overall Emails & Communications">
+              <EmailsPage />
             </AdminRouteGuard>
           </IpRestrictionGuard>
         } />

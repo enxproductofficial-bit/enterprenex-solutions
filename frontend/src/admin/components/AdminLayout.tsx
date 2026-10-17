@@ -157,6 +157,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       return [
         { section: t('sec.humanCapital', 'Individual Workspace') },
         { to: '/admin', label: 'My Workspace', icon: LayoutDashboard, exact: true },
+        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
         { to: '/admin/tasks', label: t('nav.tasks', 'My Assigned Tasks'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
         { to: '/admin/team', label: t('nav.team', 'Colleagues Directory & Attendance'), icon: UserCheck },
         { to: '/admin/calendar', label: t('nav.calendar', 'Scheduled Meetings & Calendar'), icon: Calendar },
@@ -173,6 +174,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { to: '/admin/clients', label: t('nav.clients', 'Client Accounts Directory'), icon: Users, badge: safeClients.length },
         { to: '/admin/projects', label: t('nav.projects', 'Project Portfolio & Milestones'), icon: Briefcase, badge: activeProjectsCount },
         { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
+        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
 
         { section: t('sec.commercial', 'Commercial Governance') },
         { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
@@ -198,6 +200,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       { to: '/admin/clients', label: 'Client Accounts Directory', icon: Users, badge: safeClients.length },
       { to: '/admin/projects', label: 'Project Portfolio & Milestones', icon: Briefcase, badge: activeProjectsCount },
       { to: '/admin/tasks', label: 'Sprint Backlog & Kanban', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
+      { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
 
       { section: 'Finance & Commerce' },
       { to: '/admin/finance', label: 'Finance Dashboard & P&L', icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
