@@ -51,12 +51,15 @@ export default function Footer() {
 
           {/* ── Brand Column ── */}
           <div className="footer-brand">
-            <Link to="/" aria-label="Enterprenex Solutions home">
+            <Link to="/" aria-label="Enterprenex Solutions home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
               <img
-                src="/images/logo.svg"
+                src="/images/logo.png"
                 alt="Enterprenex Solutions"
-                style={{ height: '52px', width: '52px' }}
+                style={{ height: '48px', width: '48px', objectFit: 'contain', flexShrink: 0 }}
               />
+              <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
+                Enterpre<span style={{ color: '#38bdf8' }}>nex</span> <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>Solutions</span>
+              </span>
             </Link>
 
             <p style={{ marginTop: '0.875rem', lineHeight: 1.7 }}>

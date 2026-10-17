@@ -273,12 +273,12 @@ export const RegisterPage: React.FC = () => {
       {/* Top Header */}
       <header className="reg-header">
         <Link to="/" className="reg-brand" aria-label="Enterprenex Solutions">
-          <div className="reg-logo-badge">
-            <Sparkles size={22} />
+          <div className="reg-logo-badge" style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}>
+            <img src="/images/logo.png" alt="Enterprenex Logo" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
           </div>
           <div>
             <div className="reg-brand-title">
-              Enterpre<span style={{ color: '#059669' }}>nex</span> Solutions
+              Enterpre<span style={{ color: 'var(--primary, #1070C8)' }}>nex</span> Solutions
             </div>
             <div className="reg-brand-sub">Enterprise Workspace Portal</div>
           </div>

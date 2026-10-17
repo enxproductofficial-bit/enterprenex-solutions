@@ -98,8 +98,18 @@ export function Header() {
         }}
       >
         {/* Logo */}
-        <Link to="/" aria-label="Enterprenex Solutions home" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minHeight: '44px' }}>
-          <img src="/images/logo.svg" alt="Enterprenex Solutions" style={{ height: isScrolled ? '32px' : '36px', width: 'auto', transition: 'all 0.3s ease' }} />
+        <Link to="/" aria-label="Enterprenex Solutions home" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minHeight: '44px', textDecoration: 'none' }}>
+          <img
+            src="/images/logo.png"
+            alt="Enterprenex Solutions"
+            style={{
+              height: isScrolled ? '36px' : '40px',
+              width: isScrolled ? '36px' : '40px',
+              objectFit: 'contain',
+              flexShrink: 0,
+              transition: 'all 0.3s ease'
+            }}
+          />
           <span
             style={{
               fontWeight: 700,
@@ -332,10 +342,10 @@ export function Header() {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <Link to="/" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minHeight: '44px' }}>
-            <img src="/images/logo.svg" alt="Enterprenex Solutions" style={{ height: '32px', width: 'auto' }} />
+          <Link to="/" onClick={handleNavClick} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minHeight: '44px', textDecoration: 'none' }}>
+            <img src="/images/logo.png" alt="Enterprenex Solutions" style={{ height: '36px', width: '36px', objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontWeight: 700, fontSize: '1.125rem', color: '#0a0a0a' }}>
-              Enterpre<span style={{ color: 'var(--primary, #1070C8)' }}>nex</span>
+              Enterpre<span style={{ color: 'var(--primary, #1070C8)' }}>nex</span> <span style={{ color: '#8f8f8f', fontWeight: 400, marginLeft: '0.25rem' }}>Solutions</span>
             </span>
           </Link>
           <button

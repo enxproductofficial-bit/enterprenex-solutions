@@ -249,8 +249,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         {/* Sidebar Brand Header */}
         <div className="adm-sidebar-header">
           <NavLink to={isEmployee ? '/admin/team' : '/admin'} className="adm-brand-link" onClick={() => setMobileOpen(false)}>
-            <div className="adm-brand-logo" style={{ background: 'transparent', boxShadow: 'none', padding: '2px' }}>
-              <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
+            <div className="adm-brand-logo" style={{ background: 'transparent', boxShadow: 'none', padding: 0, width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src="/images/logo.png" alt="Enterprenex Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
             </div>
             {!collapsed && (
               <div className="adm-brand-text">

@@ -134,18 +134,17 @@ export const AdminLoginPage: React.FC = () => {
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div
             style={{
-              width: '64px',
-              height: '64px',
+              width: '68px',
+              height: '68px',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '0.75rem',
-              background: 'var(--blue-light, #E6EDF5)',
-              borderRadius: '16px',
-              border: '1px solid var(--blue-soft, #C8E0F8)'
+              marginBottom: '0.85rem',
+              background: 'transparent',
+              padding: 0
             }}
           >
-            <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
+            <img src="/images/logo.png" alt="Enterprenex Logo" style={{ width: '68px', height: '68px', objectFit: 'contain' }} />
           </div>
           <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary, #111827)', margin: 0, letterSpacing: '-0.02em' }}>
             Director & HR Portal

@@ -407,7 +407,7 @@ export const LoginPage: React.FC = () => {
             }}
           >
             <div className="reg-logo-badge" style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}>
-              <img src="/images/logo.svg" alt="Enterprenex Logo" style={{ width: '42px', height: '42px', objectFit: 'contain' }} />
+              <img src="/images/logo.png" alt="Enterprenex Logo" style={{ width: '44px', height: '44px', objectFit: 'contain' }} />
             </div>
             <div style={{ textAlign: 'left' }}>
               <div className="reg-brand-title" style={{ fontSize: '1.35rem' }}>
