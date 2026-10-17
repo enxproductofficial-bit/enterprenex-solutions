@@ -137,28 +137,32 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       ];
     }
 
-    // 3. Director (Super Admin) - Full 14-Module Executive Access
+    // 3. Director (Super Admin & CMD) - Complete 7-Sector Executive Control Matrix
     return [
-      { section: t('sec.operations', 'Enterprise Operations') },
-      { to: '/admin', label: t('nav.dashboard', 'Executive Operations Dashboard'), icon: LayoutDashboard, exact: true },
-      { to: '/admin/clients', label: t('nav.clients', 'Client Accounts Directory'), icon: Users, badge: safeClients.length },
-      { to: '/admin/projects', label: t('nav.projects', 'Project Portfolio & Milestones'), icon: Briefcase, badge: activeProjectsCount },
-      { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
+      { section: 'Director Control Center' },
+      { to: '/admin', label: 'Executive Dashboard', icon: LayoutDashboard, exact: true },
+      { to: '/admin/analytics', label: 'Business Intelligence & Telemetry', icon: BarChart3 },
 
-      { section: t('sec.commercial', 'Commercial Governance') },
-      { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
-      { to: '/admin/finance', label: t('nav.finance', 'Fiscal Operations & Invoicing'), icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
+      { section: 'Enterprise Operations' },
+      { to: '/admin/clients', label: 'Client Accounts Directory', icon: Users, badge: safeClients.length },
+      { to: '/admin/projects', label: 'Project Portfolio & Milestones', icon: Briefcase, badge: activeProjectsCount },
+      { to: '/admin/tasks', label: 'Sprint Backlog & Kanban', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
 
-      { section: t('sec.humanCapital', 'Human Capital & Delivery') },
-      { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck },
-      { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk & SLA Governance'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
-      { to: '/admin/documents', label: t('nav.documents', 'Compliance Vault & Records'), icon: FileText },
-      { to: '/admin/calendar', label: t('nav.calendar', 'Corporate Calendar & Sessions'), icon: Calendar },
+      { section: 'Finance & Commerce' },
+      { to: '/admin/finance', label: 'Finance Dashboard & P&L', icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
+      { to: '/admin/crm', label: 'Enterprise CRM & Sales Pipeline', icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
 
-      { section: t('sec.governance', 'Governance & Intelligence') },
-      { to: '/admin/cms', label: t('nav.cms', 'Digital Publishing & Web CMS'), icon: Globe },
-      { to: '/admin/analytics', label: t('nav.analytics', 'Executive Intelligence & Analytics'), icon: BarChart3 },
-      { to: '/admin/security', label: t('nav.security', 'Information Security & RBAC Governance'), icon: ShieldCheck }
+      { section: 'People & Organization' },
+      { to: '/admin/team', label: 'Personnel Directory & Payroll', icon: UserCheck },
+
+      { section: 'Communication & Meetings' },
+      { to: '/admin/calendar', label: 'Corporate Calendar & Sessions', icon: Calendar },
+      { to: '/admin/support', label: 'Service Desk & Escalations', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+
+      { section: 'Governance & Security' },
+      { to: '/admin/documents', label: 'Compliance Vault & Records', icon: FileText },
+      { to: '/admin/cms', label: 'Digital Publishing & Web CMS', icon: Globe },
+      { to: '/admin/security', label: 'Information Security & RBAC', icon: ShieldCheck }
     ];
   };
 

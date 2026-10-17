@@ -1,0 +1,124 @@
+================================================================================
+ENTERPRENEX SOLUTIONS PRIVATE LIMITED
+ENTERPRISE WORK MANAGEMENT SYSTEM (EDWMS)
+OFFICIAL MINUTES OF MEETING (MoM)
+================================================================================
+
+DOCUMENT REF : EPX-MOM-2026-10-17
+DATE & TIME  : Saturday, 17 October 2026 | 11:30 AM - 12:45 PM IST
+LOCATION     : Executive Boardroom & Google Meet (Virtual Sync)
+CHAIRED BY   : Rohit Pawar (Managing Director & CMD)
+RECORDED BY  : Executive Technical & Compliance Secretariat
+
+ATTENDEES:
+1. Rohit Pawar        - Managing Director & CMD
+2. Jyoti              - Project Manager & Operations Lead
+3. Technical Leads    - Architecture, Backend & Platform Engineering
+4. Lead Developers    - Frontend, Security & Database Operations
+5. HR Operations Lead - Human Capital & Statutory Compliance
+
+================================================================================
+1. AGENDA & EXECUTIVE DIRECTIVES DISCUSSED
+================================================================================
+
+1.1 SDLC & SYSTEMS ARCHITECTURE FIRST POLICY
+- Direct feature development is paused for tomorrow.
+- Total focus is mandated on completing full Software Development Life Cycle 
+  (SDLC) documentation, system architecture schematics, and Standard Operating 
+  Procedures (SOPs).
+- Direct production deployments are strictly forbidden. All development must 
+  be validated locally and committed to the company GitHub repository.
+
+1.2 ELIMINATION OF FRONTEND CRUD MANAGEMENT BUTTONS
+- Frontend buttons that permit general employees to perform direct CRUD 
+  (Create, Update, Delete) on sensitive corporate entities must be completely 
+  removed.
+- General workforce members cannot create/delete accounts, alter roles, approve 
+  their own tasks or leaves, or tamper with system logs.
+- All modifications must follow formal ticketing, submission, and supervisory 
+  review workflows.
+
+1.3 DATABASE CRASH RESILIENCE & ANTI-INJECTION SHIELD
+- Implement deep input sanitization across all API endpoints to neutralize 
+  NoSQL and SQL operator injections, as well as prototype pollution attacks.
+- Deploy rate limiters and error boundaries to prevent DoS crashes and database 
+  connection pool exhaustion.
+
+1.4 DEVTOOLS & ZERO-EXPOSURE SECURITY
+- Critical logic (such as employee ID generators, password generation, and 
+  encryption salts) must NOT exist on the frontend or be inspectable via DevTools.
+- All sensitive logic is relocated 100% to the secure backend server.
+
+1.5 TIME-TRACKING & STOPWATCH ANTI-TAMPER SHIELD
+- Addressed critical business flaw where staff could leave timers running 
+  unmonitored (e.g. while watching YouTube or minimizing tabs).
+- Deployed Tab Visibility listeners and a 2-minute inactivity cutoff that 
+  automatically pauses the stopwatch.
+- Server-side heartbeats every 60s guarantee that only verified active minutes 
+  are credited toward sprint velocity.
+
+1.6 TICKETING SYSTEM & PAID RESOURCE REQUEST PROTOCOL
+- Integrated a dedicated ticket-raising system on EDWMS for payroll queries, 
+  operational issues, and paid software/infrastructure approvals.
+- Leaders can submit tickets with cost estimates for Director approval.
+
+1.7 UPCOMING ALL-HANDS MEETING & ONBOARDING DEADLINES
+- Team-wide meeting scheduled for TOMORROW at 7:00 PM IST (Google Meet).
+- Coordination deadline with Project Manager (Jyoti) set for OCTOBER 25, 2026 
+  to finalize new cohort onboarding:
+  * Offer letters & Non-Disclosure Agreements (NDAs)
+  * Payroll sheets & payment records
+  * Previous intern records & CRM tracking sheets
+
+1.8 OPERATIONAL DISCIPLINE & COMMUNICATION SLA
+- Enforce Pomodoro technique for focused sprint blocks.
+- Strict 1-hour maximum response turnaround time across phone and messaging 
+  during active shift hours.
+
+================================================================================
+2. INSTITUTIONAL 3-ROLE WORKSPACE REALIGNMENT
+================================================================================
+
+ROLE 1: DIRECTOR (CMD & SUPER ADMIN)
+- Complete 7-Sector Executive Control Center:
+  1. Director Control Center (Executive Dashboard, BI, Strategic Goals, Risks)
+  2. Enterprise Operations (Clients, Projects, Sprint Backlog, Task Assignments)
+  3. Finance & Commerce (Revenue, Cash Flow, Invoices, Vendor Bills, CRM)
+  4. People & Organization (Rosters, Hierarchy, Onboarding, Leaves, Appraisals)
+  5. Communication & Meetings (Calendar, Meet Rooms, Announcements, MoM)
+  6. Governance & Security (Compliance Vault, RBAC, Audit Logs, Policies)
+  7. System Administration (Automations, Webhooks, Backups, Company Config)
+
+ROLE 2: MANAGER (PROJECT MANAGER & HR)
+- Departmental & Sprint Delivery Management:
+  * Team member monitoring, attendance review, sprint capacity allocation
+  * Task creation, review gate approval (In Review -> Approved / Rework)
+  * Account creation tagged as "Pending Director Approval"
+  * Department announcements and 1-on-1 team member coordination
+
+ROLE 3: EMPLOYEE (INDIVIDUAL WORKSPACE)
+- Focused Individual Delivery Portal:
+  * My Workspace (Profile, Employee ID ZCX-EMP-XXXX, Department, Manager)
+  * Assigned Tasks & Deadlines (Accept -> In Progress -> Submit for Review)
+  * Anti-Tamper Monitored Stopwatch (Auto-pauses on tab switch or inactivity)
+  * Biometric Attendance (Punch In / Out with timestamp capture)
+  * Leave Applications & Balances (CL / SL / PL)
+  * 1-on-1 Communication Hub (Direct WhatsApp, Call, and Google Meet with Manager)
+  * Support & Resource Request Desk (Ticket submission with SLA tracking)
+
+================================================================================
+3. ACTION ITEMS & SIGN-OFF
+================================================================================
+
+ACTION ITEM                               OWNER               DEADLINE
+--------------------------------------------------------------------------------
+1. Finalize SDLC & SOP Docs               Tech Lead           18 Oct 2026 (EOD)
+2. Team-Wide All-Hands Meeting (7 PM)     Rohit Pawar & PM    18 Oct 2026 (7 PM)
+3. New Member Onboarding (NDAs/Payroll)   Jyoti (PM) & HR     25 Oct 2026
+4. Anti-Tamper Stopwatch Verification     QA Squad            Immediate
+5. Zero-Trust RBAC Audit Review           Security Officer    Immediate
+
+Prepared & Approved by:
+Rohit Pawar, Managing Director
+Enterprenex Solutions Private Limited
+================================================================================
