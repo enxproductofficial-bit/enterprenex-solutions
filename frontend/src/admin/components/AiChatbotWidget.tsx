@@ -232,6 +232,88 @@ export const AiChatbotWidget: React.FC = () => {
         `*Download your verified payslip or Form 16 Part B from Workforce Roster → Payslips.*`;
     }
 
+    // 7. Management Team & Leadership Contact Directory
+    if (
+      q.includes('management') ||
+      q.includes('contact') ||
+      q.includes('director') ||
+      q.includes('rohit') ||
+      q.includes('lead') ||
+      q.includes('head') ||
+      q.includes('escalat') ||
+      q.includes('व्यवस्थापन') ||
+      q.includes('प्रबंधन') ||
+      q.includes('संपर्क') ||
+      q.includes('సంప్రద') ||
+      q.includes('தொடர்பு') ||
+      q.includes('ಸಂಪರ್ಕ') ||
+      q.includes('যোগাযোগ') ||
+      q.includes('સંપર્ક') ||
+      q.includes('directiv') ||
+      q.includes('leitung')
+    ) {
+      if (language === 'hi') {
+        return `👥 **एंटरप्रेनेक्स सोल्यूशन्स - प्रबंधन एवं कार्यकारी नेतृत्व संपर्क विवरण:**\n\n` +
+          `• **प्रबंध निदेशक एवं मुख्य वास्तुकार (Managing Director):**\n` +
+          `  👤 **Rohit Pawar (रोहित पवार)**\n` +
+          `  ✉️ ईमेल: \`director@enterprenexsolution.com\` | \`director@enterprenex.solutions\`\n` +
+          `  📞 फोन: \`+91-9226860060\`\n` +
+          `  🏢 कार्यालय: कार्यकारी बोर्डरूम, पुणे मुख्यालय\n` +
+          `  💼 अधिकार: वैधानिक नीतियां, क्लाइंट आर्किटेक्चर एवं अंतिम अनुमोदन\n\n` +
+          `• **मानव संसाधन एवं संचालन प्रमुख (HR Administrator):**\n` +
+          `  👤 **HR Head**\n` +
+          `  ✉️ ईमेल: \`hr@enterprenexsolution.com\` | \`hr@enterprenex.solutions\`\n` +
+          `  📞 फोन: \`+91-9226860060\` (Ext: 102)\n` +
+          `  💼 अधिकार: उपस्थिति नियमितीकरण, वैधानिक अवकाश, वेतन पर्ची एवं ऑनबोर्डिंग\n\n` +
+          `• **फुल स्टैक इंजीनियर एवं एआई विशेषज्ञ (Tech Lead):**\n` +
+          `  👤 **POLAMREDDY REVANTH REDDY** (कर्मचारी आईडी: \`202600000002\`)\n` +
+          `  ✉️ ईमेल: \`revanth@enterprenex.solutions\`\n` +
+          `  📞 फोन: \`+91-9876543210\`\n` +
+          `  💼 अधिकार: स्प्रिंट कार्य, तकनीकी सहायता एवं सिस्टम विकास\n\n` +
+          `📌 **आधिकारिक हेल्पडेस्क:** \`/admin/helpdesk\` (सर्विस डेस्क एवं 24/7 एसएलए ट्रैकिंग)`;
+      }
+      if (language === 'mr') {
+        return `👥 **एंटरप्रेनेक्स सोल्यूशन्स - व्यवस्थापन व वरिष्ठ नेतृत्व संपर्क निर्देशिका:**\n\n` +
+          `• **व्यवस्थापकीय संचालक व मुख्य वास्तुकार (Managing Director):**\n` +
+          `  👤 **Rohit Pawar (रोहित पवार)**\n` +
+          `  ✉️ ईमेल: \`director@enterprenexsolution.com\` | \`director@enterprenex.solutions\`\n` +
+          `  📞 फोन: \`+91-9226860060\`\n` +
+          `  🏢 कार्यालय: मुख्य संचालनालय, पुणे कॉर्पोरेट मुख्यालय\n` +
+          `  💼 कार्यक्षेत्र: वैधानिक धोरणे, ग्राहक प्रकल्प आणि अंतिम मंजुरी\n\n` +
+          `• **मानव संसाधन व ऑपरेशन्स प्रमुख (HR Administrator):**\n` +
+          `  👤 **HR Head**\n` +
+          `  ✉️ ईमेल: \`hr@enterprenexsolution.com\` | \`hr@enterprenex.solutions\`\n` +
+          `  📞 फोन: \`+91-9226860060\` (Ext: 102)\n` +
+          `  💼 कार्यक्षेत्र: हजेरी पडताळणी, सुट्ट्या, पगारपत्रके व भरती\n\n` +
+          `• **फुल स्टॅक इंजिनिअर व एआय तज्ज्ञ (Tech Lead):**\n` +
+          `  👤 **POLAMREDDY REVANTH REDDY** (कर्मचारी क्र.: \`202600000002\`)\n` +
+          `  ✉️ ईमेल: \`revanth@enterprenex.solutions\`\n` +
+          `  📞 फोन: \`+91-9876543210\`\n` +
+          `  💼 कार्यक्षेत्र: स्प्रिंट प्रकल्प, सिस्टीम आर्किटेक्चर आणि तांत्रिक सहाय्य\n\n` +
+          `📌 **अधिकृत सेवा डेस्क:** \`/admin/helpdesk\``;
+      }
+      return `👥 **Enterprenex Solutions - Management Team & Executive Leadership Directory:**\n\n` +
+        `• **Managing Director & Lead Architect:**\n` +
+        `  👤 **Rohit Pawar**\n` +
+        `  ✉️ **Email:** \`director@enterprenexsolution.com\` | \`director@enterprenex.solutions\`\n` +
+        `  📞 **Phone:** \`+91-9226860060\`\n` +
+        `  🏢 **Office:** Executive Boardroom, Pune Corporate Headquarters\n` +
+        `  💼 **Escalation Scope:** Statutory approvals, enterprise architecture, client governance\n\n` +
+        `• **Head of Human Resources & Operations:**\n` +
+        `  👤 **HR Administrator**\n` +
+        `  ✉️ **Email:** \`hr@enterprenexsolution.com\` | \`hr@enterprenex.solutions\`\n` +
+        `  📞 **Phone:** \`+91-9226860060\` (Ext: 102)\n` +
+        `  💼 **Escalation Scope:** Attendance regularizations, statutory leaves (CL/SL/EL), payroll slips & employee onboarding\n\n` +
+        `• **Full Stack Engineer & AI Specialist (Tech Lead):**\n` +
+        `  👤 **POLAMREDDY REVANTH REDDY** (Emp ID: \`202600000002\`)\n` +
+        `  ✉️ **Email:** \`revanth@enterprenex.solutions\`\n` +
+        `  📞 **Phone:** \`+91-9876543210\`\n` +
+        `  💼 **Escalation Scope:** Sprint Kanban workstreams, system delivery, cloud telemetry\n\n` +
+        `• **Central Service Desk & Escalation:**\n` +
+        `  ✉️ **Official Support:** \`support@enterprenexsolution.com\`\n` +
+        `  🌐 **Portal Desk:** \`/admin/helpdesk\` (24/7 SLA Tracking)`;
+    }
+
     // Default Fallback
     if (language === 'hi') {
       return `मैं आपकी सहायता के लिए तैयार हूँ! आप मुझसे निम्न विषयों पर पूछ सकते हैं:\n\n` +
@@ -240,7 +322,8 @@ export const AiChatbotWidget: React.FC = () => {
         `3. "मेरे लंबित कार्य दिखाएं"\n` +
         `4. "कंपनी का GSTIN और CIN नंबर क्या है?"\n` +
         `5. "POSH या शिकायत निवारण के लिए किसे संपर्क करें?"\n` +
-        `6. "मासिक वेतन की गणना कैसे होती है?"`;
+        `6. "मासिक वेतन की गणना कैसे होती है?"\n` +
+        `7. "प्रबंधन टीम संपर्क विवरण दिखाएं"`;
     }
     if (language === 'mr') {
       return `मी मदतीसाठी तयार आहे! तुम्ही मला पुढील गोष्टींबद्दल विचारू शकता:\n\n` +
@@ -249,7 +332,8 @@ export const AiChatbotWidget: React.FC = () => {
         `3. "माझी प्रलंबित कामे दाखवा"\n` +
         `4. "कंपनीचा GSTIN आणि CIN क्रमांक काय आहे?"\n` +
         `5. "POSH किंवा अंतर्गत तक्रारीसाठी कोणाशी संपर्क साधावा?"\n` +
-        `6. "मासिक पगाराची गणना कशी केली जाते?"`;
+        `6. "मासिक पगाराची गणना कशी केली जाते?"\n` +
+        `7. "व्यवस्थापन संघ संपर्क तपशील दाखवा"`;
     }
     return `I am here to assist you with Enterprise EWMS operations! You can ask me:\n\n` +
       `1. *"How many leaves do I have left?"*\n` +
@@ -257,7 +341,8 @@ export const AiChatbotWidget: React.FC = () => {
       `3. *"Show my pending sprint deliverables"*\n` +
       `4. *"What is Enterprenex's registered GSTIN and CIN?"*\n` +
       `5. *"How do I report a POSH grievance?"*\n` +
-      `6. *"How is monthly salary & PF calculated?"*`;
+      `6. *"How is monthly salary & PF calculated?"*\n` +
+      `7. *"Show Management Team contact details and executive directory"*`;
   };
 
   const handleSendMessage = (textToSend?: string) => {
@@ -654,6 +739,24 @@ export const AiChatbotWidget: React.FC = () => {
               }}
             >
               💵 {t('ai.promptSalary', 'Payroll Rules')}
+            </button>
+            <button
+              onClick={() => handleSendMessage(t('ai.promptManagement', 'Show Management Team contact details and executive directory'))}
+              style={{
+                fontSize: '0.72rem',
+                padding: '5px 10px',
+                borderRadius: '12px',
+                background: 'var(--adm-bg, #f4f4f5)',
+                border: '1px solid var(--adm-border, rgba(0, 0, 0, 0.08))',
+                color: 'var(--adm-text, #374151)',
+                cursor: 'pointer',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              👥 {t('ai.promptManagement', 'Management Team')}
             </button>
           </div>
 

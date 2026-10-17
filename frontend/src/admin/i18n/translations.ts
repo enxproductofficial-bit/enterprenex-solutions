@@ -87,7 +87,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'Show my pending tasks',
     'ai.promptCompany': 'What is our GSTIN and CIN number?',
     'ai.promptPosh': 'Who is the ICC Presiding Officer for POSH?',
-    'ai.promptSalary': 'How is monthly payroll calculated?'
+    'ai.promptSalary': 'How is monthly payroll calculated?',
+    'ai.promptManagement': 'Management Team Contacts'
   },
 
   // 2. Hindi (हिन्दी)
@@ -169,7 +170,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'मेरे लंबित कार्य दिखाएं',
     'ai.promptCompany': 'कंपनी का GSTIN और CIN नंबर क्या है?',
     'ai.promptPosh': 'POSH आंतरिक शिकायत अधिकारी कौन हैं?',
-    'ai.promptSalary': 'मासिक वेतन की गणना कैसे होती है?'
+    'ai.promptSalary': 'मासिक वेतन की गणना कैसे होती है?',
+    'ai.promptManagement': 'प्रबंधन टीम संपर्क विवरण'
   },
 
   // 3. Marathi (मराठी)
@@ -251,7 +253,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'माझी प्रलंबित कामे दाखवा',
     'ai.promptCompany': 'कंपनीचा GSTIN आणि CIN क्रमांक काय आहे?',
     'ai.promptPosh': 'POSH अंतर्गत तक्रार अधिकारी कोण आहेत?',
-    'ai.promptSalary': 'मासिक पगाराची गणना कशी केली जाते?'
+    'ai.promptSalary': 'मासिक पगाराची गणना कशी केली जाते?',
+    'ai.promptManagement': 'व्यवस्थापन संघ संपर्क तपशील'
   },
 
   // 4. Telugu (తెలుగు)
@@ -333,7 +336,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'నా పెండింగ్ టాస్క్‌లను చూపించండి',
     'ai.promptCompany': 'కంపెనీ GSTIN & CIN సంఖ్య ఏమిటి?',
     'ai.promptPosh': 'POSH ఫిర్యాదుల అధికారి ఎవరు?',
-    'ai.promptSalary': 'నెలవారీ జీతం లెక్కింపు ఎలా జరుగుతుంది?'
+    'ai.promptSalary': 'నెలవారీ జీతం లెక్కింపు ఎలా జరుగుతుంది?',
+    'ai.promptManagement': 'మేనేజ్‌మెంట్ బృందం సంప్రదింపులు'
   },
 
   // 5. Tamil (தமிழ்)
@@ -415,7 +419,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'எனது நிலுவையில் உள்ள பணிகளைக் காட்டு',
     'ai.promptCompany': 'நிறுவனத்தின் GSTIN & CIN எண் என்ன?',
     'ai.promptPosh': 'POSH புகார் அதிகாரி யார்?',
-    'ai.promptSalary': 'மாத சம்பளம் எவ்வாறு கணக்கிடப்படுகிறது?'
+    'ai.promptSalary': 'மாத சம்பளம் எவ்வாறு கணக்கிடப்படுகிறது?',
+    'ai.promptManagement': 'நிர்வாகக் குழு தொடர்புகள்'
   },
 
   // 6. Kannada (ಕನ್ನಡ)
@@ -497,7 +502,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'ನನ್ನ ಬಾಕಿ ಕೆಲಸಗಳನ್ನು ತೋರಿಸಿ',
     'ai.promptCompany': 'ಕಂಪನಿಯ GSTIN ಮತ್ತು CIN ಸಂಖ್ಯೆ ಯಾವುದು?',
     'ai.promptPosh': 'POSH ದೂರುಗಳ ಅಧಿಕಾರಿ ಯಾರು?',
-    'ai.promptSalary': 'ಮಾಸಿಕ ವೇತನ ಲೆಕ್ಕಾಚಾರ ಹೇಗೆ ಮಾಡಲಾಗುತ್ತದೆ?'
+    'ai.promptSalary': 'ಮಾಸಿಕ ವೇತನ ಲೆಕ್ಕಾಚಾರ ಹೇಗೆ ಮಾಡಲಾಗುತ್ತದೆ?',
+    'ai.promptManagement': 'ನಿರ್ವಹಣಾ ತಂಡದ ಸಂಪರ್ಕಗಳು'
   },
 
   // 7. Bengali (বাংলা)
@@ -579,7 +585,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'আমার বাকি কাজগুলো দেখাও',
     'ai.promptCompany': 'কোম্পানির GSTIN ও CIN নম্বর কী?',
     'ai.promptPosh': 'POSH অভিযোগ কর্মকর্তা কে?',
-    'ai.promptSalary': 'মাসিক বেতন কীভাবে হিসাব করা হয়?'
+    'ai.promptSalary': 'মাসিক বেতন কীভাবে হিসাব করা হয়?',
+    'ai.promptManagement': 'ম্যানেজমেন্ট টিম যোগাযোগ'
   },
 
   // 8. Gujarati (ગુજરાતી)
@@ -661,7 +668,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'મારા બાકી કાર્યો બતાવો',
     'ai.promptCompany': 'કંપનીનો GSTIN અને CIN નંબર શું છે?',
     'ai.promptPosh': 'POSH ફરિયાદ અધિકારી કોણ છે?',
-    'ai.promptSalary': 'માસિક પગારની ગણતરી કેવી રીતે થાય છે?'
+    'ai.promptSalary': 'માસિક પગારની ગણતરી કેવી રીતે થાય છે?',
+    'ai.promptManagement': 'મેનેજમેન્ટ ટીમ સંપર્ક'
   },
 
   // 9. Spanish (Español)
@@ -743,7 +751,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'Mostrar mis tareas pendientes',
     'ai.promptCompany': '¿Cuáles son nuestros números de GSTIN y CIN?',
     'ai.promptPosh': '¿Quién es el oficial de quejas de POSH?',
-    'ai.promptSalary': '¿Cómo se calcula el salario mensual?'
+    'ai.promptSalary': '¿Cómo se calcula el salario mensual?',
+    'ai.promptManagement': 'Contactos del Equipo Directivo'
   },
 
   // 10. German (Deutsch)
@@ -825,6 +834,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai.promptTasks': 'Meine offenen Aufgaben anzeigen',
     'ai.promptCompany': 'Wie lauten unsere GSTIN- und CIN-Nummern?',
     'ai.promptPosh': 'Wer ist der Beauftragte für Beschwerden?',
-    'ai.promptSalary': 'Wie wird das Monatsgehalt berechnet?'
+    'ai.promptSalary': 'Wie wird das Monatsgehalt berechnet?',
+    'ai.promptManagement': 'Kontaktdaten der Geschäftsleitung'
   }
 };

@@ -6,13 +6,8 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Shield,
-  Code2,
-  Users,
   Home,
-  CheckCircle2,
-  AlertCircle,
-  User,
+  AlertCircle
 } from 'lucide-react';
 import { useAdmin } from '../admin/context/AdminContext';
 import { EmployeeTermsModal } from '../components/EmployeeTermsModal';
@@ -21,7 +16,6 @@ import './register/register.css';
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, employees } = useAdmin();
-  const [role, setRole] = useState<'director' | 'employee' | 'manager'>('director');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -58,13 +52,10 @@ export const LoginPage: React.FC = () => {
     setTimeout(() => {
       setIsLoading(false);
 
-      if (role === 'director') {
+      // 1. Director check
+      if (DIRECTOR_EMAILS.includes(inputEmail)) {
         if (inputPassword !== REQUIRED_PASSWORD) {
           setErrorMessage('Access Denied: Incorrect security password.');
-          return;
-        }
-        if (!DIRECTOR_EMAILS.includes(inputEmail)) {
-          setErrorMessage('Access Denied: Only authorized Director email accounts can log in here.');
           return;
         }
 
@@ -81,13 +72,13 @@ export const LoginPage: React.FC = () => {
           phone: '+91-9226860060'
         });
         setTimeout(() => navigate('/admin'), 600);
-      } else if (role === 'manager') {
+        return;
+      }
+
+      // 2. Manager / HR check
+      if (MANAGER_HR_EMAILS.includes(inputEmail)) {
         if (inputPassword !== REQUIRED_PASSWORD) {
           setErrorMessage('Access Denied: Incorrect security password.');
-          return;
-        }
-        if (!MANAGER_HR_EMAILS.includes(inputEmail)) {
-          setErrorMessage('Access Denied: Only authorized Manager / HR email accounts can log in here.');
           return;
         }
 
@@ -105,30 +96,23 @@ export const LoginPage: React.FC = () => {
           phone: '+91-9226860060'
         });
         setTimeout(() => navigate('/admin'), 600);
-      } else {
-        // Employee portal - individual unique 12-Digit Employee ID
+        return;
+      }
+
+      // 3. Employee account lookup by Email, Employee ID, or System ID
+      const matchedEmp = employees.find(
+        (emp) =>
+          (emp.employeeId && emp.employeeId.toLowerCase() === inputEmail) ||
+          emp.id.toLowerCase() === inputEmail ||
+          (emp.email && emp.email.toLowerCase() === inputEmail)
+      );
+
+      if (matchedEmp) {
         if (!agreeTerms) {
           setErrorMessage('Please review and agree to the Employee Terms & Conditions before signing in.');
           return;
         }
-        if (!inputEmail) {
-          setErrorMessage('Please enter your Employee ID (e.g. 202600000002).');
-          return;
-        }
 
-        const matchedEmp = employees.find(
-          (emp) =>
-            (emp.employeeId && emp.employeeId.toLowerCase() === inputEmail) ||
-            emp.id.toLowerCase() === inputEmail ||
-            (emp.email && emp.email.toLowerCase() === inputEmail)
-        );
-
-        if (!matchedEmp) {
-          setErrorMessage(`Access Denied: No employee found with Employee ID "${email.trim()}". Please enter your valid Employee ID (e.g. 202600000002) or contact HR.`);
-          return;
-        }
-
-        // Director Approval Check
         if (matchedEmp.approvalStatus === 'Pending Director Approval') {
           setErrorMessage(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} has been registered by HR and is awaiting approval from the Managing Director (Rohit Pawar). Login will be enabled as soon as the Director approves.`);
           return;
@@ -148,7 +132,7 @@ export const LoginPage: React.FC = () => {
           (empPass && entered.toLowerCase() === empPass.toLowerCase());
 
         if (!isPasswordMatch) {
-          setErrorMessage(`Access Denied: Incorrect password for Employee ID ${matchedEmp.employeeId || matchedEmp.name}.`);
+          setErrorMessage(`Access Denied: Incorrect password for Employee account.`);
           return;
         }
 
@@ -166,13 +150,17 @@ export const LoginPage: React.FC = () => {
           employeeId: matchedEmp.employeeId
         });
         setTimeout(() => navigate('/admin/team'), 600);
+        return;
       }
+
+      // 4. Default fallback: Invalid credentials
+      setErrorMessage('Access Denied: Invalid Email ID or Employee Password provided by HR.');
     }, 400);
   };
 
   return (
-    <div className="reg-container" style={{ justifyContent: 'center', alignItems: 'center', padding: '2rem 1rem' }}>
-      <div style={{ width: '100%', maxWidth: '480px' }}>
+    <div className="reg-container" style={{ justifyContent: 'center', alignItems: 'center', padding: '2.5rem 1rem' }}>
+      <div style={{ width: '100%', maxWidth: '460px' }}>
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <Link
@@ -199,70 +187,13 @@ export const LoginPage: React.FC = () => {
           <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0.5rem 0 0.25rem 0' }}>
             Welcome Back
           </h1>
-          <p style={{ fontSize: '0.9rem', color: '#64748b', margin: 0 }}>
-            Sign in to access your role-based dashboard
+          <p style={{ fontSize: '0.88rem', color: '#64748b', margin: 0 }}>
+            Sign in using credentials provided by HR Administration
           </p>
         </div>
 
         {/* Card */}
-        <div className="reg-card" style={{ padding: '2rem' }}>
-          {/* Role selector tabs */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', fontSize: '0.825rem', fontWeight: 700, color: '#475569', marginBottom: '0.5rem' }}>
-              Select Workspace Role
-            </label>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '0.5rem',
-                background: '#f1f5f9',
-                padding: '0.35rem',
-                borderRadius: '12px',
-              }}
-            >
-              {[
-                { id: 'director' as const, label: 'Director', icon: Shield },
-                { id: 'employee' as const, label: 'Employee', icon: Code2 },
-                { id: 'manager' as const, label: 'Manager / HR', icon: Users },
-              ].map((item) => {
-                const isCurrent = role === item.id;
-                const IconComp = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setRole(item.id);
-                      setEmail('');
-                      setPassword('');
-                      setErrorMessage(null);
-                      setStatusMessage(null);
-                    }}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      padding: '0.5rem 0.25rem',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: isCurrent ? '#ffffff' : 'transparent',
-                      color: isCurrent ? '#059669' : '#64748b',
-                      fontWeight: isCurrent ? 700 : 500,
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      boxShadow: isCurrent ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <IconComp size={16} />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        <div className="reg-card" style={{ padding: '2.25rem 2rem' }}>
 
           {statusMessage && (
             <div
@@ -308,45 +239,40 @@ export const LoginPage: React.FC = () => {
 
           {/* Form */}
           <form onSubmit={handleLoginSubmit}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
-              {/* Employee ID (for Employee) or Official Registered Email (for Director/Manager) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem', marginBottom: '1.5rem' }}>
+              {/* Official Email or Employee ID */}
               <div className="reg-field-group">
-                <label className="reg-label">
-                  {role === 'employee' ? 'Employee ID' : 'Official Registered Email'}
+                <label className="reg-label" style={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem' }}>
+                  Official Email or Employee ID
                 </label>
                 <div className="reg-input-wrap">
-                  {role === 'employee' ? (
-                    <User size={16} className="reg-input-icon" />
-                  ) : (
-                    <Mail size={16} className="reg-input-icon" />
-                  )}
+                  <Mail size={16} className="reg-input-icon" />
                   <input
                     type="text"
                     required
-                    placeholder={
-                      role === 'employee'
-                        ? 'Enter your 12-digit Employee ID'
-                        : 'Enter your official registered email'
-                    }
+                    placeholder="Enter your registered email or 12-digit Employee ID"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="reg-input"
-                    autoComplete="off"
+                    autoComplete="username"
                   />
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '4px' }}>
+                  Enter credentials provided by Enterprenex HR Administration
                 </div>
               </div>
 
               {/* Password */}
               <div className="reg-field-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label className="reg-label">
-                    {role === 'employee' ? 'Employee Password' : 'Security Password'}
+                  <label className="reg-label" style={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem' }}>
+                    Security Password
                   </label>
                   <a
                     href="#forgot"
                     onClick={(e) => {
                       e.preventDefault();
-                      alert('Password recovery link has been sent to your registered email.');
+                      alert('Password recovery notice sent to Enterprenex HR Administration.');
                     }}
                     style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600, textDecoration: 'none' }}
                   >
@@ -362,6 +288,7 @@ export const LoginPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="reg-input"
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -374,63 +301,48 @@ export const LoginPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Remember me */}
-              <div className="reg-checkbox-wrap" style={{ margin: 0 }}>
-                <input
-                  type="checkbox"
-                  id="remember-login"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <label htmlFor="remember-login" style={{ fontSize: '0.825rem' }}>
-                  Keep me signed in on this device
-                </label>
-              </div>
+              {/* Remember me & Terms */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div className="reg-checkbox-wrap" style={{ margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    id="remember-login"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <label htmlFor="remember-login" style={{ fontSize: '0.825rem', color: '#475569' }}>
+                    Keep me signed in
+                  </label>
+                </div>
 
-              {/* Terms and Conditions Option for Employees */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.65rem 0.85rem',
-                  background: 'rgba(5, 150, 105, 0.08)',
-                  border: '1px solid rgba(5, 150, 105, 0.25)',
-                  borderRadius: '10px',
-                  fontSize: '0.82rem',
-                  marginTop: '0.25rem',
-                  flexWrap: 'wrap',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <input
                     type="checkbox"
                     id="employee-terms-checkbox"
                     checked={agreeTerms}
                     onChange={(e) => setAgreeTerms(e.target.checked)}
-                    style={{ width: '16px', height: '16px', accentColor: '#059669', cursor: 'pointer' }}
+                    style={{ width: '15px', height: '15px', accentColor: '#059669', cursor: 'pointer' }}
                   />
-                  <label htmlFor="employee-terms-checkbox" style={{ color: '#1e293b', cursor: 'pointer', fontWeight: 600 }}>
-                    I agree to Terms & Policies
+                  <label htmlFor="employee-terms-checkbox" style={{ color: '#475569', cursor: 'pointer', fontSize: '0.825rem' }}>
+                    I agree to{' '}
+                    <button
+                      type="button"
+                      onClick={() => setShowTermsModal(true)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#059669',
+                        fontWeight: 700,
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        fontSize: '0.825rem',
+                        padding: 0
+                      }}
+                    >
+                      Terms & Policies
+                    </button>
                   </label>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowTermsModal(true)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#059669',
-                    fontWeight: 700,
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    fontSize: '0.82rem'
-                  }}
-                >
-                  View All Terms & Conditions
-                </button>
               </div>
             </div>
 
@@ -438,8 +350,19 @@ export const LoginPage: React.FC = () => {
               type="submit"
               disabled={isLoading}
               className="reg-btn-primary"
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                borderRadius: '10px'
+              }}
             >
-              <span>{isLoading ? 'Signing In...' : `Sign In as ${role.toUpperCase()}`}</span>
+              <span>{isLoading ? 'Verifying RBAC Credentials...' : 'Sign In to Workspace Portal'}</span>
               <ArrowRight size={18} />
             </button>
           </form>

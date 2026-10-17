@@ -29,7 +29,9 @@ import {
   Moon,
   Languages,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Settings,
+  X
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
 import { ToastContainer } from './ToastContainer';
@@ -59,7 +61,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
-  const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
 
@@ -381,78 +383,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
 
           <div className="adm-topbar-right">
-            {/* Multi-Language Selector Dropdown (English / Hindi / Marathi) */}
-            <div style={{ position: 'relative' }}>
-              <button
-                className="adm-topbar-btn"
-                onClick={() => setShowLangMenu(!showLangMenu)}
-                title="Change Portal Language (English / हिन्दी / मराठी)"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  fontSize: '0.78rem',
-                  fontWeight: 700,
-                  padding: '0 10px'
-                }}
-              >
-                <Languages size={15} color="var(--adm-primary)" />
-                <span style={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  {language.toUpperCase()}
-                </span>
-                <ChevronDown size={12} />
-              </button>
-
-              {showLangMenu && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 8px)',
-                    right: 0,
-                    width: '220px',
-                    background: 'var(--adm-surface)',
-                    border: '1px solid var(--adm-border)',
-                    borderRadius: 'var(--adm-radius)',
-                    boxShadow: 'var(--adm-shadow-lg)',
-                    zIndex: 1000,
-                    padding: '0.5rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px'
-                  }}
-                >
-                  <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', padding: '4px 8px', textTransform: 'uppercase', fontWeight: 800 }}>
-                    Select Language / भाषा निवडा ({SUPPORTED_LANGUAGES.length})
-                  </div>
-                  <div style={{ maxHeight: '320px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                    {SUPPORTED_LANGUAGES.map(lang => (
-                      <button
-                        key={lang.code}
-                        onClick={() => { setLanguage(lang.code); setShowLangMenu(false); }}
-                        style={{
-                          padding: '7px 10px',
-                          background: language === lang.code ? 'var(--adm-primary-soft)' : 'transparent',
-                          color: language === lang.code ? 'var(--adm-primary)' : 'var(--adm-text)',
-                          border: 'none',
-                          borderRadius: '6px',
-                          textAlign: 'left',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <span>{lang.nativeLabel}</span>
-                        {language === lang.code && <CheckCircle2 size={13} color="var(--adm-primary)" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* System Settings & Language Preferences Trigger */}
+            <button
+              className="adm-topbar-btn"
+              onClick={() => setShowSettingsModal(true)}
+              title="Portal Settings & Language Preferences"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Settings size={17} />
+            </button>
 
 
             {/* Live Minimalist Theme Toggle (Light / Dark) */}
@@ -539,95 +478,80 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <ChevronDown size={14} color="var(--adm-text-dim)" />
               </div>
 
-              {/* Profile / Role Switcher Modal Dropdown */}
+              {/* Profile / RBAC User Menu Dropdown */}
               {showUserMenu && (
                 <div
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
                     right: 0,
-                    width: '280px',
+                    width: '270px',
                     background: 'var(--adm-surface)',
                     border: '1px solid var(--adm-border-light)',
-                    borderRadius: '14px',
+                    borderRadius: '12px',
                     boxShadow: '0 12px 36px rgba(0, 0, 0, 0.16)',
                     zIndex: 1000,
-                    padding: '1.1rem'
+                    padding: '1rem'
                   }}
                 >
                   {currentUser && (
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
-                        <img src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentUser.name || 'User'} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <img
+                          src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                          alt={currentUser.name || 'User'}
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--adm-primary)' }}
+                        />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {currentUser.name}
                           </div>
-                          <div style={{ fontSize: '0.74rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
                             {currentUser.role}
                           </div>
                         </div>
                       </div>
 
-                      <div style={{ padding: '0.75rem 0.85rem', background: 'var(--adm-bg)', borderRadius: '8px', fontSize: '0.78rem', marginBottom: '0.85rem', border: '1px solid var(--adm-border)' }}>
-                        <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '3px' }}>
-                          Official Email
+                      <div style={{ padding: '0.65rem 0.75rem', background: 'var(--adm-bg)', borderRadius: '8px', fontSize: '0.75rem', marginBottom: '0.75rem', border: '1px solid var(--adm-border)' }}>
+                        <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '2px' }}>
+                          Verified Email
                         </div>
                         <div style={{ color: 'var(--adm-text)', fontWeight: 600, wordBreak: 'break-all' }}>
                           {currentUser.email}
                         </div>
-                        <div style={{ marginTop: '8px', color: 'var(--adm-text-dim)', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '3px' }}>
-                          Department
-                        </div>
-                        <div style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>
-                          {currentUser.department || 'Operations & Engineering'}
-                        </div>
+                        {currentUser.department && (
+                          <>
+                            <div style={{ marginTop: '6px', color: 'var(--adm-text-dim)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '2px' }}>
+                              Department
+                            </div>
+                            <div style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>
+                              {currentUser.department}
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                      {/* Update Photo Option */}
-                      <label
+                      <button
+                        onClick={() => { setShowUserMenu(false); setShowSettingsModal(true); }}
                         style={{
+                          width: '100%',
+                          padding: '7px 10px',
+                          background: 'var(--adm-surface-hover)',
+                          border: '1px solid var(--adm-border)',
+                          borderRadius: '6px',
+                          color: 'var(--adm-text)',
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
                           display: 'flex',
                           alignItems: 'center',
                           gap: '6px',
-                          padding: '6px 10px',
-                          fontSize: '0.78rem',
-                          color: '#34d399',
-                          background: 'rgba(5, 150, 105, 0.1)',
-                          borderRadius: '6px',
                           cursor: 'pointer',
-                          marginBottom: '0.85rem',
-                          border: '1px solid rgba(5, 150, 105, 0.25)',
-                          fontWeight: 600
+                          marginBottom: '0.75rem'
                         }}
                       >
-                        <Camera size={13} />
-                        <span>Update My Profile Photo</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: 'none' }}
-                          onChange={e => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            if (file.size > 5 * 1024 * 1024) {
-                              showToast('File Too Large', 'Please select an image smaller than 5MB.', 'error');
-                              return;
-                            }
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                              const dataUrl = reader.result as string;
-                              updateCurrentUser({ avatar: dataUrl });
-                              const matchedEmp = employees.find(emp => emp.id === currentUser?.id || emp.email === currentUser?.email);
-                              if (matchedEmp) {
-                                updateEmployee(matchedEmp.id, { avatar: dataUrl });
-                              }
-                              showToast('Profile Photo Updated', 'Your profile picture has been updated across the suite.', 'success');
-                            };
-                            reader.readAsDataURL(file);
-                          }}
-                        />
-                      </label>
+                        <Settings size={14} color="var(--adm-primary)" />
+                        <span>Portal Settings & Language</span>
+                      </button>
                     </>
                   )}
 
@@ -666,6 +590,210 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
         {/* Floating Conversational AI Copilot */}
         <AiChatbotWidget />
+
+        {/* Portal Settings & Language Preferences Modal */}
+        {showSettingsModal && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2000,
+              padding: '1rem'
+            }}
+            onClick={() => setShowSettingsModal(false)}
+          >
+            <div
+              style={{
+                width: '100%',
+                maxWidth: '520px',
+                background: 'var(--adm-surface)',
+                borderRadius: '16px',
+                border: '1px solid var(--adm-border)',
+                boxShadow: '0 20px 48px rgba(0,0,0,0.25)',
+                overflow: 'hidden'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div
+                style={{
+                  padding: '1rem 1.25rem',
+                  borderBottom: '1px solid var(--adm-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      background: 'rgba(5, 150, 105, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Settings size={18} color="var(--adm-primary)" />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--adm-text)' }}>
+                      Portal Settings & Preferences
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--adm-text-dim)' }}>
+                      Configure regional language, interface appearance and RBAC security
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowSettingsModal(false)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--adm-text-dim)',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div style={{ padding: '1.25rem', maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {/* 1. Language Selection (10 Types) */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+                    <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Languages size={15} color="var(--adm-primary)" />
+                      System Language / भाषा निवडा ({SUPPORTED_LANGUAGES.length})
+                    </label>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)', fontWeight: 700 }}>
+                      Active: {language.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+                    {SUPPORTED_LANGUAGES.map(lang => {
+                      const isActive = language === lang.code;
+                      return (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            showToast('Language Updated', `Switched language to ${lang.nativeLabel}.`, 'success');
+                          }}
+                          style={{
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: isActive ? '2px solid var(--adm-primary)' : '1px solid var(--adm-border)',
+                            background: isActive ? 'var(--adm-primary-soft)' : 'var(--adm-bg)',
+                            color: isActive ? 'var(--adm-primary)' : 'var(--adm-text)',
+                            fontWeight: isActive ? 700 : 500,
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            textAlign: 'left',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <span>{lang.nativeLabel}</span>
+                          {isActive && <CheckCircle2 size={14} color="var(--adm-primary)" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Theme & Display */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)', marginBottom: '0.65rem' }}>
+                    Theme Appearance
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => { if (theme !== 'light') toggleTheme(); }}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        border: theme === 'light' ? '2px solid var(--adm-primary)' : '1px solid var(--adm-border)',
+                        background: theme === 'light' ? 'var(--adm-primary-soft)' : 'var(--adm-bg)',
+                        color: theme === 'light' ? 'var(--adm-primary)' : 'var(--adm-text)',
+                        fontWeight: 600,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <Sun size={16} color="#f59e0b" />
+                      <span>Light Clean Minimalism</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { if (theme !== 'dark') toggleTheme(); }}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        border: theme === 'dark' ? '2px solid var(--adm-primary)' : '1px solid var(--adm-border)',
+                        background: theme === 'dark' ? 'var(--adm-primary-soft)' : 'var(--adm-bg)',
+                        color: theme === 'dark' ? 'var(--adm-primary)' : 'var(--adm-text)',
+                        fontWeight: 600,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <Moon size={16} />
+                      <span>Dark Enterprise Mode</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3. Session & RBAC info */}
+                <div style={{ padding: '0.85rem', background: 'var(--adm-bg)', borderRadius: '10px', border: '1px solid var(--adm-border)', fontSize: '0.78rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--adm-text-dim)' }}>Session Role:</span>
+                    <strong style={{ color: 'var(--adm-primary)' }}>{currentUser?.role || 'Super Admin'}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--adm-text-dim)' }}>Timezone:</span>
+                    <strong style={{ color: 'var(--adm-text)' }}>IST (UTC+05:30)</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--adm-text-dim)' }}>Access Protocol:</span>
+                    <strong style={{ color: '#059669' }}>Zero-Trust Statutory RBAC</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div style={{ padding: '0.75rem 1.25rem', background: 'var(--adm-bg)', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowSettingsModal(false)}
+                  className="adm-btn adm-btn-primary adm-btn-sm"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
