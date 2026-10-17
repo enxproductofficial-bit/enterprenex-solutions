@@ -10,17 +10,33 @@ import attendanceRoutes from './routes/attendance.routes';
 import taskRoutes from './routes/task.routes';
 import kpiRoutes from './routes/kpi.routes';
 import leaveRoutes from './routes/leave.routes';
+import ticketRoutes from './routes/ticket.routes';
+import meetingRoutes from './routes/meeting.routes';
+import { securityHeaders, sanitizeInputs, rateLimiter, globalErrorHandler } from './middleware/security';
+
+// Global Process Crash Prevention
+process.on('uncaughtException', (err) => {
+  console.error('[CRITICAL UNCAUGHT EXCEPTION PREVENTED]:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[CRITICAL UNHANDLED REJECTION PREVENTED]:', reason);
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Security & Resilience Middlewares
+app.use(securityHeaders);
+app.use(rateLimiter({ maxRequests: 300, windowMs: 60 * 1000 })); // 300 reqs/min DoS defense
+
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Limit body payload to prevent memory blowup
+app.use(sanitizeInputs); // NoSQL/SQL & Prototype Pollution Sanitizer
 
 // Root Route: API Status & Directory
 app.get('/', (req, res) => {
@@ -188,6 +204,11 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/kpi', kpiRoutes);
 app.use('/api/leaves', leaveRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/meetings', meetingRoutes);
+
+// Global Error Handler & Crash Boundary
+app.use(globalErrorHandler);
 
 // 404 handler
 app.use((req, res) => {

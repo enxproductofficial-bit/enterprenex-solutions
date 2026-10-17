@@ -403,11 +403,22 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {theme === 'light' ? <Moon size={16} /> : <Sun size={16} color="#f59e0b" />}
             </button>
 
-            {/* Quick Action Button */}
-            <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowQuickCreate(true)}>
-              <Plus size={15} />
-              <span>{t('btn.add', 'Create New')}</span>
-            </button>
+            {/* Quick Action Button - Scoped by RBAC (No direct CRUD for employees) */}
+            {!isEmployee ? (
+              <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowQuickCreate(true)}>
+                <Plus size={15} />
+                <span>{t('btn.add', 'Create New')}</span>
+              </button>
+            ) : (
+              <button
+                className="adm-btn adm-btn-secondary adm-btn-sm"
+                onClick={() => navigate('/admin/support')}
+                title="Submit an internal support ticket, query, or infrastructure request"
+              >
+                <LifeBuoy size={14} color="var(--adm-primary)" />
+                <span>Raise Request</span>
+              </button>
+            )}
 
             {/* Notifications Bell */}
             <div style={{ position: 'relative' }}>

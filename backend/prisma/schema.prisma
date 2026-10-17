@@ -123,15 +123,20 @@ model Task {
   updatedAt      DateTime @updatedAt
 }
 
-// 7. Live Task Stopwatch Sessions
+// 7. Live Task Stopwatch Sessions with Anti-Tamper Heartbeat & Idle Verification
 model TaskTimeSession {
-  id              String   @id @default(uuid())
-  taskId          String
-  startedAt       DateTime
-  endedAt         DateTime
-  durationMinutes Int
-  activityNote    String?
-  createdAt       DateTime @default(now())
+  id                    String    @id @default(uuid())
+  taskId                String
+  startedAt             DateTime
+  endedAt               DateTime?
+  durationMinutes       Int       @default(0)
+  verifiedActiveMinutes Int       @default(0)
+  idleMinutes           Int       @default(0)
+  heartbeatCount        Int       @default(0)
+  isTamperFlagged       Boolean   @default(false)
+  lastHeartbeatAt       DateTime?
+  activityNote          String?
+  createdAt             DateTime  @default(now())
 }
 
 // 8. Task Collaboration Comments
@@ -201,3 +206,38 @@ model AuditLog {
   ipAddress String?
   timestamp DateTime @default(now())
 }
+
+// 13. Support Desk & Operational Requests (EDWMS Internal Ticketing)
+model SupportTicket {
+  id               String    @id @default(uuid())
+  ticketNumber     String    @unique
+  title            String
+  description      String
+  category         String    // "Payout Period Query" | "Paid Resource Request" | "Hardware Support" | "Operational Request" | "Bug Report" | "General"
+  priority         String    @default("Medium") // "Low" | "Medium" | "High" | "Urgent"
+  status           String    @default("Open") // "Open" | "In Review" | "Approved" | "Resolved" | "Rejected"
+  requestedBy      String    // Employee ID or Full Name
+  requestedByEmail String
+  assignedTo       String?   // Manager or IT Lead
+  costEstimate     Float?    @default(0)
+  responseNotes    String?
+  resolvedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// 14. Corporate Scheduled Meetings & Agile Standups
+model ScheduledMeeting {
+  id              String   @id @default(uuid())
+  title           String
+  agenda          String?
+  meetUrl         String
+  meetingTime     String   // ISO Datetime or formatted string (e.g., 2026-10-18T19:00:00)
+  durationMinutes Int      @default(45)
+  organizer       String
+  department      String   @default("All Hands")
+  attendeesJson   String?  // JSON array
+  status          String   @default("Scheduled") // "Scheduled" | "Ongoing" | "Completed" | "Cancelled"
+  createdAt       DateTime @default(now())
+}
+

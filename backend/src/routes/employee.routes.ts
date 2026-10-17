@@ -1,8 +1,20 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { generateSecureEmployeeId, generateSecureTemporaryPassword, logAuditSecurityEntry } from '../services/security.service';
 
 const router = Router();
+
+// POST /api/employees/generate-id (Generate Unique Sequential Collision-Free Employee ID Server-Side)
+router.post('/generate-id', authenticateToken, requireRole(['Super Admin', 'Project Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { department } = req.body;
+    const employeeId = await generateSecureEmployeeId(department || 'Engineering');
+    res.json({ employeeId });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // GET /api/employees (List all team members - with privacy sanitization for employees)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
@@ -46,16 +58,19 @@ router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager
     const data = req.body;
     const isDirector = req.user?.role === 'Super Admin' || req.user?.email?.includes('director');
 
+    // Rule: Server-Side ID Generation: If employeeId is not provided, generate a collision-free sequential ID
+    const assignedEmployeeId = data.employeeId || await generateSecureEmployeeId(data.department || 'Engineering');
+
     // Rule: Manager-created accounts must be approved by Director before activation
     const initialApprovalStatus = isDirector ? (data.approvalStatus || 'Approved') : 'Pending Director Approval';
 
     // Rule: Password securely hashed using bcrypt (Zero-Trust Password Policy)
-    const rawPassword = data.password || 'Enx_sol_121006';
+    const rawPassword = data.password || generateSecureTemporaryPassword();
     const hashedPassword = await import('bcryptjs').then(b => b.hash(rawPassword, 10));
 
     const newEmp = await prisma.employee.create({
       data: {
-        employeeId: data.employeeId,
+        employeeId: assignedEmployeeId,
         password: hashedPassword,
         name: data.name,
         role: data.role,
@@ -100,6 +115,14 @@ router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager
         avatar: data.avatar,
         status: initialApprovalStatus === 'Approved' ? 'Active' : 'Inactive'
       }
+    });
+
+    // ISO 27001 Security Audit Log
+    await logAuditSecurityEntry({
+      action: 'EMPLOYEE_PROVISIONED',
+      category: 'Human Capital Governance',
+      details: `Provisioned employee record ${assignedEmployeeId} (${data.name}, ${data.department}) with status ${initialApprovalStatus}`,
+      actor: req.user?.name || req.user?.email || 'Authorized Lead'
     });
 
     res.status(201).json({

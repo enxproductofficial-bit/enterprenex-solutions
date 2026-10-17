@@ -10,8 +10,9 @@ interface QuickCreateModalProps {
 }
 
 export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onClose, defaultTab = 'project' }) => {
-  const { addProject, addClient, addLead, addInvoice, addTask, addTicket, uploadDocument, clients, projects, employees, services } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'project' | 'client' | 'lead' | 'invoice' | 'task' | 'ticket' | 'document'>(defaultTab);
+  const { addProject, addClient, addLead, addInvoice, addTask, addTicket, uploadDocument, clients, projects, employees, currentUser } = useAdmin();
+  const isEmployee = currentUser?.role === 'Team Member' || currentUser?.role === 'Developer';
+  const [activeTab, setActiveTab] = useState<'project' | 'client' | 'lead' | 'invoice' | 'task' | 'ticket' | 'document'>(isEmployee ? 'ticket' : defaultTab);
 
   // Form states
   // 1. Project form
@@ -60,9 +61,10 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
   // 6. Ticket form
   const [tkSubject, setTkSubject] = useState('');
   const [tkClientName, setTkClientName] = useState(clients[0]?.companyName || '');
-  const [tkClientEmail, setTkClientEmail] = useState(clients[0]?.primaryContact?.email || '');
+  const [tkClientEmail, setTkClientEmail] = useState(clients[0]?.primaryContact?.email || currentUser?.email || '');
   const [tkPriority, setTkPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
-  const [tkCategory, setTkCategory] = useState<'Bug Fix' | 'Feature Request' | 'Server Issue' | 'Billing' | 'General Query'>('Bug Fix');
+  const [tkCategory, setTkCategory] = useState<string>('Bug Fix');
+  const [tkCostEstimate, setTkCostEstimate] = useState<number>(0);
   const [tkAssignedTo, setTkAssignedTo] = useState(employees[0]?.name || 'Support Specialist');
 
   // 7. Document form
@@ -172,7 +174,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
     const total = subtotal + tax;
 
     addInvoice({
-      invoiceNumber: 'INV-2026-' + Math.floor(100 + Math.random() * 900),
+      invoiceNumber: 'INV-2026-' + Date.now().toString().slice(-4),
       clientName: selClient ? selClient.companyName : 'Enterprise Client',
       clientId: iClientId,
       issueDate: new Date().toISOString().split('T')[0],
@@ -192,14 +194,14 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
   const handleCreateTicket = (e: React.FormEvent) => {
     e.preventDefault();
     addTicket({
-      ticketNumber: 'TKT-' + Math.floor(8000 + Math.random() * 1000),
-      subject: tkSubject || 'Technical Query / Support Request',
-      clientName: tkClientName,
-      clientEmail: tkClientEmail,
+      ticketNumber: 'TKT-2026-' + Date.now().toString().slice(-4),
+      subject: tkSubject || (tkCategory + ' - ' + (currentUser?.name || 'Staff')),
+      clientName: tkClientName || 'Enterprenex Operations',
+      clientEmail: tkClientEmail || currentUser?.email || 'support@enterprenex.solutions',
       priority: tkPriority,
       status: 'Open',
       assignedTo: tkAssignedTo,
-      category: tkCategory,
+      category: tkCategory as any,
       slaHoursRemaining: tkPriority === 'Critical' ? 2 : tkPriority === 'High' ? 4 : 24
     });
     onClose();
@@ -260,29 +262,37 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
           </button>
         </div>
 
-        {/* Tab Buttons */}
+        {/* Tab Buttons - Scoped by RBAC (Zero direct CRUD for general workforce) */}
         <div className="adm-tabs" style={{ marginBottom: '1.25rem' }}>
-          <button className={`adm-tab-btn ${activeTab === 'project' ? 'active' : ''}`} onClick={() => setActiveTab('project')}>
-            <Briefcase size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Project
-          </button>
-          <button className={`adm-tab-btn ${activeTab === 'client' ? 'active' : ''}`} onClick={() => setActiveTab('client')}>
-            <Users size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Client
-          </button>
-          <button className={`adm-tab-btn ${activeTab === 'lead' ? 'active' : ''}`} onClick={() => setActiveTab('lead')}>
-            <Target size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> CRM Lead
-          </button>
-          <button className={`adm-tab-btn ${activeTab === 'task' ? 'active' : ''}`} onClick={() => setActiveTab('task')}>
-            <CheckSquare size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Task
-          </button>
-          <button className={`adm-tab-btn ${activeTab === 'invoice' ? 'active' : ''}`} onClick={() => setActiveTab('invoice')}>
-            <FileText size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Invoice
-          </button>
-          <button className={`adm-tab-btn ${activeTab === 'ticket' ? 'active' : ''}`} onClick={() => setActiveTab('ticket')}>
-            <LifeBuoy size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Ticket
-          </button>
-          <button className={`adm-tab-btn ${activeTab === 'document' ? 'active' : ''}`} onClick={() => setActiveTab('document')}>
-            <UploadCloud size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Document
-          </button>
+          {!isEmployee ? (
+            <>
+              <button className={`adm-tab-btn ${activeTab === 'project' ? 'active' : ''}`} onClick={() => setActiveTab('project')}>
+                <Briefcase size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Project
+              </button>
+              <button className={`adm-tab-btn ${activeTab === 'client' ? 'active' : ''}`} onClick={() => setActiveTab('client')}>
+                <Users size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Client
+              </button>
+              <button className={`adm-tab-btn ${activeTab === 'lead' ? 'active' : ''}`} onClick={() => setActiveTab('lead')}>
+                <Target size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> CRM Lead
+              </button>
+              <button className={`adm-tab-btn ${activeTab === 'task' ? 'active' : ''}`} onClick={() => setActiveTab('task')}>
+                <CheckSquare size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Task
+              </button>
+              <button className={`adm-tab-btn ${activeTab === 'invoice' ? 'active' : ''}`} onClick={() => setActiveTab('invoice')}>
+                <FileText size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Invoice
+              </button>
+              <button className={`adm-tab-btn ${activeTab === 'ticket' ? 'active' : ''}`} onClick={() => setActiveTab('ticket')}>
+                <LifeBuoy size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Ticket
+              </button>
+              <button className={`adm-tab-btn ${activeTab === 'document' ? 'active' : ''}`} onClick={() => setActiveTab('document')}>
+                <UploadCloud size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Document
+              </button>
+            </>
+          ) : (
+            <button className="adm-tab-btn active" onClick={() => setActiveTab('ticket')}>
+              <LifeBuoy size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Submit Operational / Paid Resource Request
+            </button>
+          )}
         </div>
 
         {/* 1. PROJECT FORM */}
@@ -561,11 +571,13 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               <div className="adm-form-group">
                 <label className="adm-form-label">Category</label>
                 <select className="adm-select" value={tkCategory} onChange={e => setTkCategory(e.target.value as any)}>
-                  <option value="Bug Fix">Bug Fix</option>
-                  <option value="Feature Request">Feature Request</option>
-                  <option value="Server Issue">Server Issue</option>
-                  <option value="Billing">Billing Query</option>
-                  <option value="General Query">General Query</option>
+                  <option value="Payout Period Query">Payout Period / Payroll Query</option>
+                  <option value="Paid Resource Request">Paid Resource / Infrastructure Request</option>
+                  <option value="Operational Request">Operational / Administrative Request</option>
+                  <option value="Bug Fix">Technical Bug Report</option>
+                  <option value="Feature Request">Sprint Feature Request</option>
+                  <option value="Server Issue">Server / Cloud Issue</option>
+                  <option value="General Query">General Inquiry</option>
                 </select>
               </div>
               <div className="adm-form-group">

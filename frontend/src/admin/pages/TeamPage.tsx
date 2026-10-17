@@ -624,35 +624,24 @@ export const TeamPage: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  // 12-Digit Guaranteed Unique Employee ID Generator (guaranteed non-repeating across all employees)
-  const generateUnique12DigitId = (): string => {
-    const existingIds = new Set(
-      employees
-        .map(e => (e.employeeId || '').trim().toUpperCase())
-        .filter(Boolean)
-    );
-
-    const year = new Date().getFullYear().toString(); // "2026" (4 digits)
-    let counter = employees.length + 1;
-    let candidate = '';
-
-    // First attempt: Year (4 digits) + 8 digits sequential index = 12 digits (e.g. 202600000002)
-    while (counter <= 99999999) {
-      const padded = counter.toString().padStart(8, '0');
-      candidate = `${year}${padded}`;
-      if (!existingIds.has(candidate)) {
-        return candidate;
-      }
-      counter++;
+  // Server-Side Unique Employee ID Fetcher (keeps generator logic strictly on backend)
+  const fetchServerEmployeeId = async (dept: string = 'Engineering'): Promise<string> => {
+    const token = localStorage.getItem('ewms_token');
+    try {
+      const res = await fetch('http://localhost:5000/api/employees/generate-id', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ department: dept })
+      });
+      const data = await res.json();
+      if (data.employeeId) return data.employeeId;
+    } catch {
+      // Fallback
     }
-
-    // High entropy fallback: Year + random 8 digits = 12 digits, checking uniqueness
-    do {
-      const rand8 = Math.floor(10000000 + Math.random() * 90000000).toString();
-      candidate = `${year}${rand8}`;
-    } while (existingIds.has(candidate));
-
-    return candidate;
+    return `ZCX-EMP-${(employees.length + 1).toString().padStart(4, '0')}`;
   };
 
   // Employee ID and Password state
@@ -887,15 +876,6 @@ export const TeamPage: React.FC = () => {
     printWindow.document.close();
   };
 
-  const generateRandomPassword = (prefix = 'EPX') => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
-    let pass = `${prefix}@`;
-    for (let i = 0; i < 6; i++) {
-      pass += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return pass;
-  };
-
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
@@ -1091,10 +1071,9 @@ export const TeamPage: React.FC = () => {
   };
 
   const openAddMemberModal = () => {
-    const auto12DigitId = generateUnique12DigitId();
-    setEmpId(auto12DigitId);
-    setEmpPassword(generateRandomPassword('EPX'));
-    setShowEmpPassword(true);
+    fetchServerEmployeeId('Engineering').then(id => setEmpId(id));
+    setEmpPassword('');
+    setShowEmpPassword(false);
     setName('');
     setRole('');
     setDesignation('');
@@ -1133,8 +1112,8 @@ export const TeamPage: React.FC = () => {
 
   const handleCreateEmployee = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalEmpId = empId.trim() || generateUnique12DigitId();
-    const finalPassword = empPassword.trim() || generateRandomPassword('EPX');
+    const finalEmpId = empId.trim() || 'ZCX-EMP-' + (employees.length + 1).toString().padStart(4, '0');
+    const finalPassword = empPassword.trim() || undefined;
 
     // Duplicate check validation
     const alreadyExists = employees.some(

@@ -95,11 +95,59 @@ export const TasksPage: React.FC = () => {
     return localStorage.getItem('ewms_active_timer_running') === 'true';
   });
 
-  // Stopwatch ticking interval
+  // Anti-Tamper & Idle-Aware Stopwatch State
+  const [isIdlePaused, setIsIdlePaused] = useState<boolean>(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(() => localStorage.getItem('ewms_active_session_id'));
+  const lastUserActivityRef = useRef<number>(Date.now());
+
+  // Track User Activity (Mouse, Keyboard, Click) to prevent unattended running (e.g. YouTube watching)
+  useEffect(() => {
+    const markActivity = () => {
+      lastUserActivityRef.current = Date.now();
+      if (isIdlePaused) {
+        setIsIdlePaused(false);
+      }
+    };
+
+    window.addEventListener('mousemove', markActivity);
+    window.addEventListener('keydown', markActivity);
+    window.addEventListener('click', markActivity);
+    window.addEventListener('scroll', markActivity);
+
+    // Tab visibility listener: Automatically detect when employee leaves tab
+    const handleVisibilityChange = () => {
+      if (document.hidden && isTimerRunning) {
+        setIsIdlePaused(true);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('mousemove', markActivity);
+      window.removeEventListener('keydown', markActivity);
+      window.removeEventListener('click', markActivity);
+      window.removeEventListener('scroll', markActivity);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isTimerRunning, isIdlePaused]);
+
+  // Stopwatch ticking interval with idle cutoff (2 minutes of inactivity or tab hidden pauses active accumulation)
   useEffect(() => {
     let interval: any = null;
     if (isTimerRunning && activeTimerTaskId) {
       interval = setInterval(() => {
+        const now = Date.now();
+        const isTabHidden = document.hidden;
+        const isUserInactive = (now - lastUserActivityRef.current) > 120000; // 2 minutes without interaction
+
+        if (isTabHidden || isUserInactive) {
+          if (!isIdlePaused) setIsIdlePaused(true);
+          // Do NOT accumulate active sprint time while tab is hidden or user is inactive
+          return;
+        }
+
+        if (isIdlePaused) setIsIdlePaused(false);
+
         setTimerSeconds(prev => {
           const next = prev + 1;
           localStorage.setItem('ewms_active_timer_seconds', String(next));
@@ -110,7 +158,39 @@ export const TasksPage: React.FC = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isTimerRunning, activeTimerTaskId]);
+  }, [isTimerRunning, activeTimerTaskId, isIdlePaused]);
+
+  // Periodic Server Heartbeat (Every 60s) for verified presence telemetry
+  useEffect(() => {
+    if (!isTimerRunning || !activeTimerTaskId) return;
+
+    const heartbeatInterval = setInterval(async () => {
+      const token = localStorage.getItem('ewms_token');
+      if (!token) return;
+
+      const isTabActive = !document.hidden;
+      const isUserRecent = (Date.now() - lastUserActivityRef.current) < 120000;
+
+      try {
+        await fetch(`http://localhost:5000/api/tasks/${activeTimerTaskId}/stopwatch/heartbeat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            sessionId: activeSessionId || 'local-session',
+            isTabActive,
+            userActiveRecent: isUserRecent
+          })
+        });
+      } catch (err) {
+        // Silent background fallback
+      }
+    }, 60000);
+
+    return () => clearInterval(heartbeatInterval);
+  }, [isTimerRunning, activeTimerTaskId, activeSessionId]);
 
   const formatStopwatch = (totalSecs: number) => {
     const hrs = Math.floor(totalSecs / 3600);
@@ -119,7 +199,7 @@ export const TasksPage: React.FC = () => {
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleStartTimer = (taskId: string) => {
+  const handleStartTimer = async (taskId: string) => {
     if (activeTimerTaskId && activeTimerTaskId !== taskId) {
       const prevTask = tasks.find(t => t.id === activeTimerTaskId);
       if (timerSeconds > 10 && prevTask) {
@@ -129,13 +209,35 @@ export const TasksPage: React.FC = () => {
     }
     setActiveTimerTaskId(taskId);
     setIsTimerRunning(true);
+    setIsIdlePaused(false);
+    lastUserActivityRef.current = Date.now();
+
     localStorage.setItem('ewms_active_timer_task_id', taskId);
     localStorage.setItem('ewms_active_timer_running', 'true');
+
+    // Register verified session on backend
+    const token = localStorage.getItem('ewms_token');
+    if (token) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/tasks/${taskId}/stopwatch/start`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.sessionId) {
+          setActiveSessionId(data.sessionId);
+          localStorage.setItem('ewms_active_session_id', data.sessionId);
+        }
+      } catch (e) {
+        // Fallback
+      }
+    }
+
     const task = tasks.find(t => t.id === taskId);
     if (task && (task.status === 'Backlog' || task.status === 'Assigned' || task.status === 'To Do' || task.status === 'Changes Required')) {
       updateTaskStatus(taskId, 'In Progress');
     }
-    showToast('Stopwatch Started', `Live task timer running for "${task?.title || 'Task'}"`, 'info');
+    showToast('Stopwatch Started', `Live task timer running for "${task?.title || 'Task'}". Anti-tamper idle tracking active.`, 'info');
   };
 
   const handlePauseTimer = () => {
@@ -144,17 +246,41 @@ export const TasksPage: React.FC = () => {
     showToast('Stopwatch Paused', 'Timer paused. You can resume at any time.', 'info');
   };
 
-  const handleStopAndLogTimer = (taskId: string) => {
+  const handleStopAndLogTimer = async (taskId: string) => {
     setIsTimerRunning(false);
+    setIsIdlePaused(false);
     const durationHours = Math.max(0.1, Math.round((timerSeconds / 3600) * 100) / 100);
+
+    // Call server to commit verified active hours
+    const token = localStorage.getItem('ewms_token');
+    if (token && activeSessionId) {
+      try {
+        await fetch(`http://localhost:5000/api/tasks/${taskId}/stopwatch/stop`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            sessionId: activeSessionId,
+            activityNote: `Sprint session logged (${formatStopwatch(timerSeconds)})`
+          })
+        });
+      } catch (e) {
+        // Fallback to context
+      }
+    }
+
     logTaskTime(taskId, durationHours);
-    showToast('Time Logged to Task', `Recorded +${durationHours} hrs (${formatStopwatch(timerSeconds)}) to sprint task.`, 'success');
+    showToast('Verified Time Logged', `Recorded +${durationHours} hrs (${formatStopwatch(timerSeconds)}) verified active work to sprint task.`, 'success');
 
     setActiveTimerTaskId(null);
     setTimerSeconds(0);
+    setActiveSessionId(null);
     localStorage.removeItem('ewms_active_timer_task_id');
     localStorage.removeItem('ewms_active_timer_seconds');
     localStorage.removeItem('ewms_active_timer_running');
+    localStorage.removeItem('ewms_active_session_id');
   };
 
   // Role detection and view filter
@@ -454,14 +580,16 @@ export const TasksPage: React.FC = () => {
             </button>
           </div>
 
-          <button className="adm-btn adm-btn-primary" onClick={handleOpenAddModal}>
-            <Plus size={16} />
-            <span>Commission Task (Manager Flow)</span>
-          </button>
+          {!isEmployee && (
+            <button className="adm-btn adm-btn-primary" onClick={handleOpenAddModal}>
+              <Plus size={16} />
+              <span>Commission Task (Manager Flow)</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ── LIVE ACTIVE STOPWATCH BAR (MINIMALISM) ── */}
+      {/* ── LIVE ACTIVE STOPWATCH BAR WITH ANTI-TAMPER IDLE SHIELD ── */}
       {activeTimerTaskId && activeTimerTask && (
         <div
           className="adm-card"
@@ -471,8 +599,8 @@ export const TasksPage: React.FC = () => {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: 'rgba(16, 185, 129, 0.04)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            background: isIdlePaused ? 'rgba(245, 158, 11, 0.08)' : 'rgba(16, 185, 129, 0.04)',
+            border: isIdlePaused ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid rgba(16, 185, 129, 0.3)',
             borderRadius: '10px',
             flexWrap: 'wrap',
             gap: '0.75rem'
@@ -484,14 +612,21 @@ export const TasksPage: React.FC = () => {
                 width: '10px',
                 height: '10px',
                 borderRadius: '50%',
-                background: isTimerRunning ? '#10b981' : '#f59e0b',
+                background: isIdlePaused ? '#f59e0b' : isTimerRunning ? '#10b981' : '#64748b',
                 display: 'inline-block',
-                boxShadow: isTimerRunning ? '0 0 8px #10b981' : 'none'
+                boxShadow: isTimerRunning && !isIdlePaused ? '0 0 8px #10b981' : 'none'
               }}
             />
             <div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
-                Active Live Sprint Timer &bull; {activeTimerTask.taskId || activeTimerTask.id}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+                  Active Live Sprint Timer &bull; {activeTimerTask.taskId || activeTimerTask.id}
+                </span>
+                {isIdlePaused && (
+                  <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#f59e0b', background: 'rgba(245, 158, 11, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>
+                    ⚠️ IDLE DETECTED (AUTO-PAUSED)
+                  </span>
+                )}
               </div>
               <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--adm-text)' }}>
                 {activeTimerTask.title} <span style={{ fontWeight: 400, color: 'var(--adm-text-muted)' }}>({activeTimerTask.projectName})</span>
