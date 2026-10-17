@@ -15,7 +15,7 @@ import './register/register.css';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, employees } = useAdmin();
+  const { login, employees, updateEmployee, showToast } = useAdmin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +25,14 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Employee Account Activation States
+  const [showActivationModal, setShowActivationModal] = useState(false);
+  const [activateId, setActivateId] = useState('');
+  const [activatePassword, setActivatePassword] = useState('');
+  const [activateConfirmPassword, setActivateConfirmPassword] = useState('');
+  const [activateError, setActivateError] = useState<string | null>(null);
+  const [isActivating, setIsActivating] = useState(false);
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,13 +157,84 @@ export const LoginPage: React.FC = () => {
           phone: matchedEmp.phone || '+91-9226860060',
           employeeId: matchedEmp.employeeId
         });
-        setTimeout(() => navigate('/admin/team'), 600);
+        setTimeout(() => navigate('/admin'), 600);
         return;
       }
 
       // 4. Default fallback: Invalid credentials
       setErrorMessage('Access Denied: Invalid Email ID or Employee Password provided by HR.');
     }, 400);
+  };
+
+  const handleActivateAccountSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setActivateError(null);
+    setIsActivating(true);
+
+    const cleanId = activateId.trim().toLowerCase();
+    if (!cleanId || !activatePassword) {
+      setIsActivating(false);
+      setActivateError('Please enter your assigned Employee ID or official email, and a secure password.');
+      return;
+    }
+
+    if (activatePassword.length < 8) {
+      setIsActivating(false);
+      setActivateError('Password must be at least 8 characters long in compliance with Enterprenex security policies.');
+      return;
+    }
+
+    if (activatePassword !== activateConfirmPassword) {
+      setIsActivating(false);
+      setActivateError('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    const matchedEmp = employees.find(
+      (emp) =>
+        (emp.employeeId && emp.employeeId.toLowerCase() === cleanId) ||
+        emp.id.toLowerCase() === cleanId ||
+        (emp.email && emp.email.toLowerCase() === cleanId)
+    );
+
+    if (!matchedEmp) {
+      setIsActivating(false);
+      setActivateError(`Employee record '${activateId}' not found. Please verify your Employee ID or contact Director Rohit Pawar.`);
+      return;
+    }
+
+    if (matchedEmp.approvalStatus === 'Pending Director Approval') {
+      setIsActivating(false);
+      setActivateError(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} is awaiting approval from Managing Director (Rohit Pawar).`);
+      return;
+    }
+
+    // Update employee password and status
+    updateEmployee(matchedEmp.id, {
+      password: activatePassword,
+      status: 'Active'
+    });
+
+    setTimeout(() => {
+      setIsActivating(false);
+      setShowActivationModal(false);
+      showToast('Account Activated', `Welcome to Enterprenex, ${matchedEmp.name}! Your workspace is active.`, 'success');
+
+      login({
+        id: matchedEmp.id,
+        name: matchedEmp.name,
+        email: matchedEmp.email,
+        role: 'Team Member',
+        avatar: matchedEmp.avatar,
+        department: matchedEmp.department,
+        status: 'Active',
+        lastLogin: 'Just now',
+        phone: matchedEmp.phone || '+91-9226860060',
+        employeeId: matchedEmp.employeeId
+      });
+
+      navigate('/admin');
+    }, 600);
   };
 
   return (
@@ -365,6 +444,29 @@ export const LoginPage: React.FC = () => {
               <span>{isLoading ? 'Verifying RBAC Credentials...' : 'Sign In to Workspace Portal'}</span>
               <ArrowRight size={18} />
             </button>
+            {/* First-time Employee Account Activation Trigger */}
+            <div style={{ marginTop: '1.25rem', textAlign: 'center', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setActivateError(null);
+                  setShowActivationModal(true);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#059669',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>First-time Employee? Activate Account & Set Password &rarr;</span>
+              </button>
+            </div>
           </form>
         </div>
 
@@ -393,6 +495,101 @@ export const LoginPage: React.FC = () => {
             onClose={() => setShowTermsModal(false)}
             onAccept={() => setAgreeTerms(true)}
           />
+        )}
+
+        {/* Employee Account Activation Modal */}
+        {showActivationModal && (
+          <div className="adm-modal-overlay" onClick={() => setShowActivationModal(false)}>
+            <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', background: '#fff', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>
+                  Activate Employee Workspace
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowActivationModal(false)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: '1.2rem' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p style={{ fontSize: '0.82rem', color: '#64748b', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
+                Enter your assigned 12-digit Employee ID or official email provided by HR/Director to establish your secure login password.
+              </p>
+
+              {activateError && (
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.65rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', marginBottom: '1rem' }}>
+                  {activateError}
+                </div>
+              )}
+
+              <form onSubmit={handleActivateAccountSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Employee ID or Official Email
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. ZCX-EMP-0001 or 202600000001"
+                    className="reg-input"
+                    value={activateId}
+                    onChange={e => setActivateId(e.target.value)}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    New Secure Password (Min 8 Characters)
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Create strong permanent password..."
+                    className="reg-input"
+                    value={activatePassword}
+                    onChange={e => setActivatePassword(e.target.value)}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Confirm Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Re-enter password..."
+                    className="reg-input"
+                    value={activateConfirmPassword}
+                    onChange={e => setActivateConfirmPassword(e.target.value)}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-secondary"
+                    onClick={() => setShowActivationModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isActivating}
+                    className="reg-btn-primary"
+                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem', fontWeight: 700, borderRadius: '8px' }}
+                  >
+                    {isActivating ? 'Activating Workspace...' : 'Activate & Sign In'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
       </div>
     </div>

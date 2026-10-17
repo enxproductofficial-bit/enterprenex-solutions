@@ -90,6 +90,17 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
 
+  // Employee specific action modals
+  const [showExtensionModal, setShowExtensionModal] = useState(false);
+  const [extensionDate, setExtensionDate] = useState('');
+  const [extensionReason, setExtensionReason] = useState('');
+
+  const [showBlockerModal, setShowBlockerModal] = useState(false);
+  const [blockerReason, setBlockerReason] = useState('');
+
+  const [showClarificationModal, setShowClarificationModal] = useState(false);
+  const [clarificationQuestion, setClarificationQuestion] = useState('');
+
   const isThisTaskTimerActive = activeTimerTaskId === task.id && isTimerRunning;
   const safeSubtasks = task.subtasks || [];
   const completedSubtasks = safeSubtasks.filter(s => s.completed).length;
@@ -132,6 +143,73 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
       onUpdateTaskStatus(task.id, newStatus);
     }
     onUpdateSelectedTask({ ...task, status: newStatus });
+  };
+
+  const handleAcknowledge = () => {
+    handleStatusChange('In Progress');
+    const comment = {
+      id: 'c-' + Date.now(),
+      taskId: task.id,
+      author: task.assignedTo || 'Employee',
+      text: '✓ Task assignment acknowledged and work initiated.',
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    onUpdateSelectedTask({ ...task, status: 'In Progress', comments: [...(task.comments || []), comment] });
+  };
+
+  const handleReportBlocker = () => {
+    if (!blockerReason.trim()) return;
+    const comment = {
+      id: 'c-' + Date.now(),
+      taskId: task.id,
+      author: task.assignedTo || 'Employee',
+      text: `⚠️ BLOCKER ESCALATION: ${blockerReason.trim()}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    handleStatusChange('Blocked');
+    onUpdateSelectedTask({
+      ...task,
+      status: 'Blocked',
+      reviewNotes: `⚠️ BLOCKER: ${blockerReason.trim()}`,
+      comments: [...(task.comments || []), comment]
+    });
+    setBlockerReason('');
+    setShowBlockerModal(false);
+  };
+
+  const handleRequestExtension = () => {
+    if (!extensionDate || !extensionReason.trim()) return;
+    const comment = {
+      id: 'c-' + Date.now(),
+      taskId: task.id,
+      author: task.assignedTo || 'Employee',
+      text: `⏳ DEADLINE EXTENSION REQUESTED: Proposed new date ${extensionDate}. Reason: ${extensionReason.trim()}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    onUpdateSelectedTask({
+      ...task,
+      comments: [...(task.comments || []), comment]
+    });
+    setExtensionDate('');
+    setExtensionReason('');
+    setShowExtensionModal(false);
+  };
+
+  const handleRequestClarification = () => {
+    if (!clarificationQuestion.trim()) return;
+    const comment = {
+      id: 'c-' + Date.now(),
+      taskId: task.id,
+      author: task.assignedTo || 'Employee',
+      text: `❓ CLARIFICATION REQUEST for @${task.reviewer || 'Manager'}: ${clarificationQuestion.trim()}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    onUpdateSelectedTask({
+      ...task,
+      comments: [...(task.comments || []), comment]
+    });
+    setClarificationQuestion('');
+    setShowClarificationModal(false);
   };
 
   const handleAddAttachment = () => {
@@ -380,7 +458,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                 </div>
               </div>
 
-              {/* Status Jump Dropdown */}
+              {/* Status Jump Dropdown (Scoped by Role) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Move Stage:</span>
                 <select
@@ -389,7 +467,11 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                   onChange={e => handleStatusChange(e.target.value as TaskColumn)}
                   style={{ fontSize: '0.78rem', padding: '0.3rem 0.5rem', fontWeight: 700 }}
                 >
-                  {NINE_STAGE_LIFECYCLE.map(item => (
+                  {NINE_STAGE_LIFECYCLE.filter(item => {
+                    // Employees cannot self-approve or self-complete tasks
+                    if (isEmployee && (item.stage === 'Approved' || item.stage === 'Completed')) return false;
+                    return true;
+                  }).map(item => (
                     <option key={item.stage} value={item.stage}>
                       {item.label}
                     </option>
@@ -399,7 +481,19 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
             </div>
 
             {/* Quick Action Ribbon */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem', alignItems: 'center' }}>
+              {/* Employee: Accept or acknowledge assignment */}
+              {task.status === 'To Do' && (
+                <button
+                  className="adm-btn adm-btn-primary adm-btn-sm"
+                  onClick={handleAcknowledge}
+                  style={{ fontWeight: 700 }}
+                >
+                  ✓ Accept & Acknowledge
+                </button>
+              )}
+
+              {/* Submit for Review */}
               {(task.status === 'In Progress' || task.status === 'Changes Required' || task.status === 'Revision Required') && (
                 <button
                   className="adm-btn adm-btn-sm"
@@ -410,43 +504,57 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                 </button>
               )}
 
+              {/* Reviewer / Manager Approval (RBAC: Strictly hidden for general employees) */}
               {task.status === 'In Review' && (
-                <>
-                  <button
-                    className="adm-btn adm-btn-sm"
-                    style={{ background: '#10b981', color: '#fff', border: 'none', fontWeight: 700 }}
-                    onClick={handleApprove}
-                  >
-                    ✓ Approve (Verified)
-                  </button>
-                  <button
-                    className="adm-btn adm-btn-sm"
-                    style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#dc2626', border: '1px solid #ef4444', fontWeight: 700 }}
-                    onClick={() => onRequestRework(task.id)}
-                  >
-                    ↺ Request Revision
-                  </button>
-                </>
+                !isEmployee ? (
+                  <>
+                    <button
+                      className="adm-btn adm-btn-sm"
+                      style={{ background: '#10b981', color: '#fff', border: 'none', fontWeight: 700 }}
+                      onClick={handleApprove}
+                    >
+                      ✓ Approve (Verified)
+                    </button>
+                    <button
+                      className="adm-btn adm-btn-sm"
+                      style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#dc2626', border: '1px solid #ef4444', fontWeight: 700 }}
+                      onClick={() => onRequestRework(task.id)}
+                    >
+                      ↺ Request Revision
+                    </button>
+                  </>
+                ) : (
+                  <span className="adm-badge adm-badge-warning" style={{ fontSize: '0.78rem', padding: '4px 8px' }}>
+                    ⏳ Submitted — Awaiting Manager / Reviewer Verification
+                  </span>
+                )
               )}
 
               {task.status === 'Approved' && (
-                <button
-                  className="adm-btn adm-btn-sm"
-                  style={{ background: '#059669', color: '#fff', border: 'none', fontWeight: 700 }}
-                  onClick={() => handleStatusChange('Completed')}
-                >
-                  Mark Completed 🚀
-                </button>
+                !isEmployee ? (
+                  <button
+                    className="adm-btn adm-btn-sm"
+                    style={{ background: '#059669', color: '#fff', border: 'none', fontWeight: 700 }}
+                    onClick={() => handleStatusChange('Completed')}
+                  >
+                    Mark Completed 🚀
+                  </button>
+                ) : (
+                  <span className="adm-badge adm-badge-success" style={{ fontSize: '0.78rem', padding: '4px 8px' }}>
+                    ✓ Task Verified & Approved by {task.reviewer || 'Manager'}
+                  </span>
+                )
               )}
 
+              {/* Report Blocker */}
               {task.status !== 'Blocked' && task.status !== 'Completed' && task.status !== 'Cancelled' && (
                 <button
                   className="adm-btn adm-btn-secondary adm-btn-sm"
-                  onClick={() => handleStatusChange('Blocked')}
+                  onClick={() => setShowBlockerModal(!showBlockerModal)}
                   style={{ color: '#dc2626', borderColor: 'rgba(220, 38, 38, 0.3)' }}
                 >
                   <AlertTriangle size={12} />
-                  <span>Flag as Blocked</span>
+                  <span>Report Blocker</span>
                 </button>
               )}
 
@@ -458,7 +566,157 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                   Unblock & Resume (In Progress)
                 </button>
               )}
+
+              {/* Request Deadline Extension */}
+              {task.status !== 'Completed' && task.status !== 'Cancelled' && (
+                <button
+                  className="adm-btn adm-btn-secondary adm-btn-sm"
+                  onClick={() => setShowExtensionModal(!showExtensionModal)}
+                  title="Request deadline extension from manager"
+                >
+                  <Clock size={12} />
+                  <span>Request Extension</span>
+                </button>
+              )}
+
+              {/* Request Clarification */}
+              {task.status !== 'Completed' && (
+                <button
+                  className="adm-btn adm-btn-secondary adm-btn-sm"
+                  onClick={() => setShowClarificationModal(!showClarificationModal)}
+                  title="Request clarification from reviewer/manager"
+                >
+                  <MessageSquare size={12} />
+                  <span>Clarification</span>
+                </button>
+              )}
             </div>
+
+            {/* Modal Card: Report Blocker */}
+            {showBlockerModal && (
+              <div
+                style={{
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '10px',
+                  padding: '0.85rem',
+                  marginTop: '0.75rem'
+                }}
+              >
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#dc2626', marginBottom: '6px' }}>
+                  ⚠️ Escalate Project Blocker to Manager & Reviewer
+                </div>
+                <textarea
+                  className="adm-input"
+                  rows={2}
+                  placeholder="Describe technical impediment, third-party dependency failure, or missing requirement..."
+                  value={blockerReason}
+                  onChange={e => setBlockerReason(e.target.value)}
+                  style={{ width: '100%', fontSize: '0.82rem', marginBottom: '8px' }}
+                />
+                <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                  <button
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
+                    onClick={() => setShowBlockerModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="adm-btn adm-btn-danger adm-btn-sm"
+                    onClick={handleReportBlocker}
+                  >
+                    Submit Blocker Escalation
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Card: Request Deadline Extension */}
+            {showExtensionModal && (
+              <div
+                style={{
+                  background: 'rgba(245, 158, 11, 0.08)',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                  borderRadius: '10px',
+                  padding: '0.85rem',
+                  marginTop: '0.75rem'
+                }}
+              >
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#d97706', marginBottom: '6px' }}>
+                  ⏳ Request Deadline Extension
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                  <input
+                    type="date"
+                    className="adm-input"
+                    value={extensionDate}
+                    onChange={e => setExtensionDate(e.target.value)}
+                    style={{ fontSize: '0.82rem', flex: 1, minWidth: '150px' }}
+                  />
+                  <input
+                    type="text"
+                    className="adm-input"
+                    placeholder="Justification (e.g. Scope expansion, API refactor)"
+                    value={extensionReason}
+                    onChange={e => setExtensionReason(e.target.value)}
+                    style={{ fontSize: '0.82rem', flex: 2, minWidth: '200px' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                  <button
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
+                    onClick={() => setShowExtensionModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="adm-btn adm-btn-primary adm-btn-sm"
+                    onClick={handleRequestExtension}
+                  >
+                    Send Extension Request
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Card: Request Clarification */}
+            {showClarificationModal && (
+              <div
+                style={{
+                  background: 'rgba(2, 132, 199, 0.08)',
+                  border: '1px solid rgba(2, 132, 199, 0.3)',
+                  borderRadius: '10px',
+                  padding: '0.85rem',
+                  marginTop: '0.75rem'
+                }}
+              >
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0284c7', marginBottom: '6px' }}>
+                  ❓ Request Clarification from {task.reviewer || 'Reporting Manager'}
+                </div>
+                <input
+                  type="text"
+                  className="adm-input"
+                  placeholder="Ask specific clarification question regarding specs or acceptance criteria..."
+                  value={clarificationQuestion}
+                  onChange={e => setClarificationQuestion(e.target.value)}
+                  style={{ width: '100%', fontSize: '0.82rem', marginBottom: '8px' }}
+                />
+                <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                  <button
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
+                    onClick={() => setShowClarificationModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="adm-btn adm-btn-primary adm-btn-sm"
+                    onClick={handleRequestClarification}
+                  >
+                    Post Question to Reviewer
+                  </button>
+                </div>
+              </div>
+            )}
 
             {task.reviewNotes && (
               <div

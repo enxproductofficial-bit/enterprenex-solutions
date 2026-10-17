@@ -27,10 +27,21 @@ import {
   FolderGit2,
   Sliders,
   UserCheck,
-  Share2
+  Share2,
+  Award,
+  FileText,
+  Play,
+  Send,
+  Coffee,
+  ExternalLink,
+  ShieldCheck,
+  Video,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Task, TaskColumn, Employee, Project } from '../types';
+import { TaskPreviewDrawer } from '../components/TaskPreviewDrawer';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -48,6 +59,16 @@ export const DashboardPage: React.FC = () => {
     currentUser,
     updateLeaveStatus,
     updateTaskStatus,
+    addLeaveRequest,
+    markAttendanceToday,
+    addTicket,
+    updateTask,
+    submitTaskForReview,
+    reviewTask,
+    toggleSubtask,
+    addTaskComment,
+    logTaskTime,
+    deleteTask,
     showToast
   } = useAdmin();
 
@@ -60,9 +81,13 @@ export const DashboardPage: React.FC = () => {
     currentUser?.email === 'director@enterprenex.solutions' ||
     currentUser?.email === 'director@enterprenexsolution.com';
 
-  // Toggle between Executive (Director) View and Department Manager View
-  const [activeDashboardMode, setActiveDashboardMode] = useState<'director' | 'manager'>(
-    isDirector ? 'director' : 'manager'
+  const userRole = currentUser?.role || 'Super Admin';
+  const isEmployeeRole = userRole === 'Team Member' || userRole === 'Developer';
+  const isManagerRole = userRole === 'Project Manager' || userRole === 'HR Manager';
+
+  // Toggle between Executive (Director), Manager, and Employee ("My Workspace") View
+  const [activeDashboardMode, setActiveDashboardMode] = useState<'director' | 'manager' | 'employee'>(
+    isEmployeeRole ? 'employee' : isDirector ? 'director' : 'manager'
   );
 
   // Safe Arrays
@@ -79,6 +104,182 @@ export const DashboardPage: React.FC = () => {
   const safeAnnouncements = announcements || [];
 
   const todayStr = new Date().toISOString().split('T')[0];
+
+  // ── Employee Workspace Telemetry & Profile ──
+  const currentEmpProfile = safeEmployees.find(
+    e => (currentUser?.employeeId && e.employeeId === currentUser.employeeId) ||
+         (currentUser?.email && e.email?.toLowerCase() === currentUser.email?.toLowerCase()) ||
+         e.name?.toLowerCase() === currentUser?.name?.toLowerCase()
+  ) || {
+    id: currentUser?.id || 'emp-self',
+    employeeId: currentUser?.employeeId || 'ZCX-EMP-0001',
+    name: currentUser?.name || 'Staff Member',
+    email: currentUser?.email || 'employee@enterprenex.solutions',
+    role: 'Full Stack Solutions Engineer',
+    department: currentUser?.department || 'Engineering & Product',
+    phone: currentUser?.phone || '+91 9226860060',
+    avatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    reportingManager: 'Rohit Pawar (Managing Director)',
+    workloadPercentage: 80,
+    salaryMonthly: 75000,
+    skillsMatrix: [
+      { name: 'React / Next.js', level: 'Expert', verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'TypeScript & Node.js', level: 'Advanced', verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
+      { name: 'Cloud Infrastructure & CI/CD', level: 'Advanced', verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
+    ],
+    joinDate: '2026-01-15',
+    status: 'Active',
+    approvalStatus: 'Approved'
+  };
+
+  const myTasks = safeTasks.filter(
+    t => t.assignedTo === currentEmpProfile.name ||
+         t.assignedTo === currentEmpProfile.employeeId ||
+         t.assignedTo === currentUser?.name ||
+         t.assignedTo === currentUser?.employeeId
+  );
+  const myTasksDueToday = myTasks.filter(t => t.dueDate === todayStr && t.status !== 'Completed' && t.status !== 'Approved');
+  const myOverdueTasks = myTasks.filter(t => t.dueDate < todayStr && t.status !== 'Completed' && t.status !== 'Approved' && t.status !== 'Cancelled');
+  const myTasksInReview = myTasks.filter(t => t.status === 'In Review');
+  const myTasksRevisionReq = myTasks.filter(t => t.status === 'Revision Required' || t.status === 'Changes Required');
+  const myTasksInProgress = myTasks.filter(t => t.status === 'In Progress');
+  const myTasksCompleted = myTasks.filter(t => t.status === 'Completed' || t.status === 'Approved');
+  const myLoggedHoursTotal = Math.round(myTasks.reduce((acc, t) => acc + (Number(t.loggedHours) || 0), 0) * 10) / 10;
+  const mySprintHoursTotal = Math.round((myLoggedHoursTotal + 24) * 10) / 10;
+
+  const myAssignedProjects = safeProjects.filter(p =>
+    myTasks.some(t => t.projectName === p.title) ||
+    p.status === 'Development' ||
+    p.status === 'Planning'
+  );
+
+  const myLeaves = safeLeaves.filter(
+    l => l.employeeName === currentEmpProfile.name || l.employeeName === currentUser?.name
+  );
+
+  // Employee Workspace Interactive States
+  const [selectedTaskForPreview, setSelectedTaskForPreview] = useState<Task | null>(null);
+  const [activeTimerTaskId, setActiveTimerTaskId] = useState<string | null>(null);
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+  const [timerSeconds, setTimerSeconds] = useState<number>(0);
+  const [drawerCommentInput, setDrawerCommentInput] = useState<string>('');
+
+  const [attendancePunchedIn, setAttendancePunchedIn] = useState<boolean>(true);
+  const [punchInTime, setPunchInTime] = useState<string>('09:15 AM');
+
+  const [showLeaveApplyModal, setShowLeaveApplyModal] = useState<boolean>(false);
+  const [leaveTypeInput, setLeaveTypeInput] = useState<string>('Casual Leave');
+  const [leaveStartInput, setLeaveStartInput] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [leaveEndInput, setLeaveEndInput] = useState<string>(new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+  const [leaveReasonInput, setLeaveReasonInput] = useState<string>('');
+
+  const [showSupportModal, setShowSupportModal] = useState<boolean>(false);
+  const [supportCategoryInput, setSupportCategoryInput] = useState<string>('Technical Equipment & Tooling');
+  const [supportSubjectInput, setSupportSubjectInput] = useState<string>('');
+  const [supportDescInput, setSupportDescInput] = useState<string>('');
+
+  const [showOneOnOneModal, setShowOneOnOneModal] = useState<boolean>(false);
+  const [oneOnOneTopicInput, setOneOnOneTopicInput] = useState<string>('');
+
+  const formatStopwatch = (totalSecs: number) => {
+    const hrs = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleStartTimer = (taskId: string) => {
+    setActiveTimerTaskId(taskId);
+    setIsTimerRunning(true);
+  };
+
+  const handlePauseTimer = () => {
+    setIsTimerRunning(false);
+  };
+
+  const handleStopAndLogTimer = (taskId: string) => {
+    setIsTimerRunning(false);
+    const hours = Math.round((timerSeconds / 3600) * 100) / 100 || 0.1;
+    logTaskTime(taskId, hours);
+    setTimerSeconds(0);
+    setActiveTimerTaskId(null);
+    showToast('Time Logged', `Recorded ${hours} hours to task.`, 'success');
+  };
+
+  const handleDrawerAddComment = (taskId: string) => {
+    if (!drawerCommentInput.trim()) return;
+    addTaskComment(taskId, drawerCommentInput.trim());
+    setDrawerCommentInput('');
+    if (selectedTaskForPreview && selectedTaskForPreview.id === taskId) {
+      const newComment = {
+        id: 'c-' + Date.now(),
+        taskId,
+        author: currentUser?.name || 'Staff Member',
+        text: drawerCommentInput.trim(),
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+      setSelectedTaskForPreview({
+        ...selectedTaskForPreview,
+        comments: [...(selectedTaskForPreview.comments || []), newComment]
+      });
+    }
+  };
+
+  const handleToggleAttendance = () => {
+    if (attendancePunchedIn) {
+      setAttendancePunchedIn(false);
+      markAttendanceToday('Present');
+      showToast('Checked Out', 'Successfully punched out for the day at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 'info');
+    } else {
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setAttendancePunchedIn(true);
+      setPunchInTime(time);
+      markAttendanceToday('Present');
+      showToast('Checked In', 'Successfully punched in for today at ' + time, 'success');
+    }
+  };
+
+  const handleApplyLeaveSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leaveReasonInput.trim()) {
+      showToast('Missing Details', 'Please provide a reason for the leave application.', 'warning');
+      return;
+    }
+
+    addLeaveRequest({
+      employeeName: currentEmpProfile.name,
+      type: leaveTypeInput as any,
+      startDate: leaveStartInput,
+      endDate: leaveEndInput,
+      reason: leaveReasonInput
+    });
+
+    setShowLeaveApplyModal(false);
+    setLeaveReasonInput('');
+    showToast('Leave Submitted', `Applied for ${leaveTypeInput} from ${leaveStartInput} to ${leaveEndInput}. Sent for Manager approval.`, 'success');
+  };
+
+  const handleSupportTicketSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supportSubjectInput.trim() || !supportDescInput.trim()) {
+      showToast('Incomplete', 'Please provide a subject and description for your ticket.', 'warning');
+      return;
+    }
+
+    addTicket({
+      ticketNumber: 'TKT-EMP-' + Math.floor(1000 + Math.random() * 9000),
+      clientName: currentEmpProfile.name + ' (' + (currentEmpProfile.employeeId || 'Staff') + ')',
+      subject: supportSubjectInput.trim(),
+      category: supportCategoryInput as any,
+      priority: 'Medium',
+      status: 'Open'
+    });
+
+    setShowSupportModal(false);
+    setSupportSubjectInput('');
+    setSupportDescInput('');
+    showToast('Ticket Dispatched', 'Your internal support request has been logged with IT & HR Administration.', 'success');
+  };
 
   // ── Executive Stats ──
   const totalClients = safeClients.length;
@@ -139,21 +340,63 @@ export const DashboardPage: React.FC = () => {
           <h1>
             {activeDashboardMode === 'director'
               ? t('dash.title', 'Executive Operations & Intelligence Dashboard')
-              : 'Department & Project Delivery Manager Dashboard'}
+              : activeDashboardMode === 'manager'
+              ? 'Department & Project Delivery Manager Dashboard'
+              : 'My Workspace — Employee Operations Suite'}
           </h1>
           <p>
             {activeDashboardMode === 'director'
               ? t('dash.subtitle', 'Real-time operational telemetry, fiscal revenue realization, engineering capacity & portfolio workstream governance')
-              : 'Sprint delivery operations, team workload capacity, 1-on-1 employee interactions, review gates & blocker escalations'}
+              : activeDashboardMode === 'manager'
+              ? 'Sprint delivery operations, team workload capacity, 1-on-1 employee interactions, review gates & blocker escalations'
+              : 'Assigned sprint deliverables, personal telemetry, 1-on-1 manager sync, attendance punch & workflow governance'}
           </p>
         </div>
 
         <div className="adm-page-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Executive vs Manager Segmented Toggle */}
+          {/* Executive vs Manager vs Employee Segmented Toggle */}
           <div style={{ display: 'flex', background: 'var(--adm-surface)', padding: '3px', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
+            {isDirector && (
+              <button
+                type="button"
+                onClick={() => setActiveDashboardMode('director')}
+                style={{
+                  padding: '0.4rem 0.85rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: activeDashboardMode === 'director' ? 'var(--adm-primary)' : 'transparent',
+                  color: activeDashboardMode === 'director' ? '#fff' : 'var(--adm-text-muted)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Executive (Director)
+              </button>
+            )}
+            {(isDirector || isManagerRole) && (
+              <button
+                type="button"
+                onClick={() => setActiveDashboardMode('manager')}
+                style={{
+                  padding: '0.4rem 0.85rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: activeDashboardMode === 'manager' ? 'var(--adm-primary)' : 'transparent',
+                  color: activeDashboardMode === 'manager' ? '#fff' : 'var(--adm-text-muted)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Manager Dashboard
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => setActiveDashboardMode('director')}
+              onClick={() => setActiveDashboardMode('employee')}
               style={{
                 padding: '0.4rem 0.85rem',
                 fontSize: '0.75rem',
@@ -161,29 +404,12 @@ export const DashboardPage: React.FC = () => {
                 borderRadius: '6px',
                 border: 'none',
                 cursor: 'pointer',
-                background: activeDashboardMode === 'director' ? 'var(--adm-primary)' : 'transparent',
-                color: activeDashboardMode === 'director' ? '#fff' : 'var(--adm-text-muted)',
+                background: activeDashboardMode === 'employee' ? 'var(--adm-primary)' : 'transparent',
+                color: activeDashboardMode === 'employee' ? '#fff' : 'var(--adm-text-muted)',
                 transition: 'all 0.2s ease'
               }}
             >
-              Executive (Director)
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveDashboardMode('manager')}
-              style={{
-                padding: '0.4rem 0.85rem',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                background: activeDashboardMode === 'manager' ? 'var(--adm-primary)' : 'transparent',
-                color: activeDashboardMode === 'manager' ? '#fff' : 'var(--adm-text-muted)',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              Manager Dashboard
+              My Workspace
             </button>
           </div>
 
@@ -199,9 +425,578 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* ═════════════════════════════════════════════════════════════════════════ */}
-      {/* ── MODE 1: MANAGER DASHBOARD (ROLE 2 - ANIKET SIR'S SPECIFICATION) ── */}
+      {/* ── MODE 1: EMPLOYEE DASHBOARD ("MY WORKSPACE" - ROLE 3) ── */}
       {/* ═════════════════════════════════════════════════════════════════════════ */}
-      {activeDashboardMode === 'manager' ? (
+      {activeDashboardMode === 'employee' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+          {/* 1. Employee Profile & Identity Card (Section A Requirements) */}
+          <div
+            className="adm-card"
+            style={{
+              padding: '1.5rem',
+              background: 'linear-gradient(135deg, var(--adm-surface) 0%, rgba(255, 107, 0, 0.03) 100%)',
+              border: '1px solid var(--adm-border)',
+              borderRadius: '16px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={currentEmpProfile.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                    alt={currentEmpProfile.name}
+                    style={{
+                      width: '76px',
+                      height: '76px',
+                      borderRadius: '16px',
+                      objectFit: 'cover',
+                      border: '2px solid var(--adm-primary)'
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '-4px',
+                      right: '-4px',
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      background: '#10b981',
+                      border: '2px solid #fff'
+                    }}
+                    title="Active Workspace Status"
+                  />
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                    <h2 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, color: 'var(--adm-text)' }}>
+                      {currentEmpProfile.name}
+                    </h2>
+                    {/* Unique Employee ID Badge */}
+                    <span
+                      style={{
+                        fontFamily: 'monospace',
+                        fontWeight: 800,
+                        fontSize: '0.78rem',
+                        padding: '3px 9px',
+                        borderRadius: '6px',
+                        background: 'rgba(255, 107, 0, 0.12)',
+                        color: 'var(--adm-primary)',
+                        border: '1px solid rgba(255, 107, 0, 0.3)'
+                      }}
+                    >
+                      {currentEmpProfile.employeeId || 'ZCX-EMP-0001'}
+                    </span>
+                    <span className="adm-badge adm-badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <ShieldCheck size={13} />
+                      Active (Verified)
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '0.85rem', color: 'var(--adm-text-muted)', marginBottom: '6px' }}>
+                    <strong>{currentEmpProfile.role || 'Full Stack Solutions Engineer'}</strong> &bull; {currentEmpProfile.department || 'Engineering'}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--adm-text-dim)', flexWrap: 'wrap' }}>
+                    <span>📧 {currentEmpProfile.email}</span>
+                    <span>📱 {currentEmpProfile.phone || '+91 9226860060'}</span>
+                    <span>📅 Joined: {currentEmpProfile.joinDate || '2026-01-15'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Reporting Manager & 1-on-1 Interaction Hub */}
+              <div
+                style={{
+                  background: 'var(--adm-bg)',
+                  padding: '1rem 1.25rem',
+                  borderRadius: '12px',
+                  border: '1px solid var(--adm-border)',
+                  minWidth: '280px',
+                  flex: '0 1 auto'
+                }}
+              >
+                <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--adm-text-dim)', marginBottom: '4px' }}>
+                  Reporting Manager (Direct Lead)
+                </div>
+                <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--adm-text)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>{currentEmpProfile.reportingManager || 'Rohit Pawar (Managing Director)'}</span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <a
+                    href={`https://wa.me/919226860060?text=${encodeURIComponent(
+                      `Hi Rohit Sir, update from ${currentEmpProfile.name} (${currentEmpProfile.employeeId || 'ZCX-EMP-0001'}).`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="adm-btn adm-btn-sm"
+                    style={{ background: '#25D366', color: '#fff', border: 'none', padding: '0.3rem 0.65rem', fontSize: '0.75rem', textDecoration: 'none' }}
+                    title="Direct WhatsApp with Manager"
+                  >
+                    <MessageCircle size={13} />
+                    <span>WhatsApp</span>
+                  </a>
+                  <a
+                    href="tel:+919226860060"
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
+                    style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
+                    title="Direct Call"
+                  >
+                    <Phone size={13} />
+                    <span>Call</span>
+                  </a>
+                  <a
+                    href={`mailto:director@enterprenex.solutions?subject=${encodeURIComponent(
+                      `Employee 1-on-1 Communication: ${currentEmpProfile.name} (${currentEmpProfile.employeeId})`
+                    )}`}
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
+                    style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
+                    title="Official Email"
+                  >
+                    <Mail size={13} />
+                    <span>Email</span>
+                  </a>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-primary adm-btn-sm"
+                    style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
+                    onClick={() => setShowOneOnOneModal(true)}
+                  >
+                    <Video size={13} />
+                    <span>1-on-1 Meet</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Employee Telemetry Grid (Working Hours, Attendance, Leaves, Performance) */}
+          <div className="adm-grid-4">
+            
+            {/* Telemetry 1: Working Hours & Timesheets */}
+            <div className="adm-kpi-card">
+              <div className="adm-kpi-header">
+                <span className="adm-kpi-label">My Working Hours</span>
+                <div className="adm-kpi-icon" style={{ background: 'rgba(255, 107, 0, 0.1)', color: 'var(--adm-primary)' }}>
+                  <Clock size={17} />
+                </div>
+              </div>
+              <div className="adm-kpi-value">{myLoggedHoursTotal}h</div>
+              <div className="adm-kpi-footer">
+                <span style={{ color: 'var(--adm-primary)', fontWeight: 700 }}>
+                  Sprint Total: {mySprintHoursTotal}h
+                </span>
+                <span>/ 40h target</span>
+              </div>
+              <div className="adm-progress-bar" style={{ height: '5px', marginTop: '8px' }}>
+                <div className="adm-progress-fill" style={{ width: `${Math.min(100, Math.round((mySprintHoursTotal / 40) * 100))}%` }} />
+              </div>
+            </div>
+
+            {/* Telemetry 2: Biometric Attendance & Daily Check-in */}
+            <div className="adm-kpi-card">
+              <div className="adm-kpi-header">
+                <span className="adm-kpi-label">My Attendance</span>
+                <div className="adm-kpi-icon" style={{ background: attendancePunchedIn ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: attendancePunchedIn ? '#10b981' : '#ef4444' }}>
+                  <UserCheck size={17} />
+                </div>
+              </div>
+              <div className="adm-kpi-value" style={{ fontSize: '1.25rem', color: attendancePunchedIn ? '#10b981' : 'var(--adm-text-muted)' }}>
+                {attendancePunchedIn ? 'Present & Logged' : 'Checked Out'}
+              </div>
+              <div className="adm-kpi-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>
+                  {attendancePunchedIn ? `In: ${punchInTime}` : 'Out for Day'}
+                </span>
+                <button
+                  type="button"
+                  className={`adm-btn adm-btn-sm ${attendancePunchedIn ? 'adm-btn-secondary' : 'adm-btn-primary'}`}
+                  style={{ padding: '0.2rem 0.55rem', fontSize: '0.7rem' }}
+                  onClick={handleToggleAttendance}
+                >
+                  {attendancePunchedIn ? 'Punch Out' : 'Punch In'}
+                </button>
+              </div>
+            </div>
+
+            {/* Telemetry 3: Leave Balance & Application */}
+            <div className="adm-kpi-card">
+              <div className="adm-kpi-header">
+                <span className="adm-kpi-label">My Leave Balance</span>
+                <div className="adm-kpi-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                  <Coffee size={17} />
+                </div>
+              </div>
+              <div className="adm-kpi-value" style={{ fontSize: '1.35rem' }}>
+                14 <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--adm-text-muted)' }}>Days Remaining</span>
+              </div>
+              <div className="adm-kpi-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>
+                  Casual: 8 &bull; Sick: 6
+                </span>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-primary adm-btn-sm"
+                  style={{ padding: '0.2rem 0.55rem', fontSize: '0.7rem' }}
+                  onClick={() => setShowLeaveApplyModal(true)}
+                >
+                  Apply Leave
+                </button>
+              </div>
+            </div>
+
+            {/* Telemetry 4: Performance Feedback & KPI Rating */}
+            <div className="adm-kpi-card">
+              <div className="adm-kpi-header">
+                <span className="adm-kpi-label">Performance & Skills</span>
+                <div className="adm-kpi-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                  <Award size={17} />
+                </div>
+              </div>
+              <div className="adm-kpi-value" style={{ color: '#10b981' }}>
+                4.9 / 5.0
+              </div>
+              <div className="adm-kpi-footer">
+                <span style={{ color: '#10b981', fontWeight: 700 }}>
+                  Verified by Rohit Pawar
+                </span>
+                <span>Exceptional Delivery</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. My Tasks & Deadlines Section (Sprint Execution & Workflow) */}
+          <div className="adm-card">
+            <div className="adm-card-header">
+              <div>
+                <div className="adm-card-title">
+                  <CheckSquare size={18} color="var(--adm-primary)" />
+                  My Sprint Deliverables & Task Lifecycle ({myTasks.length} Assigned)
+                </div>
+                <p style={{ margin: '3px 0 0 0', fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+                  Accept assignments, log stopwatch time, submit completed work for review, report blockers, and request deadline extensions
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => navigate('/admin/tasks')}>
+                  Open Full Sprint Kanban
+                </button>
+              </div>
+            </div>
+
+            {/* Task Quick Filters */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+              <span className="adm-badge adm-badge-primary" style={{ padding: '4px 10px' }}>
+                All Assigned ({myTasks.length})
+              </span>
+              <span className={`adm-badge ${myTasksDueToday.length > 0 ? 'adm-badge-warning' : 'adm-badge-neutral'}`} style={{ padding: '4px 10px' }}>
+                Due Today ({myTasksDueToday.length})
+              </span>
+              {myOverdueTasks.length > 0 && (
+                <span className="adm-badge adm-badge-danger" style={{ padding: '4px 10px' }}>
+                  ⚠️ Overdue ({myOverdueTasks.length})
+                </span>
+              )}
+              <span className="adm-badge adm-badge-info" style={{ padding: '4px 10px' }}>
+                In Progress ({myTasksInProgress.length})
+              </span>
+              <span className="adm-badge adm-badge-warning" style={{ padding: '4px 10px' }}>
+                Awaiting Review ({myTasksInReview.length})
+              </span>
+              {myTasksRevisionReq.length > 0 && (
+                <span className="adm-badge adm-badge-danger" style={{ padding: '4px 10px' }}>
+                  Revision Required ({myTasksRevisionReq.length})
+                </span>
+              )}
+              <span className="adm-badge adm-badge-success" style={{ padding: '4px 10px' }}>
+                Completed ({myTasksCompleted.length})
+              </span>
+            </div>
+
+            {/* Tasks Table */}
+            {myTasks.length > 0 ? (
+              <div className="adm-table-container">
+                <table className="adm-table">
+                  <thead>
+                    <tr>
+                      <th>Task Details</th>
+                      <th>Workstream</th>
+                      <th>Due Date & SLA</th>
+                      <th>Priority</th>
+                      <th>Current Stage</th>
+                      <th>Logged Hours</th>
+                      <th>Workstream Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myTasks.map(t => {
+                      const isOverdue = t.dueDate < todayStr && t.status !== 'Completed' && t.status !== 'Approved' && t.status !== 'Cancelled';
+                      const isDueToday = t.dueDate === todayStr && t.status !== 'Completed' && t.status !== 'Approved';
+                      const subtasksCount = (t.subtasks || []).length;
+                      const completedSubtasks = (t.subtasks || []).filter(s => s.completed).length;
+
+                      return (
+                        <tr key={t.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedTaskForPreview(t)}>
+                          <td>
+                            <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.85rem' }}>
+                              {t.title}
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <span style={{ fontFamily: 'monospace', color: 'var(--adm-primary)' }}>{t.taskId || t.id}</span>
+                              {subtasksCount > 0 && <span>&bull; {completedSubtasks}/{subtasksCount} subtasks</span>}
+                              {t.reviewNotes && <span style={{ color: '#dc2626' }}>&bull; Notes: {t.reviewNotes.slice(0, 35)}...</span>}
+                            </div>
+                          </td>
+                          <td style={{ fontWeight: 600, color: 'var(--adm-text-muted)' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <FolderGit2 size={12} color="var(--adm-primary)" />
+                              {t.projectName}
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: isOverdue ? 800 : 600, color: isOverdue ? '#ef4444' : isDueToday ? 'var(--adm-primary)' : 'var(--adm-text)' }}>
+                              {t.dueDate}
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: isOverdue ? '#ef4444' : 'var(--adm-text-dim)' }}>
+                              {isOverdue ? '⚠️ SLA Breached' : isDueToday ? '⏰ Due Today' : 'On Schedule'}
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`adm-badge ${
+                              t.priority === 'Urgent' ? 'adm-badge-danger' :
+                              t.priority === 'High' ? 'adm-badge-warning' : 'adm-badge-neutral'
+                            }`}>
+                              {t.priority}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`adm-badge ${
+                              t.status === 'Completed' || t.status === 'Approved' ? 'adm-badge-success' :
+                              t.status === 'In Review' ? 'adm-badge-warning' :
+                              t.status === 'Revision Required' || t.status === 'Blocked' ? 'adm-badge-danger' :
+                              t.status === 'In Progress' ? 'adm-badge-info' : 'adm-badge-primary'
+                            }`}>
+                              ● {t.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 700, fontSize: '0.82rem' }}>
+                              {t.loggedHours}h / {t.estimatedHours}h
+                            </div>
+                          </td>
+                          <td onClick={e => e.stopPropagation()}>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              {t.status === 'To Do' && (
+                                <button
+                                  type="button"
+                                  className="adm-btn adm-btn-primary"
+                                  style={{ padding: '0.25rem 0.55rem', fontSize: '0.7rem' }}
+                                  onClick={() => {
+                                    updateTaskStatus(t.id, 'In Progress');
+                                    showToast('Task Accepted', `Started work on ${t.title}.`, 'success');
+                                  }}
+                                >
+                                  Accept & Start
+                                </button>
+                              )}
+                              {(t.status === 'In Progress' || t.status === 'Revision Required') && (
+                                <button
+                                  type="button"
+                                  className="adm-btn adm-btn-sm"
+                                  style={{ background: '#f59e0b', color: '#fff', border: 'none', padding: '0.25rem 0.55rem', fontSize: '0.7rem' }}
+                                  onClick={() => {
+                                    updateTaskStatus(t.id, 'In Review');
+                                    showToast('Submitted for Review', `Sent ${t.title} to manager for verification.`, 'info');
+                                  }}
+                                >
+                                  Submit Review
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="adm-btn adm-btn-secondary"
+                                style={{ padding: '0.25rem 0.55rem', fontSize: '0.7rem' }}
+                                onClick={() => setSelectedTaskForPreview(t)}
+                              >
+                                View Specs
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--adm-text-dim)', fontSize: '0.85rem' }}>
+                <p>No active sprint tasks currently assigned to your employee account.</p>
+                <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => navigate('/admin/tasks')}>
+                  Browse Sprint Backlog
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 4. My Assigned Projects & Workstreams */}
+          <div className="adm-card">
+            <div className="adm-card-header">
+              <div className="adm-card-title">
+                <Briefcase size={18} color="var(--adm-primary)" />
+                My Assigned Projects Portfolio ({myAssignedProjects.length})
+              </div>
+              <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => navigate('/admin/projects')}>
+                All Enterprise Projects
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '1rem' }}>
+              {myAssignedProjects.map(p => {
+                const prog = Number(p.progress) || 0;
+                return (
+                  <div
+                    key={p.id}
+                    style={{
+                      padding: '1.1rem',
+                      background: 'var(--adm-bg)',
+                      border: '1px solid var(--adm-border)',
+                      borderRadius: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.65rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--adm-text)' }}>
+                          {p.title}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+                          Client: <strong>{p.clientName}</strong>
+                        </div>
+                      </div>
+                      <span className={`adm-badge ${p.status === 'Development' ? 'adm-badge-primary' : 'adm-badge-success'}`}>
+                        {p.status}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                      <span>Sprint Milestone Progress</span>
+                      <strong>{prog}%</strong>
+                    </div>
+                    <div className="adm-progress-bar" style={{ height: '6px' }}>
+                      <div className="adm-progress-fill" style={{ width: `${Math.min(100, Math.max(0, prog))}%` }} />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--adm-text-dim)', borderTop: '1px solid var(--adm-border)', paddingTop: '6px', marginTop: '2px' }}>
+                      <span>Target Delivery: {p.deadline}</span>
+                      <span style={{ color: 'var(--adm-primary)', fontWeight: 600 }}>Active Contributor</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 5. Communication, Meetings, Announcements & Support Hub */}
+          <div className="adm-grid-2">
+            
+            {/* Upcoming Scheduled Meetings */}
+            <div className="adm-card">
+              <div className="adm-card-header">
+                <div className="adm-card-title">
+                  <Calendar size={18} color="var(--adm-primary)" />
+                  My Scheduled Meetings & Standups
+                </div>
+                <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => navigate('/admin/calendar')}>
+                  Full Calendar
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {safeMeetings.slice(0, 3).map(m => (
+                  <div
+                    key={m.id}
+                    style={{
+                      padding: '0.8rem 1rem',
+                      background: 'var(--adm-bg)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--adm-border)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.84rem', color: 'var(--adm-text)' }}>{m.title}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                        📅 {m.date} &bull; ⏰ {m.time} &bull; Host: {m.host}
+                      </div>
+                    </div>
+                    {m.meetUrl && (
+                      <a
+                        href={m.meetUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="adm-btn adm-btn-sm"
+                        style={{ background: '#10b981', color: '#fff', border: 'none', padding: '0.25rem 0.65rem', fontSize: '0.72rem', textDecoration: 'none' }}
+                      >
+                        Join Meet
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Department Announcements & Support Requests */}
+            <div className="adm-card">
+              <div className="adm-card-header">
+                <div className="adm-card-title">
+                  <MessageSquare size={18} color="var(--adm-primary)" />
+                  Announcements & Support Desk
+                </div>
+                <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowSupportModal(true)}>
+                  <Plus size={13} />
+                  <span>Submit Ticket</span>
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {safeAnnouncements.slice(0, 2).map(ann => (
+                  <div
+                    key={ann.id}
+                    style={{
+                      padding: '0.8rem 1rem',
+                      background: 'var(--adm-bg)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--adm-border)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                      <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.65rem' }}>{ann.priority}</span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)' }}>{ann.postedAt}</span>
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--adm-text)' }}>{ann.title}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px', lineHeight: 1.4 }}>
+                      {ann.content.slice(0, 90)}...
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--adm-primary)', marginTop: '4px' }}>
+                      By: {ann.authorName} ({ann.authorRole})
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      ) : activeDashboardMode === 'manager' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* Top Row: Manager Operational Telemetry Cards (6 Cards) */}
@@ -1154,6 +1949,295 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+      {/* ── MODAL 1: APPLY FOR LEAVE MODAL ── */}
+      {showLeaveApplyModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowLeaveApplyModal(false)}>
+          <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className="adm-modal-header">
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Coffee size={18} color="var(--adm-primary)" />
+                Submit Formal Leave Application
+              </h3>
+              <button className="adm-modal-close" onClick={() => setShowLeaveApplyModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleApplyLeaveSubmit} style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label className="adm-form-label">Leave Category</label>
+                <select
+                  className="adm-select"
+                  value={leaveTypeInput}
+                  onChange={e => setLeaveTypeInput(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <option value="Casual Leave">Casual Leave (8 Days Available)</option>
+                  <option value="Sick Leave">Sick Leave (6 Days Available)</option>
+                  <option value="Paid Leave">Paid Annual Leave (14 Days Available)</option>
+                  <option value="Unpaid">Unpaid Personal Leave</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label className="adm-form-label">From Date</label>
+                  <input
+                    type="date"
+                    className="adm-input"
+                    value={leaveStartInput}
+                    onChange={e => setLeaveStartInput(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="adm-form-label">To Date</label>
+                  <input
+                    type="date"
+                    className="adm-input"
+                    value={leaveEndInput}
+                    onChange={e => setLeaveEndInput(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="adm-form-label">Reason / Work Handover Brief</label>
+                <textarea
+                  className="adm-input"
+                  rows={3}
+                  placeholder="Detail reason for absence and team colleague covering urgent workstreams..."
+                  value={leaveReasonInput}
+                  onChange={e => setLeaveReasonInput(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '0.5rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowLeaveApplyModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="adm-btn adm-btn-primary">
+                  Submit for Manager Approval
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 2: 1-ON-1 INTERACTION & MEET LAUNCHER ── */}
+      {showOneOnOneModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowOneOnOneModal(false)}>
+          <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="adm-modal-header">
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Video size={18} color="var(--adm-primary)" />
+                1-on-1 Direct Communication with Reporting Manager
+              </h3>
+              <button className="adm-modal-close" onClick={() => setShowOneOnOneModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ background: 'var(--adm-bg)', padding: '0.85rem', borderRadius: '10px', border: '1px solid var(--adm-border)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Direct Executive Relationship</div>
+                <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--adm-text)', marginTop: '2px' }}>
+                  {currentEmpProfile.reportingManager || 'Rohit Pawar (Managing Director)'}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '3px' }}>
+                  ● Available for Sprint Sync & Blocker Escalation
+                </div>
+              </div>
+
+              <div>
+                <label className="adm-form-label">Discussion Agenda or Topic</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  placeholder="e.g. Architecture review, deadline adjustment, career feedback..."
+                  value={oneOnOneTopicInput}
+                  onChange={e => setOneOnOneTopicInput(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+                <a
+                  href={`https://wa.me/919226860060?text=${encodeURIComponent(
+                    `Hi Rohit Sir, requesting a 1-on-1 sync regarding: "${oneOnOneTopicInput || 'Sprint Deliverables'}" - ${currentEmpProfile.name} (${currentEmpProfile.employeeId}).`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="adm-btn adm-btn-sm"
+                  style={{ background: '#25D366', color: '#fff', border: 'none', justifyContent: 'center', padding: '0.6rem', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 700 }}
+                >
+                  <MessageCircle size={15} />
+                  <span>Send 1-on-1 Agenda via WhatsApp</span>
+                </a>
+
+                <a
+                  href="https://meet.google.com/new"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="adm-btn adm-btn-primary"
+                  style={{ justifyContent: 'center', padding: '0.6rem', fontSize: '0.82rem', textDecoration: 'none' }}
+                >
+                  <ExternalLink size={15} />
+                  <span>Launch Instant Google Meet Room</span>
+                </a>
+
+                <a
+                  href={`mailto:director@enterprenex.solutions?subject=${encodeURIComponent(
+                    `1-on-1 Request: ${oneOnOneTopicInput || 'General Discussion'} - ${currentEmpProfile.name}`
+                  )}&body=${encodeURIComponent(
+                    `Hello Rohit Sir,\n\nI would like to schedule a 1-on-1 sync to discuss:\n${oneOnOneTopicInput || 'Sprint updates and workstream dependencies'}.\n\nBest regards,\n${currentEmpProfile.name}\n${currentEmpProfile.employeeId}`
+                  )}`}
+                  className="adm-btn adm-btn-secondary"
+                  style={{ justifyContent: 'center', padding: '0.6rem', fontSize: '0.82rem', textDecoration: 'none' }}
+                >
+                  <Mail size={15} />
+                  <span>Dispatch Official 1-on-1 Email</span>
+                </a>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowOneOnOneModal(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL 3: SUBMIT INTERNAL SUPPORT / IT TICKET ── */}
+      {showSupportModal && (
+        <div className="adm-modal-overlay" onClick={() => setShowSupportModal(false)}>
+          <div className="adm-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className="adm-modal-header">
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <LifeBuoy size={18} color="var(--adm-primary)" />
+                Submit Internal Support Ticket
+              </h3>
+              <button className="adm-modal-close" onClick={() => setShowSupportModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSupportTicketSubmit} style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label className="adm-form-label">Category</label>
+                <select
+                  className="adm-select"
+                  value={supportCategoryInput}
+                  onChange={e => setSupportCategoryInput(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <option value="Technical Equipment & Tooling">Technical Equipment & Development Tooling</option>
+                  <option value="Cloud / VPN Access">Cloud / VPN / Server Access Rights</option>
+                  <option value="HR & Payroll Query">HR, Attendance & Payroll Verification</option>
+                  <option value="Facility & Workplace">Facility, Workstation & General Request</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="adm-form-label">Incident / Request Subject</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  placeholder="e.g. AWS Staging credentials renewal required"
+                  value={supportSubjectInput}
+                  onChange={e => setSupportSubjectInput(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="adm-form-label">Detailed Description</label>
+                <textarea
+                  className="adm-input"
+                  rows={3}
+                  placeholder="Describe the issue, urgency, and expected resolution..."
+                  value={supportDescInput}
+                  onChange={e => setSupportDescInput(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '0.5rem' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowSupportModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="adm-btn adm-btn-primary">
+                  Dispatch Ticket to Service Desk
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── TASK PREVIEW DRAWER (FULL 18-FIELD EWMS INSPECTION) ── */}
+      {selectedTaskForPreview && (
+        <TaskPreviewDrawer
+          task={selectedTaskForPreview}
+          onClose={() => setSelectedTaskForPreview(null)}
+          activeTimerTaskId={activeTimerTaskId}
+          isTimerRunning={isTimerRunning}
+          timerSeconds={timerSeconds}
+          formatStopwatch={formatStopwatch}
+          onStartTimer={handleStartTimer}
+          onPauseTimer={handlePauseTimer}
+          onStopAndLogTimer={handleStopAndLogTimer}
+          onLogHours={(id, h) => {
+            logTaskTime(id, h);
+            if (selectedTaskForPreview) {
+              setSelectedTaskForPreview({ ...selectedTaskForPreview, loggedHours: (selectedTaskForPreview.loggedHours || 0) + h });
+            }
+          }}
+          onSubmitForReview={(id) => {
+            submitTaskForReview(id);
+            if (selectedTaskForPreview) {
+              setSelectedTaskForPreview({ ...selectedTaskForPreview, status: 'In Review' });
+            }
+          }}
+          onReviewTask={(id, dec, n) => {
+            reviewTask(id, dec, n);
+            if (selectedTaskForPreview) {
+              setSelectedTaskForPreview({ ...selectedTaskForPreview, status: dec === 'Approved' ? 'Approved' : 'Changes Required' });
+            }
+          }}
+          onRequestRework={(id) => {
+            updateTaskStatus(id, 'Revision Required');
+            if (selectedTaskForPreview) {
+              setSelectedTaskForPreview({ ...selectedTaskForPreview, status: 'Revision Required' });
+            }
+          }}
+          onToggleSubtask={(tId, stId) => {
+            toggleSubtask(tId, stId);
+          }}
+          commentInput={drawerCommentInput}
+          setCommentInput={setDrawerCommentInput}
+          onAddComment={handleDrawerAddComment}
+          isEmployee={isEmployeeRole}
+          onDeleteTask={(id) => {
+            deleteTask(id);
+            setSelectedTaskForPreview(null);
+          }}
+          onUpdateSelectedTask={(updated) => {
+            setSelectedTaskForPreview(updated);
+            updateTask(updated.id, updated);
+          }}
+          onUpdateTaskStatus={(id, st) => {
+            updateTaskStatus(id, st);
+            if (selectedTaskForPreview && selectedTaskForPreview.id === id) {
+              setSelectedTaskForPreview({ ...selectedTaskForPreview, status: st });
+            }
+          }}
+        />
       )}
 
     </div>

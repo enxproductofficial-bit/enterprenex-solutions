@@ -104,12 +104,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     // 1. Employee / Engineering Workforce Portal
     if (isEmployee) {
       return [
-        { section: t('sec.humanCapital', 'Engineering Workspace') },
-        { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck },
-        { to: '/admin/tasks', label: t('nav.tasks', 'Assigned Engineering Tasks'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
-        { to: '/admin/calendar', label: t('nav.calendar', 'Corporate Schedule & Sessions'), icon: Calendar },
-        { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk Incident Tickets'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
-        { to: '/admin/documents', label: t('nav.documents', 'Compliance Records & Credentials'), icon: FileText }
+        { section: t('sec.humanCapital', 'Individual Workspace') },
+        { to: '/admin', label: 'My Workspace', icon: LayoutDashboard, exact: true },
+        { to: '/admin/tasks', label: t('nav.tasks', 'My Assigned Tasks'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
+        { to: '/admin/team', label: t('nav.team', 'Colleagues Directory & Attendance'), icon: UserCheck },
+        { to: '/admin/calendar', label: t('nav.calendar', 'Scheduled Meetings & Calendar'), icon: Calendar },
+        { to: '/admin/support', label: t('nav.helpdesk', 'Support Requests & Tickets'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/documents', label: t('nav.documents', 'Shared Documents & Vault'), icon: FileText }
       ];
     }
 
