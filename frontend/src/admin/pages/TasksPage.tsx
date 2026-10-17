@@ -9,39 +9,32 @@ import {
   Pause,
   Square,
   Calendar,
-  Clock,
   Edit,
   Trash2,
   Eye,
-  CheckCircle2,
   CheckSquare,
-  Filter,
   Columns,
   List,
-  AlertTriangle,
-  FolderGit2,
-  Layers,
-  User,
-  ShieldCheck,
-  Paperclip,
-  Check
+  FolderGit2
 } from 'lucide-react';
 import type { Task, TaskColumn, TaskPriority, TaskAcceptanceCriteria } from '../types';
 
 const TaskPreviewDrawer = React.lazy(() => import('../components/TaskPreviewDrawer'));
 
 // EWMS Section 10: 9-Stage Task Lifecycle Progression
-const NINE_STAGE_COLUMNS: { column: TaskColumn; label: string; badge: string; color: string; desc: string }[] = [
-  { column: 'Backlog', label: 'Backlog', badge: 'adm-badge-neutral', color: '#64748b', desc: 'Unscheduled sprint requirements' },
-  { column: 'Assigned', label: 'Assigned', badge: 'adm-badge-primary', color: '#0284c7', desc: 'Delegated to engineer' },
-  { column: 'In Progress', label: 'In Progress', badge: 'adm-badge-info', color: '#3b82f6', desc: 'Active execution telemetry' },
-  { column: 'Blocked', label: 'Blocked', badge: 'adm-badge-danger', color: '#ef4444', desc: 'Impediment / dependencies' },
-  { column: 'In Review', label: 'In Review', badge: 'adm-badge-warning', color: '#f59e0b', desc: 'Peer & Director review' },
-  { column: 'Changes Required', label: 'Changes Req.', badge: 'adm-badge-danger', color: '#dc2626', desc: 'Rework feedback returned' },
-  { column: 'Approved', label: 'Approved', badge: 'adm-badge-success', color: '#10b981', desc: 'Verified & stage-gated' },
-  { column: 'Completed', label: 'Completed', badge: 'adm-badge-success', color: '#059669', desc: 'Production signed-off' },
-  { column: 'Cancelled', label: 'Cancelled', badge: 'adm-badge-neutral', color: '#94a3b8', desc: 'Aborted or superseded' }
+const NINE_STAGE_LIFECYCLE: { stage: TaskColumn; label: string; badge: string; color: string; desc: string }[] = [
+  { stage: 'Backlog', label: 'Backlog', badge: 'adm-badge-neutral', color: '#64748b', desc: 'Unscheduled sprint requirements' },
+  { stage: 'Assigned', label: 'Assigned', badge: 'adm-badge-primary', color: '#0284c7', desc: 'Delegated to engineer' },
+  { stage: 'In Progress', label: 'In Progress', badge: 'adm-badge-info', color: '#3b82f6', desc: 'Active execution telemetry' },
+  { stage: 'Blocked', label: 'Blocked', badge: 'adm-badge-danger', color: '#ef4444', desc: 'Impediment / dependencies' },
+  { stage: 'In Review', label: 'In Review', badge: 'adm-badge-warning', color: '#f59e0b', desc: 'Peer & Director review' },
+  { stage: 'Changes Required', label: 'Changes Req.', badge: 'adm-badge-danger', color: '#dc2626', desc: 'Rework feedback returned' },
+  { stage: 'Approved', label: 'Approved', badge: 'adm-badge-success', color: '#10b981', desc: 'Verified & stage-gated' },
+  { stage: 'Completed', label: 'Completed', badge: 'adm-badge-success', color: '#059669', desc: 'Production signed-off' },
+  { stage: 'Cancelled', label: 'Cancelled', badge: 'adm-badge-neutral', color: '#94a3b8', desc: 'Aborted or superseded' }
 ];
+
+const NINE_STAGE_COLUMNS = NINE_STAGE_LIFECYCLE;
 
 const MODULE_OPTIONS = [
   'Core Engine & Telemetry',
@@ -859,6 +852,14 @@ export const TasksPage: React.FC = () => {
                             <Calendar size={11} /> {t.dueDate}
                           </span>
                         </div>
+
+                        {/* Subtasks Progress & Assignee Load */}
+                        {safeSubtasks.length > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.67rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
+                            <span>Subtasks ({completedSubtasks}/{safeSubtasks.length})</span>
+                            <span style={{ color: workloadInfo.color, fontWeight: 700 }}>{workloadInfo.percent}% Load</span>
+                          </div>
+                        )}
 
                         {/* ── CARD ACTION CONTROLS: STOPWATCH & PIPELINE ── */}
                         <div
