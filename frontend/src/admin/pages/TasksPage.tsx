@@ -24,11 +24,11 @@ const TaskPreviewDrawer = React.lazy(() => import('../components/TaskPreviewDraw
 // EWMS Section 10: 9-Stage Task Lifecycle Progression
 const NINE_STAGE_LIFECYCLE: { stage: TaskColumn; label: string; badge: string; color: string; desc: string }[] = [
   { stage: 'Backlog', label: 'Backlog', badge: 'adm-badge-neutral', color: '#64748b', desc: 'Unscheduled sprint requirements' },
-  { stage: 'Assigned', label: 'Assigned', badge: 'adm-badge-primary', color: '#0284c7', desc: 'Delegated to engineer' },
+  { stage: 'To Do', label: 'To Do', badge: 'adm-badge-primary', color: '#0284c7', desc: 'Ready for sprint execution' },
   { stage: 'In Progress', label: 'In Progress', badge: 'adm-badge-info', color: '#3b82f6', desc: 'Active execution telemetry' },
   { stage: 'Blocked', label: 'Blocked', badge: 'adm-badge-danger', color: '#ef4444', desc: 'Impediment / dependencies' },
-  { stage: 'In Review', label: 'In Review', badge: 'adm-badge-warning', color: '#f59e0b', desc: 'Peer & Director review' },
-  { stage: 'Changes Required', label: 'Changes Req.', badge: 'adm-badge-danger', color: '#dc2626', desc: 'Rework feedback returned' },
+  { stage: 'In Review', label: 'In Review', badge: 'adm-badge-warning', color: '#f59e0b', desc: 'Peer & Manager review' },
+  { stage: 'Revision Required', label: 'Revision Required', badge: 'adm-badge-danger', color: '#dc2626', desc: 'Rework feedback returned' },
   { stage: 'Approved', label: 'Approved', badge: 'adm-badge-success', color: '#10b981', desc: 'Verified & stage-gated' },
   { stage: 'Completed', label: 'Completed', badge: 'adm-badge-success', color: '#059669', desc: 'Production signed-off' },
   { stage: 'Cancelled', label: 'Cancelled', badge: 'adm-badge-neutral', color: '#94a3b8', desc: 'Aborted or superseded' }

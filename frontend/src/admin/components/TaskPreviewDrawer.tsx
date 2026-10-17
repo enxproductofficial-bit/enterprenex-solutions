@@ -51,11 +51,11 @@ interface TaskPreviewDrawerProps {
 
 const NINE_STAGE_LIFECYCLE: { stage: TaskColumn; label: string; color: string }[] = [
   { stage: 'Backlog', label: '1. Backlog', color: '#64748b' },
-  { stage: 'Assigned', label: '2. Assigned', color: '#0284c7' },
+  { stage: 'To Do', label: '2. To Do', color: '#0284c7' },
   { stage: 'In Progress', label: '3. In Progress', color: '#3b82f6' },
   { stage: 'Blocked', label: '4. Blocked', color: '#ef4444' },
   { stage: 'In Review', label: '5. In Review', color: '#f59e0b' },
-  { stage: 'Changes Required', label: '6. Changes Req.', color: '#dc2626' },
+  { stage: 'Revision Required', label: '6. Revision Req.', color: '#dc2626' },
   { stage: 'Approved', label: '7. Approved', color: '#10b981' },
   { stage: 'Completed', label: '8. Completed', color: '#059669' },
   { stage: 'Cancelled', label: '9. Cancelled', color: '#94a3b8' }
@@ -160,9 +160,11 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
         return 'adm-badge-info';
       case 'In Review':
         return 'adm-badge-warning';
+      case 'Revision Required':
       case 'Changes Required':
       case 'Blocked':
         return 'adm-badge-danger';
+      case 'To Do':
       case 'Assigned':
         return 'adm-badge-primary';
       default:
@@ -398,7 +400,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
 
             {/* Quick Action Ribbon */}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-              {(task.status === 'In Progress' || task.status === 'Changes Required') && (
+              {(task.status === 'In Progress' || task.status === 'Changes Required' || task.status === 'Revision Required') && (
                 <button
                   className="adm-btn adm-btn-sm"
                   style={{ background: '#f59e0b', color: '#fff', border: 'none', fontWeight: 700 }}
@@ -422,7 +424,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                     style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#dc2626', border: '1px solid #ef4444', fontWeight: 700 }}
                     onClick={() => onRequestRework(task.id)}
                   >
-                    ↺ Request Rework
+                    ↺ Request Revision
                   </button>
                 </>
               )}

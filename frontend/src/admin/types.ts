@@ -305,15 +305,16 @@ export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 // EWMS Section 10: 9-Stage Task Lifecycle Progression + backward compatibility
 export type TaskColumn =
   | 'Backlog'
-  | 'Assigned'
+  | 'To Do'
   | 'In Progress'
   | 'Blocked'
   | 'In Review'
-  | 'Changes Required'
+  | 'Revision Required'
   | 'Approved'
   | 'Completed'
   | 'Cancelled'
-  | 'To Do'
+  | 'Changes Required'
+  | 'Assigned'
   | 'Done'
   | 'Testing';
 
