@@ -4532,8 +4532,8 @@ export const TeamPage: React.FC = () => {
                   <label className="adm-form-label">Assigned Role (Governance Role) *</label>
                   <select className="adm-select" value={governanceRole} onChange={e => setGovernanceRole(e.target.value as any)}>
                     <option value="Employee">Employee (Engineering / Delivery)</option>
-                    <option value="Manager (HR)">Manager (Includes HR & Ops)</option>
-                    <option value="Director">Director (Executive Operations)</option>
+                    {isDirector && <option value="Manager (HR)">Manager (Includes HR & Ops)</option>}
+                    {isDirector && <option value="Director">Director (Executive Operations)</option>}
                     <option value="Intern">Intern / Trainee</option>
                   </select>
                 </div>

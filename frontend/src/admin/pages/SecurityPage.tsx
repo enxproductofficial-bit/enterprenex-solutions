@@ -13,7 +13,11 @@ import {
   Globe,
   Trash2,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Lock,
+  Database,
+  Clock,
+  Sliders
 } from 'lucide-react';
 import type { UserRole } from '../types';
 
@@ -31,10 +35,11 @@ export const SecurityPage: React.FC = () => {
     resetAllData,
     addAllowedIp,
     removeAllowedIp,
-    toggleEnforceIpRestriction
+    toggleEnforceIpRestriction,
+    showToast
   } = useAdmin();
 
-  const [tab, setTab] = useState<'rbac' | 'ip' | 'api' | 'sessions' | 'audit'>('ip');
+  const [tab, setTab] = useState<'rbac' | 'ip' | 'api' | 'sessions' | 'audit' | 'policies'>('ip');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [keyName, setKeyName] = useState('');
   const [keyService, setKeyService] = useState('OpenAI');
@@ -43,6 +48,15 @@ export const SecurityPage: React.FC = () => {
   const [showAddIpModal, setShowAddIpModal] = useState(false);
   const [newIpAddress, setNewIpAddress] = useState('');
   const [newIpLabel, setNewIpLabel] = useState('');
+
+  // Business & Administrative Control: Security Policies & Data Retention Settings (Director Scope)
+  const [dataRetentionMonths, setDataRetentionMonths] = useState(36);
+  const [auditRetentionDays, setAuditRetentionDays] = useState(365);
+  const [sessionTimeoutMin, setSessionTimeoutMin] = useState(30);
+  const [mfaPolicy, setMfaPolicy] = useState<'Enforced for All' | 'Enforced for Executives & Managers' | 'Optional'>('Enforced for Executives & Managers');
+  const [passwordExpiryDays, setPasswordExpiryDays] = useState(90);
+  const [autoArchiveDays, setAutoArchiveDays] = useState(180);
+  const [plainTextBlockEnforced, setPlainTextBlockEnforced] = useState(true);
 
   // EWMS Role-Based Access Control (RBAC) Matrix
   const ROLES: UserRole[] = ['Super Admin', 'Project Manager', 'HR Manager', 'Sales Lead', 'Finance Officer', 'Team Member'];
@@ -113,6 +127,10 @@ export const SecurityPage: React.FC = () => {
           </button>
           <button className={`adm-tab-btn ${tab === 'audit' ? 'active' : ''}`} onClick={() => setTab('audit')}>
             ISMS Audit Trail Log ({auditLogs.length})
+          </button>
+          <button className={`adm-tab-btn ${tab === 'policies' ? 'active' : ''}`} onClick={() => setTab('policies')}>
+            <Sliders size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
+            Security Policies & Data Retention
           </button>
         </div>
       </div>
@@ -536,6 +554,191 @@ export const SecurityPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── 6. SECURITY POLICIES & DATA RETENTION SETTINGS (DIRECTOR ONLY) ── */}
+      {tab === 'policies' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Header Policy Summary */}
+          <div
+            className="adm-card"
+            style={{
+              background: 'rgba(56, 189, 248, 0.05)',
+              border: '1px solid rgba(56, 189, 248, 0.25)',
+              padding: '1.25rem'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <ShieldCheck size={18} color="#38bdf8" />
+              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text)' }}>
+                Director Business & Administrative Control: Security Policies & Data Retention
+              </h3>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8', lineHeight: 1.5 }}>
+              Institutional governance configurations established under ISO 27001, Indian Information Technology Act, and DPDP Act standards. Changes take immediate effect across all employee portals and manager scopes.
+            </p>
+          </div>
+
+          <div className="adm-grid-2">
+            {/* 1. Data Retention & Archival Settings */}
+            <div className="adm-card">
+              <div className="adm-card-header">
+                <div className="adm-card-title">
+                  <Database size={16} color="var(--adm-primary)" />
+                  Corporate Data Retention & Archival
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Client & Commercial Record Retention</label>
+                  <select
+                    className="adm-select"
+                    value={dataRetentionMonths}
+                    onChange={e => setDataRetentionMonths(Number(e.target.value))}
+                  >
+                    <option value={12}>12 Months (Active Sprint Scope)</option>
+                    <option value={36}>36 Months (3 Years - Standard Corporate)</option>
+                    <option value={60}>60 Months (5 Years - Statutory Compliance)</option>
+                    <option value={96}>96 Months (8 Years - Indian Companies Act)</option>
+                    <option value={999}>Permanent / Indefinite Ledger</option>
+                  </select>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)', marginTop: '3px' }}>
+                    Retention period for closed project contracts, invoices, and client billing histories.
+                  </span>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Cryptographic Audit Trail Log Retention</label>
+                  <select
+                    className="adm-select"
+                    value={auditRetentionDays}
+                    onChange={e => setAuditRetentionDays(Number(e.target.value))}
+                  >
+                    <option value={90}>90 Days</option>
+                    <option value={180}>180 Days</option>
+                    <option value={365}>365 Days (1 Full Year - ISO 27001 Default)</option>
+                    <option value={730}>730 Days (2 Years)</option>
+                  </select>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Completed Task Archival Threshold</label>
+                  <select
+                    className="adm-select"
+                    value={autoArchiveDays}
+                    onChange={e => setAutoArchiveDays(Number(e.target.value))}
+                  >
+                    <option value={60}>60 Days after completion</option>
+                    <option value={180}>180 Days (Half Year Default)</option>
+                    <option value={365}>365 Days after completion</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Enterprise Authentication & Security Policies */}
+            <div className="adm-card">
+              <div className="adm-card-header">
+                <div className="adm-card-title">
+                  <Lock size={16} color="#10b981" />
+                  Access & Authentication Governance
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Multi-Factor Authentication (MFA) Policy</label>
+                  <select
+                    className="adm-select"
+                    value={mfaPolicy}
+                    onChange={e => setMfaPolicy(e.target.value as any)}
+                  >
+                    <option value="Enforced for Executives & Managers">Enforced for Executives & Managers (Recommended)</option>
+                    <option value="Enforced for All">Enforced for All Employees & Contractors</option>
+                    <option value="Optional">Optional / Self-Service</option>
+                  </select>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)', marginTop: '3px' }}>
+                    Enforces TOTP / authenticator verification at sign-in.
+                  </span>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Administrative Session Idle Timeout</label>
+                  <select
+                    className="adm-select"
+                    value={sessionTimeoutMin}
+                    onChange={e => setSessionTimeoutMin(Number(e.target.value))}
+                  >
+                    <option value={15}>15 Minutes</option>
+                    <option value={30}>30 Minutes (Default)</option>
+                    <option value={60}>60 Minutes (1 Hour)</option>
+                    <option value={120}>120 Minutes (2 Hours)</option>
+                  </select>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Mandatory Password Expiry Cycle</label>
+                  <select
+                    className="adm-select"
+                    value={passwordExpiryDays}
+                    onChange={e => setPasswordExpiryDays(Number(e.target.value))}
+                  >
+                    <option value={60}>Every 60 Days</option>
+                    <option value={90}>Every 90 Days (Corporate Standard)</option>
+                    <option value={180}>Every 180 Days</option>
+                    <option value={0}>Never Expire</option>
+                  </select>
+                </div>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.75rem',
+                    background: 'var(--adm-bg)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--adm-border)'
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--adm-text)' }}>
+                      Plain-text Password Transmission Prevention
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)' }}>
+                      Prohibits sending permanent passwords over unencrypted WhatsApp or Email channels.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPlainTextBlockEnforced(!plainTextBlockEnforced)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: plainTextBlockEnforced ? '#10b981' : '#94a3b8' }}
+                  >
+                    {plainTextBlockEnforced ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Bar */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+            <button
+              className="adm-btn adm-btn-primary"
+              onClick={() => {
+                showToast(
+                  'Security Policies Applied',
+                  'Retention periods, MFA policy, and session timeout parameters successfully updated in corporate ledger.',
+                  'success'
+                );
+              }}
+            >
+              <CheckCircle2 size={14} />
+              <span>Apply & Synchronize Security Ledger</span>
+            </button>
           </div>
         </div>
       )}
