@@ -35,6 +35,8 @@ model Employee {
   department         String   @default("Engineering")
   email              String   @unique
   phone              String
+  personalEmail      String?
+  personalPhone      String?
   avatar             String?
   salaryMonthly      Float    @default(50000)
   workloadPercentage Int      @default(100)

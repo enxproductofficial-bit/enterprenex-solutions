@@ -236,6 +236,8 @@ export interface Employee {
   qualification?: string;
   email: string;
   phone: string;
+  personalEmail?: string;
+  personalPhone?: string;
   avatar: string;
   skills: string[];
   currentProjects: string[];

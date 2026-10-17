@@ -31,7 +31,12 @@ import {
   CheckCircle2,
   Sparkles,
   Settings,
-  X
+  X,
+  Phone,
+  Mail,
+  MessageSquare,
+  Lock,
+  Shield
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
 import { ToastContainer } from './ToastContainer';
@@ -53,6 +58,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     tasks,
     updateCurrentUser,
     updateEmployee,
+    updateMyContactInfo,
     employees,
     showToast
   } = useAdmin();
@@ -63,6 +69,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [myPersonalPhone, setMyPersonalPhone] = useState('');
+  const [myPersonalEmail, setMyPersonalEmail] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
 
@@ -104,6 +114,41 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const isEmployee = userRole === 'Team Member' || userRole === 'Developer';
   const isManagerOrHr = userRole === 'Project Manager' || userRole === 'HR Manager' || userRole === 'Sales Lead' || userRole === 'Finance Officer';
   const isDirector = userRole === 'Super Admin';
+
+  const currentEmpRecord = employees?.find(e => 
+    (currentUser?.id && e.id === currentUser.id) || 
+    (currentUser?.email && e.email === currentUser.email) || 
+    (currentUser?.employeeId && e.employeeId === currentUser.employeeId)
+  );
+
+  const openMyProfileModal = () => {
+    const phone = currentEmpRecord?.personalPhone || (currentUser as any)?.personalPhone || '';
+    const email = currentEmpRecord?.personalEmail || (currentUser as any)?.personalEmail || '';
+    setMyPersonalPhone(phone);
+    setMyPersonalEmail(email);
+    setShowUserMenu(false);
+    setShowProfileModal(true);
+  };
+
+  const handleSaveMyProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingProfile(true);
+    try {
+      await updateMyContactInfo(myPersonalPhone.trim(), myPersonalEmail.trim());
+      showToast('Profile Updated', 'Your personal contact details have been securely saved in the database.', 'success');
+      setShowProfileModal(false);
+    } catch (err: any) {
+      showToast('Error', err?.message || 'Failed to update personal contact info.', 'error');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const getMyWhatsAppTestLink = () => {
+    let clean = (myPersonalPhone || '').replace(/\D/g, '');
+    if (clean.length === 10) clean = '91' + clean;
+    return `https://wa.me/${clean}?text=${encodeURIComponent('Hi, this is a test message from Enterprenex Solutions Portal.')}`;
+  };
 
   // Navigation Items strictly filtered according to EWMS Institutional Permissions Matrix
   const getNavItems = () => {
@@ -572,6 +617,28 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                       </div>
 
                       <button
+                        onClick={openMyProfileModal}
+                        style={{
+                          width: '100%',
+                          padding: '7px 10px',
+                          background: 'rgba(56, 189, 248, 0.08)',
+                          border: '1px solid rgba(56, 189, 248, 0.28)',
+                          borderRadius: '6px',
+                          color: 'var(--adm-text)',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          cursor: 'pointer',
+                          marginBottom: '0.5rem'
+                        }}
+                      >
+                        <UserCheck size={14} color="#38bdf8" />
+                        <span>My Profile & Contact Details</span>
+                      </button>
+
+                      <button
                         onClick={() => { setShowUserMenu(false); setShowSettingsModal(true); }}
                         style={{
                           width: '100%',
@@ -831,6 +898,185 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   Done
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* My Profile & Personal Contact Modal (Zero-Trust RBAC & Private Data Collection) */}
+        {showProfileModal && (
+          <div className="adm-modal-overlay" onClick={() => setShowProfileModal(false)}>
+            <div
+              className="adm-modal"
+              onClick={e => e.stopPropagation()}
+              style={{ maxWidth: '560px', width: '92%' }}
+            >
+              {/* Header */}
+              <div className="adm-modal-header" style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--adm-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img
+                    src={currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                    alt={currentUser?.name || 'User'}
+                    style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--adm-primary)' }}
+                  />
+                  <div>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
+                      My Profile & Personal Contact
+                    </h3>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
+                      {currentUser?.name} &bull; {currentEmpRecord?.employeeId || currentUser?.employeeId || 'EPX Staff'} &bull; {currentUser?.role}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="adm-modal-close"
+                  onClick={() => setShowProfileModal(false)}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Form Body */}
+              <form onSubmit={handleSaveMyProfile}>
+                <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {/* Corporate Overview */}
+                  <div style={{ padding: '0.85rem', background: 'var(--adm-bg)', borderRadius: '10px', border: '1px solid var(--adm-border)', fontSize: '0.78rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Corporate Email:</span>
+                      <strong style={{ color: 'var(--adm-text)' }}>{currentUser?.email}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Department:</span>
+                      <strong style={{ color: 'var(--adm-primary)' }}>{currentUser?.department || currentEmpRecord?.department || 'Operations'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Employee ID:</span>
+                      <strong style={{ fontFamily: 'monospace', color: 'var(--adm-text)' }}>{currentEmpRecord?.employeeId || currentUser?.employeeId || 'EPX-EMP-001'}</strong>
+                    </div>
+                  </div>
+
+                  {/* Private Personal Contact Section */}
+                  <div
+                    style={{
+                      background: 'rgba(56, 189, 248, 0.05)',
+                      border: '1px dashed rgba(56, 189, 248, 0.35)',
+                      borderRadius: '10px',
+                      padding: '1rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Shield size={14} /> Personal Contact Details
+                      </span>
+                      <span className="adm-badge adm-badge-success" style={{ fontSize: '0.62rem' }}>
+                        Private & Secure
+                      </span>
+                    </div>
+
+                    <p style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)', margin: '0 0 0.85rem 0', lineHeight: 1.45 }}>
+                      🔒 <strong>Strict Confidentiality:</strong> Your personal phone number and personal email address are strictly private to you, HR, and the Managing Director. Other employees cannot see or access these details.
+                    </p>
+
+                    {/* Personal Phone Field */}
+                    <div className="adm-form-group" style={{ marginBottom: '0.85rem' }}>
+                      <label className="adm-form-label" style={{ fontSize: '0.78rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Personal Phone Number (WhatsApp)</span>
+                        {myPersonalPhone.trim() && (
+                          <a
+                            href={getMyWhatsAppTestLink()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: '#22c55e',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              textDecoration: 'none'
+                            }}
+                            title="Click to open WhatsApp chat directly"
+                          >
+                            <MessageSquare size={11} />
+                            <span>Open WhatsApp</span>
+                          </a>
+                        )}
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          className="adm-input"
+                          value={myPersonalPhone}
+                          onChange={e => setMyPersonalPhone(e.target.value)}
+                          placeholder="+91-9876543210"
+                          style={{ paddingLeft: '2rem' }}
+                        />
+                        <Phone size={14} color="#38bdf8" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', marginTop: '3px' }}>
+                        Clicking the phone number or WhatsApp icon anywhere in the portal directly opens WhatsApp chat.
+                      </div>
+                    </div>
+
+                    {/* Personal Email Field */}
+                    <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                      <label className="adm-form-label" style={{ fontSize: '0.78rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Personal Email Address</span>
+                        {myPersonalEmail.trim() && (
+                          <a
+                            href={`mailto:${myPersonalEmail.trim()}?subject=${encodeURIComponent('Enterprenex Solutions - Personal Communication')}`}
+                            style={{
+                              color: '#f59e0b',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              textDecoration: 'none'
+                            }}
+                            title="Click to open email application directly"
+                          >
+                            <Mail size={11} />
+                            <span>Open Email App</span>
+                          </a>
+                        )}
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          className="adm-input"
+                          type="email"
+                          value={myPersonalEmail}
+                          onChange={e => setMyPersonalEmail(e.target.value)}
+                          placeholder="e.g. employee.personal@gmail.com"
+                          style={{ paddingLeft: '2rem' }}
+                        />
+                        <Mail size={14} color="#f59e0b" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', marginTop: '3px' }}>
+                        Clicking the email address directly triggers your system's email application.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ padding: '0.75rem 1.25rem', background: 'var(--adm-bg)', borderTop: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileModal(false)}
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
+                    disabled={isSavingProfile}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="adm-btn adm-btn-primary adm-btn-sm"
+                    disabled={isSavingProfile}
+                  >
+                    {isSavingProfile ? 'Saving...' : 'Save & Update Profile'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

@@ -144,6 +144,7 @@ interface AdminContextType {
   // Team actions
   addEmployee: (employee: Omit<Employee, 'id'>) => void;
   updateEmployee: (id: string, updates: Partial<Employee>) => void;
+  updateMyContactInfo: (personalPhone: string, personalEmail: string) => Promise<void>;
   deleteEmployee: (id: string, purgeDocuments?: boolean) => void;
   completePasswordSetup: (employeeIdOrEmail: string, newPassword: string) => void;
   addLeaveRequest: (leave: Omit<LeaveRequest, 'id' | 'status'>) => void;
@@ -801,16 +802,20 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       mustChangePassword: empData.mustChangePassword !== undefined ? empData.mustChangePassword : true
     };
     setEmployees(prev => [...prev, newEmp]);
-    logAction('Added Employee', 'Team Management', `Added ${newEmp.name} to ${newEmp.department} (Initial temporary password assigned)`);
-    showToast('Team Member Added', `${newEmp.name} added to the organization roster with temporary credentials.`, 'success');
+    // Asynchronously sync to backend SQLite database
+    api.createEmployee(empData).catch(err => {
+      console.warn('Backend employee creation fallback:', err);
+    });
+    logAction('Added Employee', 'Team Management', `Added ${newEmp.name} to ${newEmp.department} (Personal contact captured)`);
+    showToast('Team Member Added', `${newEmp.name} added to the organization roster with credentials and contact details.`, 'success');
   };
 
   const updateEmployee = (id: string, updates: Partial<Employee>) => {
     setEmployees(prev =>
       prev.map(e => {
-        if (e.id === id) {
+        if (e.id === id || e.employeeId === id) {
           const updated = { ...e, ...updates };
-          if (currentUser && (currentUser.id === e.id || currentUser.email === e.email)) {
+          if (currentUser && (currentUser.id === e.id || currentUser.email === e.email || currentUser.employeeId === e.employeeId)) {
             setCurrentUser(prevUser => (prevUser ? { ...prevUser, avatar: updated.avatar || prevUser.avatar } : null));
           }
           return updated;
@@ -818,7 +823,28 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return e;
       })
     );
+    // Asynchronously sync to backend SQLite database
+    api.updateEmployee(id, updates).catch(err => {
+      console.warn('Backend employee update fallback:', err);
+    });
     showToast('Employee Updated', 'Employee record updated.', 'success');
+  };
+
+  const updateMyContactInfo = async (personalPhone: string, personalEmail: string) => {
+    try {
+      await api.updateMyContact({ personalPhone, personalEmail });
+    } catch (err) {
+      console.warn('Backend contact update fallback:', err);
+    }
+    setEmployees(prev =>
+      prev.map(e => {
+        if (currentUser && (e.id === currentUser.id || e.email === currentUser.email || e.employeeId === currentUser.employeeId)) {
+          return { ...e, personalPhone, personalEmail };
+        }
+        return e;
+      })
+    );
+    showToast('Contact Updated', 'Your personal contact details have been saved securely.', 'success');
   };
 
   const completePasswordSetup = (employeeIdOrEmail: string, newPassword: string) => {
@@ -1406,6 +1432,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addExpense,
         addEmployee,
         updateEmployee,
+        updateMyContactInfo,
         deleteEmployee,
         completePasswordSetup,
         addLeaveRequest,

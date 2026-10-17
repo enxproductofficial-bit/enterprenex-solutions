@@ -523,6 +523,8 @@ export const TeamPage: React.FC = () => {
   const [qualification, setQualification] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [personalEmail, setPersonalEmail] = useState('');
+  const [personalPhone, setPersonalPhone] = useState('');
   const [skills, setSkills] = useState('React, TypeScript, Node.js');
   const [salary, setSalary] = useState(100000);
   const [workload, setWorkload] = useState(100);
@@ -561,6 +563,21 @@ export const TeamPage: React.FC = () => {
     if (canAccessKyc) return true;
     if (currentUser?.id === emp.id || currentUser?.email === emp.email) return true;
     return false;
+  };
+
+  // Privacy RBAC for Personal Contact Info: Only HR, Director, and the Employee themselves can view
+  const canViewEmployeePersonalContact = (emp: Employee) => {
+    if (isDirector || currentUser?.department === 'Human Resources' || Boolean(currentUser?.email?.includes('hr@'))) return true;
+    if (currentUser?.id === emp.id || currentUser?.email === emp.email || (currentUser?.employeeId && currentUser?.employeeId === emp.employeeId)) return true;
+    return false;
+  };
+
+  const getWhatsAppLink = (phoneStr?: string, name?: string) => {
+    if (!phoneStr) return '#';
+    let clean = phoneStr.replace(/\D/g, '');
+    if (clean.length === 10) clean = '91' + clean;
+    const msg = encodeURIComponent(`Hi ${name || ''}, this is Enterprenex Solutions regarding your workplace updates.`);
+    return `https://wa.me/${clean}?text=${msg}`;
   };
 
   const maskAadhaarNumber = (num?: string) => {
@@ -1087,6 +1104,8 @@ export const TeamPage: React.FC = () => {
     setQualification('');
     setEmail('');
     setPhone('');
+    setPersonalEmail('');
+    setPersonalPhone('');
     setSkills('React, TypeScript, Node.js');
     setSalary(100000);
     setAvatarPreview('');
@@ -1152,6 +1171,8 @@ export const TeamPage: React.FC = () => {
       qualification: qualification || 'B.Tech / Professional Degree',
       email: email || `${name.toLowerCase().replace(/\s+/g, '')}@enterprenex.com`,
       phone: phone || '+91-9876543210',
+      personalEmail: personalEmail.trim() || undefined,
+      personalPhone: personalPhone.trim() || undefined,
       avatar: finalAvatar,
       skills: skills.split(',').map(s => s.trim()).filter(Boolean),
       currentProjects: [],
@@ -1922,10 +1943,89 @@ export const TeamPage: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Confidential Personal Contact Section (HR, Director, & Self Only) */}
+                    {canViewEmployeePersonalContact(emp) ? (
+                      <div
+                        style={{
+                          background: 'rgba(56, 189, 248, 0.05)',
+                          border: '1px solid rgba(56, 189, 248, 0.22)',
+                          borderRadius: '8px',
+                          padding: '0.45rem 0.65rem',
+                          marginBottom: '0.65rem',
+                          fontSize: '0.72rem'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <span style={{ color: '#38bdf8', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.66rem', textTransform: 'uppercase' }}>
+                            <Shield size={11} /> Personal Contact (Private)
+                          </span>
+                          <span className="adm-badge adm-badge-success" style={{ fontSize: '0.6rem', padding: '1px 5px' }}>
+                            Authorized
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--adm-text-dim)' }}>Phone / WA:</span>
+                            {emp.personalPhone ? (
+                              <a
+                                href={getWhatsAppLink(emp.personalPhone, emp.name)}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ color: '#22c55e', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px', textDecoration: 'none' }}
+                                title="Click to open WhatsApp chat directly"
+                              >
+                                <MessageSquare size={11} />
+                                <span>{emp.personalPhone}</span>
+                              </a>
+                            ) : (
+                              <span style={{ color: 'var(--adm-text-dim)', fontStyle: 'italic' }}>Not provided</span>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--adm-text-dim)' }}>Email:</span>
+                            {emp.personalEmail ? (
+                              <a
+                                href={`mailto:${emp.personalEmail}?subject=${encodeURIComponent('Enterprenex Solutions - Personal Communication')}`}
+                                style={{ color: '#f59e0b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px', textDecoration: 'none', maxWidth: '170px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                title="Click to open email application directly"
+                              >
+                                <Mail size={11} />
+                                <span>{emp.personalEmail}</span>
+                              </a>
+                            ) : (
+                              <span style={{ color: 'var(--adm-text-dim)', fontStyle: 'italic' }}>Not provided</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid var(--adm-border)',
+                          borderRadius: '6px',
+                          padding: '0.35rem 0.55rem',
+                          marginBottom: '0.65rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          fontSize: '0.67rem',
+                          color: 'var(--adm-text-dim)'
+                        }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Lock size={10} />
+                          <span>Personal Contact</span>
+                        </span>
+                        <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Private (HR & Director only)</span>
+                      </div>
+                    )}
+
                     {/* 4. One-Click Contact & 5. Direct Connect (Notebook Priorities 4 & 5) */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '0.75rem' }}>
                       <a
-                        href={`https://wa.me/${(emp.phone || '').replace(/\D/g, '')}`}
+                        href={getWhatsAppLink(canViewEmployeePersonalContact(emp) && emp.personalPhone ? emp.personalPhone : emp.phone, emp.name)}
                         target="_blank"
                         rel="noreferrer"
                         onClick={e => e.stopPropagation()}
@@ -1937,7 +2037,7 @@ export const TeamPage: React.FC = () => {
                         <span>WhatsApp</span>
                       </a>
                       <a
-                        href={`tel:${emp.phone || '+919876543210'}`}
+                        href={`tel:${canViewEmployeePersonalContact(emp) && emp.personalPhone ? emp.personalPhone : (emp.phone || '+919876543210')}`}
                         onClick={e => e.stopPropagation()}
                         className="adm-btn adm-btn-secondary"
                         style={{ padding: '0.35rem 0.2rem', fontSize: '0.68rem', justifyContent: 'center', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.3)' }}
@@ -1947,11 +2047,11 @@ export const TeamPage: React.FC = () => {
                         <span>Call</span>
                       </a>
                       <a
-                        href={`mailto:${emp.email}`}
+                        href={`mailto:${canViewEmployeePersonalContact(emp) && emp.personalEmail ? emp.personalEmail : emp.email}`}
                         onClick={e => e.stopPropagation()}
                         className="adm-btn adm-btn-secondary"
                         style={{ padding: '0.35rem 0.2rem', fontSize: '0.68rem', justifyContent: 'center', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}
-                        title="One-Click Official Email"
+                        title="One-Click Email"
                       >
                         <Mail size={12} />
                         <span>Email</span>
@@ -4620,12 +4720,53 @@ export const TeamPage: React.FC = () => {
 
               <div className="adm-grid-2">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Email</label>
+                  <label className="adm-form-label">Official Work Email</label>
                   <input className="adm-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@enterprenex.com" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Phone</label>
+                  <label className="adm-form-label">Official Work Phone</label>
                   <input className="adm-input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91-9876543210" />
+                </div>
+              </div>
+
+              {/* Personal Contact Details Collection (Strict Privacy - HR & Director Only) */}
+              <div
+                style={{
+                  background: 'rgba(56, 189, 248, 0.05)',
+                  border: '1px dashed rgba(56, 189, 248, 0.35)',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                  marginBottom: '1rem'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Shield size={13} /> Personal Contact Details (Private to HR & Director)
+                  </span>
+                  <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>
+                    🔒 Confidential &bull; Not visible to other staff
+                  </span>
+                </div>
+                <div className="adm-grid-2">
+                  <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                    <label className="adm-form-label" style={{ fontSize: '0.76rem' }}>Personal Email Address</label>
+                    <input
+                      className="adm-input"
+                      type="email"
+                      value={personalEmail}
+                      onChange={e => setPersonalEmail(e.target.value)}
+                      placeholder="e.g. employee.personal@gmail.com"
+                    />
+                  </div>
+                  <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                    <label className="adm-form-label" style={{ fontSize: '0.76rem' }}>Personal Phone Number (WhatsApp)</label>
+                    <input
+                      className="adm-input"
+                      value={personalPhone}
+                      onChange={e => setPersonalPhone(e.target.value)}
+                      placeholder="+91-9876543210"
+                    />
+                  </div>
                 </div>
               </div>
 

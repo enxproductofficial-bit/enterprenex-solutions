@@ -19,8 +19,12 @@ import {
   UserCheck,
   AlertOctagon,
   Calendar,
-  Layers
+  Layers,
+  Lock,
+  Edit3,
+  Save
 } from 'lucide-react';
+import { useAdmin } from '../context/AdminContext';
 import type { Employee, Task } from '../types';
 
 interface EmployeePreviewDrawerProps {
@@ -46,7 +50,36 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
   onOffboard,
   tasks = []
 }) => {
+  const { currentUser, updateMyContactInfo, showToast } = useAdmin();
   const [showFullAadhaar, setShowFullAadhaar] = useState(false);
+
+  // RBAC checks
+  const isSelf = Boolean(
+    currentUser &&
+    (currentUser.id === employee.id ||
+      currentUser.email === employee.email ||
+      (currentUser.employeeId && currentUser.employeeId === employee.employeeId))
+  );
+
+  const isHr = Boolean(
+    currentUser?.department === 'Human Resources' ||
+    currentUser?.role?.includes('HR') ||
+    currentUser?.email?.includes('hr@')
+  );
+
+  const canViewPersonalContact = isDirector || isHr || isSelf;
+
+  // Personal Contact editing state
+  const [editingPersonalContact, setEditingPersonalContact] = useState(false);
+  const [personalPhoneInput, setPersonalPhoneInput] = useState(employee.personalPhone || '');
+  const [personalEmailInput, setPersonalEmailInput] = useState(employee.personalEmail || '');
+  const [savingContact, setSavingContact] = useState(false);
+
+  // Synchronize input when employee changes
+  useEffect(() => {
+    setPersonalPhoneInput(employee.personalPhone || '');
+    setPersonalEmailInput(employee.personalEmail || '');
+  }, [employee]);
 
   // Close on Escape key
   useEffect(() => {
@@ -65,12 +98,35 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
   const isRejected = employee.approvalStatus === 'Rejected';
   const isActive = employee.status === 'Active';
 
-  const cleanPhone = (employee.phone || '').replace(/\D/g, '');
-  const getWhatsAppLink = () => {
-    let raw = cleanPhone;
+  const getWhatsAppLink = (customPhone?: string) => {
+    const target = customPhone || (canViewPersonalContact && employee.personalPhone ? employee.personalPhone : employee.phone) || '';
+    let raw = target.replace(/\D/g, '');
     if (raw.length === 10) raw = '91' + raw;
-    const msg = `Hi ${employee.name}, this is Enterprenex Solutions HR / Management regarding your sprint tasks and workspace updates.`;
+    const msg = `Hi ${employee.name}, this is Enterprenex Solutions regarding your workplace updates.`;
     return `https://wa.me/${raw}?text=${encodeURIComponent(msg)}`;
+  };
+
+  const handleSaveContact = async () => {
+    setSavingContact(true);
+    try {
+      const cleanPhone = personalPhoneInput.trim();
+      const cleanEmail = personalEmailInput.trim();
+
+      if (isSelf) {
+        await updateMyContactInfo(cleanPhone, cleanEmail);
+      } else {
+        onUpdateEmployee(employee.id, {
+          personalPhone: cleanPhone,
+          personalEmail: cleanEmail
+        });
+      }
+      showToast('Contact Info Saved', 'Personal phone number and email updated in database.', 'success');
+      setEditingPersonalContact(false);
+    } catch {
+      showToast('Error', 'Failed to update contact info.', 'error');
+    } finally {
+      setSavingContact(false);
+    }
   };
 
   const maskAadhaar = (num?: string) => {
@@ -315,6 +371,167 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
         {/* ── Drawer Body ── */}
         <div className="adm-drawer-body" style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
+          {/* ── Personal Contact Details (Private to HR, Director, and Self) ── */}
+          <div
+            style={{
+              padding: '1rem',
+              background: canViewPersonalContact ? 'rgba(56, 189, 248, 0.05)' : 'var(--adm-surface)',
+              borderRadius: '10px',
+              border: canViewPersonalContact ? '1px solid rgba(56, 189, 248, 0.25)' : '1px solid var(--adm-border)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Shield size={16} color={canViewPersonalContact ? '#38bdf8' : 'var(--adm-text-dim)'} />
+                <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
+                  Personal Contact Details
+                </h4>
+                {canViewPersonalContact && (
+                  <span className="adm-badge adm-badge-success" style={{ fontSize: '0.65rem' }}>
+                    Confidential
+                  </span>
+                )}
+              </div>
+              {canViewPersonalContact && (
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-sm adm-btn-secondary"
+                  onClick={() => setEditingPersonalContact(!editingPersonalContact)}
+                  style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', gap: '4px' }}
+                >
+                  <Edit3 size={12} />
+                  <span>{editingPersonalContact ? 'Cancel' : 'Update Contact'}</span>
+                </button>
+              )}
+            </div>
+
+            {canViewPersonalContact ? (
+              editingPersonalContact ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--adm-surface)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
+                  <div className="adm-grid-2" style={{ gap: '0.75rem' }}>
+                    <div className="adm-form-group" style={{ margin: 0 }}>
+                      <label className="adm-form-label" style={{ fontSize: '0.74rem' }}>Personal Phone (WhatsApp)</label>
+                      <input
+                        className="adm-input"
+                        value={personalPhoneInput}
+                        onChange={e => setPersonalPhoneInput(e.target.value)}
+                        placeholder="+91-9876543210"
+                      />
+                    </div>
+                    <div className="adm-form-group" style={{ margin: 0 }}>
+                      <label className="adm-form-label" style={{ fontSize: '0.74rem' }}>Personal Email Address</label>
+                      <input
+                        className="adm-input"
+                        type="email"
+                        value={personalEmailInput}
+                        onChange={e => setPersonalEmailInput(e.target.value)}
+                        placeholder="personal@gmail.com"
+                      />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-sm adm-btn-secondary"
+                      onClick={() => setEditingPersonalContact(false)}
+                      disabled={savingContact}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-sm adm-btn-primary"
+                      onClick={handleSaveContact}
+                      disabled={savingContact}
+                      style={{ gap: '4px' }}
+                    >
+                      <Save size={13} />
+                      <span>{savingContact ? 'Saving...' : 'Save Changes'}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="adm-grid-2" style={{ gap: '0.75rem' }}>
+                  <div style={{ padding: '0.75rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Personal Phone / WhatsApp</span>
+                    <div style={{ marginTop: '4px' }}>
+                      {employee.personalPhone ? (
+                        <a
+                          href={getWhatsAppLink(employee.personalPhone)}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            color: '#22c55e',
+                            fontWeight: 700,
+                            fontSize: '0.92rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            textDecoration: 'none'
+                          }}
+                          title="Click phone number or WhatsApp icon to open WhatsApp chat directly"
+                        >
+                          <MessageSquare size={14} />
+                          <span>{employee.personalPhone}</span>
+                        </a>
+                      ) : (
+                        <span style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', fontStyle: 'italic' }}>
+                          Not provided (Click "Update Contact" to add)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '0.75rem', background: 'var(--adm-bg)', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 700 }}>Personal Email Address</span>
+                    <div style={{ marginTop: '4px' }}>
+                      {employee.personalEmail ? (
+                        <a
+                          href={`mailto:${employee.personalEmail}?subject=${encodeURIComponent('Enterprenex Solutions - Personal Communication')}`}
+                          style={{
+                            color: '#f59e0b',
+                            fontWeight: 700,
+                            fontSize: '0.92rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            textDecoration: 'none'
+                          }}
+                          title="Click email address to open email application directly"
+                        >
+                          <Mail size={14} />
+                          <span>{employee.personalEmail}</span>
+                        </a>
+                      ) : (
+                        <span style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', fontStyle: 'italic' }}>
+                          Not provided (Click "Update Contact" to add)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '0.6rem 0.85rem',
+                  background: 'rgba(0, 0, 0, 0.03)',
+                  borderRadius: '6px',
+                  fontSize: '0.78rem',
+                  color: 'var(--adm-text-muted)'
+                }}
+              >
+                <Lock size={14} color="#94a3b8" />
+                <span>
+                  Personal phone number and email address are confidential and restricted strictly to HR and the Managing Director.
+                </span>
+              </div>
+            )}
+          </div>
+
           {/* Key Metrics Grid */}
           <div className="adm-grid-3">
             <div

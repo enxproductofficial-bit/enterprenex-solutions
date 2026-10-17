@@ -19,10 +19,21 @@ router.post('/generate-id', authenticateToken, requireRole(['Super Admin', 'Proj
 // GET /api/employees (List all team members - with privacy sanitization for employees)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const isDirectorOrManager =
+    const isDirector =
       req.user?.role === 'Super Admin' ||
-      req.user?.role === 'Project Manager' ||
+      req.user?.role?.includes('Director') ||
       req.user?.email?.includes('director');
+
+    const isHr =
+      req.user?.role === 'HR' ||
+      req.user?.department === 'Human Resources' ||
+      req.user?.department === 'HR' ||
+      req.user?.role?.includes('HR') ||
+      req.user?.email?.includes('hr');
+
+    const isManager = req.user?.role === 'Project Manager';
+    const isDirectorOrManager = isDirector || isManager || isHr;
+    const canViewAllPersonalContacts = isDirector || isHr;
 
     const employees = await prisma.employee.findMany({
       orderBy: { createdAt: 'desc' }
@@ -31,10 +42,14 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
     const formatted = employees.map(e => {
       const isSelf = req.user?.email === e.email || req.user?.employeeId === e.employeeId || req.user?.id === e.id;
       const canViewSensitiveHr = isDirectorOrManager || isSelf;
+      const canViewPersonalContact = canViewAllPersonalContacts || isSelf;
 
       return {
         ...e,
         name: (e.employeeId === '202600000001' || e.name === 'Rohit P.' || e.name === 'Rohit P' || e.name?.includes('Rohit P')) ? 'Rohit Pawar' : e.name,
+        // Zero-Trust Data Privacy: Personal email & personal phone are STRICTLY private (HR & Director only, or Self)
+        personalEmail: canViewPersonalContact ? e.personalEmail : undefined,
+        personalPhone: canViewPersonalContact ? e.personalPhone : undefined,
         // Zero-Trust Data Privacy: Never expose private HR compensation or KYC documents of other staff to general employees
         salaryMonthly: canViewSensitiveHr ? e.salaryMonthly : undefined,
         panNumber: canViewSensitiveHr ? e.panNumber : undefined,
@@ -52,16 +67,24 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-// POST /api/employees (Create Employee - Director or Authorized Manager only)
-router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
+// POST /api/employees (Create Employee - Director or Authorized HR/Manager only)
+router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const isDirector = req.user?.role === 'Super Admin' || req.user?.role?.includes('Director') || req.user?.email?.includes('director');
+    const isHr = req.user?.role === 'HR' || req.user?.department === 'Human Resources' || req.user?.department === 'HR' || req.user?.role?.includes('HR') || req.user?.email?.includes('hr');
+    const isManager = req.user?.role === 'Project Manager';
+
+    if (!isDirector && !isHr && !isManager) {
+      res.status(403).json({ error: 'Access forbidden: Only HR or Director can onboard new personnel.' });
+      return;
+    }
+
     const data = req.body;
-    const isDirector = req.user?.role === 'Super Admin' || req.user?.email?.includes('director');
 
     // Rule: Server-Side ID Generation: If employeeId is not provided, generate a collision-free sequential ID
     const assignedEmployeeId = data.employeeId || await generateSecureEmployeeId(data.department || 'Engineering');
 
-    // Rule: Manager-created accounts must be approved by Director before activation
+    // Rule: Manager/HR-created accounts must be approved by Director before activation
     const initialApprovalStatus = isDirector ? (data.approvalStatus || 'Approved') : 'Pending Director Approval';
 
     // Rule: Password securely hashed using bcrypt (Zero-Trust Password Policy)
@@ -77,6 +100,8 @@ router.post('/', authenticateToken, requireRole(['Super Admin', 'Project Manager
         department: data.department || 'Engineering',
         email: data.email,
         phone: data.phone,
+        personalEmail: data.personalEmail || null,
+        personalPhone: data.personalPhone || null,
         avatar: data.avatar,
         salaryMonthly: Number(data.salaryMonthly || 50000),
         workloadPercentage: Number(data.workloadPercentage || 100),
@@ -211,6 +236,46 @@ router.put('/:id/skills/verify', authenticateToken, requireRole(['Super Admin', 
   }
 });
 
+// PUT /api/employees/me/contact (Employees can update their own personal contact details)
+router.put('/me/contact', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userEmail = req.user?.email;
+    const userEmpId = req.user?.employeeId;
+
+    const emp = await prisma.employee.findFirst({
+      where: {
+        OR: [
+          ...(userEmail ? [{ email: userEmail }] : []),
+          ...(userEmpId ? [{ employeeId: userEmpId }] : [])
+        ]
+      }
+    });
+
+    if (!emp) {
+      res.status(404).json({ error: 'Employee record not found for logged-in user.' });
+      return;
+    }
+
+    const { personalPhone, personalEmail, phone } = req.body;
+
+    const updated = await prisma.employee.update({
+      where: { id: emp.id },
+      data: {
+        personalPhone: personalPhone !== undefined ? personalPhone : emp.personalPhone,
+        personalEmail: personalEmail !== undefined ? personalEmail : emp.personalEmail,
+        phone: phone !== undefined ? phone : emp.phone
+      }
+    });
+
+    res.json({
+      message: 'Personal contact information successfully updated.',
+      employee: updated
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // PUT /api/employees/:id (Update Details with Backend RBAC Restrictions)
 router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -226,12 +291,13 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       return;
     }
 
-    const isDirector = req.user?.role === 'Super Admin' || req.user?.email?.includes('director');
+    const isDirector = req.user?.role === 'Super Admin' || req.user?.role?.includes('Director') || req.user?.email?.includes('director');
+    const isHr = req.user?.role === 'HR' || req.user?.department === 'Human Resources' || req.user?.department === 'HR' || req.user?.role?.includes('HR') || req.user?.email?.includes('hr');
     const isManager = req.user?.role === 'Project Manager';
     const isSelf = req.user?.email === emp.email || req.user?.employeeId === emp.employeeId || req.user?.id === emp.id;
 
     // RBAC: An employee cannot edit other staff members
-    if (!isDirector && !isManager && !isSelf) {
+    if (!isDirector && !isHr && !isManager && !isSelf) {
       res.status(403).json({ error: 'Access forbidden: Employees cannot modify other employee accounts.' });
       return;
     }
@@ -256,13 +322,17 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       }
     }
 
+    const canUpdateContact = isDirector || isHr || isSelf;
+
     const updated = await prisma.employee.update({
       where: { id: emp.id },
       data: {
         name: isDirector ? updates.name : undefined,
         role: isDirector ? updates.role : undefined,
-        department: isDirector || isManager ? updates.department : undefined,
-        phone: updates.phone !== undefined ? updates.phone : emp.phone,
+        department: isDirector || isManager || isHr ? updates.department : undefined,
+        phone: canUpdateContact && updates.phone !== undefined ? updates.phone : emp.phone,
+        personalEmail: canUpdateContact && updates.personalEmail !== undefined ? updates.personalEmail : emp.personalEmail,
+        personalPhone: canUpdateContact && updates.personalPhone !== undefined ? updates.personalPhone : emp.personalPhone,
         avatar: updates.avatar !== undefined ? updates.avatar : emp.avatar,
         salaryMonthly: isDirector && updates.salaryMonthly !== undefined ? Number(updates.salaryMonthly) : undefined,
         workloadPercentage: (isDirector || isManager) && updates.workloadPercentage !== undefined ? Number(updates.workloadPercentage) : undefined,

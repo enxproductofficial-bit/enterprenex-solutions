@@ -70,6 +70,27 @@ class ApiClient {
     return this.request<{ employees: any[] }>('/employees');
   }
 
+  async createEmployee(employeeData: any) {
+    return this.request<{ message: string; employee: any; temporaryPassword?: string }>('/employees', {
+      method: 'POST',
+      body: JSON.stringify(employeeData)
+    });
+  }
+
+  async updateEmployee(employeeId: string, updates: any) {
+    return this.request<{ message: string; employee: any }>(`/employees/${employeeId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  }
+
+  async updateMyContact(contactData: { personalPhone?: string; personalEmail?: string; phone?: string }) {
+    return this.request<{ message: string; employee: any }>('/employees/me/contact', {
+      method: 'PUT',
+      body: JSON.stringify(contactData)
+    });
+  }
+
   async verifySkill(employeeId: string, skillName: string, verifiedRating: number) {
     return this.request(`/employees/${employeeId}/skills/verify`, {
       method: 'PUT',
