@@ -36,7 +36,8 @@ import {
   Mail,
   MessageSquare,
   Lock,
-  Shield
+  Shield,
+  ArrowLeftRight
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
 import { ToastContainer } from './ToastContainer';
@@ -65,6 +66,91 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { language, setLanguage, t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Resizable Sidebar State (↔ / <->)
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    const saved = localStorage.getItem('ewms_sidebar_width');
+    if (saved) {
+      const parsed = parseInt(saved, 10);
+      if (!isNaN(parsed) && parsed >= 220 && parsed <= 480) return parsed;
+    }
+    return 300; // Optimal default to ensure all institutional nav titles display fully without clipping
+  });
+  const [isSidebarDragging, setIsSidebarDragging] = useState(false);
+  const sidebarDragStartXRef = React.useRef<number>(0);
+  const sidebarDragStartWidthRef = React.useRef<number>(0);
+
+  // Drag Resize Listener for Sidebar
+  useEffect(() => {
+    if (!isSidebarDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const delta = e.clientX - sidebarDragStartXRef.current;
+      const newWidth = Math.min(Math.max(sidebarDragStartWidthRef.current + delta, 230), 480);
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsSidebarDragging(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const delta = e.touches[0].clientX - sidebarDragStartXRef.current;
+        const newWidth = Math.min(Math.max(sidebarDragStartWidthRef.current + delta, 230), 480);
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      setIsSidebarDragging(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isSidebarDragging]);
+
+  // Persist sidebar width to localStorage
+  useEffect(() => {
+    localStorage.setItem('ewms_sidebar_width', sidebarWidth.toString());
+  }, [sidebarWidth]);
+
+  const handleSidebarMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsSidebarDragging(true);
+    sidebarDragStartXRef.current = e.clientX;
+    sidebarDragStartWidthRef.current = sidebarWidth;
+  };
+
+  const handleSidebarTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsSidebarDragging(true);
+      sidebarDragStartXRef.current = e.touches[0].clientX;
+      sidebarDragStartWidthRef.current = sidebarWidth;
+    }
+  };
+
+  const toggleSidebarWidthPreset = () => {
+    setSidebarWidth(prev => (prev < 340 ? 370 : 280));
+  };
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
@@ -248,7 +334,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       )}
 
       {/* ── SIDEBAR ── */}
-      <aside className={`adm-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+      <aside
+        className={`adm-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}
+        style={{
+          width: collapsed ? 'var(--adm-sidebar-collapsed)' : `${sidebarWidth}px`,
+          transition: isSidebarDragging ? 'none' : 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease'
+        }}
+      >
         {/* Sidebar Brand Header */}
         <div className="adm-sidebar-header">
           <NavLink to={isEmployee ? '/admin/team' : '/admin'} className="adm-brand-link" onClick={() => setMobileOpen(false)}>
@@ -323,10 +415,42 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             </button>
           </div>
         )}
+
+        {/* ── DRAGGABLE SIDEBAR DIVIDER (↔ or ⇹) ── */}
+        {!collapsed && (
+          <div
+            className={`adm-sidebar-resizer ${isSidebarDragging ? 'active' : ''}`}
+            onMouseDown={handleSidebarMouseDown}
+            onTouchStart={handleSidebarTouchStart}
+            onDoubleClick={() => setSidebarWidth(300)}
+            title="Click and drag left or right (↔) to decrease or increase sidebar width. Double-click to reset (300px)."
+          >
+            <button
+              type="button"
+              className="adm-sidebar-resize-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSidebarWidthPreset();
+              }}
+              title={`Click to ${sidebarWidth < 340 ? 'expand (increase)' : 'contract (decrease)'} sidebar width (↔)`}
+              aria-label="Increase or Decrease Sidebar Width"
+            >
+              <ArrowLeftRight size={12} />
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* ── MAIN CONTENT WRAPPER ── */}
-      <div className={`adm-main-wrapper ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      <div
+        className={`adm-main-wrapper ${collapsed ? 'sidebar-collapsed' : ''}`}
+        style={{
+          marginLeft: collapsed ? 'var(--adm-sidebar-collapsed)' : `${sidebarWidth}px`,
+          width: collapsed ? 'calc(100% - var(--adm-sidebar-collapsed))' : `calc(100% - ${sidebarWidth}px)`,
+          maxWidth: collapsed ? 'calc(100vw - var(--adm-sidebar-collapsed))' : `calc(100vw - ${sidebarWidth}px)`,
+          transition: isSidebarDragging ? 'none' : 'margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+      >
         
         {/* Topbar */}
         <header className="adm-topbar">
@@ -344,6 +468,32 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               aria-label="Toggle Navigation"
             >
               <Menu size={18} />
+            </button>
+
+            {/* <-> Increase / Decrease Sidebar Width Button */}
+            <button
+              type="button"
+              className="adm-toggle-btn adm-resize-width-toggle"
+              onClick={toggleSidebarWidthPreset}
+              title={`Click to ${sidebarWidth < 340 ? 'increase (expand)' : 'decrease (contract)'} sidebar width (↔)`}
+              aria-label="Increase or Decrease Sidebar Width"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '0 8px',
+                height: '36px',
+                borderRadius: '8px',
+                border: '1px solid var(--adm-border)',
+                background: sidebarWidth >= 340 ? 'var(--adm-primary-soft)' : 'transparent',
+                color: sidebarWidth >= 340 ? 'var(--adm-primary)' : 'var(--adm-text)',
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontSize: '0.74rem'
+              }}
+            >
+              <ArrowLeftRight size={13} />
+              <span>{sidebarWidth >= 340 ? 'Wide ↔' : 'Normal ↔'}</span>
             </button>
 
             {/* Global Search Bar */}

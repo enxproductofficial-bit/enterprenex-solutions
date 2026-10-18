@@ -24,7 +24,8 @@ import {
   User,
   Check,
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  ArrowLeftRight
 } from 'lucide-react';
 
 export interface EnterpriseEmail {
@@ -423,6 +424,14 @@ export const EmailsPage: React.FC = () => {
     showToast('Layout Reset', 'Pane split ratio reset to default 420px balanced view.', 'info');
   };
 
+  const handleIncreasePane = () => {
+    setLeftPaneWidth(prev => Math.min(prev + 50, 750));
+  };
+
+  const handleDecreasePane = () => {
+    setLeftPaneWidth(prev => Math.max(prev - 50, 280));
+  };
+
   // Quick Reply handler
   const handleSendReply = (e: React.FormEvent) => {
     e.preventDefault();
@@ -539,6 +548,49 @@ export const EmailsPage: React.FC = () => {
         </div>
 
         <div className="adm-page-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Quick Pane Resize Controls (<->) */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'var(--adm-surface)',
+              border: '1px solid var(--adm-border)',
+              borderRadius: '8px',
+              padding: '2px',
+              gap: '2px'
+            }}
+            title="Adjust pane width (or drag the vertical divider ↔)"
+          >
+            <button
+              type="button"
+              onClick={handleDecreasePane}
+              className="adm-btn adm-btn-secondary"
+              style={{ padding: '6px 10px', fontSize: '0.72rem', height: '32px' }}
+              title="Decrease left pane width (narrow inbox)"
+            >
+              ◀ Inbox
+            </button>
+            <button
+              type="button"
+              onClick={handleResetWidth}
+              className="adm-btn adm-btn-secondary"
+              style={{ padding: '6px 8px', fontSize: '0.72rem', height: '32px', display: 'flex', alignItems: 'center', gap: '4px' }}
+              title="Reset to balanced 420px width (↔)"
+            >
+              <ArrowLeftRight size={12} />
+              <span>Reset</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleIncreasePane}
+              className="adm-btn adm-btn-secondary"
+              style={{ padding: '6px 10px', fontSize: '0.72rem', height: '32px' }}
+              title="Increase left pane width (wider inbox)"
+            >
+              Inbox ▶
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => setShowComposeModal(true)}
@@ -869,26 +921,24 @@ export const EmailsPage: React.FC = () => {
             flexShrink: 0
           }}
         >
-          {/* Visual Grip Pill with ⇹ (↔) Indicator */}
+          {/* Visual Grip Pill with ↔ (<->) Indicator */}
           <div
             style={{
-              width: '20px',
+              width: '22px',
               height: '48px',
-              borderRadius: '10px',
+              borderRadius: '8px',
               background: isDragging ? 'var(--adm-primary)' : 'var(--adm-surface)',
               border: '1px solid var(--adm-border)',
               boxShadow: '0 2px 10px rgba(0,0,0,0.18)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '12px',
-              fontWeight: 900,
               color: isDragging ? '#ffffff' : 'var(--adm-primary)',
               cursor: 'col-resize',
               userSelect: 'none'
             }}
           >
-            ⇹
+            <ArrowLeftRight size={13} />
           </div>
         </div>
 

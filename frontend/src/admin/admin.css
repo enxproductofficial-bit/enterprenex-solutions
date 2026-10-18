@@ -69,7 +69,7 @@
   --adm-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
   --adm-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.35);
   
-  --adm-sidebar-width: 280px;
+  --adm-sidebar-width: 300px;
   --adm-sidebar-collapsed: 72px;
   --adm-topbar-height: 64px;
 }
@@ -107,6 +107,71 @@
 
 .adm-sidebar.collapsed {
   width: var(--adm-sidebar-collapsed);
+}
+
+/* ── Sidebar Resizer (↔ or ⇹) ── */
+.adm-sidebar-resizer {
+  position: absolute;
+  top: 0;
+  right: -5px;
+  width: 10px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 1002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.adm-sidebar-resizer:hover,
+.adm-sidebar-resizer.active {
+  background: rgba(16, 112, 200, 0.15);
+}
+
+.adm-sidebar-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 4px;
+  width: 2px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.adm-sidebar-resizer:hover::after,
+.adm-sidebar-resizer.active::after {
+  background: var(--adm-primary);
+}
+
+.adm-sidebar-resize-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border);
+  color: var(--adm-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  transition: all 0.2s ease;
+  z-index: 1003;
+}
+
+.adm-sidebar-resizer:hover .adm-sidebar-resize-btn,
+.adm-sidebar-resize-btn:hover {
+  background: var(--adm-primary);
+  color: #ffffff;
+  border-color: var(--adm-primary);
+  box-shadow: 0 0 10px rgba(16, 112, 200, 0.4);
+  transform: translateY(-50%) scale(1.1);
 }
 
 .adm-sidebar-header {
