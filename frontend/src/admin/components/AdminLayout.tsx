@@ -470,7 +470,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <Menu size={18} />
             </button>
 
-            {/* <-> Increase / Decrease Sidebar Width Button */}
+            {/* <-> Increase / Decrease Sidebar Width Icon Button */}
             <button
               type="button"
               className="adm-toggle-btn adm-resize-width-toggle"
@@ -480,20 +480,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '5px',
-                padding: '0 8px',
+                justifyContent: 'center',
+                width: '36px',
                 height: '36px',
+                padding: 0,
                 borderRadius: '8px',
                 border: '1px solid var(--adm-border)',
                 background: sidebarWidth >= 340 ? 'var(--adm-primary-soft)' : 'transparent',
                 color: sidebarWidth >= 340 ? 'var(--adm-primary)' : 'var(--adm-text)',
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: '0.74rem'
+                cursor: 'pointer'
               }}
             >
-              <ArrowLeftRight size={13} />
-              <span>{sidebarWidth >= 340 ? 'Wide ↔' : 'Normal ↔'}</span>
+              <ArrowLeftRight size={16} />
             </button>
 
             {/* Global Search Bar */}
