@@ -310,7 +310,7 @@ export const DashboardPage: React.FC = () => {
     ? Math.round(safeEmployees.reduce((acc, e) => acc + (Number(e?.workloadPercentage) || 0), 0) / safeEmployees.length)
     : 0;
 
-  // ── Manager Dashboard Telemetry (Aniket Sir's Specification) ──
+  // ── Manager Dashboard Telemetry (Jyothi Anbhule Specification) ──
   const tasksDueToday = safeTasks.filter(
     t => t.dueDate === todayStr && t.status !== 'Completed' && t.status !== 'Approved'
   );

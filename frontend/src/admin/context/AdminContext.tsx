@@ -252,10 +252,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
   }, []);
 
-  // Name normalization helper: enforce "Rohit Pawar" universally
+  // Name normalization helper: enforce "Rohit Pawar" and "Jyothi Anbhule" universally
   const normalizeRohitName = (name?: string | null): string => {
     if (!name) return '';
-    return name.replace(/\bRohit\s+P(\.|\b)/gi, 'Rohit Pawar');
+    let res = name.replace(/\bRohit\s+P(\.|\b)/gi, 'Rohit Pawar');
+    res = res.replace(/\bAniket\s+More\b/gi, 'Jyothi Anbhule');
+    res = res.replace(/\bAniket\b/gi, 'Jyothi Anbhule');
+    return res;
   };
 
   const sanitizeEmployeeRecord = (emp: any, idx?: number): Employee => {
@@ -273,6 +276,18 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       item.email === 'director@enterprenexsolution.com'
     ) {
       item.name = 'Rohit Pawar';
+    } else if (
+      n === 'Aniket More' ||
+      n.toLowerCase().includes('aniket') ||
+      item.employeeId === '202600000003' ||
+      item.id === 'emp-3' ||
+      item.email?.includes('aniket')
+    ) {
+      item.name = 'Jyothi Anbhule';
+      item.role = 'Lead Project Manager & Mentor';
+      item.email = 'jyothi.a@enterprenex.solutions';
+      item.avatar = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80';
+      item.panNumber = 'JANPK7892L';
     } else if (item.name) {
       item.name = normalizeRohitName(item.name);
     }
@@ -452,7 +467,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const sanitizedChat = parsed.chatMessages.map((m: any) => ({
             ...m,
             senderName: normalizeRohitName(m.senderName) || m.senderName,
-            recipientName: normalizeRohitName(m.recipientName) || m.recipientName
+            recipientName: normalizeRohitName(m.recipientName) || m.recipientName,
+            message: (m.message || '').replace(/\bAniket Sir\b/gi, "Jyothi Ma'am").replace(/\bAniket\b/gi, 'Jyothi')
           }));
           setChatMessages(sanitizedChat);
         } else {
@@ -474,6 +490,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             cur.email === 'director@enterprenexsolution.com'
           ) {
             cur.name = 'Rohit Pawar';
+          } else if (
+            curName === 'Aniket More' ||
+            curName.toLowerCase().includes('aniket') ||
+            cur.employeeId === '202600000003' ||
+            cur.email?.includes('aniket')
+          ) {
+            cur.name = 'Jyothi Anbhule';
+            cur.role = 'Lead Project Manager & Mentor';
+            cur.email = 'jyothi.a@enterprenex.solutions';
+            cur.avatar = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80';
           } else if (cur.name) {
             cur.name = normalizeRohitName(cur.name);
           }
