@@ -48,7 +48,7 @@ export const AdminLoginPage: React.FC = () => {
         id: isDirector ? 'usr-dir' : isHr ? 'usr-hr' : 'usr-mgr',
         name: isDirector ? 'Rohit Pawar (Managing Director)' : isHr ? 'HR Administrator' : 'Operations Manager',
         email: inputEmail,
-        role: isDirector ? 'Super Admin' : 'Project Manager',
+        role: isDirector ? 'Director / CEO' : isHr ? 'HR' : 'Manager',
         avatar: isDirector
           ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
           : isHr
@@ -85,7 +85,7 @@ export const AdminLoginPage: React.FC = () => {
         id: matchedEmp.id,
         name: matchedEmp.name,
         email: matchedEmp.email,
-        role: 'Team Member',
+        role: 'Employee',
         avatar: matchedEmp.avatar,
         department: matchedEmp.department,
         status: 'Active',

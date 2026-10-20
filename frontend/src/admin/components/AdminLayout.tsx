@@ -55,6 +55,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     tasks,
     updateMyContactInfo,
     employees,
+    users,
+    switchUser,
     showToast
   } = useAdmin();
   const { language, setLanguage, t } = useLanguage();
@@ -189,11 +191,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const newLeadsCount = safeLeads.filter(l => l && l.status === 'New Lead').length;
   const activeProjectsCount = safeProjects.filter(p => p && p.status !== 'Delivered').length;
 
-  // Determine current user role
-  const userRole = currentUser?.role || 'Super Admin';
-  const isEmployee = userRole === 'Team Member' || userRole === 'Developer';
-  const isManagerOrHr = userRole === 'Project Manager' || userRole === 'HR Manager' || userRole === 'Sales Lead' || userRole === 'Finance Officer';
-  const isDirector = userRole === 'Super Admin';
+  // Determine current user role according to EWMS 5-Tier Standard Matrix
+  const userRole = currentUser?.role || 'Director / CEO';
+  const isDirector = userRole === 'Director / CEO' || userRole === 'Super Admin';
+  const isSuperAdminOrIT = userRole === 'Super Admin / IT Admin';
+  const isHR = userRole === 'HR' || userRole === 'HR Manager';
+  const isManager = userRole === 'Manager' || userRole === 'Project Manager' || userRole === 'Sales Lead' || userRole === 'Finance Officer';
+  const isEmployee = userRole === 'Employee' || userRole === 'Team Member' || userRole === 'Developer';
+  const isManagerOrHr = isManager || isHR;
 
   const currentEmpRecord = employees?.find(e => 
     (currentUser?.id && e.id === currentUser.id) || 
@@ -230,9 +235,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     return `https://wa.me/${clean}?text=${encodeURIComponent('Hi, this is a test message from Enterprenex Solutions Portal.')}`;
   };
 
-  // Navigation Items strictly filtered according to EWMS Institutional Permissions Matrix
+  // Navigation Items strictly filtered according to EWMS 5-Tier Institutional Permissions Matrix
   const getNavItems = () => {
-    // 1. Employee / Engineering Workforce Portal
+    // 1. Employee: Personal tasks, attendance, timesheets, leave requests, assigned projects
     if (isEmployee) {
       return [
         { section: t('sec.humanCapital', 'Individual Workspace') },
@@ -246,8 +251,36 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       ];
     }
 
-    // 2. Manager / Operations & HR Portal
-    if (isManagerOrHr) {
+    // 2. HR: Recruitment, onboarding, employee records, leave and HR processes
+    if (isHR) {
+      return [
+        { section: 'Human Capital & Governance' },
+        { to: '/admin', label: 'Operations Dashboard', icon: LayoutDashboard, exact: true },
+        { to: '/admin/team', label: 'Workforce Roster & Recruitment', icon: UserCheck, badge: safeEmployees.length },
+        { to: '/admin/calendar', label: 'Corporate Calendar & Orientation', icon: Calendar },
+        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
+        { to: '/admin/support', label: 'Employee Helpdesk & Grievances', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/documents', label: 'Compliance Vault & NDAs', icon: FileText }
+      ];
+    }
+
+    // 3. Super Admin / IT Admin: System configuration, technical settings, integrations, security and access controls
+    if (isSuperAdminOrIT) {
+      return [
+        { section: 'IT Systems & Architecture' },
+        { to: '/admin', label: 'Operations Dashboard', icon: LayoutDashboard, exact: true },
+        { to: '/admin/security', label: 'Information Security & RBAC', icon: ShieldCheck },
+        { to: '/admin/cms', label: 'Digital Publishing & Web CMS', icon: Globe },
+        { to: '/admin/team', label: 'User Directory & Access Control', icon: UserCheck },
+        { to: '/admin/analytics', label: 'Operational Telemetry & Health', icon: BarChart3 },
+        { to: '/admin/support', label: 'Technical Service Desk', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
+        { to: '/admin/documents', label: 'System Vault & Audit Docs', icon: FileText }
+      ];
+    }
+
+    // 4. Manager: Assigned teams, projects, tasks, workload and approvals
+    if (isManager) {
       return [
         { section: t('sec.operations', 'Enterprise Operations') },
         { to: '/admin', label: t('nav.dashboard', 'Executive Operations Dashboard'), icon: LayoutDashboard, exact: true },
@@ -260,7 +293,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
 
         { section: t('sec.humanCapital', 'Human Capital & Delivery') },
-        { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck },
+        { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Approvals'), icon: UserCheck },
         { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk & SLA Governance'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
         { to: '/admin/documents', label: t('nav.documents', 'Compliance Vault & Records'), icon: FileText },
         { to: '/admin/calendar', label: t('nav.calendar', 'Corporate Calendar & Sessions'), icon: Calendar },
@@ -270,7 +303,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       ];
     }
 
-    // 3. Director (Super Admin & CMD) - Complete 7-Sector Executive Control Matrix
+    // 5. Director / CEO: Oversees company, business performance, projects, finance and strategic decisions
     return [
       { section: 'Director Control Center' },
       { to: '/admin', label: 'Executive Dashboard', icon: LayoutDashboard, exact: true },
@@ -804,6 +837,45 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                         <Settings size={14} color="var(--adm-primary)" />
                         <span>Portal Settings & Language</span>
                       </button>
+
+                      {/* EWMS 5 Roles Switcher Preview */}
+                      <div style={{ marginTop: '0.5rem', marginBottom: '0.75rem', borderTop: '1px solid var(--adm-border)', paddingTop: '0.65rem' }}>
+                        <div style={{ fontSize: '0.66rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase', fontWeight: 800, marginBottom: '6px', letterSpacing: '0.04em' }}>
+                          Switch Role Perspective
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          {users.slice(0, 5).map(u => {
+                            const isCurrent = currentUser?.id === u.id || currentUser?.role === u.role;
+                            return (
+                              <button
+                                key={u.id}
+                                onClick={() => {
+                                  switchUser(u.id);
+                                  setShowUserMenu(false);
+                                }}
+                                style={{
+                                  width: '100%',
+                                  textAlign: 'left',
+                                  padding: '5px 8px',
+                                  borderRadius: '5px',
+                                  background: isCurrent ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
+                                  border: isCurrent ? '1px solid var(--adm-primary)' : '1px solid transparent',
+                                  color: isCurrent ? 'var(--adm-primary)' : 'var(--adm-text)',
+                                  fontSize: '0.74rem',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  transition: 'all 0.15s ease'
+                                }}
+                              >
+                                <span style={{ fontWeight: isCurrent ? 700 : 500 }}>{u.role}</span>
+                                <span style={{ fontSize: '0.66rem', color: 'var(--adm-text-dim)' }}>{u.name.split(' ')[0]}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </>
                   )}
 

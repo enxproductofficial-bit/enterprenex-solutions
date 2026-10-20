@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import {
   ShieldCheck,
+  Shield,
   Key,
   Laptop,
   Activity,
@@ -19,6 +20,7 @@ import {
   Sliders
 } from 'lucide-react';
 import type { UserRole } from '../types';
+import { EWMS_ROLES_MATRIX } from '../types';
 
 export const SecurityPage: React.FC = () => {
   const {
@@ -57,23 +59,23 @@ export const SecurityPage: React.FC = () => {
   const [autoArchiveDays, setAutoArchiveDays] = useState(180);
   const [plainTextBlockEnforced, setPlainTextBlockEnforced] = useState(true);
 
-  // EWMS Role-Based Access Control (RBAC) Matrix
-  const ROLES: UserRole[] = ['Super Admin', 'Project Manager', 'HR Manager', 'Sales Lead', 'Finance Officer', 'Team Member'];
+  // EWMS 5-Tier Role-Based Access Control (RBAC) Matrix
+  const ROLES: UserRole[] = ['Director / CEO', 'Manager', 'HR', 'Employee', 'Super Admin / IT Admin'];
   const PERMISSIONS = [
-    { module: 'Executive Dashboard & Company KPIs', roles: ['Super Admin', 'Project Manager', 'Sales Lead', 'Finance Officer', 'HR Manager'] },
-    { module: 'Client Management & Enterprise Accounts', roles: ['Super Admin', 'Project Manager', 'Sales Lead'] },
-    { module: 'Project Management & Milestone Signoff', roles: ['Super Admin', 'Project Manager'] },
-    { module: 'Services Catalogue & Master Pricing', roles: ['Super Admin', 'Project Manager', 'Sales Lead'] },
-    { module: 'Leads & Sales CRM Pipeline', roles: ['Super Admin', 'Project Manager', 'Sales Lead'] },
-    { module: 'Finance, Invoicing & GST (Director Only)', roles: ['Super Admin'] },
-    { module: 'Team, Attendance & Leave Management', roles: ['Super Admin', 'Project Manager', 'HR Manager', 'Team Member'] },
-    { module: 'Task Management & Sprint Kanban', roles: ['Super Admin', 'Project Manager', 'Team Member'] },
-    { module: 'Support & Helpdesk Dispatch', roles: ['Super Admin', 'Project Manager', 'Team Member'] },
-    { module: 'Document Vault (Files, Policies & NDAs)', roles: ['Super Admin', 'Project Manager', 'Team Member'] },
-    { module: 'Calendar & Meetings Schedule', roles: ['Super Admin', 'Project Manager', 'Team Member'] },
-    { module: 'CMS & Website Publishing (Director Only)', roles: ['Super Admin'] },
-    { module: 'Analytics & Delivery Velocity Reports', roles: ['Super Admin', 'Project Manager'] },
-    { module: 'Admin, IP Firewall & RBAC (Director Only)', roles: ['Super Admin'] }
+    { module: 'Executive Dashboard & Company KPIs', roles: ['Director / CEO', 'Manager', 'HR', 'Super Admin / IT Admin'] },
+    { module: 'Client Management & Enterprise Accounts', roles: ['Director / CEO', 'Manager'] },
+    { module: 'Project Management & Milestone Signoff', roles: ['Director / CEO', 'Manager'] },
+    { module: 'Services Catalogue & Master Pricing', roles: ['Director / CEO', 'Manager'] },
+    { module: 'Leads & Sales CRM Pipeline', roles: ['Director / CEO', 'Manager'] },
+    { module: 'Finance, Invoicing & GST (Director Only)', roles: ['Director / CEO'] },
+    { module: 'Team, Attendance & Leave Management', roles: ['Director / CEO', 'Manager', 'HR', 'Employee', 'Super Admin / IT Admin'] },
+    { module: 'Task Management & Sprint Kanban', roles: ['Director / CEO', 'Manager', 'Employee'] },
+    { module: 'Support & Helpdesk Dispatch', roles: ['Director / CEO', 'Manager', 'HR', 'Employee', 'Super Admin / IT Admin'] },
+    { module: 'Document Vault (Files, Policies & NDAs)', roles: ['Director / CEO', 'Manager', 'HR', 'Employee', 'Super Admin / IT Admin'] },
+    { module: 'Calendar & Meetings Schedule', roles: ['Director / CEO', 'Manager', 'HR', 'Employee'] },
+    { module: 'CMS & Website Publishing (Director Only)', roles: ['Director / CEO', 'Super Admin / IT Admin'] },
+    { module: 'Analytics & Delivery Velocity Reports', roles: ['Director / CEO', 'Manager', 'Super Admin / IT Admin'] },
+    { module: 'Admin, IP Firewall & RBAC (Director & IT Admin)', roles: ['Director / CEO', 'Super Admin / IT Admin'] }
   ];
 
   const handleGenerateKey = (e: React.FormEvent) => {
@@ -320,6 +322,44 @@ export const SecurityPage: React.FC = () => {
                   <span className="adm-badge adm-badge-success" style={{ fontSize: '0.65rem' }}>{u.status}</span>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* EWMS 5-Tier Roles & Responsibilities Matrix */}
+          <div className="adm-card" style={{ marginBottom: '1.5rem' }}>
+            <div className="adm-card-header">
+              <div className="adm-card-title">
+                <Shield size={18} color="var(--adm-primary)" />
+                Institutional Roles & Main Responsibilities Matrix
+              </div>
+              <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.72rem' }}>EWMS Standard RBAC</span>
+            </div>
+
+            <div className="adm-table-container">
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '60px' }}>No.</th>
+                    <th style={{ width: '220px' }}>Role</th>
+                    <th>Main Responsibility</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {EWMS_ROLES_MATRIX.map(item => (
+                    <tr key={item.no}>
+                      <td style={{ fontWeight: 700, color: 'var(--adm-text-muted)' }}>{item.no}</td>
+                      <td>
+                        <span className={`adm-badge ${item.badge}`} style={{ fontSize: '0.78rem', padding: '4px 10px', fontWeight: 700 }}>
+                          {item.role}
+                        </span>
+                      </td>
+                      <td style={{ color: 'var(--adm-text)', fontSize: '0.85rem', lineHeight: '1.45' }}>
+                        {item.responsibility}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 

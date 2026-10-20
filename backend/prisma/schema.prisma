@@ -12,7 +12,7 @@ model User {
   id          String   @id @default(uuid())
   email       String   @unique
   password    String   // bcrypt hashed
-  role        String   @default("Team Member") // "Super Admin" | "Project Manager" | "Team Member" | "Developer"
+  role        String   @default("Employee") // "Director / CEO" | "Manager" | "HR" | "Employee" | "Super Admin / IT Admin"
   name        String
   employeeId  String?  @unique
   avatar      String?

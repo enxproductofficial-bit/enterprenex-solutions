@@ -1,6 +1,56 @@
 // TypeScript interfaces for Enterprenex Admin & Operations Suite
 
-export type UserRole = 'Super Admin' | 'Project Manager' | 'Sales Lead' | 'Finance Officer' | 'HR Manager' | 'Developer' | 'Team Member';
+export type StandardEWMSRole = 'Director / CEO' | 'Manager' | 'HR' | 'Employee' | 'Super Admin / IT Admin';
+
+export type UserRole =
+  | StandardEWMSRole
+  | 'Super Admin'
+  | 'Project Manager'
+  | 'Sales Lead'
+  | 'Finance Officer'
+  | 'HR Manager'
+  | 'Developer'
+  | 'Team Member';
+
+export interface EWMSRoleDefinition {
+  no: number;
+  role: StandardEWMSRole;
+  badge: string;
+  responsibility: string;
+}
+
+export const EWMS_ROLES_MATRIX: EWMSRoleDefinition[] = [
+  {
+    no: 1,
+    role: 'Director / CEO',
+    badge: 'adm-badge-primary',
+    responsibility: 'Oversees the company, business performance, projects, finance and strategic decisions.'
+  },
+  {
+    no: 2,
+    role: 'Manager',
+    badge: 'adm-badge-info',
+    responsibility: 'Manages assigned teams, projects, tasks, workload and approvals.'
+  },
+  {
+    no: 3,
+    role: 'HR',
+    badge: 'adm-badge-warning',
+    responsibility: 'Manages recruitment, onboarding, employee records, leave and HR processes.'
+  },
+  {
+    no: 4,
+    role: 'Employee',
+    badge: 'adm-badge-success',
+    responsibility: 'Manages personal tasks, attendance, timesheets, leave requests and assigned projects.'
+  },
+  {
+    no: 5,
+    role: 'Super Admin / IT Admin',
+    badge: 'adm-badge-danger',
+    responsibility: 'Manages system configuration, technical settings, integrations, security and access controls.'
+  }
+];
 
 export interface AdminUser {
   id: string;

@@ -60,6 +60,29 @@ interface AdminRouteGuardProps {
   moduleName?: string;
 }
 
+function isAuthorizedRole(currentRole: string | undefined, allowedRoles?: string[]): boolean {
+  if (!allowedRoles || allowedRoles.length === 0) return true;
+  if (!currentRole) return false;
+  if (allowedRoles.includes(currentRole)) return true;
+
+  // Compatibility mapping for the 5 core EWMS roles
+  const roleEquivalents: Record<string, string[]> = {
+    'Director / CEO': ['Director / CEO', 'Super Admin'],
+    'Super Admin': ['Director / CEO', 'Super Admin'],
+    'Super Admin / IT Admin': ['Super Admin / IT Admin', 'Super Admin'],
+    'Manager': ['Manager', 'Project Manager', 'Sales Lead', 'Finance Officer'],
+    'Project Manager': ['Manager', 'Project Manager'],
+    'HR': ['HR', 'HR Manager'],
+    'HR Manager': ['HR', 'HR Manager'],
+    'Employee': ['Employee', 'Team Member', 'Developer'],
+    'Team Member': ['Employee', 'Team Member', 'Developer'],
+    'Developer': ['Employee', 'Team Member', 'Developer']
+  };
+
+  const equivs = roleEquivalents[currentRole] || [currentRole];
+  return equivs.some(r => allowedRoles.includes(r));
+}
+
 function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }: AdminRouteGuardProps) {
   const { currentUser } = useAdmin();
   const location = useLocation();
@@ -75,8 +98,8 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
   }
 
   // If role is not authorized for this specific module
-  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    const isEmployeeRole = currentUser.role === 'Team Member' || currentUser.role === 'Developer';
+  if (allowedRoles && !isAuthorizedRole(currentUser.role, allowedRoles)) {
+    const isEmployeeRole = currentUser.role === 'Employee' || currentUser.role === 'Team Member' || currentUser.role === 'Developer';
     return (
       <AdminErrorBoundary fallbackTitle="Unauthorized Module Access">
         <AdminLayout>

@@ -81,13 +81,14 @@ export const DashboardPage: React.FC = () => {
   const [chartPeriod, setChartPeriod] = useState<'30D' | '90D' | '1Y'>('30D');
 
   const isDirector =
+    currentUser?.role === 'Director / CEO' ||
     currentUser?.role === 'Super Admin' ||
     currentUser?.email === 'director@enterprenex.solutions' ||
     currentUser?.email === 'director@enterprenexsolution.com';
 
-  const userRole = currentUser?.role || 'Super Admin';
-  const isEmployeeRole = userRole === 'Team Member' || userRole === 'Developer';
-  const isManagerRole = userRole === 'Project Manager' || userRole === 'HR Manager';
+  const userRole = currentUser?.role || 'Director / CEO';
+  const isEmployeeRole = userRole === 'Employee' || userRole === 'Team Member' || userRole === 'Developer';
+  const isManagerRole = userRole === 'Manager' || userRole === 'Project Manager' || userRole === 'HR' || userRole === 'HR Manager';
 
   // Toggle between Executive (Director), Manager, and Employee ("My Workspace") View
   const [activeDashboardMode, setActiveDashboardMode] = useState<'director' | 'manager' | 'employee'>(

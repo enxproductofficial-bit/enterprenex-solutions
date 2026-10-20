@@ -28,7 +28,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     id: 'usr-1',
     name: 'Rohit Pawar',
     email: 'director@enterprenex.solutions',
-    role: 'Super Admin',
+    role: 'Director / CEO',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     department: 'Executive Board',
     status: 'Active',
@@ -37,24 +37,47 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   },
   {
     id: 'usr-2',
-    name: 'Operations & HR Lead',
-    email: 'hr@enterprenex.solutions',
-    role: 'Project Manager',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    department: 'Operations & HR Management',
+    name: 'Jyothi Anbhule',
+    email: 'manager@enterprenex.solutions',
+    role: 'Manager',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    department: 'Engineering & Project Delivery',
     status: 'Active',
     lastLogin: '10 mins ago',
-    phone: '+91-9226860060'
+    phone: '+91-9822114455'
   },
   {
     id: 'usr-3',
-    name: 'Engineering Staff (EPX-101)',
+    name: 'Sneha Patil',
+    email: 'hr@enterprenex.solutions',
+    role: 'HR',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    department: 'Human Resources & Talent Management',
+    status: 'Active',
+    lastLogin: '25 mins ago',
+    phone: '+91-9822334455'
+  },
+  {
+    id: 'usr-4',
+    name: 'POLAMREDDY REVANTH REDDY',
     email: 'employee@enterprenex.solutions',
-    role: 'Team Member',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    department: 'Engineering & Operations',
+    role: 'Employee',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    department: 'Engineering & Delivery',
     status: 'Active',
     lastLogin: '1 hour ago',
+    phone: '+91-9226860060',
+    employeeId: '202600000002'
+  },
+  {
+    id: 'usr-5',
+    name: 'IT Systems Admin',
+    email: 'itadmin@enterprenex.solutions',
+    role: 'Super Admin / IT Admin',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    department: 'IT Security, DevOps & Cloud',
+    status: 'Active',
+    lastLogin: 'Just now',
     phone: '+91-9226860060'
   }
 ];
