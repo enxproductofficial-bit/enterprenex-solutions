@@ -34,8 +34,6 @@ const NINE_STAGE_LIFECYCLE: { stage: TaskColumn; label: string; badge: string; c
   { stage: 'Cancelled', label: 'Cancelled', badge: 'adm-badge-neutral', color: '#94a3b8', desc: 'Aborted or superseded' }
 ];
 
-const NINE_STAGE_COLUMNS = NINE_STAGE_LIFECYCLE;
-
 const MODULE_OPTIONS = [
   'Core Engine & Telemetry',
   'Frontend UI/UX Systems',

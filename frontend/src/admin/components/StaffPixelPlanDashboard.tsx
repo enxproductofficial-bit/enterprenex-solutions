@@ -18,11 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
-  ExternalLink
+  Clock
 } from 'lucide-react';
 import type { Task, Employee } from '../types';
 
@@ -37,7 +33,6 @@ interface StaffPixelPlanDashboardProps {
   onOpenLeaveModal: () => void;
   onSelectTask: (task: Task) => void;
   safeMeetings: any[];
-  safeAnnouncements: any[];
 }
 
 export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = ({
@@ -50,8 +45,7 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
   onOpenMeetModal,
   onOpenLeaveModal,
   onSelectTask,
-  safeMeetings,
-  safeAnnouncements
+  safeMeetings
 }) => {
   const navigate = useNavigate();
   const [calendarYear, setCalendarYear] = useState<number>(2026);
@@ -96,9 +90,6 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
   const selectedDateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(calendarSelectedDate).padStart(2, '0')}`;
   const meetingsOnSelectedDate = (safeMeetings || []).filter(m => m && m.date === selectedDateStr);
   const tasksDueOnSelectedDate = (myTasks || []).filter(t => t && t.dueDate === selectedDateStr);
-
-  const myTasksCompleted = myTasks.filter(t => t.status === 'Completed' || t.status === 'Approved');
-  const myTasksInProgress = myTasks.filter(t => t.status === 'In Progress');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

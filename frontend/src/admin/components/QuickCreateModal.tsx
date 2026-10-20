@@ -10,7 +10,7 @@ interface QuickCreateModalProps {
 }
 
 export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onClose, defaultTab = 'project' }) => {
-  const { addProject, addClient, addLead, addInvoice, addTask, addTicket, uploadDocument, clients, projects, employees, currentUser } = useAdmin();
+  const { addProject, addClient, addLead, addInvoice, addTask, addTicket, uploadDocument, clients, projects, employees, currentUser, services } = useAdmin();
   const isEmployee = currentUser?.role === 'Team Member' || currentUser?.role === 'Developer';
   const [activeTab, setActiveTab] = useState<'project' | 'client' | 'lead' | 'invoice' | 'task' | 'ticket' | 'document'>(isEmployee ? 'ticket' : defaultTab);
 
@@ -64,7 +64,6 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
   const [tkClientEmail, setTkClientEmail] = useState(clients[0]?.primaryContact?.email || currentUser?.email || '');
   const [tkPriority, setTkPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
   const [tkCategory, setTkCategory] = useState<string>('Bug Fix');
-  const [tkCostEstimate, setTkCostEstimate] = useState<number>(0);
   const [tkAssignedTo, setTkAssignedTo] = useState(employees[0]?.name || 'Support Specialist');
 
   // 7. Document form

@@ -38,7 +38,6 @@ import {
   MessageSquare,
   MessageCircle,
   GraduationCap,
-  Briefcase,
   UserCheck,
   UserX
 } from 'lucide-react';
@@ -123,6 +122,20 @@ export const ENTERPRENEX_POLICIES = [
     ]
   }
 ];
+
+const generateUnique12DigitId = (): string => {
+  const randomSuffix = Math.floor(10000000 + Math.random() * 90000000).toString();
+  return `2026${randomSuffix}`;
+};
+
+const generateRandomPassword = (prefix: string = 'EPX'): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+  let rand = '';
+  for (let i = 0; i < 8; i++) {
+    rand += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `${prefix}_${rand}`;
+};
 
 export const TeamPage: React.FC = () => {
   const {

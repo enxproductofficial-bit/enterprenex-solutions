@@ -16,7 +16,6 @@ import {
   ToggleRight,
   Lock,
   Database,
-  Clock,
   Sliders
 } from 'lucide-react';
 import type { UserRole } from '../types';

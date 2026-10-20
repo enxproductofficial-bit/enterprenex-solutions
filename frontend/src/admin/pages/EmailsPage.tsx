@@ -3,28 +3,16 @@ import { useAdmin } from '../context/AdminContext';
 import {
   Mail,
   Send,
-  Inbox,
   Star,
   Paperclip,
   Search,
   Plus,
-  RefreshCw,
-  Trash2,
   Archive,
   Reply,
-  Forward,
   Printer,
   Download,
-  CheckCircle2,
   X,
-  Clock,
   ShieldCheck,
-  Tag,
-  Building2,
-  User,
-  Check,
-  ExternalLink,
-  ChevronDown,
   ArrowLeftRight
 } from 'lucide-react';
 
