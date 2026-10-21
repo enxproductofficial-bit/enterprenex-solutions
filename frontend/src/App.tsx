@@ -1,15 +1,11 @@
 import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
 import { useEffect } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
 import { ShieldAlert } from 'lucide-react';
 import './index.css';
 import './admin/admin.css';
 
-// Public Components & Pages
-import Header from './components/Navbar';
-import Footer from './components/Footer';
+// Verification & Staff Auth Pages
 import VerificationPage from './pages/VerificationPage';
-import FloatingWidgets from './components/FloatingWidgets';
 import LoginPage from './pages/LoginPage';
 import { CreateNewPasswordPage } from './pages/CreateNewPasswordPage';
 
@@ -164,76 +160,18 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
   );
 }
 
-// Public Website Layout Component (renders Public Header/Footer only for public routes)
-function PublicWebsiteLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <Header />
-      <div style={{ paddingTop: '72px' }}>
-        {children}
-      </div>
-      <Footer />
-      <FloatingWidgets />
-    </>
-  );
-}
-
 function MainAppRoutes() {
-  const { pathname } = useLocation();
-  const isAuthOrOnboardingRoute = pathname.startsWith('/admin') || pathname === '/register' || pathname === '/login' || pathname === '/create-new-password' || pathname === '/change-password';
-
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
-
   return (
     <>
       <ScrollToTopOnRoute />
 
-      {/* Scroll Progress Bar for Public Site */}
-      {!isAuthOrOnboardingRoute && (
-        <motion.div
-          style={{
-            scaleX,
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: 'linear-gradient(to right, var(--primary, #1070C8), var(--primary-light, #197ED8))',
-            transformOrigin: '0%',
-            zIndex: 10000,
-          }}
-        />
-      )}
-
-      {/* Accessibility Skip Link on Public Site */}
-      {!isAuthOrOnboardingRoute && (
-        <a
-          href="#main-content"
-          style={{
-            position: 'absolute', top: '-40px', left: '1rem',
-            background: 'var(--primary)', color: '#fff',
-            padding: '0.5rem 1rem', borderRadius: '4px', fontWeight: 600,
-            transition: 'top 0.2s', zIndex: 9999,
-          }}
-          onFocus={e => (e.currentTarget.style.top = '1rem')}
-          onBlur={e => (e.currentTarget.style.top = '-40px')}
-        >
-          Skip to main content
-        </a>
-      )}
-
       <Routes>
         {/* ── EWMS ROOT APPLICATION: Primary portal points directly to EWMS ── */}
         <Route path="/" element={<Navigate to="/admin" replace />} />
-        <Route path="/verify" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
-        <Route path="/verification" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
-        <Route path="/verification/internship" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
-        <Route path="/verification/employee" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
+        <Route path="/verify" element={<VerificationPage />} />
+        <Route path="/verification" element={<VerificationPage />} />
+        <Route path="/verification/internship" element={<VerificationPage />} />
+        <Route path="/verification/employee" element={<VerificationPage />} />
 
         {/* ── STAFF AUTH PORTAL (Approach A: Internal Onboarding Only) ── */}
         <Route path="/register" element={<Navigate to="/login?notice=internal_only" replace />} />

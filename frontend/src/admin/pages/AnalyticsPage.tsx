@@ -14,10 +14,8 @@ import {
   Activity,
   MousePointer,
   Smartphone,
-  Laptop,
-  Eye
+  Laptop
 } from 'lucide-react';
-import { useVisitorTelemetry } from '../../utils/visitorTracker';
 
 export const AnalyticsPage: React.FC = () => {
   const { leads, invoices, expenses, clients, employees, projects, showToast } = useAdmin();
