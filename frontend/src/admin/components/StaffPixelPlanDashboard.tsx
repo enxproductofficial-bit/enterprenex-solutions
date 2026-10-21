@@ -21,6 +21,7 @@ import {
   Clock
 } from 'lucide-react';
 import type { Task, Employee } from '../types';
+import { EmployeeSelfServiceHub } from './EmployeeSelfServiceHub';
 
 interface StaffPixelPlanDashboardProps {
   currentEmpProfile: Employee | any;
@@ -982,6 +983,17 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
         </div>
 
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* 4. OFFICIAL EWMS SECTION 4: EMPLOYEE SELF-SERVICE & WORKSPACE SUITE */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      <EmployeeSelfServiceHub
+        currentEmpProfile={currentEmpProfile}
+        myTasks={myTasks}
+        attendancePunchedIn={attendancePunchedIn}
+        punchInTime={punchInTime}
+        onToggleAttendance={handleToggleAttendance}
+      />
 
     </div>
   );
