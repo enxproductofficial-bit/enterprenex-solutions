@@ -275,9 +275,6 @@ export const AdminLoginPage: React.FC = () => {
           <Link to="/login" style={{ fontSize: '0.82rem', color: 'var(--primary, #1070C8)', textDecoration: 'none', fontWeight: 700 }}>
             ← Switch to Workforce & Staff Sign In
           </Link>
-          <Link to="/" style={{ fontSize: '0.78rem', color: 'var(--text-muted, #9CA3AF)', textDecoration: 'none' }}>
-            Back to Public Website
-          </Link>
         </div>
 
         {/* Terms and Conditions Modal */}

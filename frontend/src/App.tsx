@@ -8,11 +8,6 @@ import './admin/admin.css';
 // Public Components & Pages
 import Header from './components/Navbar';
 import Footer from './components/Footer';
-import HomePage from './pages/HomePage';
-import ServicePage from './pages/ServicePage';
-import ServicesPage from './pages/ServicesPage';
-import ContactPage from './pages/ContactPage';
-import AboutPage from './pages/AboutPage';
 import VerificationPage from './pages/VerificationPage';
 import FloatingWidgets from './components/FloatingWidgets';
 import LoginPage from './pages/LoginPage';
@@ -233,12 +228,8 @@ function MainAppRoutes() {
       )}
 
       <Routes>
-        {/* ── PUBLIC ROUTES (Clean front-page, NO admin buttons or links) ── */}
-        <Route path="/" element={<PublicWebsiteLayout><HomePage /></PublicWebsiteLayout>} />
-        <Route path="/services" element={<PublicWebsiteLayout><ServicesPage /></PublicWebsiteLayout>} />
-        <Route path="/services/:serviceId" element={<PublicWebsiteLayout><ServicePage /></PublicWebsiteLayout>} />
-        <Route path="/contact" element={<PublicWebsiteLayout><ContactPage /></PublicWebsiteLayout>} />
-        <Route path="/about" element={<PublicWebsiteLayout><AboutPage /></PublicWebsiteLayout>} />
+        {/* ── EWMS ROOT APPLICATION: Primary portal points directly to EWMS ── */}
+        <Route path="/" element={<Navigate to="/admin" replace />} />
         <Route path="/verify" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
         <Route path="/verification" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />
         <Route path="/verification/internship" element={<PublicWebsiteLayout><VerificationPage /></PublicWebsiteLayout>} />

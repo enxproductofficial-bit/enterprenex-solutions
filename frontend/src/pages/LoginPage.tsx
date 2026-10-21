@@ -6,7 +6,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Home,
   AlertCircle,
   CheckCircle2,
   ShieldCheck
@@ -622,25 +621,6 @@ export const LoginPage: React.FC = () => {
               </button>
             </div>
           </form>
-        </div>
-
-        {/* Back to Home */}
-        <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
-          <Link
-            to="/"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              color: '#64748b',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
-          >
-            <Home size={15} />
-            <span>Back to Public Website</span>
-          </Link>
         </div>
 
         {/* Terms and Conditions Modal */}
