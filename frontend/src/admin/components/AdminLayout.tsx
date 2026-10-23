@@ -184,6 +184,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const safeProjects = projects || [];
   const safeClients = clients || [];
   const safeTasks = tasks || [];
+  const safeEmployees = employees || [];
 
   // Calculate live badge counters
   const openTicketsCount = safeTickets.filter(t => t && (t.status === 'Open' || t.status === 'In Progress')).length;
@@ -198,7 +199,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const isHR = userRole === 'HR' || userRole === 'HR Manager';
   const isManager = userRole === 'Manager' || userRole === 'Project Manager' || userRole === 'Sales Lead' || userRole === 'Finance Officer';
   const isEmployee = userRole === 'Employee' || userRole === 'Team Member' || userRole === 'Developer';
-  const isManagerOrHr = isManager || isHR;
 
   const currentEmpRecord = employees?.find(e => 
     (currentUser?.id && e.id === currentUser.id) || 

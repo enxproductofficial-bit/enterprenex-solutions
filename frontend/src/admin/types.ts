@@ -376,7 +376,7 @@ export type TaskColumn =
 export interface TaskComment {
   id: string;
   author: string;
-  authorAvatar: string;
+  authorAvatar?: string;
   text: string;
   createdAt: string;
 }

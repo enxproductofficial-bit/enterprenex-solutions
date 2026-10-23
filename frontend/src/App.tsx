@@ -76,7 +76,6 @@ function isAuthorizedRole(currentRole: string | undefined, allowedRoles?: string
 
 function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }: AdminRouteGuardProps) {
   const { currentUser } = useAdmin();
-  const location = useLocation();
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
