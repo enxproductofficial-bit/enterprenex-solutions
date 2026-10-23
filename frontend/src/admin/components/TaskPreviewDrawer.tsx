@@ -150,7 +150,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
       id: 'c-' + Date.now(),
       taskId: task.id,
       author: task.assignedTo || 'Employee',
-      authorAvatar: task.assignedToAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       text: '✓ Task assignment acknowledged and work initiated.',
       createdAt: new Date().toISOString().split('T')[0]
     };
@@ -163,7 +163,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
       id: 'c-' + Date.now(),
       taskId: task.id,
       author: task.assignedTo || 'Employee',
-      authorAvatar: task.assignedToAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       text: `⚠️ BLOCKER ESCALATION: ${blockerReason.trim()}`,
       createdAt: new Date().toISOString().split('T')[0]
     };
@@ -184,7 +184,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
       id: 'c-' + Date.now(),
       taskId: task.id,
       author: task.assignedTo || 'Employee',
-      authorAvatar: task.assignedToAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       text: `⏳ DEADLINE EXTENSION REQUESTED: Proposed new date ${extensionDate}. Reason: ${extensionReason.trim()}`,
       createdAt: new Date().toISOString().split('T')[0]
     };
@@ -203,7 +203,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
       id: 'c-' + Date.now(),
       taskId: task.id,
       author: task.assignedTo || 'Employee',
-      authorAvatar: task.assignedToAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       text: `❓ CLARIFICATION REQUEST for @${task.reviewer || 'Manager'}: ${clarificationQuestion.trim()}`,
       createdAt: new Date().toISOString().split('T')[0]
     };
