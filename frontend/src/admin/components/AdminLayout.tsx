@@ -572,7 +572,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                           style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                           className="adm-table-row-hover"
                         >
-                          <span style={{ fontSize: '0.82rem', color: '#fff', fontWeight: 600 }}>{p.title}</span>
+                          <span style={{ fontSize: '0.82rem', color: 'var(--adm-text, #111827)', fontWeight: 600 }}>{p.title}</span>
                           <span className="adm-badge adm-badge-primary">{p.status}</span>
                         </div>
                       ))}
@@ -589,7 +589,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                           style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                           className="adm-table-row-hover"
                         >
-                          <span style={{ fontSize: '0.82rem', color: '#fff', fontWeight: 600 }}>{c.companyName}</span>
+                          <span style={{ fontSize: '0.82rem', color: 'var(--adm-text, #111827)', fontWeight: 600 }}>{c.companyName}</span>
                           <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{c.city}</span>
                         </div>
                       ))}
@@ -606,7 +606,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                           style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                           className="adm-table-row-hover"
                         >
-                          <span style={{ fontSize: '0.82rem', color: '#fff' }}>{t.title}</span>
+                          <span style={{ fontSize: '0.82rem', color: 'var(--adm-text, #111827)' }}>{t.title}</span>
                           <span className="adm-badge adm-badge-neutral">{t.status}</span>
                         </div>
                       ))}
@@ -623,7 +623,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                           style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                           className="adm-table-row-hover"
                         >
-                          <span style={{ fontSize: '0.82rem', color: '#fff' }}>{l.company}</span>
+                          <span style={{ fontSize: '0.82rem', color: 'var(--adm-text, #111827)' }}>{l.company}</span>
                           <span className="adm-badge adm-badge-primary">{l.status}</span>
                         </div>
                       ))}

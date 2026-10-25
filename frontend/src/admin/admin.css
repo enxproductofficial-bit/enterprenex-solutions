@@ -31,43 +31,53 @@
   --radius-card: 16px;
   --radius-button: 8px;
 
-  /* ── Admin Portal Tokens ─────────────────────────────────── */
-  --adm-bg: #090a0d;
-  --adm-surface: #101216;
-  --adm-surface-hover: #15181f;
-  --adm-surface-active: #1b1e27;
-  --adm-border: rgba(255, 255, 255, 0.07);
-  --adm-border-light: rgba(255, 255, 255, 0.12);
+  /* ── EWMS Palette 1: Pure Minimalism Tokens ──────────────── */
+  /* Primary background: Pure White (#FFFFFF) */
+  /* Secondary background: Light Grey (#F8FAFC) */
+  /* Primary text: Almost Black (#111827) */
+  /* Secondary text: Slate Grey (#64748B) */
+  /* Borders: Soft Grey (#E5E7EB) */
+  /* Primary button: Black (#111111) */
+  /* Button text: White (#FFFFFF) */
+
+  --adm-bg: #F8FAFC;                     /* Secondary background: Light Grey */
+  --adm-surface: #FFFFFF;                /* Primary background: Pure White */
+  --adm-surface-hover: #F1F5F9;
+  --adm-surface-active: #E2E8F0;
+  --adm-border: #E5E7EB;                 /* Borders: Soft Grey */
+  --adm-border-light: #F1F5F9;
   
-  --adm-primary: #1070C8;
-  --adm-primary-hover: #1E6DB8;
-  --adm-primary-highlight: #197ED8;
-  --adm-primary-soft: rgba(16, 112, 200, 0.12);
-  --adm-primary-border: rgba(16, 112, 200, 0.28);
+  --adm-primary: #111111;                /* Primary button: Black */
+  --adm-primary-hover: #262626;
+  --adm-primary-highlight: #000000;
+  --adm-primary-soft: #F1F5F9;
+  --adm-primary-border: #E5E7EB;
   
-  --adm-text: #ffffff;
-  --adm-text-muted: #94a3b8;
-  --adm-text-dim: #64748b;
+  --adm-text: #111827;                   /* Primary text: Almost Black */
+  --adm-text-muted: #64748B;             /* Secondary text: Slate Grey */
+  --adm-text-dim: #94A3B8;
+  
+  --adm-btn-text: #FFFFFF;               /* Button text: White */
   
   --adm-success: #10b981;
-  --adm-success-soft: rgba(16, 185, 129, 0.10);
+  --adm-success-soft: rgba(16, 185, 129, 0.08);
   --adm-warning: #f59e0b;
-  --adm-warning-soft: rgba(245, 158, 11, 0.10);
+  --adm-warning-soft: rgba(245, 158, 11, 0.08);
   --adm-danger: #ef4444;
-  --adm-danger-soft: rgba(239, 68, 68, 0.10);
-  --adm-info: #3b82f6;
-  --adm-info-soft: rgba(59, 130, 246, 0.10);
-  --adm-purple: #8b5cf6;
-  --adm-purple-soft: rgba(139, 92, 246, 0.10);
+  --adm-danger-soft: rgba(239, 68, 68, 0.08);
+  --adm-info: #0284c7;
+  --adm-info-soft: rgba(2, 132, 199, 0.08);
+  --adm-purple: #7c3aed;
+  --adm-purple-soft: rgba(124, 58, 237, 0.08);
 
-  --adm-radius-sm: 4px;
+  --adm-radius-sm: 6px;
   --adm-radius: 8px;
-  --adm-radius-lg: 16px;
-  --adm-radius-xl: 20px;
+  --adm-radius-lg: 14px;
+  --adm-radius-xl: 18px;
   
-  --adm-shadow-sm: none;
-  --adm-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
-  --adm-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --adm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --adm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --adm-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
   
   --adm-sidebar-width: 300px;
   --adm-sidebar-collapsed: 72px;
@@ -1148,91 +1158,78 @@
 }
 
 /* ==========================================================================
-   FASTX STUDIO DESIGN SYSTEM (fastxstudio.com Reference)
-   Warm Studio Off-White #fafafa, Pure Card #ffffff, Matte Black #1a1a1a,
-   Mint Emerald #12c990, Syne & Inter Typography, Luxury Pill Elements
+   EWMS DESIGN SYSTEM - PALETTE 1: PURE MINIMALISM
+   Primary background: Pure White (#FFFFFF)
+   Secondary background: Light Grey (#F8FAFC)
+   Primary text: Almost Black (#111827)
+   Secondary text: Slate Grey (#64748B)
+   Borders: Soft Grey (#E5E7EB)
+   Primary button: Black (#111111)
+   Button text: White (#FFFFFF)
    ========================================================================== */
+.adm-app,
 .adm-app.theme-light {
-  --adm-bg: #fafafa;
-  --adm-surface: #ffffff;
-  --adm-surface-hover: #f4f4f5;
-  --adm-surface-active: #e4e4e7;
-  --adm-border: rgba(0, 0, 0, 0.06);
-  --adm-border-light: rgba(0, 0, 0, 0.12);
+  --adm-bg: #F8FAFC;                     /* Secondary background: Light Grey */
+  --adm-surface: #FFFFFF;                /* Primary background: Pure White */
+  --adm-surface-hover: #F1F5F9;
+  --adm-surface-active: #E2E8F0;
+  --adm-border: #E5E7EB;                 /* Borders: Soft Grey */
+  --adm-border-light: #F1F5F9;
   
-  --adm-primary: #1a1a1a;
-  --adm-primary-hover: #000000;
-  --adm-primary-soft: rgba(0, 0, 0, 0.05);
-  --adm-primary-border: rgba(0, 0, 0, 0.12);
+  --adm-primary: #111111;                /* Primary button: Black */
+  --adm-primary-hover: #262626;
+  --adm-primary-highlight: #000000;
+  --adm-primary-soft: #F1F5F9;
+  --adm-primary-border: #E5E7EB;
   
-  --adm-text: #1a1a1a;
-  --adm-text-muted: #5a5a5a;
-  --adm-text-dim: #8a8a8a;
+  --adm-text: #111827;                   /* Primary text: Almost Black */
+  --adm-text-muted: #64748B;             /* Secondary text: Slate Grey */
+  --adm-text-dim: #94A3B8;
   
-  --adm-success: #12c990;
-  --adm-success-soft: rgba(18, 201, 144, 0.08);
-  --adm-warning: #f59e0b;
-  --adm-warning-soft: rgba(245, 158, 11, 0.08);
-  --adm-danger: #ef4444;
-  --adm-danger-soft: rgba(239, 68, 68, 0.08);
-  --adm-info: #0284c7;
-  --adm-info-soft: rgba(2, 132, 199, 0.08);
-  --adm-purple: #7c3aed;
-  --adm-purple-soft: rgba(124, 58, 237, 0.08);
+  --adm-btn-text: #FFFFFF;               /* Button text: White */
 
-  --adm-radius-sm: 6px;
-  --adm-radius: 10px;
-  --adm-radius-lg: 14px;
-  --adm-radius-xl: 18px;
-  --adm-radius-pill: 9999px;
-
-  --adm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.02);
-  --adm-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.035);
-  --adm-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.05);
-
-  background-color: #fafafa;
-  color: #1a1a1a;
+  background-color: #F8FAFC;
+  color: #111827;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.adm-app.theme-light h1,
-.adm-app.theme-light h2,
-.adm-app.theme-light h3,
-.adm-app.theme-light .adm-page-title-group h1,
-.adm-app.theme-light .adm-card-title,
-.adm-app.theme-light .adm-brand-title {
-  font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  color: #1a1a1a !important;
-}
-
-.adm-app.theme-light .adm-sidebar {
-  background: var(--surface-secondary, #F8F8F8);
-  border-right: 1px solid var(--border, #E8E8E8);
-}
-
-.adm-app.theme-light .adm-sidebar-header {
-  border-bottom: 1px solid var(--border, #E8E8E8);
-}
-
-.adm-app.theme-light .adm-topbar {
-  background: var(--surface, #FFFFFF);
-  border-bottom: 1px solid var(--border, #E8E8E8);
-}
-
-.adm-app.theme-light .adm-brand-link {
-  color: var(--text-primary, #111827);
-}
-
-.adm-app.theme-light .adm-brand-sub {
-  color: var(--primary, #1070C8);
+.adm-app h1,
+.adm-app h2,
+.adm-app h3,
+.adm-app h4,
+.adm-app .adm-page-title-group h1,
+.adm-app .adm-card-title,
+.adm-app .adm-brand-title {
+  color: #111827 !important;
   font-weight: 700;
 }
 
-.adm-app.theme-light .adm-nav-link {
-  color: var(--text-secondary, #6B7280);
-  border-radius: var(--radius-button, 8px);
+.adm-app .adm-sidebar {
+  background: #FFFFFF !important;
+  border-right: 1px solid #E5E7EB !important;
+}
+
+.adm-app .adm-sidebar-header {
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
+.adm-app .adm-brand-link {
+  color: #111827 !important;
+}
+
+.adm-app .adm-brand-sub {
+  color: #64748B !important;
+  font-weight: 600;
+}
+
+.adm-app .adm-topbar {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
+.adm-app .adm-nav-link {
+  color: #64748B !important;
+  border-radius: 8px;
   margin: 3px 0;
   font-weight: 500;
   font-size: 0.86rem;
@@ -1240,278 +1237,283 @@
   border: 1px solid transparent;
 }
 
-.adm-app.theme-light .adm-nav-link:hover {
-  background: var(--blue-soft, #C8E0F8);
-  color: var(--primary, #1070C8);
+.adm-app .adm-nav-link:hover {
+  background: #F1F5F9 !important;
+  color: #111827 !important;
 }
 
-.adm-app.theme-light .adm-nav-link.active {
-  background: var(--blue-light, #E6EDF5);
-  color: var(--primary, #1070C8);
-  font-weight: 700;
-  border: 1px solid var(--primary, #1070C8);
-  box-shadow: 0 1px 3px rgba(16, 112, 200, 0.12);
+.adm-app .adm-nav-link.active {
+  background: #111111 !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  border: 1px solid #111111 !important;
 }
 
-.adm-app.theme-light .adm-nav-badge {
-  background: var(--blue-light, #E6EDF5);
-  color: var(--primary, #1070C8);
-  border: 1px solid var(--blue-soft, #C8E0F8);
+.adm-app .adm-nav-link.active .adm-nav-icon,
+.adm-app .adm-nav-link.active span,
+.adm-app .adm-nav-link.active svg {
+  color: #FFFFFF !important;
 }
 
-.adm-app.theme-light .adm-search-input {
-  background: #f4f4f5;
-  border: 1px solid var(--border, #E8E8E8);
-  border-radius: 8px;
-  color: var(--text-primary, #111827);
+.adm-app .adm-nav-link.active .adm-nav-badge {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #FFFFFF !important;
+  border: none !important;
 }
 
-.adm-app.theme-light .adm-search-input:focus {
-  background: #ffffff;
-  border-color: var(--primary, #1070C8);
-  box-shadow: 0 0 0 2px rgba(16, 112, 200, 0.15);
-}
-
-.adm-app.theme-light .adm-topbar-btn {
-  background: #f4f4f5;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  color: #4b5563;
-}
-
-.adm-app.theme-light .adm-topbar-btn:hover {
-  background: #e4e4e7;
+.adm-app .adm-nav-badge {
+  background: #F1F5F9;
   color: #111827;
+  border: 1px solid #E5E7EB;
 }
 
-.adm-app.theme-light .adm-user-profile-btn {
-  background: #f4f4f5;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+.adm-app .adm-search-input {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px;
+  color: #111827 !important;
+}
+
+.adm-app .adm-search-input:focus {
+  background: #FFFFFF !important;
+  border-color: #111111 !important;
+  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.08) !important;
+}
+
+.adm-app .adm-toggle-btn,
+.adm-app .adm-topbar-btn {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px;
+  color: #64748B !important;
+}
+
+.adm-app .adm-toggle-btn:hover,
+.adm-app .adm-topbar-btn:hover {
+  background: #F1F5F9 !important;
+  color: #111827 !important;
+  border-color: #CBD5E1 !important;
+}
+
+.adm-app .adm-user-profile-btn {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
   border-radius: var(--adm-radius-lg);
 }
 
-.adm-app.theme-light .adm-user-name {
-  color: #1a1a1a;
+.adm-app .adm-user-name {
+  color: #111827 !important;
 }
 
-/* FastX Studio Premium Cards */
-.adm-app.theme-light .adm-card {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035);
+.adm-app .adm-user-role {
+  color: #64748B !important;
 }
 
-.adm-app.theme-light .adm-kpi-card {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.035);
+/* Palette 1 Minimalist Cards */
+.adm-app .adm-card,
+.adm-app .adm-kpi-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
 
-.adm-app.theme-light .adm-kpi-value {
-  color: #1a1a1a;
-  font-family: 'Syne', sans-serif !important;
+.adm-app .adm-kpi-value {
+  color: #111827 !important;
   font-weight: 700;
 }
 
-/* FastX Studio Pill Buttons */
-.adm-app.theme-light .adm-btn {
-  border-radius: 9999px;
-  font-weight: 600;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+.adm-app .adm-kpi-label {
+  color: #64748B !important;
 }
 
-.adm-app.theme-light .adm-btn-primary {
-  background: #1a1a1a;
-  color: #ffffff !important;
-  border: 1px solid #1a1a1a;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Palette 1 Buttons */
+.adm-app .adm-btn-primary {
+  background: #111111 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #111111 !important;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.adm-app.theme-light .adm-btn-primary:hover {
-  background: #000000;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+.adm-app .adm-btn-primary:hover {
+  background: #262626 !important;
+  border-color: #262626 !important;
+  color: #FFFFFF !important;
 }
 
-.adm-app.theme-light .adm-btn-secondary {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #1a1a1a;
+.adm-app .adm-btn-secondary {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  color: #111827 !important;
+  border-radius: 8px;
 }
 
-.adm-app.theme-light .adm-btn-secondary:hover {
-  background: #f4f4f5;
-  border-color: rgba(0, 0, 0, 0.2);
+.adm-app .adm-btn-secondary:hover {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #111827 !important;
 }
 
-/* FastX Studio Pill Badges */
-.adm-app.theme-light .adm-badge {
-  border-radius: 9999px;
+/* Palette 1 Badges */
+.adm-app .adm-badge {
+  border-radius: 6px;
   font-weight: 500;
   font-size: 0.72rem;
   padding: 0.2rem 0.65rem;
 }
 
-.adm-app.theme-light .adm-badge-success {
-  background: rgba(18, 201, 144, 0.1);
-  color: #0b9e71;
-  border: 1px solid rgba(18, 201, 144, 0.25);
+.adm-app .adm-badge-neutral {
+  background: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #E5E7EB;
 }
 
-.adm-app.theme-light .adm-badge-neutral {
-  background: #f4f4f5;
-  color: #5a5a5a;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+.adm-app .adm-badge-primary {
+  background: #111111;
+  color: #FFFFFF;
+  border: 1px solid #111111;
 }
 
-.adm-app.theme-light .adm-badge-primary {
-  background: #1a1a1a;
-  color: #ffffff;
-  border: 1px solid #1a1a1a;
+/* Palette 1 Modals & Drawers */
+.adm-app .adm-modal-content,
+.adm-app .adm-modal,
+.adm-app .adm-preview-drawer {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+  color: #111827 !important;
 }
 
-.adm-app.theme-light .adm-modal-content,
-.adm-app.theme-light .adm-modal {
-  background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
-  color: #1a1a1a !important;
+.adm-app .adm-modal-header,
+.adm-app .adm-drawer-header,
+.adm-app .adm-drawer-footer {
+  background: #F8FAFC !important;
+  border-color: #E5E7EB !important;
 }
 
-.adm-app.theme-light .adm-modal-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+/* Palette 1 Minimalist Tables */
+.adm-app .adm-table-container,
+.adm-app .adm-table-wrapper {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 12px;
 }
 
-/* FastX Studio Minimalist Tables */
-.adm-app.theme-light .adm-table-container,
-.adm-app.theme-light .adm-table-wrapper {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 14px;
-}
-
-.adm-app.theme-light .adm-table th {
-  background: #f8f8f9;
-  color: #8a8a8a;
+.adm-app .adm-table th {
+  background: #F8FAFC !important;
+  color: #64748B !important;
   font-weight: 600;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #E5E7EB !important;
 }
 
-.adm-app.theme-light .adm-table td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  color: #1a1a1a;
+.adm-app .adm-table td {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  color: #111827 !important;
 }
 
-.adm-app.theme-light .adm-table tbody tr:hover {
-  background-color: #fafafa;
+.adm-app .adm-table tbody tr:hover td {
+  background-color: #F8FAFC !important;
 }
 
-/* FastX Studio Tabs */
-.adm-app.theme-light .adm-tab-btn {
-  color: #8a8a8a;
+/* Palette 1 Tabs */
+.adm-app .adm-tab-btn {
+  color: #64748B !important;
   font-weight: 500;
-  border-radius: 9999px;
+  border-radius: 6px;
   border: none;
   padding: 0.45rem 1rem;
 }
 
-.adm-app.theme-light .adm-tab-btn:hover {
-  color: #1a1a1a;
-  background: #f4f4f5;
+.adm-app .adm-tab-btn:hover {
+  color: #111827 !important;
+  background: #F1F5F9 !important;
 }
 
-.adm-app.theme-light .adm-tab-btn.active {
-  color: #ffffff;
-  background: #1a1a1a;
-  border-bottom-color: transparent;
+.adm-app .adm-tab-btn.active {
+  color: #FFFFFF !important;
+  background: #111111 !important;
+  border-bottom-color: transparent !important;
 }
 
-/* FastX Studio Inputs & Dropdowns */
-.adm-app.theme-light .adm-input,
-.adm-app.theme-light .adm-select,
-.adm-app.theme-light .adm-textarea {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
-  color: #1a1a1a;
-}
-
-.adm-app.theme-light select.adm-select option {
-  background: #ffffff !important;
-  color: #1a1a1a !important;
-  padding: 8px 12px;
+/* Palette 1 Inputs & Selects */
+.adm-app .adm-input,
+.adm-app .adm-select,
+.adm-app .adm-textarea {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px;
+  color: #111827 !important;
 }
 
 .adm-app select.adm-select option {
-  background: #181c24;
-  color: #ffffff;
+  background: #FFFFFF !important;
+  color: #111827 !important;
   padding: 8px 12px;
 }
 
-.adm-app.theme-light .adm-input:focus,
-.adm-app.theme-light .adm-select:focus,
-.adm-app.theme-light .adm-textarea:focus {
-  border-color: #1a1a1a;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+.adm-app .adm-input:focus,
+.adm-app .adm-select:focus,
+.adm-app .adm-textarea:focus {
+  border-color: #111111 !important;
+  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.08) !important;
 }
 
-/* Clean Overrides for Hardcoded Inline Styles */
-.adm-app.theme-light strong:not(.adm-btn *):not(.adm-badge *):not([style*="background"] *),
-.adm-app.theme-light p > [style*="color: #fff"],
-.adm-app.theme-light h1[style*="color: #fff"],
-.adm-app.theme-light h2[style*="color: #fff"],
-.adm-app.theme-light h3[style*="color: #fff"] {
-  color: #1a1a1a !important;
+/* Hardcoded text overrides */
+.adm-app strong:not(.adm-btn *):not(.adm-badge *):not([style*="background"] *),
+.adm-app p > [style*="color: #fff"],
+.adm-app h1[style*="color: #fff"],
+.adm-app h2[style*="color: #fff"],
+.adm-app h3[style*="color: #fff"] {
+  color: #111827 !important;
 }
 
-/* Any button, badge, active tab, or element with dark/primary background MUST ALWAYS have bright white text */
-.adm-app.theme-light .adm-btn-primary,
-.adm-app.theme-light .adm-btn-primary *,
-.adm-app.theme-light .adm-tab-btn.active,
-.adm-app.theme-light .adm-tab-btn.active *,
-.adm-app.theme-light .adm-badge-primary,
-.adm-app.theme-light .adm-badge-primary *,
-.adm-app.theme-light [style*="background: var(--adm-primary)"],
-.adm-app.theme-light [style*="background: var(--adm-primary)"] *,
-.adm-app.theme-light [style*="background: #1a1a1a"],
-.adm-app.theme-light [style*="background: #1a1a1a"] *,
-.adm-app.theme-light [style*="background:#1a1a1a"],
-.adm-app.theme-light [style*="background:#1a1a1a"] *,
-.adm-app.theme-light [style*="background:var(--adm-primary)"],
-.adm-app.theme-light [style*="background:var(--adm-primary)"] *,
-.adm-app.theme-light [style*="background: #000"],
-.adm-app.theme-light [style*="background: #000"] *,
-.adm-app.theme-light [style*="background: #059669"],
-.adm-app.theme-light [style*="background: #059669"] *,
-.adm-app.theme-light [style*="background: #d97706"],
-.adm-app.theme-light [style*="background: #d97706"] *,
-.adm-app.theme-light [style*="background: #dc2626"],
-.adm-app.theme-light [style*="background: #dc2626"] * {
-  color: #ffffff !important;
+/* Dark background elements MUST have white text */
+.adm-app .adm-btn-primary,
+.adm-app .adm-btn-primary *,
+.adm-app .adm-tab-btn.active,
+.adm-app .adm-tab-btn.active *,
+.adm-app .adm-badge-primary,
+.adm-app .adm-badge-primary *,
+.adm-app [style*="background: #111111"],
+.adm-app [style*="background: #111111"] *,
+.adm-app [style*="background:#111111"],
+.adm-app [style*="background:#111111"] *,
+.adm-app [style*="background: #000"],
+.adm-app [style*="background: #000"] * {
+  color: #FFFFFF !important;
 }
 
-.adm-app.theme-light [style*="background: #111419"],
-.adm-app.theme-light [style*="background: #1a1e27"],
-.adm-app.theme-light [style*="background: var(--adm-bg)"] {
-  background: #f8f8f9 !important;
+.adm-app [style*="background: #111419"],
+.adm-app [style*="background: #1a1e27"],
+.adm-app [style*="background: var(--adm-bg)"] {
+  background: #F8FAFC !important;
 }
 
-.adm-app.theme-light .adm-kanban-column {
-  background: #f8f8f9;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 14px;
-}
-
-.adm-app.theme-light .adm-kanban-card {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+.adm-app .adm-kanban-column {
+  background: #F8FAFC !important;
+  border: 1px solid #E5E7EB !important;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.adm-app .adm-kanban-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.adm-app .adm-progress-bar {
+  background: #E5E7EB !important;
+  border-radius: 9999px;
+}
+
+.adm-app .adm-progress-fill {
+  background: #111111 !important;
 }
 
 .adm-app.theme-light .adm-progress-bar {
