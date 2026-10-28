@@ -335,7 +335,7 @@ export function Header() {
               e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
-            <span>Apply Now</span>
+            <span>Apply for Internship</span>
             <span style={{ fontSize: '0.95rem', lineHeight: 1 }}>↗</span>
           </a>
 
@@ -499,7 +499,7 @@ export function Header() {
               boxShadow: '0 4px 14px rgba(16, 112, 200, 0.28)'
             }}
           >
-            <span>Apply Now (Student Application)</span>
+            <span>Apply for Internship</span>
             <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>↗</span>
           </a>
 
