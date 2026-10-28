@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 
+// Official Google Form link for student applications
+const STUDENT_APPLICATION_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScMc-z8pldaxTIMOlhKG49LdTVDd2GGuXIykbm5Fo2k8tanyQ/viewform';
 
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
@@ -299,7 +301,44 @@ export function Header() {
         </nav>
 
         {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          {/* Student Services Application CTA */}
+          <a
+            href={STUDENT_APPLICATION_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn desktop-apply-btn"
+            title="Apply for Student Services, Internships & Cohorts"
+            style={{
+              padding: isScrolled ? '.45rem 1rem' : '.55rem 1.15rem',
+              fontSize: '.85rem',
+              borderRadius: '9999px',
+              fontWeight: 700,
+              backgroundColor: 'var(--primary, #1070C8)',
+              color: '#ffffff',
+              boxShadow: '0 4px 14px rgba(16, 112, 200, 0.28)',
+              transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+              minHeight: '40px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              textDecoration: 'none',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--primary-hover, #1E6DB8)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--primary, #1070C8)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <span>Apply Now</span>
+            <span style={{ fontSize: '0.95rem', lineHeight: 1 }}>↗</span>
+          </a>
+
           <Link
             to="/contact"
             className="btn btn-orange desktop-schedule-btn"
@@ -438,6 +477,32 @@ export function Header() {
         </div>
 
         <div style={{ marginTop: '2rem', paddingBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {/* Mobile Student Application Button */}
+          <a
+            href={STUDENT_APPLICATION_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              width: '100%',
+              borderRadius: '9999px',
+              padding: '0.875rem 1.5rem',
+              minHeight: '44px',
+              backgroundColor: 'var(--primary, #1070C8)',
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              textDecoration: 'none',
+              boxShadow: '0 4px 14px rgba(16, 112, 200, 0.28)'
+            }}
+          >
+            <span>Apply Now (Student Application)</span>
+            <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>↗</span>
+          </a>
+
           <Link
             to="/contact"
             className="btn btn-orange"
