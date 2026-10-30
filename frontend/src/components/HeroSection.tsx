@@ -217,8 +217,8 @@ export default function HeroSection() {
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="section-h2" style={{ color: '#0A2540' }}>Built with Enterprise Standards</h2>
-            <p className="section-sub" style={{ color: 'var(--gray-600)' }}>
+            <h2 className="section-h2" style={{ color: 'var(--white)' }}>Built with Enterprise Standards</h2>
+            <p className="section-sub" style={{ color: 'var(--gray-400)' }}>
               From planning to deployment, every project follows industry best practices for security, scalability, maintainability, and performance.
             </p>
           </motion.div>
