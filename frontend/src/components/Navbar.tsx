@@ -90,13 +90,13 @@ export function Header() {
           height: isScrolled ? '62px' : '72px',
           margin: '0 auto',
           borderRadius: isScrolled ? '16px' : '0px',
-          borderBottom: isScrolled ? '1px solid rgba(232, 232, 232, 0.8)' : '1px solid #e8e8e8',
-          border: isScrolled ? '1px solid rgba(232, 232, 232, 0.9)' : 'none',
-          backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.88)' : 'rgba(255, 255, 255, 0.95)',
+          borderBottom: isScrolled ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(255, 255, 255, 0.08)',
+          border: isScrolled ? '1px solid rgba(255, 255, 255, 0.15)' : 'none',
+          backgroundColor: isScrolled ? 'rgba(10, 10, 10, 0.85)' : 'rgba(10, 10, 10, 0.7)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           padding: isScrolled ? '0 clamp(1rem, 2.5vw, 1.25rem)' : '0 clamp(1rem, 3vw, 2rem)',
-          boxShadow: isScrolled ? '0 8px 32px -4px rgba(16, 112, 200, 0.12), 0 2px 8px -2px rgba(0, 0, 0, 0.04)' : 'none',
+          boxShadow: isScrolled ? '0 8px 32px -4px rgba(0, 0, 0, 0.6), 0 2px 8px -2px rgba(0, 0, 0, 0.4)' : 'none',
         }}
       >
         {/* Logo */}
@@ -116,7 +116,7 @@ export function Header() {
             style={{
               fontWeight: 700,
               fontSize: isScrolled ? '1rem' : '1.125rem',
-              color: '#0a0a0a',
+              color: '#ffffff',
               letterSpacing: '-0.02em',
               transition: 'all 0.3s ease',
               display: 'inline-flex',
@@ -147,7 +147,7 @@ export function Header() {
                   padding: '0 0.875rem',
                   fontSize: '0.9rem',
                   fontWeight: 600,
-                  color: isActive ? 'var(--primary, #1070C8)' : '#333',
+                  color: isActive ? 'var(--primary, #1070C8)' : 'rgba(255, 255, 255, 0.9)',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                 }}
@@ -187,7 +187,7 @@ export function Header() {
                       position: 'absolute',
                       top: '100%',
                       left: 0,
-                      background: '#fff',
+                      background: '#0d1b2a',
                       borderRadius: '0 0 16px 16px',
                       boxShadow: '0 12px 48px rgba(0,0,0,.12)',
                       padding: '2rem',
@@ -195,7 +195,7 @@ export function Header() {
                       display: 'flex',
                       gap: '3rem',
                       minWidth: '36rem',
-                      border: '1px solid #e8e8e8',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
                       borderTop: 'none',
                     }}
                     onMouseEnter={() => setActiveItem(item.label)}
@@ -227,9 +227,9 @@ export function Header() {
                               key={linkObj.label}
                               to={linkObj.to}
                               onClick={handleNavClick}
-                              style={{ fontSize: '.875rem', fontWeight: 500, color: '#666', transition: 'color .15s', padding: '.375rem 0', minHeight: '44px', display: 'flex', alignItems: 'center' }}
+                              style={{ fontSize: '.875rem', fontWeight: 500, color: '#cbd5e1', transition: 'color .15s', padding: '.375rem 0', minHeight: '44px', display: 'flex', alignItems: 'center' }}
                               onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary, #1070C8)')}
-                              onMouseLeave={(e) => (e.currentTarget.style.color = '#666')}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = '#cbd5e1')}
                             >
                               {linkObj.label}
                             </Link>
@@ -248,13 +248,13 @@ export function Header() {
                       top: '100%',
                       left: '50%',
                       transform: 'translateX(-50%)',
-                      background: '#ffffff',
+                      background: '#0d1b2a',
                       borderRadius: '14px',
                       boxShadow: '0 16px 40px -8px rgba(0,0,0,0.16), 0 2px 10px rgba(0,0,0,0.06)',
                       padding: '0.5rem',
                       zIndex: 100,
                       minWidth: '220px',
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '0.2rem',
@@ -274,19 +274,19 @@ export function Header() {
                           padding: '0.7rem 1rem',
                           fontSize: '0.88rem',
                           fontWeight: 600,
-                          color: '#1e293b',
+                          color: '#cbd5e1',
                           borderRadius: '8px',
                           textDecoration: 'none',
                           transition: 'all 0.15s ease',
                           whiteSpace: 'nowrap',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--blue-light, #E6EDF5)';
+                          e.currentTarget.style.backgroundColor = 'rgba(16, 112, 200, 0.2)';
                           e.currentTarget.style.color = 'var(--primary, #1070C8)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.color = '#1e293b';
+                          e.currentTarget.style.color = '#cbd5e1';
                         }}
                       >
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary, #1070C8)', opacity: 0.8 }} />
@@ -418,7 +418,7 @@ export function Header() {
                   alignItems: 'center',
                   fontWeight: 700,
                   fontSize: '1.125rem',
-                  color: '#0a0a0a',
+                  color: '#ffffff',
                   padding: '0.75rem 0.5rem',
                   minHeight: '44px',
                   borderBottom: '1px solid rgba(0,0,0,0.06)',
