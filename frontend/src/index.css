@@ -412,10 +412,10 @@ button, input, select, textarea {
 
 /* ── ENTERPRISE STANDARDS SECTION ──────────────────────── */
 .enterprise-standards {
-  background: var(--black);
-  color: var(--white);
+  background: var(--white);
+  color: #0A2540;
   padding: 5rem 0 3rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border);
 }
 
 .standards-grid {
@@ -426,12 +426,19 @@ button, input, select, textarea {
 }
 
 .standard-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--white);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(10, 37, 64, 0.04);
   border-radius: 20px;
   padding: 2.5rem 2rem;
   transition: all 0.3s ease;
   height: 100%;
+}
+
+.standard-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(16, 112, 200, 0.4);
+  box-shadow: 0 16px 36px rgba(16, 112, 200, 0.12);
 }
 
 .standard-card__icon {
@@ -442,13 +449,13 @@ button, input, select, textarea {
 .standard-card__title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--white);
+  color: #0A2540;
   margin-bottom: 0.75rem;
 }
 
 .standard-card__desc {
   font-size: 0.95rem;
-  color: var(--gray-400);
+  color: var(--gray-600);
   line-height: 1.6;
 }
 
