@@ -172,7 +172,7 @@ export const TasksPage: React.FC = () => {
       const isUserRecent = (Date.now() - lastUserActivityRef.current) < 120000;
 
       try {
-        await fetch(`http://localhost:5000/api/tasks/${activeTimerTaskId}/stopwatch/heartbeat`, {
+        await fetch(`/api/tasks/${activeTimerTaskId}/stopwatch/heartbeat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ export const TasksPage: React.FC = () => {
     const token = localStorage.getItem('ewms_token');
     if (token) {
       try {
-        const res = await fetch(`http://localhost:5000/api/tasks/${taskId}/stopwatch/start`, {
+        const res = await fetch(`/api/tasks/${taskId}/stopwatch/start`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -255,7 +255,7 @@ export const TasksPage: React.FC = () => {
     const token = localStorage.getItem('ewms_token');
     if (token && activeSessionId) {
       try {
-        await fetch(`http://localhost:5000/api/tasks/${taskId}/stopwatch/stop`, {
+        await fetch(`/api/tasks/${taskId}/stopwatch/stop`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

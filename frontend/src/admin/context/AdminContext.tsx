@@ -278,7 +278,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     let socket: any = null;
     try {
-      socket = io(getBackendBaseUrl(), {
+      socket = io(getBackendBaseUrl() || undefined, {
         transports: ['websocket', 'polling']
       });
 

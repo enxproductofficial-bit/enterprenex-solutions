@@ -90,7 +90,7 @@ export const CreateNewPasswordPage: React.FC = () => {
       // 1. If user is currently authenticated via token
       if (token) {
         try {
-          const res = await fetch('http://localhost:5000/api/auth/change-password', {
+          const res = await fetch('/api/auth/change-password', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ export const CreateNewPasswordPage: React.FC = () => {
       // 2. If token change didn't complete or user is using direct setup credentials
       if (!backendSuccess) {
         try {
-          const res = await fetch('http://localhost:5000/api/auth/first-time-setup', {
+          const res = await fetch('/api/auth/first-time-setup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

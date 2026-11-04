@@ -5,12 +5,17 @@
 
 export const getBackendBaseUrl = (): string => {
   if (typeof window !== 'undefined') {
-    return `${window.location.protocol}//${window.location.hostname}:5000`;
+    // If running under ngrok, devtunnels, or remote IP, use relative path so Vite reverse-proxies
+    const isDirectLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isDirectLocal) {
+      return '';
+    }
+    return '';
   }
   return 'http://localhost:5000';
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || `${getBackendBaseUrl()}/api/v1`;
+const API_BASE_URL = import.meta.env.VITE_API_URL || (getBackendBaseUrl() ? `${getBackendBaseUrl()}/api/v1` : '/api/v1');
 
 class ApiClient {
   private getToken(): string | null {

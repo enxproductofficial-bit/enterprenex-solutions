@@ -645,7 +645,7 @@ export const TeamPage: React.FC = () => {
   const fetchServerEmployeeId = async (dept: string = 'Engineering'): Promise<string> => {
     const token = localStorage.getItem('ewms_token');
     try {
-      const res = await fetch('http://localhost:5000/api/employees/generate-id', {
+      const res = await fetch('/api/employees/generate-id', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1209,7 +1209,7 @@ export const TeamPage: React.FC = () => {
     // Sync with backend API
     try {
       const token = localStorage.getItem('ewms_token');
-      fetch('http://localhost:5000/api/employees', {
+      fetch('/api/employees', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

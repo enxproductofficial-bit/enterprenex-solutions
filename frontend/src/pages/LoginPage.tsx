@@ -65,7 +65,7 @@ export const LoginPage: React.FC = () => {
 
     // 1. Attempt Backend API Authentication
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: inputEmail, password: inputPassword })
@@ -354,7 +354,7 @@ export const LoginPage: React.FC = () => {
 
     // Sync with backend API if accessible
     try {
-      fetch('http://localhost:5000/api/auth/first-time-setup', {
+      fetch('/api/auth/first-time-setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
