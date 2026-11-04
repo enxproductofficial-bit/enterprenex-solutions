@@ -58,7 +58,7 @@ import {
   INITIAL_OFFER_LETTERS,
   INITIAL_NOTIFICATIONS
 } from '../data/initialData';
-import { api } from '../api/client';
+import { api, getBackendBaseUrl } from '../api/client';
 
 export interface ToastNotification {
   id: string;
@@ -278,7 +278,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     let socket: any = null;
     try {
-      socket = io('http://localhost:5000', {
+      socket = io(getBackendBaseUrl(), {
         transports: ['websocket', 'polling']
       });
 

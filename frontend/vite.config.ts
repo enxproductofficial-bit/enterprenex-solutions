@@ -5,13 +5,21 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: '0.0.0.0',
     proxy: {
       '/api/resend': {
         target: 'https://api.resend.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/resend/, ''),
       },
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:5000',
+        ws: true,
+      },
     },
   },
 })
-

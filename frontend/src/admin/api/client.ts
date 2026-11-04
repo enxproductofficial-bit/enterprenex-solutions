@@ -3,7 +3,14 @@
  * Automatically manages JWT authorization headers and connects to Port 5000.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+export const getBackendBaseUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:5000`;
+  }
+  return 'http://localhost:5000';
+};
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${getBackendBaseUrl()}/api/v1`;
 
 class ApiClient {
   private getToken(): string | null {
