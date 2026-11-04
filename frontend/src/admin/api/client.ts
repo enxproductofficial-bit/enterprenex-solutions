@@ -99,8 +99,33 @@ class ApiClient {
   }
 
   // 3. Attendance Endpoints
-  async getAttendance() {
-    return this.request<{ attendance: any[] }>('/attendance');
+  async getAttendance(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ attendance: any[] }>(`/attendance${qs ? `?${qs}` : ''}`);
+  }
+
+  async getAttendanceSummary() {
+    return this.request<any>('/attendance/summary');
+  }
+
+  async checkIn() {
+    return this.request<{ message: string; record: any }>('/attendance/check-in', {
+      method: 'POST'
+    });
+  }
+
+  async checkOut(breakMinutes = 0) {
+    return this.request<{ message: string; record: any }>('/attendance/check-out', {
+      method: 'POST',
+      body: JSON.stringify({ breakMinutes })
+    });
+  }
+
+  async correctAttendance(id: string, data: { checkIn?: string; checkOut?: string; status?: string; breakMinutes?: number; correctionRemarks: string }) {
+    return this.request<{ message: string; record: any }>(`/attendance/${id}/correct`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
   }
 
   async punchAttendance(status = 'Present') {
@@ -118,14 +143,32 @@ class ApiClient {
   }
 
   // 3b. Leave Management Endpoints
-  async getLeaves() {
-    return this.request<{ leaves: any[] }>('/leaves');
+  async getLeaves(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ leaves: any[] }>(`/leaves${qs ? `?${qs}` : ''}`);
   }
 
-  async applyLeave(leaveData: { employeeName?: string; type: string; startDate: string; endDate: string; reason: string }) {
-    return this.request<{ message: string; leave: any }>('/leaves', {
+  async getLeaveBalance() {
+    return this.request<{ balance: any }>('/leaves/balance');
+  }
+
+  async applyLeave(data: { employeeName?: string; type: string; startDate: string; endDate: string; reason: string; documentUrl?: string }) {
+    return this.request<{ message: string; leave: any }>('/leaves/apply', {
       method: 'POST',
-      body: JSON.stringify(leaveData)
+      body: JSON.stringify(data)
+    });
+  }
+
+  async reviewLeave(id: string, status: 'Approved' | 'Rejected', remarks?: string) {
+    return this.request<{ message: string; leave: any }>(`/leaves/${id}/review`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, remarks })
+    });
+  }
+
+  async cancelLeave(id: string) {
+    return this.request<{ message: string; leave: any }>(`/leaves/${id}/cancel`, {
+      method: 'POST'
     });
   }
 
@@ -316,66 +359,6 @@ class ApiClient {
   async getEmployeePerformanceReport(params: Record<string, string> = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.request<{ performance: any[] }>(`/reports/employee-performance${qs ? `?${qs}` : ''}`);
-  }
-
-  // 12. Attendance Management
-  async getAttendance(params: Record<string, string> = {}) {
-    const qs = new URLSearchParams(params).toString();
-    return this.request<{ attendance: any[] }>(`/attendance${qs ? `?${qs}` : ''}`);
-  }
-
-  async getAttendanceSummary() {
-    return this.request<any>('/attendance/summary');
-  }
-
-  async checkIn() {
-    return this.request<{ message: string; record: any }>('/attendance/check-in', {
-      method: 'POST'
-    });
-  }
-
-  async checkOut(breakMinutes = 0) {
-    return this.request<{ message: string; record: any }>('/attendance/check-out', {
-      method: 'POST',
-      body: JSON.stringify({ breakMinutes })
-    });
-  }
-
-  async correctAttendance(id: string, data: { checkIn?: string; checkOut?: string; status?: string; breakMinutes?: number; correctionRemarks: string }) {
-    return this.request<{ message: string; record: any }>(`/attendance/${id}/correct`, {
-      method: 'PATCH',
-      body: JSON.stringify(data)
-    });
-  }
-
-  // 13. Leave Management & Balances
-  async getLeaves(params: Record<string, string> = {}) {
-    const qs = new URLSearchParams(params).toString();
-    return this.request<{ leaves: any[] }>(`/leaves${qs ? `?${qs}` : ''}`);
-  }
-
-  async getLeaveBalance() {
-    return this.request<{ balance: any }>('/leaves/balance');
-  }
-
-  async applyLeave(data: { type: string; startDate: string; endDate: string; reason: string; documentUrl?: string }) {
-    return this.request<{ message: string; leave: any }>('/leaves/apply', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async reviewLeave(id: string, status: 'Approved' | 'Rejected', remarks?: string) {
-    return this.request<{ message: string; leave: any }>(`/leaves/${id}/review`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status, remarks })
-    });
-  }
-
-  async cancelLeave(id: string) {
-    return this.request<{ message: string; leave: any }>(`/leaves/${id}/cancel`, {
-      method: 'POST'
-    });
   }
 
   // 14. Projects & Team Sprints
