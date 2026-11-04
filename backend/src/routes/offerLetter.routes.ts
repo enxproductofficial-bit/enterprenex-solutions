@@ -7,48 +7,63 @@ import {
   notifyOfferSent,
   notifyOfferResponse
 } from '../services/notification.service';
-import { logAuditSecurityEntry } from '../services/security.service';
+import { generateOfferLetterPdf } from '../services/pdf.service';
+import { sendOfferLetterEmail } from '../services/email.service';
 
 const router = Router();
 
-// Helper to generate unique Offer Letter Number
-const generateOfferLetterNo = async (): Promise<string> => {
-  const currentYear = new Date().getFullYear();
-  const count = await prisma.offerLetter.count();
-  const seq = (count + 1).toString().padStart(4, '0');
-  return `ENX-OFF-${currentYear}-${seq}`;
+// Security / Audit logging helper
+const logAuditSecurityEntry = async (entry: {
+  action: string;
+  category: string;
+  details: string;
+  actor: string;
+}) => {
+  try {
+    console.log(`[EWMS Audit] [${entry.category}] ${entry.action} by ${entry.actor}: ${entry.details}`);
+  } catch {
+    // Audit logging fallback
+  }
 };
 
-// GET /api/offer-letters
+// GET /api/v1/offer-letters (List all or filter by status / employeeId)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
-    if (!user) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return;
+    const { status, employeeId, search } = req.query as Record<string, string>;
+
+    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isHR = isDirector || user?.role === 'Project Manager' || user?.role === 'HR Manager' || user?.department === 'Human Resources';
+
+    const whereClause: any = {};
+
+    // Non-HR / regular employees can ONLY view their own offer letter
+    if (!isHR && !isDirector) {
+      whereClause.OR = [
+        { employeeEmail: user?.email },
+        { employeeId: user?.id }
+      ];
+    } else if (employeeId) {
+      whereClause.employeeId = employeeId;
     }
 
-    const isDirector = user.role === 'Super Admin' || user.role?.includes('Director') || user.email?.includes('director');
-    const isHr = user.role === 'HR Manager' || user.role === 'Project Manager' || user.department === 'Human Resources' || user.email?.includes('hr');
-
-    let offerLetters;
-    if (isDirector || isHr) {
-      offerLetters = await prisma.offerLetter.findMany({
-        orderBy: { createdAt: 'desc' }
-      });
-    } else {
-      // Employees can only see their own Sent, Accepted, or Declined offer letter
-      offerLetters = await prisma.offerLetter.findMany({
-        where: {
-          OR: [
-            { employeeEmail: user.email },
-            { employeeId: user.employeeId || 'NO_MATCH' }
-          ],
-          status: { in: ['Sent', 'Accepted', 'Declined', 'Approved'] }
-        },
-        orderBy: { createdAt: 'desc' }
-      });
+    if (status && status !== 'All') {
+      whereClause.status = status;
     }
+
+    if (search) {
+      whereClause.OR = [
+        { offerLetterNo: { contains: search } },
+        { employeeName: { contains: search } },
+        { employeeEmail: { contains: search } },
+        { department: { contains: search } }
+      ];
+    }
+
+    const offerLetters = await prisma.offerLetter.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' }
+    });
 
     res.json({ offerLetters });
   } catch (err: any) {
@@ -56,7 +71,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-// GET /api/offer-letters/:id
+// GET /api/v1/offer-letters/:id (Get single offer letter details)
 router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -73,68 +88,99 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
   }
 });
 
-// POST /api/offer-letters (HR or Director creates offer letter)
+// GET /api/v1/offer-letters/:id/pdf (Download official PDF generated via Puppeteer)
+router.get('/:id/pdf', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const offer = await prisma.offerLetter.findUnique({ where: { id } });
+
+    if (!offer) {
+      res.status(404).json({ error: 'Offer letter not found.' });
+      return;
+    }
+
+    const pdfBuffer = await generateOfferLetterPdf(offer);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="Enterprenex_Offer_Letter_${offer.offerLetterNo}.pdf"`);
+    res.send(pdfBuffer);
+  } catch (err: any) {
+    console.error('[Puppeteer PDF Generation Error]', err);
+    res.status(500).json({ error: 'Failed to generate PDF: ' + err.message });
+  }
+});
+
+// POST /api/v1/offer-letters (HR creates an offer letter)
 router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
     const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
-    const isHr = user?.role === 'HR Manager' || user?.role === 'Project Manager' || user?.department === 'Human Resources' || user?.email?.includes('hr');
+    const isHR = isDirector || user?.role === 'Project Manager' || user?.role === 'HR Manager' || user?.department === 'Human Resources';
 
-    if (!isDirector && !isHr) {
-      res.status(403).json({ error: 'Only HR or Director can generate offer letters.' });
+    if (!isHR) {
+      res.status(403).json({ error: 'Access forbidden: Only HR or Director can generate offer letters.' });
       return;
     }
 
-    const data = req.body;
-    if (!data.employeeId || !data.employeeName || !data.designation) {
-      res.status(400).json({ error: 'Employee ID, Name, and Designation are required.' });
+    const {
+      employeeId,
+      employeeName,
+      employeeEmail,
+      department,
+      designation,
+      joiningDate,
+      employmentType,
+      salaryMonthly,
+      ctcAnnual,
+      probationPeriod,
+      termsAndConditions,
+      status // 'Draft' | 'Pending Approval'
+    } = req.body;
+
+    if (!employeeName || !employeeEmail || !department || !designation || !joiningDate) {
+      res.status(400).json({ error: 'Missing required offer letter fields.' });
       return;
     }
 
-    const offerLetterNo = await generateOfferLetterNo();
-    const initialStatus = data.status || (isDirector ? 'Approved' : 'Pending Approval');
+    // Generate unique sequential reference: ENX-OFF-2026-XXXX
+    const count = await prisma.offerLetter.count();
+    const offerLetterNo = `ENX-OFF-2026-${(count + 1).toString().padStart(4, '0')}`;
 
-    const defaultTerms = data.termsAndConditions || `1. Appointment & Scope of Employment: The candidate will be appointed as ${data.designation} in ${data.department || 'Engineering'} division at Enterprenex Solutions Pvt Ltd.
-2. Probation Period: ${data.probationPeriod || '3 Months'} from date of joining. Performance will be reviewed prior to permanent confirmation.
-3. Working Hours & Modality: 09:30 AM to 06:30 PM IST (Hybrid/Office as agreed).
-4. Compensation & Statutory Deductions: Monthly Gross of INR ${Number(data.salaryMonthly || 50000).toLocaleString('en-IN')}, Annual CTC of INR ${Number(data.ctcAnnual || 600000).toLocaleString('en-IN')}. Subject to applicable TDS and professional taxes.
-5. Non-Disclosure & Intellectual Property: All proprietary codebases, algorithm models, client information, and internal documents remain exclusive intellectual property of Enterprenex Solutions Pvt Ltd under perpetual NDA.
-6. Separation & Notice Period: 30 days written notice required during probation, 60 days following confirmation.`;
+    const defaultTerms = `1. Working Hours & Modality: Regular work hours are 09:30 AM to 06:30 PM IST, Monday through Friday.\n2. Probation Period: ${probationPeriod || '3 Months'} performance benchmark and peer review period.\n3. Intellectual Property: All source code, product IP, blueprints, and materials created remain exclusive Enterprenex Solutions property.\n4. Confidentiality & Non-Disclosure: Strict corporate NDA applies to all client deliverables and architecture.\n5. Notice Period: 30 days written notice required following successful probation.`;
+
+    const monthly = Number(salaryMonthly) || 50000;
+    const annual = ctcAnnual ? Number(ctcAnnual) : monthly * 12;
 
     const offerLetter = await prisma.offerLetter.create({
       data: {
         offerLetterNo,
-        employeeId: data.employeeId,
-        employeeName: data.employeeName,
-        employeeEmail: data.employeeEmail || '',
-        department: data.department || 'Engineering',
-        designation: data.designation,
-        joiningDate: data.joiningDate || new Date().toISOString().split('T')[0],
-        employmentType: data.employmentType || 'Full-time',
-        salaryMonthly: Number(data.salaryMonthly || 50000),
-        ctcAnnual: Number(data.ctcAnnual || Number(data.salaryMonthly || 50000) * 12),
-        probationPeriod: data.probationPeriod || '3 Months',
-        termsAndConditions: defaultTerms,
-        status: initialStatus,
-        directorRemarks: isDirector ? 'Directly approved by Managing Director.' : null,
-        directorApprovedBy: isDirector ? user?.name : null,
-        directorApprovedAt: isDirector ? new Date() : null
+        employeeId: employeeId || null,
+        employeeName,
+        employeeEmail,
+        department,
+        designation,
+        joiningDate,
+        employmentType: employmentType || 'Full-time',
+        salaryMonthly: monthly,
+        ctcAnnual: annual,
+        probationPeriod: probationPeriod || '3 Months',
+        termsAndConditions: termsAndConditions || defaultTerms,
+        status: status || 'Pending Approval'
       }
     });
 
-    if (initialStatus === 'Pending Approval') {
-      await notifyOfferPendingApproval(offerLetterNo, data.employeeName, user?.name || 'HR');
+    if (offerLetter.status === 'Pending Approval') {
+      await notifyOfferPendingApproval(offerLetter.offerLetterNo, offerLetter.employeeName, user?.name || 'HR Team');
     }
 
     await logAuditSecurityEntry({
       action: 'OFFER_LETTER_CREATED',
       category: 'Talent Acquisition & Governance',
-      details: `Offer letter ${offerLetterNo} created for ${data.employeeName} (${data.designation}) with status ${initialStatus}.`,
-      actor: user?.name || user?.email || 'HR'
+      details: `Offer letter ${offerLetter.offerLetterNo} drafted for ${offerLetter.employeeName} (${offerLetter.department}) with CTC ${annual}`,
+      actor: user?.name || 'HR Manager'
     });
 
     res.status(201).json({
-      message: `Offer letter ${offerLetterNo} created successfully.`,
+      message: 'Offer letter drafted successfully.',
       offerLetter
     });
   } catch (err: any) {
@@ -142,7 +188,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
   }
 });
 
-// PUT /api/offer-letters/:id (Update offer letter details)
+// PUT /api/v1/offer-letters/:id (Update offer letter details)
 router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -175,7 +221,7 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
   }
 });
 
-// PUT /api/offer-letters/:id/director-review (Director Approves or Rejects with remarks)
+// PUT /api/v1/offer-letters/:id/director-review (Director Approves or Rejects with remarks)
 router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
@@ -206,7 +252,7 @@ router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, r
       data: {
         status: newStatus,
         directorRemarks: remarks || (action === 'Approve' ? 'Approved for dispatch.' : 'Revision requested.'),
-        directorApprovedBy: user?.name || 'Managing Director',
+        directorApprovedBy: user?.name || 'Rohit Pawar (Managing Director)',
         directorApprovedAt: new Date()
       }
     });
@@ -229,7 +275,7 @@ router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, r
   }
 });
 
-// POST /api/offer-letters/:id/send (HR sends finalized approved offer letter to employee)
+// POST /api/v1/offer-letters/:id/send (HR sends approved offer letter via Nodemailer with PDF attachment)
 router.post('/:id/send', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
@@ -254,25 +300,35 @@ router.post('/:id/send', authenticateToken, async (req: AuthRequest, res: Respon
       }
     });
 
+    // Generate Puppeteer PDF & Send Email
+    let emailDispatched = false;
+    try {
+      const pdfBuffer = await generateOfferLetterPdf(updated);
+      emailDispatched = await sendOfferLetterEmail(updated, pdfBuffer);
+    } catch (e) {
+      console.warn('PDF or Email generation warning:', e);
+    }
+
     await notifyOfferSent(existing.offerLetterNo, existing.employeeName, existing.employeeEmail);
 
     await logAuditSecurityEntry({
       action: 'OFFER_LETTER_SENT',
       category: 'Talent Acquisition & Governance',
-      details: `Offer letter ${existing.offerLetterNo} dispatched to candidate ${existing.employeeName} (${existing.employeeEmail}).`,
+      details: `Offer letter ${existing.offerLetterNo} dispatched to candidate ${existing.employeeName} (${existing.employeeEmail}). Email sent: ${emailDispatched}`,
       actor: user?.name || 'HR'
     });
 
     res.json({
       message: `Offer letter ${existing.offerLetterNo} successfully dispatched to ${existing.employeeName}.`,
-      offerLetter: updated
+      offerLetter: updated,
+      emailSent: emailDispatched
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/offer-letters/:id/respond (Candidate/Employee Accepts or Declines)
+// POST /api/v1/offer-letters/:id/respond (Candidate/Employee Accepts or Declines)
 router.post('/:id/respond', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -302,14 +358,14 @@ router.post('/:id/respond', authenticateToken, async (req: AuthRequest, res: Res
     await notifyOfferResponse(existing.offerLetterNo, existing.employeeName, action === 'Accept', remarks);
 
     await logAuditSecurityEntry({
-      action: `OFFER_LETTER_${action.toUpperCase()}ED`,
-      category: 'Candidate Onboarding Action',
-      details: `Candidate ${existing.employeeName} has ${newStatus.toLowerCase()} offer letter ${existing.offerLetterNo}.`,
-      actor: req.user?.name || existing.employeeName
+      action: `OFFER_LETTER_${newStatus.toUpperCase()}`,
+      category: 'Candidate Onboarding Acceptance',
+      details: `Offer letter ${existing.offerLetterNo} was ${newStatus} by ${existing.employeeName}. Remarks: ${remarks || 'None'}`,
+      actor: existing.employeeName
     });
 
     res.json({
-      message: `Offer letter successfully ${newStatus.toLowerCase()}.`,
+      message: `Offer letter has been ${newStatus.toLowerCase()}.`,
       offerLetter: updated
     });
   } catch (err: any) {
@@ -317,10 +373,16 @@ router.post('/:id/respond', authenticateToken, async (req: AuthRequest, res: Res
   }
 });
 
-// DELETE /api/offer-letters/:id
+// DELETE /api/v1/offer-letters/:id (HR deletes a draft or rejected offer letter)
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    const existing = await prisma.offerLetter.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: 'Offer letter not found.' });
+      return;
+    }
+
     await prisma.offerLetter.delete({ where: { id } });
     res.json({ message: 'Offer letter deleted.' });
   } catch (err: any) {

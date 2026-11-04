@@ -3,7 +3,7 @@
  * Automatically manages JWT authorization headers and connects to Port 5000.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 class ApiClient {
   private getToken(): string | null {
@@ -287,6 +287,35 @@ class ApiClient {
     return this.request<{ message: string }>('/notifications/read-all', {
       method: 'PUT'
     });
+  }
+
+  // 10. Official Puppeteer PDF Generation & Download
+  async downloadOfferLetterPdf(id: string, offerNo = 'Offer_Letter') {
+    const token = this.getToken();
+    const url = `${API_BASE_URL}/offer-letters/${id}/pdf`;
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!res.ok) throw new Error('Failed to generate or download offer letter PDF');
+    const blob = await res.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `Enterprenex_Offer_Letter_${offerNo}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  }
+
+  // 11. Reports & Performance Telemetry
+  async getWorkforceSummaryReport() {
+    return this.request<{ summary: any }>('/reports/workforce-summary');
+  }
+
+  async getEmployeePerformanceReport(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ performance: any[] }>(`/reports/employee-performance${qs ? `?${qs}` : ''}`);
   }
 
   // Health check

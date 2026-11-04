@@ -271,7 +271,7 @@ model ScheduledMeeting {
 model OfferLetter {
   id                         String    @id @default(uuid())
   offerLetterNo              String    @unique
-  employeeId                 String
+  employeeId                 String?
   employeeName               String
   employeeEmail              String
   department                 String

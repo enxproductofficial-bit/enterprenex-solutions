@@ -10,6 +10,7 @@ import {
   Eye,
   Trash2,
   Printer,
+  Download,
   Clock,
   Briefcase,
   Calendar,
@@ -33,6 +34,7 @@ export const OfferLettersPage: React.FC = () => {
     sendOfferLetter,
     respondOfferLetter,
     deleteOfferLetter,
+    downloadOfferLetterPdf,
     showToast
   } = useAdmin();
 
@@ -417,6 +419,16 @@ export const OfferLettersPage: React.FC = () => {
                           style={{ padding: '0.4rem 0.65rem', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
                         >
                           <Eye size={14} /> Preview PDF
+                        </button>
+
+                        {/* Download Official PDF */}
+                        <button
+                          className="btn btn-ghost"
+                          title="Download Official PDF (Server-side Puppeteer)"
+                          onClick={() => downloadOfferLetterPdf(offer.id, offer.offerLetterNo)}
+                          style={{ padding: '0.4rem 0.65rem', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
+                        >
+                          <Download size={14} /> Download PDF
                         </button>
 
                         {/* Director Review Action */}
@@ -848,6 +860,13 @@ export const OfferLettersPage: React.FC = () => {
                   <Printer size={16} /> Print / Save PDF
                 </button>
                 <button
+                  onClick={() => downloadOfferLetterPdf(selectedOfferForPreview.id, selectedOfferForPreview.offerLetterNo)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#059669', color: '#fff', border: 'none', padding: '0.45rem 1rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  <Download size={16} /> Download Puppeteer PDF
+                </button>
+
+                <button
                   onClick={() => setSelectedOfferForPreview(null)}
                   style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
                 >
@@ -1020,3 +1039,4 @@ export const OfferLettersPage: React.FC = () => {
 };
 
 export default OfferLettersPage;
+

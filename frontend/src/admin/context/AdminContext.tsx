@@ -1,3 +1,4 @@
+import { io } from 'socket.io-client';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type {
   AdminUser,
@@ -218,6 +219,7 @@ interface AdminContextType {
   sendOfferLetter: (id: string) => Promise<OfferLetter>;
   respondOfferLetter: (id: string, decision: 'Accept' | 'Decline', remarks?: string) => Promise<OfferLetter>;
   deleteOfferLetter: (id: string) => Promise<void>;
+  downloadOfferLetterPdf: (id: string, offerNo?: string) => Promise<void>;
   refreshOfferLetters: () => Promise<void>;
 
   // Employee Onboarding Approval & Account Activation
@@ -270,6 +272,36 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [offerLetters, setOfferLetters] = useState<OfferLetter[]>(INITIAL_OFFER_LETTERS);
   const [notifications, setNotifications] = useState<EwmsNotification[]>(INITIAL_NOTIFICATIONS);
 
+
+
+  // ── Real-Time Socket.IO Notification Stream ──
+  useEffect(() => {
+    let socket: any = null;
+    try {
+      socket = io('http://localhost:5000', {
+        transports: ['websocket', 'polling']
+      });
+
+      if (currentUser) {
+        socket.emit('join_room', {
+          role: currentUser.role,
+          employeeId: currentUser.employeeId,
+          email: currentUser.email
+        });
+      }
+
+      socket.on('ewms_notification', (notif: EwmsNotification) => {
+        setNotifications(prev => [notif, ...prev.filter(n => n.id !== notif.id)]);
+        showToast(notif.title, notif.message, 'info');
+      });
+    } catch (e) {
+      console.warn('Socket.IO connection deferred:', e);
+    }
+
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, [currentUser]);
 
   // Detect client public IP on mount
   useEffect(() => {
@@ -1518,6 +1550,17 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+
+  const downloadOfferLetterPdf = async (id: string, offerNo?: string) => {
+    try {
+      showToast('Generating PDF', 'Generating official PDF via Puppeteer engine...', 'info');
+      await api.downloadOfferLetterPdf(id, offerNo);
+      showToast('PDF Downloaded', 'Offer letter PDF ready.', 'success');
+    } catch (err: any) {
+      showToast('PDF Generation Failed', err.message || 'Could not generate PDF', 'error');
+    }
+  };
+
   const deleteOfferLetter = async (id: string): Promise<void> => {
     try {
       await api.deleteOfferLetter(id);
@@ -1788,6 +1831,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         sendOfferLetter,
         respondOfferLetter,
         deleteOfferLetter,
+        downloadOfferLetterPdf,
         refreshOfferLetters,
         approveEmployeeOnboarding,
         activateEmployeeAccount,

@@ -3,6 +3,7 @@ import { prisma } from '../db';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 import { generateSecureEmployeeId, generateSecureTemporaryPassword, logAuditSecurityEntry } from '../services/security.service';
 import { notifyNewEmployeeRegistered, notifyEmployeeApproved, notifyAccountActivated } from '../services/notification.service';
+import { sendAccountCredentialsEmail } from '../services/email.service';
 import bcrypt from 'bcryptjs';
 
 const router = Router();
@@ -312,6 +313,17 @@ router.post('/:id/activate', authenticateToken, async (req: AuthRequest, res: Re
     });
 
     await notifyAccountActivated(emp.name, emp.email, finalRole);
+
+    // Dispatches secure email credentials via Nodemailer
+    sendAccountCredentialsEmail(
+      {
+        name: emp.name,
+        email: emp.email,
+        role: finalRole,
+        employeeId: emp.employeeId
+      },
+      temporaryPassword
+    ).catch(err => console.warn('[Email Warning] Credentials email delivery deferred:', err));
 
     await logAuditSecurityEntry({
       action: 'EMPLOYEE_ACCOUNT_ACTIVATED',

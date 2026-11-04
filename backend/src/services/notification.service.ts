@@ -1,4 +1,5 @@
 import { prisma } from '../db';
+import { emitRealtimeNotification } from './socket.service';
 
 export interface CreateNotificationParams {
   type: string;
@@ -12,7 +13,7 @@ export interface CreateNotificationParams {
 
 export const createNotification = async (params: CreateNotificationParams) => {
   try {
-    return await prisma.ewmsNotification.create({
+    const notif = await prisma.ewmsNotification.create({
       data: {
         type: params.type,
         title: params.title,
@@ -24,6 +25,11 @@ export const createNotification = async (params: CreateNotificationParams) => {
         read: false
       }
     });
+
+    // Broadcast in real-time via Socket.IO
+    emitRealtimeNotification(notif);
+
+    return notif;
   } catch (err) {
     console.error('[NotificationService] Error creating notification:', err);
     return null;
@@ -99,41 +105,72 @@ export const notifyOfferResponse = async (offerNo: string, empName: string, isAc
 export const notifyAccountActivated = async (empName: string, empEmail: string, role: string) => {
   return createNotification({
     type: 'ACCOUNT_ACTIVATED',
-    title: 'EWMS Portal Account Activated',
-    message: `Your account has been activated with role ${role}. You can now sign in using ${empEmail}.`,
+    title: 'Employee Account Activated',
+    message: `Corporate account credentials created for ${empName} (${empEmail}) with role ${role}.`,
     recipientEmail: empEmail,
-    actionUrl: '/login'
+    actionUrl: '/admin/login'
   });
 };
 
-export const notifyTaskAssigned = async (taskId: string, title: string, empName: string, empId: string, assignedBy: string, dueDate: string) => {
+export const notifyTaskAssigned = async (
+  p1: string,
+  p2: string,
+  p3?: string,
+  p4?: string,
+  p5?: string,
+  p6?: string
+) => {
+  const isSixArgs = Boolean(p6);
+  const title = isSixArgs ? p2 : p1;
+  const assignedBy = isSixArgs ? (p5 || 'Director') : (p3 || 'Director');
+  const dueDate = isSixArgs ? (p6 || 'On Schedule') : (p4 || 'On Schedule');
+  const email = isSixArgs ? p4 : p5;
+
   return createNotification({
     type: 'TASK_ASSIGNED',
-    title: 'New Task Assignment',
-    message: `You have been assigned task "${title}" by ${assignedBy}. Due: ${dueDate}.`,
-    recipientEmployeeId: empId,
+    title: 'New Sprint Task Assigned',
+    message: `You were assigned "${title}" by ${assignedBy}. Deadline: ${dueDate}.`,
+    recipientEmail: email,
     actionUrl: '/admin/tasks'
   });
 };
 
-export const notifyTaskCompletedSubmitted = async (taskId: string, title: string, empName: string, assignedBy: string) => {
+export const notifyTaskSubmitted = async (p1: string, p2?: string, p3?: string, p4?: string) => {
+  const title = p2 || p1;
+  const empName = p3 || p2 || p1;
+  const reviewer = p4 || p3;
   return createNotification({
-    type: 'TASK_COMPLETED_SUBMITTED',
-    title: 'Task Submitted for Review',
-    message: `${empName} has marked task "${title}" as completed and submitted it for review.`,
+    type: 'TASK_SUBMITTED',
+    title: 'Task Completion Submitted',
+    message: `${empName} submitted completion report for "${title}". Awaiting review approval.`,
     recipientRole: 'Super Admin',
     actionUrl: '/admin/tasks'
   });
 };
 
-export const notifyTaskReviewed = async (taskId: string, title: string, isApproved: boolean, remarks: string | undefined, empId: string) => {
+export const notifyTaskCompletedSubmitted = notifyTaskSubmitted;
+
+export const notifyTaskReviewed = async (
+  p1: string,
+  p2: string,
+  p3: boolean,
+  p4?: string,
+  p5?: string,
+  p6?: string
+) => {
+  const isSixArgs = Boolean(p6);
+  const title = isSixArgs ? p2 : p1;
+  const isApproved = p3;
+  const email = isSixArgs ? p5 : p4;
+  const remarks = isSixArgs ? p6 : p5;
+
   return createNotification({
-    type: isApproved ? 'TASK_APPROVED' : 'TASK_REJECTED',
-    title: isApproved ? 'Task Approved & Completed' : 'Task Revisions Required',
+    type: isApproved ? 'TASK_APPROVED' : 'TASK_CHANGES_REQUESTED',
+    title: isApproved ? 'Task Approved & Verified' : 'Task Revision Requested',
     message: isApproved
-      ? `Your submission for task "${title}" was reviewed and approved as Completed!`
-      : `Your submission for task "${title}" was reviewed: Revisions required. Remarks: ${remarks || 'Please update and resubmit.'}`,
-    recipientEmployeeId: empId,
+      ? `Your task "${title}" has been approved and marked complete.`
+      : `Revisions requested on "${title}". Notes: ${remarks || 'Please address feedback'}.`,
+    recipientEmail: email,
     actionUrl: '/admin/tasks'
   });
 };

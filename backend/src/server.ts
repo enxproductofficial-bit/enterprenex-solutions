@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -14,6 +15,8 @@ import ticketRoutes from './routes/ticket.routes';
 import meetingRoutes from './routes/meeting.routes';
 import offerLetterRoutes from './routes/offerLetter.routes';
 import notificationRoutes from './routes/notification.routes';
+import reportRoutes from './routes/report.routes';
+import { initSocketService } from './services/socket.service';
 import { securityHeaders, sanitizeInputs, rateLimiter, globalErrorHandler } from './middleware/security';
 
 // Global Process Crash Prevention
@@ -26,29 +29,32 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Initialize Real-time Socket.IO Server
+initSocketService(server);
 
 // Security & Resilience Middlewares
 app.use(securityHeaders);
-app.use(rateLimiter({ maxRequests: 300, windowMs: 60 * 1000 })); // 300 reqs/min DoS defense
+app.use(rateLimiter({ maxRequests: 500, windowMs: 60 * 1000 })); // 500 reqs/min
 
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json({ limit: '10mb' })); // Limit body payload to prevent memory blowup
-app.use(sanitizeInputs); // NoSQL/SQL & Prototype Pollution Sanitizer
+app.use(express.json({ limit: '10mb' }));
+app.use(sanitizeInputs);
 
 // Root Route: API Status & Directory
 app.get('/', (req, res) => {
-  // Return HTML if accessed via web browser, otherwise JSON
   if (req.headers.accept && req.headers.accept.includes('text/html')) {
     res.send(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Enterprenex EWMS Backend API</title>
+          <title>Enterprenex EWMS Backend API v1</title>
           <style>
             body {
               margin: 0;
@@ -66,7 +72,7 @@ app.get('/', (req, res) => {
               border: 1px solid rgba(255, 255, 255, 0.1);
               border-radius: 12px;
               padding: 2.5rem;
-              max-width: 620px;
+              max-width: 650px;
               width: 90%;
               box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             }
@@ -145,18 +151,19 @@ app.get('/', (req, res) => {
           <div class="card">
             <div class="badge">
               <span class="dot"></span>
-              Server Status: ONLINE
+              Server Status: ONLINE &bull; REST API v1
             </div>
             <h1>Enterprenex Solutions Pvt Ltd</h1>
-            <p>Enterprise Work Management System (EWMS) &bull; Node.js + Prisma API Server</p>
+            <p>Workforce Management System (EWMS) &bull; Node.js + Express + Prisma + Socket.IO</p>
 
             <div class="endpoint-list">
-              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/health</span> <span style="color:#10b981">System Health Check</span></div>
-              <div class="endpoint-item"><span><strong class="method">POST</strong> /api/auth/login</span> <span>JWT Authentication</span></div>
-              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/employees</span> <span>Team & Skill Matrix</span></div>
-              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/tasks</span> <span>Tasks & Stopwatch Logs</span></div>
-              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/attendance</span> <span>Biometric Attendance</span></div>
-              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/kpi</span> <span>Weighted KPI Scorecards</span></div>
+              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/v1/health</span> <span style="color:#10b981">System Health Check</span></div>
+              <div class="endpoint-item"><span><strong class="method">POST</strong> /api/v1/auth/login</span> <span>JWT Authentication</span></div>
+              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/v1/employees</span> <span>Team Onboarding & Activation</span></div>
+              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/v1/offer-letters</span> <span>Offer Letters & PDF Generation</span></div>
+              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/v1/tasks</span> <span>Task Assignment & Sprints</span></div>
+              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/v1/notifications</span> <span>Live Notifications Stream</span></div>
+              <div class="endpoint-item"><span><strong class="method">GET</strong> /api/v1/reports/workforce-summary</span> <span>Executive Reports</span></div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -176,30 +183,51 @@ app.get('/', (req, res) => {
     status: 'ONLINE',
     service: 'Enterprenex Solutions - Enterprise Work Management System (EWMS) API',
     version: '1.0.0',
+    apiVersion: 'v1',
     port: PORT,
     endpoints: {
-      health: '/api/health',
-      auth: '/api/auth/login',
-      employees: '/api/employees',
-      tasks: '/api/tasks',
-      attendance: '/api/attendance',
-      kpis: '/api/kpi'
+      health: '/api/v1/health',
+      auth: '/api/v1/auth/login',
+      employees: '/api/v1/employees',
+      offerLetters: '/api/v1/offer-letters',
+      tasks: '/api/v1/tasks',
+      notifications: '/api/v1/notifications',
+      reports: '/api/v1/reports/workforce-summary',
+      attendance: '/api/v1/attendance',
+      kpis: '/api/v1/kpi'
     },
     frontendUrl: 'http://localhost:5173'
   });
 });
 
-// Health & Status
-app.get('/api/health', (req, res) => {
+// Health Checks
+const healthHandler = (req: express.Request, res: express.Response) => {
   res.json({
     status: 'ONLINE',
     service: 'Enterprenex Solutions - Enterprise Work Management System (EWMS) API',
     version: '1.0.0',
+    apiVersion: 'v1',
     timestamp: new Date().toISOString()
   });
-});
+};
 
-// Mount Routes
+app.get('/api/health', healthHandler);
+app.get('/api/v1/health', healthHandler);
+
+// ── REST API v1 Routes ──
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/employees', employeeRoutes);
+app.use('/api/v1/attendance', attendanceRoutes);
+app.use('/api/v1/tasks', taskRoutes);
+app.use('/api/v1/kpi', kpiRoutes);
+app.use('/api/v1/leaves', leaveRoutes);
+app.use('/api/v1/tickets', ticketRoutes);
+app.use('/api/v1/meetings', meetingRoutes);
+app.use('/api/v1/offer-letters', offerLetterRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/reports', reportRoutes);
+
+// ── Backwards-Compatible /api/ Routes Aliasing ──
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/attendance', attendanceRoutes);
@@ -210,6 +238,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/offer-letters', offerLetterRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Global Error Handler & Crash Boundary
 app.use(globalErrorHandler);
@@ -219,11 +248,12 @@ app.use((req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.url} not found.` });
 });
 
-// Start Server
-app.listen(PORT, () => {
+// Start Server with Socket.IO
+server.listen(PORT, () => {
   console.log(`\n======================================================`);
   console.log(`🚀 ENTERPRENEX EWMS BACKEND SERVER IS RUNNING`);
   console.log(`📡 URL: http://localhost:${PORT}`);
-  console.log(`🩺 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🩺 Health check: http://localhost:${PORT}/api/v1/health`);
+  console.log(`🔌 Socket.IO Real-Time Engine Active`);
   console.log(`======================================================\n`);
 });
