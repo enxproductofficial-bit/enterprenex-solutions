@@ -62,6 +62,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     updateMyContactInfo,
     employees,
     offerLetters,
+    notifications,
+    markNotificationRead,
+    markAllNotificationsRead,
+    refreshNotifications,
     showToast
   } = useAdmin();
   const { language, setLanguage, t } = useLanguage();
@@ -318,7 +322,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const matchingTasks = searchQuery ? safeTasks.filter(t => t && t.title?.toLowerCase().includes(searchQuery.toLowerCase())) : [];
   const matchingLeads = searchQuery ? safeLeads.filter(l => l && (l.company?.toLowerCase().includes(searchQuery.toLowerCase()) || l.name?.toLowerCase().includes(searchQuery.toLowerCase()))) : [];
 
-  const unreadNotifCount = (notifications || []).filter(n => !n.read).length;
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  const unreadNotifCount = safeNotifications.filter(n => n && !n.read).length;
 
   const hasSearchResults = matchingProjects.length > 0 || matchingClients.length > 0 || matchingTasks.length > 0 || matchingLeads.length > 0;
 
@@ -693,12 +698,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {(notifications || []).length === 0 ? (
+                    {safeNotifications.length === 0 ? (
                       <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--adm-text-muted)', fontSize: '0.8rem' }}>
                         No pending notifications.
                       </div>
                     ) : (
-                      (notifications || []).slice(0, 10).map(n => (
+                      safeNotifications.slice(0, 10).map(n => (
                         <div
                           key={n.id}
                           onClick={() => {

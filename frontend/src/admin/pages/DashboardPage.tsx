@@ -61,6 +61,7 @@ export const DashboardPage: React.FC = () => {
     meetings,
     announcements,
     offerLetters,
+    notifications,
     currentUser,
     updateLeaveStatus,
     updateTaskStatus,

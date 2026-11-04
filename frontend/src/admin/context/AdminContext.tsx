@@ -443,7 +443,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (offRes.status === 'fulfilled' && offRes.value.offerLetters?.length > 0) {
           setOfferLetters(offRes.value.offerLetters);
         }
-        if (notifRes.status === 'fulfilled' && notifRes.value.notifications?.length > 0) {
+        if (notifRes.status === 'fulfilled' && Array.isArray(notifRes.value?.notifications)) {
           setNotifications(notifRes.value.notifications);
         }
       } catch (err) {
