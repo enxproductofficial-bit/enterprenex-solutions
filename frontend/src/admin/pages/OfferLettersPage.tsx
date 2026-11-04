@@ -1047,35 +1047,9 @@ export const OfferLettersPage: React.FC = () => {
                 stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
               }
 
-              const isDirectorSignatory =
-                (offer.signatoryRole && offer.signatoryRole.toLowerCase().includes('director')) ||
-                (offer.directorApprovedBy && (
-                  offer.directorApprovedBy.toLowerCase().includes('director') ||
-                  offer.directorApprovedBy.toLowerCase().includes('cmd') ||
-                  offer.directorApprovedBy.toLowerCase().includes('rohit')
-                )) ||
-                offer.status === 'Approved' ||
-                offer.status === 'Sent' ||
-                offer.status === 'Accepted';
-
-              let signatoryName = offer.signatoryName || offer.directorApprovedBy || 'Rohit Pawar';
-              let signatoryRole = offer.signatoryRole;
-              let signatoryDepartment = offer.signatoryDepartment;
-
-              if (!signatoryRole) {
-                if (isDirectorSignatory) {
-                  signatoryRole = 'Managing Director';
-                  signatoryDepartment = 'Board of Directors, Enterprenex Solutions Pvt Ltd';
-                } else {
-                  signatoryRole = 'Operations Officer';
-                  signatoryDepartment = 'HR Team, Enterprenex Solutions Pvt Ltd';
-                }
-              }
-              if (!signatoryDepartment) {
-                signatoryDepartment = signatoryRole.toLowerCase().includes('director')
-                  ? 'Board of Directors, Enterprenex Solutions Pvt Ltd'
-                  : 'HR Team, Enterprenex Solutions Pvt Ltd';
-              }
+              const signatoryName = offer.signatoryName || 'Rohit Pawar';
+              const signatoryRole = offer.signatoryRole || 'Operations Officer';
+              const signatoryDepartment = offer.signatoryDepartment || 'HR Team, Enterprenex Solutions Pvt Ltd';
 
               return (
                 <div id="printable-offer-letter" style={{ background: '#f1f5f9', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
@@ -1344,41 +1318,30 @@ export const OfferLettersPage: React.FC = () => {
                         We look forward to having you on board and wish you a great learning experience at Enterprenex Solutions Pvt Ltd.
                       </p>
 
-                      {/* Dynamic Signatory Block (Director vs HR) */}
+                      {/* Signatory Block */}
                       <div style={{ margin: '16px 0 24px 0', fontSize: '0.88rem', lineHeight: '1.35' }}>
                         <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: '12px' }}>
                           For Enterprenex Solutions Pvt Ltd,
                         </div>
                         <div style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0f172a' }}>
-                          {signatoryName}
+                          Rohit Pawar
                         </div>
                         <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#334155' }}>
-                          {signatoryRole}
+                          Operations Officer
                         </div>
                         <div style={{ fontSize: '0.8rem', color: '#475569' }}>
-                          {signatoryDepartment}
+                          HR Team, Enterprenex Solutions Pvt Ltd
                         </div>
-                        {offer.directorApprovedAt && isDirectorSignatory && (
-                          <div style={{ fontSize: '0.72rem', color: '#166534', marginTop: '4px', fontWeight: 600 }}>
-                            ✓ Digitally Authorized by Director: {new Date(offer.directorApprovedAt).toLocaleString()}
-                          </div>
-                        )}
                       </div>
 
                       {/* Candidate Acceptance Form */}
                       <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
-                        Acceptance by {isInternship ? 'Intern' : 'Employee'}
+                        Acceptance by Intern
                       </div>
                       <div style={{ fontSize: '0.85rem', lineHeight: '2.1', color: '#0f172a' }}>
-                        <div>
-                          Signature: {offer.status === 'Accepted' ? (
-                            <span style={{ fontFamily: "'Brush Script MT', cursive, sans-serif", fontSize: '1.4rem', color: '#166534', marginLeft: '8px' }}>
-                              {offer.employeeName}
-                            </span>
-                          ) : '______________________________'}
-                        </div>
-                        <div>Name: {offer.employeeName}</div>
-                        <div>Date: {offer.respondedAt ? new Date(offer.respondedAt).toLocaleDateString() : '______________________________'}</div>
+                        <div>Signature: ______________________________</div>
+                        <div>Name: ______________________________</div>
+                        <div>Date: ______________________________</div>
                       </div>
                     </div>
 

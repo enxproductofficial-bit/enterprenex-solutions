@@ -99,37 +99,10 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
       stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
     }
 
-    // Dynamic Signatory Logic according to person: HR or Director
-    const isDirectorSignatory = 
-      (offer.signatoryRole && offer.signatoryRole.toLowerCase().includes('director')) ||
-      (offer.directorApprovedBy && (
-        offer.directorApprovedBy.toLowerCase().includes('director') || 
-        offer.directorApprovedBy.toLowerCase().includes('cmd') ||
-        offer.directorApprovedBy.toLowerCase().includes('rohit')
-      )) ||
-      offer.status === 'Approved' ||
-      offer.status === 'Sent' ||
-      offer.status === 'Accepted';
-
-    let signatoryName = offer.signatoryName || offer.directorApprovedBy || 'Rohit Pawar';
-    let signatoryRole = offer.signatoryRole;
-    let signatoryDepartment = offer.signatoryDepartment;
-
-    if (!signatoryRole) {
-      if (isDirectorSignatory) {
-        signatoryRole = 'Managing Director';
-        signatoryDepartment = offer.signatoryDepartment || 'Board of Directors, Enterprenex Solutions Pvt Ltd';
-      } else {
-        signatoryRole = 'Operations Officer';
-        signatoryDepartment = offer.signatoryDepartment || 'HR Team, Enterprenex Solutions Pvt Ltd';
-      }
-    }
-
-    if (!signatoryDepartment) {
-      signatoryDepartment = signatoryRole.toLowerCase().includes('director')
-        ? 'Board of Directors, Enterprenex Solutions Pvt Ltd'
-        : 'HR Team, Enterprenex Solutions Pvt Ltd';
-    }
+    // Signatory resolution
+    const signatoryName = offer.signatoryName || 'Rohit Pawar';
+    const signatoryRole = offer.signatoryRole || 'Operations Officer';
+    const signatoryDepartment = offer.signatoryDepartment || 'HR Team, Enterprenex Solutions Pvt Ltd';
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -520,7 +493,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
     </div>
 
     <div class="section-heading" style="font-size: 9.4pt; margin-bottom: 8px;">
-      Acceptance by ${isInternship ? 'Intern' : 'Employee'}
+      Acceptance by Intern
     </div>
     <div class="acceptance-form">
       Signature: ______________________________<br>
