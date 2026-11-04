@@ -36,10 +36,69 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 
     const formatted = meetings.map(m => ({
       ...m,
-      attendees: m.attendeesJson ? JSON.parse(m.attendeesJson) : []
+      attendees: m.attendeesJson ? JSON.parse(m.attendeesJson) : [],
+      rsvp: m.rsvpJson ? JSON.parse(m.rsvpJson) : {},
+      actionItems: m.actionItemsJson ? JSON.parse(m.actionItemsJson) : []
     }));
 
     res.json({ meetings: formatted });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /api/v1/meetings/:id/rsvp - Submit participant RSVP
+router.patch('/:id/rsvp', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status = 'Accepted' } = req.body;
+    const userId = req.user?.id || 'unknown';
+    const userName = req.user?.name || 'Staff Member';
+
+    const existing = await prisma.scheduledMeeting.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: 'Meeting not found.' });
+      return;
+    }
+
+    const rsvpMap: Record<string, string> = existing.rsvpJson ? JSON.parse(existing.rsvpJson) : {};
+    rsvpMap[userName] = status;
+
+    const updated = await prisma.scheduledMeeting.update({
+      where: { id },
+      data: { rsvpJson: JSON.stringify(rsvpMap) }
+    });
+
+    res.json({
+      message: `RSVP updated to ${status}.`,
+      meeting: {
+        ...updated,
+        rsvp: rsvpMap
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /api/v1/meetings/:id/notes - Save meeting notes and action items
+router.patch('/:id/notes', authenticateToken, requireRole(['Super Admin', 'Project Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { notes, actionItems } = req.body;
+
+    const updated = await prisma.scheduledMeeting.update({
+      where: { id },
+      data: {
+        notes: notes || undefined,
+        actionItemsJson: actionItems ? JSON.stringify(actionItems) : undefined
+      }
+    });
+
+    res.json({
+      message: 'Meeting notes and action items saved.',
+      meeting: updated
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

@@ -301,6 +301,7 @@ router.post('/:id/stopwatch/start', authenticateToken, async (req: AuthRequest, 
     const session = await prisma.taskTimeSession.create({
       data: {
         taskId: id,
+        employeeName: req.user?.name || task.assignedTo || 'Staff Member',
         startedAt: new Date(),
         lastHeartbeatAt: new Date(),
         durationMinutes: 0,

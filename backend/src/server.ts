@@ -16,6 +16,13 @@ import meetingRoutes from './routes/meeting.routes';
 import offerLetterRoutes from './routes/offerLetter.routes';
 import notificationRoutes from './routes/notification.routes';
 import reportRoutes from './routes/report.routes';
+import projectRoutes from './routes/project.routes';
+import announcementRoutes from './routes/announcement.routes';
+import payrollRoutes from './routes/payroll.routes';
+import exitRoutes from './routes/exit.routes';
+import assetRoutes from './routes/asset.routes';
+import expenseRoutes from './routes/expense.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 import { initSocketService } from './services/socket.service';
 import { securityHeaders, sanitizeInputs, rateLimiter, globalErrorHandler } from './middleware/security';
 
@@ -226,6 +233,13 @@ app.use('/api/v1/meetings', meetingRoutes);
 app.use('/api/v1/offer-letters', offerLetterRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/projects', projectRoutes);
+app.use('/api/v1/announcements', announcementRoutes);
+app.use('/api/v1/payroll', payrollRoutes);
+app.use('/api/v1/exit', exitRoutes);
+app.use('/api/v1/assets', assetRoutes);
+app.use('/api/v1/expenses', expenseRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // ── Backwards-Compatible /api/ Routes Aliasing ──
 app.use('/api/auth', authRoutes);
@@ -239,6 +253,13 @@ app.use('/api/meetings', meetingRoutes);
 app.use('/api/offer-letters', offerLetterRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/payroll', payrollRoutes);
+app.use('/api/exit', exitRoutes);
+app.use('/api/assets', assetRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Global Error Handler & Crash Boundary
 app.use(globalErrorHandler);

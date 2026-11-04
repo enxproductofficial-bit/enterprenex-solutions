@@ -36,6 +36,8 @@ export const createNotification = async (params: CreateNotificationParams) => {
   }
 };
 
+export const emitNotification = createNotification;
+
 export const notifyNewEmployeeRegistered = async (empName: string, empId: string, department: string, hrName: string) => {
   return createNotification({
     type: 'EMPLOYEE_REGISTERED',

@@ -1,271 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-// 1. User Authentication & RBAC
+// 1. User & Authentication
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  password    String   // bcrypt hashed
-  role        String   @default("Team Member") // "Super Admin" | "Project Manager" | "Team Member" | "Developer"
-  name        String
-  employeeId  String?  @unique
-  avatar      String?
-  department  String?  @default("Engineering")
-  status             String   @default("Active") // "Active" | "Inactive" | "Suspended"
-  mustChangePassword Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-}
-
-// 2. EWMS Employee Profile & KYC Vault
-model Employee {
-  id                 String   @id @default(uuid())
-  employeeId         String   @unique
-  password           String?
-  mustChangePassword Boolean  @default(false)
-  temporaryPassword  String?
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  password           String
   name               String
-  role               String
-  department         String   @default("Engineering")
-  email              String   @unique
-  phone              String
-  personalEmail      String?
-  personalPhone      String?
+  role               String    @default("Team Member") // "Super Admin" | "Project Manager" | "HR Manager" | "Team Member" | "Developer" | "CFO" | "CTO" | "CEO"
+  employeeId         String?   @unique
   avatar             String?
-  address            String?
-  reportingManager   String?
-  probationPeriod    String?  @default("3 Months")
-  resumeUrl          String?
-  documentsJson      String?
-  salaryMonthly      Float    @default(50000)
-  ctcAnnual          Float?   @default(600000)
-  workloadPercentage Int      @default(100)
-  performanceRating  Float    @default(5.0)
-  status             String   @default("Active")
-  approvalStatus     String   @default("Pending Approval")
-  approvalRemarks    String?
-  approvedBy         String?
-  approvedAt         DateTime?
-  isAccountActivated Boolean  @default(false)
-  accountActivatedAt DateTime?
-  accountActivatedBy String?
-  panNumber          String?
-  panDocUrl          String?
-  aadhaarNumber      String?
-  aadhaarDocUrl      String?
-  kycStatus          String   @default("Not Submitted")
-  kycVerifiedBy      String?
-  kycVerifiedAt      DateTime?
-  employmentType     String   @default("Full Time")
-  workMode           String   @default("Hybrid")
-  kpiScore           Float?   @default(90.0)
-  okrScore           Float?   @default(85.0)
-  skillsMatrixJson   String?
-  educationJson      String?
-  joinDate           String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  department         String?
+  status             String    @default("Active")
+  mustChangePassword Boolean   @default(false)
+  lastLogin          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }
 
-// 3. Biometric & Attendance Management
-model AttendanceRecord {
-  id             String    @id @default(uuid())
-  employeeId     String
-  employeeName   String
-  date           String    // YYYY-MM-DD
-  checkIn        String?   // HH:MM AM/PM
-  checkOut       String?   // HH:MM AM/PM
-  status         String    @default("Present") // "Present" | "Late" | "Half Day" | "Absent"
-  absenceReason  String?
-  absenceNotes   String?
-  notifiedViaJson String?  // JSON array of ["Call", "WhatsApp", "Email", "SMS"]
-  recordedBy     String?
-  recordedAt     DateTime?
-  createdAt      DateTime  @default(now())
+// 2. Comprehensive Employee Profile & Work History
+model Employee {
+  id                  String    @id @default(uuid())
+  employeeId          String    @unique
+  name                String
+  email               String    @unique
+  phone               String
+  password            String?
+  temporaryPassword   String?
+  role                String    @default("Team Member")
+  department          String?   @default("Engineering")
+  designation         String?
+  personalEmail       String?
+  personalPhone       String?
+  avatar              String?
+  address             String?
+  reportingManager    String?
+  probationPeriod     String?   @default("3 Months")
+  resumeUrl           String?
+  documentsJson       String?
+  salaryMonthly       Float     @default(50000)
+  ctcAnnual           Float?    @default(600000)
+  workloadPercentage  Int       @default(100)
+  performanceRating   Float     @default(5.0)
+  status              String    @default("Active") // "Active" | "Resigned" | "Terminated" | "On Leave" | "Inactive"
+  approvalStatus      String    @default("Pending Approval")
+  approvalRemarks     String?
+  approvedBy          String?
+  approvedAt          DateTime?
+  isAccountActivated  Boolean   @default(false)
+  accountActivatedAt  DateTime?
+  accountActivatedBy  String?
+  mustChangePassword  Boolean   @default(false)
+  panNumber           String?
+  panDocUrl           String?
+  aadhaarNumber       String?
+  aadhaarDocUrl       String?
+  kycStatus           String    @default("Not Submitted")
+  kycVerifiedBy       String?
+  kycVerifiedAt       DateTime?
+  employmentType      String    @default("Full Time")
+  workMode            String    @default("Hybrid")
+  kpiScore            Float?    @default(90.0)
+  okrScore            Float?    @default(85.0)
+  skillsMatrixJson    String?
+  educationJson       String?
+  joinDate            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
-
-// 4. Leave Applications & Workflow
-model LeaveRequest {
-  id           String   @id @default(uuid())
-  employeeName String
-  type         String   // "Casual Leave" | "Sick Leave" | "Paid Leave" | "Unpaid"
-  startDate    String
-  endDate      String
-  reason       String
-  status       String   @default("Pending") // "Pending" | "Approved" | "Rejected"
-  approvedBy   String?
-  createdAt    DateTime @default(now())
-}
-
-// 5. Projects & Agile Tracking
-model Project {
-  id             String   @id @default(uuid())
-  title          String
-  client         String
-  status         String   @default("In Progress") // "Planning" | "In Progress" | "Review" | "Completed"
-  budget         Float    @default(0)
-  deadline       String
-  teamSize       Int      @default(3)
-  completionRate Int      @default(0)
-  tagsJson       String?  // JSON array
-  createdAt      DateTime @default(now())
-}
-
-// 6. Sprint Tasks, Stopwatch & Review Pipeline
-model Task {
-  id                      String    @id @default(uuid())
-  title                   String
-  description             String?
-  projectId               String?
-  projectName             String?
-  assignedTo              String
-  department              String?
-  assignedBy              String?
-  assignedByRole          String?   @default("Director")
-  reviewer                String?
-  priority                String    @default("Medium")
-  status                  String    @default("Assigned")
-  startDate               String?
-  dueDate                 String
-  loggedHours             Float     @default(0)
-  estimatedHours          Float     @default(8)
-  tagsJson                String?
-  attachmentsJson         String?
-  completionRemarks       String?
-  supportingDocumentsJson String?
-  submittedAt             DateTime?
-  reviewedBy              String?
-  reviewedAt              DateTime?
-  reviewNotes             String?
-  subtasksJson            String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-}
-
-// 7. Live Task Stopwatch Sessions with Anti-Tamper Heartbeat & Idle Verification
-model TaskTimeSession {
-  id                    String    @id @default(uuid())
-  taskId                String
-  startedAt             DateTime
-  endedAt               DateTime?
-  durationMinutes       Int       @default(0)
-  verifiedActiveMinutes Int       @default(0)
-  idleMinutes           Int       @default(0)
-  heartbeatCount        Int       @default(0)
-  isTamperFlagged       Boolean   @default(false)
-  lastHeartbeatAt       DateTime?
-  activityNote          String?
-  createdAt             DateTime  @default(now())
-}
-
-// 8. Task Collaboration Comments
-model TaskComment {
-  id           String   @id @default(uuid())
-  taskId       String
-  author       String
-  authorAvatar String?
-  text         String
-  createdAt    DateTime @default(now())
-}
-
-// 9. Role-Specific Weighted KPI Scorecard
-model KpiScorecard {
-  id            String   @id @default(uuid())
-  employeeId    String   @unique
-  employeeName  String
-  roleTemplate  String   // "Software Developer" | "UI/UX Designer" | "QA Engineer" | "DevOps Engineer"
-  period        String   // "Q1 2026"
-  metricsJson   String   // JSON array of [{ id, name, weight, target, actual, score }]
-  finalKpiScore Float    @default(90.0) // Mathematical formula sum(score * weight / 100)
-  updatedAt     DateTime @updatedAt
-}
-
-// 10. Company Objectives & Key Results (OKRs)
-model ObjectiveKeyResult {
-  id              String   @id @default(uuid())
-  objectiveTitle  String
-  department      String
-  ownerName       String
-  period          String   // "Q1 2026"
-  progressPercent Int      @default(0)
-  keyResultsJson  String   // JSON array of [{ id, title, target, current, progressPercent }]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-// 11. Finance & Billing
-model Invoice {
-  id          String   @id @default(uuid())
-  invoiceNo   String   @unique
-  clientName  String
-  amount      Float
-  status      String   @default("Pending") // "Paid" | "Pending" | "Overdue"
-  dueDate     String
-  paidDate    String?
-  createdAt   DateTime @default(now())
-}
-
-model Expense {
-  id          String   @id @default(uuid())
-  title       String
-  category    String
-  amount      Float
-  date        String
-  status      String   @default("Approved")
-  createdAt   DateTime @default(now())
-}
-
-// 12. Security Audit Logs
-model AuditLog {
-  id        String   @id @default(uuid())
-  action    String
-  category  String
-  details   String
-  actor     String   @default("System")
-  ipAddress String?
-  timestamp DateTime @default(now())
-}
-
-// 13. Support Desk & Operational Requests (EDWMS Internal Ticketing)
-model SupportTicket {
-  id               String    @id @default(uuid())
-  ticketNumber     String    @unique
-  title            String
-  description      String
-  category         String    // "Payout Period Query" | "Paid Resource Request" | "Hardware Support" | "Operational Request" | "Bug Report" | "General"
-  priority         String    @default("Medium") // "Low" | "Medium" | "High" | "Urgent"
-  status           String    @default("Open") // "Open" | "In Review" | "Approved" | "Resolved" | "Rejected"
-  requestedBy      String    // Employee ID or Full Name
-  requestedByEmail String
-  assignedTo       String?   // Manager or IT Lead
-  costEstimate     Float?    @default(0)
-  responseNotes    String?
-  resolvedAt       DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
-// 14. Corporate Scheduled Meetings & Agile Standups
-model ScheduledMeeting {
-  id              String   @id @default(uuid())
-  title           String
-  agenda          String?
-  meetUrl         String
-  meetingTime     String   // ISO Datetime or formatted string (e.g., 2026-10-18T19:00:00)
-  durationMinutes Int      @default(45)
-  organizer       String
-  department      String   @default("All Hands")
-  attendeesJson   String?  // JSON array
-  status          String   @default("Scheduled") // "Scheduled" | "Ongoing" | "Completed" | "Cancelled"
-  createdAt       DateTime @default(now())
-}
-
 
 // 2b. Offer Letter Management & Approval Workflow
 model OfferLetter {
@@ -293,7 +101,362 @@ model OfferLetter {
   updatedAt                  DateTime  @updatedAt
 }
 
-// 15. Real-Time EWMS Notification Stream
+// 3. Biometric & Daily Attendance Management
+model AttendanceRecord {
+  id                 String    @id @default(uuid())
+  employeeId         String
+  employeeName       String
+  date               String    // YYYY-MM-DD
+  checkIn            String?   // HH:MM AM/PM
+  checkOut           String?   // HH:MM AM/PM
+  workingHours       Float?    @default(0)
+  breakMinutes       Int?      @default(0)
+  department         String?
+  status             String    @default("Present") // "Present" | "Absent" | "Half Day" | "Late" | "On Leave" | "Holiday" | "Weekly Off"
+  isLate             Boolean   @default(false)
+  isEarlyCheckout    Boolean   @default(false)
+  absenceReason      String?
+  absenceNotes       String?
+  correctionRemarks  String?
+  correctedBy        String?
+  correctedAt        DateTime?
+  notifiedViaJson    String?
+  recordedBy         String?
+  recordedAt         DateTime?
+  createdAt          DateTime  @default(now())
+}
+
+// 4. Leave Applications & Workflow
+model LeaveRequest {
+  id                     String    @id @default(uuid())
+  employeeId             String?
+  employeeName           String
+  type                   String    // "Casual Leave" | "Sick Leave" | "Earned Leave" | "Unpaid Leave" | "Emergency Leave"
+  startDate              String
+  endDate                String
+  leaveDays              Float     @default(1)
+  reason                 String
+  documentUrl            String?
+  status                 String    @default("Pending") // "Pending" | "Approved" | "Rejected" | "Cancelled"
+  directorApprovalStatus String?
+  rejectionReason        String?
+  approvedBy             String?
+  createdAt              DateTime  @default(now())
+}
+
+// 4b. Leave Balances per Employee
+model LeaveBalance {
+  id             String   @id @default(uuid())
+  employeeId     String   @unique
+  employeeName   String
+  year           Int      @default(2026)
+  casualLeave    Float    @default(12)
+  sickLeave      Float    @default(10)
+  earnedLeave    Float    @default(15)
+  emergencyLeave Float    @default(5)
+  unpaidLeave    Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// 5. Projects & Agile Tracking
+model Project {
+  id                 String    @id @default(uuid())
+  title              String
+  description        String?
+  client             String
+  status             String    @default("Planning") // "Planning" | "Active" | "On Hold" | "Completed" | "Cancelled"
+  budget             Float     @default(0)
+  startDate          String?
+  deadline           String
+  teamSize           Int       @default(3)
+  completionRate     Int       @default(0)
+  managerName        String?
+  managerEmail       String?
+  teamMembersJson    String?   // JSON array of team members
+  milestonesJson     String?   // JSON array of milestones
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// 6. Sprint Tasks & Lifecycle
+model Task {
+  id                      String    @id @default(uuid())
+  title                   String
+  description             String?
+  projectId               String?
+  projectName             String?
+  assignedTo              String
+  department              String?
+  assignedBy              String?
+  assignedByRole          String?   @default("Director")
+  reviewer                String?
+  priority                String    @default("Medium") // "Low" | "Medium" | "High" | "Urgent"
+  status                  String    @default("Assigned") // "Assigned" | "Accepted" | "In Progress" | "Under Review" | "Completed" | "Rejected" | "On Hold"
+  startDate               String?
+  dueDate                 String
+  loggedHours             Float     @default(0)
+  estimatedHours          Float     @default(8)
+  tagsJson                String?
+  attachmentsJson         String?
+  completionRemarks       String?
+  supportingDocumentsJson String?
+  submittedAt             DateTime?
+  reviewedBy              String?
+  reviewedAt              DateTime?
+  reviewNotes             String?
+  subtasksJson            String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+model TaskTimeSession {
+  id                    String    @id @default(uuid())
+  taskId                String
+  employeeName          String
+  employeeRole          String?
+  startedAt             DateTime  @default(now())
+  startTime             DateTime  @default(now())
+  endedAt               DateTime?
+  endTime               DateTime?
+  lastHeartbeatAt       DateTime?
+  heartbeatCount        Int       @default(0)
+  durationSeconds       Int       @default(0)
+  durationMinutes       Float     @default(0)
+  activityNote          String?
+  verifiedActiveMinutes Float     @default(0)
+  idleMinutes           Float     @default(0)
+  idleSeconds           Int       @default(0)
+  isTamperFlagged       Boolean   @default(false)
+  isVerified            Boolean   @default(false)
+  clientIp              String?
+  userAgent             String?
+  status                String    @default("Active")
+  createdAt             DateTime  @default(now())
+}
+
+model TaskComment {
+  id           String   @id @default(uuid())
+  taskId       String
+  author       String
+  authorAvatar String?
+  text         String
+  createdAt    DateTime @default(now())
+}
+
+// 7. KPI & Performance Management
+model KpiScorecard {
+  id             String    @id @default(uuid())
+  employeeId     String    @unique
+  employeeName   String
+  department     String    @default("Engineering")
+  period         String
+  roleTemplate   String?
+  finalKpiScore  Float?
+  overallScore   Float     @default(90.0)
+  feedback       String?
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  metricsJson    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model ObjectiveKeyResult {
+  id              String    @id @default(uuid())
+  title           String    @default("Company Objective")
+  objectiveTitle  String?
+  department      String
+  quarter         String    @default("Q2 2026")
+  period          String?
+  ownerName       String
+  progress        Int       @default(0)
+  progressPercent Int?      @default(0)
+  keyResultsJson  String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// 8. Finance & Invoices
+model Invoice {
+  id          String   @id @default(uuid())
+  invoiceNo   String   @unique
+  client      String
+  amount      Float
+  status      String   @default("Pending")
+  dueDate     String
+  paidDate    String?
+  createdAt   DateTime @default(now())
+}
+
+// 9. Employee Expense Management
+model Expense {
+  id                  String    @id @default(uuid())
+  title               String
+  category            String    // "Travel" | "Meals" | "Hardware" | "Software" | "Office Supplies" | "Client Entertainment" | "Other"
+  amount              Float
+  date                String
+  description         String?
+  receiptUrl          String?
+  employeeId          String?
+  employeeName        String?
+  department          String?
+  status              String    @default("Pending") // "Pending" | "HR Approved" | "Director Approved" | "Rejected" | "Reimbursed"
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  reimbursedAt        DateTime?
+  remarks             String?
+  createdAt           DateTime  @default(now())
+}
+
+// 10. Security Audit Logs
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  category  String
+  details   String
+  actor     String   @default("System")
+  ipAddress String?
+  timestamp DateTime @default(now())
+}
+
+// 11. Support Desk & Operational Requests
+model SupportTicket {
+  id               String    @id @default(uuid())
+  ticketNumber     String    @unique
+  title            String
+  description      String
+  category         String
+  priority         String    @default("Medium")
+  status           String    @default("Open")
+  requestedBy      String
+  requestedByEmail String
+  assignedTo       String?
+  costEstimate     Float?    @default(0)
+  responseNotes    String?
+  resolvedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// 12. Corporate Scheduled Meetings & RSVPs
+model ScheduledMeeting {
+  id              String   @id @default(uuid())
+  title           String
+  agenda          String?
+  meetUrl         String
+  meetingTime     String
+  durationMinutes Int      @default(45)
+  organizer       String
+  department      String   @default("All Hands")
+  attendeesJson   String?
+  rsvpJson        String?  // JSON map of employee RSVP statuses
+  notes           String?
+  actionItemsJson String?
+  status          String   @default("Scheduled") // "Scheduled" | "Ongoing" | "Completed" | "Cancelled"
+  createdAt       DateTime @default(now())
+}
+
+// 13. Company Announcements
+model CompanyAnnouncement {
+  id                   String    @id @default(uuid())
+  title                String
+  content              String
+  attachmentsJson      String?
+  targetAudience       String    @default("All Employees") // "All Employees" | "Specific Department" | "Specific Team" | "Selected Employees"
+  targetDepartment     String?
+  targetTeam           String?
+  targetEmployeesJson  String?
+  author               String
+  authorRole           String?
+  publishedAt          DateTime  @default(now())
+  isScheduled          Boolean   @default(false)
+  scheduledFor         DateTime?
+  isArchived           Boolean   @default(false)
+  readByJson           String?   // JSON array of employee IDs who marked read
+  acknowledgedByJson   String?   // JSON array of employee IDs who acknowledged policy
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+// 14. Payroll & Payslips
+model PayrollRecord {
+  id                 String    @id @default(uuid())
+  payrollNo          String    @unique
+  month              String    // e.g. "April 2026"
+  year               Int       @default(2026)
+  employeeId         String
+  employeeName       String
+  employeeEmail      String
+  department         String
+  designation        String
+  basicSalary        Float
+  hra                Float
+  allowances         Float     @default(0)
+  deductions         Float     @default(0)
+  pfEmployee         Float     @default(0)
+  pfEmployer         Float     @default(0)
+  taxDeduction       Float     @default(0)
+  netSalary          Float
+  status             String    @default("Draft") // "Draft" | "Pending Approval" | "Approved" | "Paid"
+  approvedBy         String?
+  approvedAt         DateTime?
+  paidAt             DateTime?
+  paymentMethod      String?
+  paymentReference   String?
+  payslipUrl         String?
+  remarks            String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// 15. Employee Exit Management
+model ExitRequest {
+  id                           String    @id @default(uuid())
+  employeeId                   String
+  employeeName                 String
+  employeeEmail                String
+  department                   String
+  designation                  String
+  resignationDate              String
+  proposedLastWorkingDay       String
+  actualLastWorkingDay         String?
+  reason                       String
+  noticePeriodDays             Int       @default(30)
+  status                       String    @default("Submitted") // "Submitted" | "In Review" | "Approved" | "Rejected" | "Clearance Pending" | "Completed"
+  directorApprovalStatus       String?
+  directorRemarks              String?
+  projectHandoverCompleted     Boolean   @default(false)
+  assetReturnCompleted         Boolean   @default(false)
+  documentClearanceCompleted   Boolean   @default(false)
+  financeClearanceCompleted    Boolean   @default(false)
+  hrApprovalCompleted          Boolean   @default(false)
+  relievingLetterUrl           String?
+  experienceLetterUrl          String?
+  clearanceRemarks             String?
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
+}
+
+// 16. Company Asset Management
+model Asset {
+  id                      String    @id @default(uuid())
+  assetTag                String    @unique
+  name                    String
+  category                String    // "Laptop" | "Desktop" | "Monitor" | "Keyboard & Mouse" | "ID Card" | "Other"
+  serialNumber            String?
+  condition               String    @default("Good") // "Brand New" | "Good" | "Fair" | "Needs Repair"
+  assignedToEmployeeId    String?
+  assignedToEmployeeName  String?
+  assignedDate            String?
+  returnDate              String?
+  status                  String    @default("Available") // "Available" | "Assigned" | "Under Maintenance" | "Retired"
+  requestsJson            String?   // JSON array of employee requests
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+// 17. Real-Time EWMS Notification Stream
 model EwmsNotification {
   id                   String    @id @default(uuid())
   type                 String

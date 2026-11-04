@@ -148,7 +148,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       await notifyNewEmployeeRegistered(
         newEmp.name,
         assignedEmployeeId,
-        newEmp.department,
+        newEmp.department || 'Engineering',
         req.user?.name || 'HR'
       );
     }

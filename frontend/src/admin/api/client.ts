@@ -318,6 +318,283 @@ class ApiClient {
     return this.request<{ performance: any[] }>(`/reports/employee-performance${qs ? `?${qs}` : ''}`);
   }
 
+  // 12. Attendance Management
+  async getAttendance(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ attendance: any[] }>(`/attendance${qs ? `?${qs}` : ''}`);
+  }
+
+  async getAttendanceSummary() {
+    return this.request<any>('/attendance/summary');
+  }
+
+  async checkIn() {
+    return this.request<{ message: string; record: any }>('/attendance/check-in', {
+      method: 'POST'
+    });
+  }
+
+  async checkOut(breakMinutes = 0) {
+    return this.request<{ message: string; record: any }>('/attendance/check-out', {
+      method: 'POST',
+      body: JSON.stringify({ breakMinutes })
+    });
+  }
+
+  async correctAttendance(id: string, data: { checkIn?: string; checkOut?: string; status?: string; breakMinutes?: number; correctionRemarks: string }) {
+    return this.request<{ message: string; record: any }>(`/attendance/${id}/correct`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  // 13. Leave Management & Balances
+  async getLeaves(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ leaves: any[] }>(`/leaves${qs ? `?${qs}` : ''}`);
+  }
+
+  async getLeaveBalance() {
+    return this.request<{ balance: any }>('/leaves/balance');
+  }
+
+  async applyLeave(data: { type: string; startDate: string; endDate: string; reason: string; documentUrl?: string }) {
+    return this.request<{ message: string; leave: any }>('/leaves/apply', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async reviewLeave(id: string, status: 'Approved' | 'Rejected', remarks?: string) {
+    return this.request<{ message: string; leave: any }>(`/leaves/${id}/review`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, remarks })
+    });
+  }
+
+  async cancelLeave(id: string) {
+    return this.request<{ message: string; leave: any }>(`/leaves/${id}/cancel`, {
+      method: 'POST'
+    });
+  }
+
+  // 14. Projects & Team Sprints
+  async getProjects(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ projects: any[] }>(`/projects${qs ? `?${qs}` : ''}`);
+  }
+
+  async createProject(data: any) {
+    return this.request<{ message: string; project: any }>('/projects', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateProject(id: string, data: any) {
+    return this.request<{ message: string; project: any }>(`/projects/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateProjectMilestones(id: string, milestones: any[], completionRate?: number) {
+    return this.request<{ message: string; project: any }>(`/projects/${id}/milestones`, {
+      method: 'PATCH',
+      body: JSON.stringify({ milestones, completionRate })
+    });
+  }
+
+  async updateProjectTeam(id: string, teamMembers: any[]) {
+    return this.request<{ message: string; project: any }>(`/projects/${id}/team`, {
+      method: 'PATCH',
+      body: JSON.stringify({ teamMembers })
+    });
+  }
+
+  // 15. Company Announcements
+  async getAnnouncements() {
+    return this.request<{ announcements: any[] }>('/announcements');
+  }
+
+  async createAnnouncement(data: any) {
+    return this.request<{ message: string; announcement: any }>('/announcements', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async markAnnouncementRead(id: string) {
+    return this.request<{ message: string }>(`/announcements/${id}/read`, {
+      method: 'POST'
+    });
+  }
+
+  async acknowledgeAnnouncement(id: string) {
+    return this.request<{ message: string }>(`/announcements/${id}/acknowledge`, {
+      method: 'POST'
+    });
+  }
+
+  // 16. Payroll & Payslips
+  async getPayroll(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ payroll: any[] }>(`/payroll${qs ? `?${qs}` : ''}`);
+  }
+
+  async generatePayrollBatch(month: string, year: number) {
+    return this.request<{ message: string; count: number; records: any[] }>('/payroll/generate-batch', {
+      method: 'POST',
+      body: JSON.stringify({ month, year })
+    });
+  }
+
+  async approvePayroll(id: string, remarks?: string) {
+    return this.request<{ message: string; record: any }>(`/payroll/${id}/approve`, {
+      method: 'PATCH',
+      body: JSON.stringify({ remarks })
+    });
+  }
+
+  async payPayroll(id: string, paymentMethod = 'NEFT/RTGS', paymentReference?: string) {
+    return this.request<{ message: string; record: any }>(`/payroll/${id}/pay`, {
+      method: 'PATCH',
+      body: JSON.stringify({ paymentMethod, paymentReference })
+    });
+  }
+
+  async downloadPayslipPdf(id: string, payrollNo = 'Payslip') {
+    const token = this.getToken();
+    const url = `${API_BASE_URL}/payroll/${id}/payslip`;
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!res.ok) throw new Error('Failed to generate or download payslip PDF');
+    const blob = await res.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `Enterprenex_${payrollNo}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  }
+
+  // 17. Employee Exit Management
+  async getExitRequests(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ exits: any[] }>(`/exit${qs ? `?${qs}` : ''}`);
+  }
+
+  async submitResignation(data: { proposedLastWorkingDay: string; reason: string; noticePeriodDays?: number }) {
+    return this.request<{ message: string; exit: any }>('/exit/resignation', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async reviewExitRequest(id: string, status: string, actualLastWorkingDay?: string, directorRemarks?: string) {
+    return this.request<{ message: string; exit: any }>(`/exit/${id}/review`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, actualLastWorkingDay, directorRemarks })
+    });
+  }
+
+  async updateExitClearance(id: string, data: any) {
+    return this.request<{ message: string; exit: any }>(`/exit/${id}/clearance`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async downloadRelievingLetterPdf(id: string, empId = 'Emp') {
+    const token = this.getToken();
+    const url = `${API_BASE_URL}/exit/${id}/letter`;
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!res.ok) throw new Error('Failed to generate or download relieving letter PDF');
+    const blob = await res.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `Enterprenex_Relieving_Letter_${empId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  }
+
+  // 18. Asset Management
+  async getAssets(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ assets: any[] }>(`/assets${qs ? `?${qs}` : ''}`);
+  }
+
+  async createAsset(data: any) {
+    return this.request<{ message: string; asset: any }>('/assets', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async allocateAsset(id: string, employeeId: string, employeeName: string) {
+    return this.request<{ message: string; asset: any }>(`/assets/${id}/allocate`, {
+      method: 'PATCH',
+      body: JSON.stringify({ employeeId, employeeName })
+    });
+  }
+
+  async returnAsset(id: string, condition = 'Good') {
+    return this.request<{ message: string; asset: any }>(`/assets/${id}/return`, {
+      method: 'PATCH',
+      body: JSON.stringify({ condition })
+    });
+  }
+
+  async requestAsset(data: { category: string; reason: string; urgency?: string }) {
+    return this.request<{ message: string }>('/assets/request', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  // 19. Expense Management
+  async getExpenses(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ expenses: any[] }>(`/expenses${qs ? `?${qs}` : ''}`);
+  }
+
+  async submitExpense(data: any) {
+    return this.request<{ message: string; expense: any }>('/expenses', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async reviewExpense(id: string, status: string, remarks?: string) {
+    return this.request<{ message: string; expense: any }>(`/expenses/${id}/review`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, remarks })
+    });
+  }
+
+  async reimburseExpense(id: string) {
+    return this.request<{ message: string; expense: any }>(`/expenses/${id}/reimburse`, {
+      method: 'PATCH'
+    });
+  }
+
+  // 20. Dashboard Snapshots
+  async getWorkspaceSnapshot() {
+    return this.request<any>('/dashboard/workspace');
+  }
+
+  async getExecutiveDashboard() {
+    return this.request<any>('/dashboard/executive');
+  }
+
   // Health check
   async checkBackendHealth(): Promise<boolean> {
     try {
