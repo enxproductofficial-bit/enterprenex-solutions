@@ -1557,7 +1557,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await api.downloadOfferLetterPdf(id, offerNo);
       showToast('PDF Downloaded', 'Offer letter PDF ready.', 'success');
     } catch (err: any) {
-      showToast('PDF Generation Failed', err.message || 'Could not generate PDF', 'error');
+      console.warn('[PDF Download] Server PDF generation encountered an issue, launching browser print fallback:', err);
+      // Seamlessly fall back to client print dialog so the user is never blocked
+      window.print();
+      showToast('Print / Save PDF', 'Browser print dialog launched. Choose "Save as PDF" to download.', 'info');
     }
   };
 

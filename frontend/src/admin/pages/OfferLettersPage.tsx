@@ -1009,7 +1009,7 @@ export const OfferLettersPage: React.FC = () => {
                   onClick={() => downloadOfferLetterPdf(selectedOfferForPreview.id, selectedOfferForPreview.offerLetterNo)}
                   style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#059669', color: '#fff', border: 'none', padding: '0.45rem 1rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
                 >
-                  <Download size={16} /> Download Puppeteer PDF
+                  <Download size={16} /> Download PDF
                 </button>
 
                 <button

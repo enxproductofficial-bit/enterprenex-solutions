@@ -339,7 +339,16 @@ class ApiClient {
     const res = await fetch(url, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new Error('Failed to generate or download offer letter PDF');
+    if (!res.ok) {
+      let errMsg = 'Failed to generate or download offer letter PDF';
+      try {
+        const errJson = await res.json();
+        if (errJson && errJson.error) errMsg = errJson.error;
+      } catch {
+        // use default message
+      }
+      throw new Error(errMsg);
+    }
     const blob = await res.blob();
     const downloadUrl = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -348,7 +357,9 @@ class ApiClient {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    window.URL.revokeObjectURL(downloadUrl);
+    setTimeout(() => {
+      window.URL.revokeObjectURL(downloadUrl);
+    }, 5000);
   }
 
   // 11. Reports & Performance Telemetry

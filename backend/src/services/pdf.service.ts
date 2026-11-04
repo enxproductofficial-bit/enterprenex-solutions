@@ -60,7 +60,6 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
       '--disable-dev-shm-usage',
       '--disable-gpu',
       '--no-first-run',
-      '--single-process',
       '--disable-extensions'
     ]
   });
@@ -572,7 +571,6 @@ export const generatePayslipPdf = async (item: PayslipPdfData): Promise<Buffer> 
       '--disable-dev-shm-usage',
       '--disable-gpu',
       '--no-first-run',
-      '--single-process',
       '--disable-extensions'
     ]
   });
@@ -693,7 +691,6 @@ export const generateRelievingLetterPdf = async (item: RelievingPdfData): Promis
       '--disable-dev-shm-usage',
       '--disable-gpu',
       '--no-first-run',
-      '--single-process',
       '--disable-extensions'
     ]
   });
