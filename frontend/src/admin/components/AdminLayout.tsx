@@ -61,6 +61,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     updateEmployee,
     updateMyContactInfo,
     employees,
+    offerLetters,
     showToast
   } = useAdmin();
   const { language, setLanguage, t } = useLanguage();
