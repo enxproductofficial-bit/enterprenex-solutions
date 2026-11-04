@@ -662,6 +662,11 @@ export const TeamPage: React.FC = () => {
   };
 
   // Employee ID and Password state
+  const [address, setAddress] = useState('');
+  const [probationPeriod, setProbationPeriod] = useState('3 Months');
+  const [resumeUrl, setResumeUrl] = useState('');
+  const [resumeName, setResumeName] = useState('');
+  const [activatedCredentials, setActivatedCredentials] = useState<{ name: string; email: string; password?: string; role: string } | null>(null);
   const [empId, setEmpId] = useState('');
   const [empPassword, setEmpPassword] = useState('');
   const [showEmpPassword, setShowEmpPassword] = useState(false);
@@ -1093,6 +1098,10 @@ export const TeamPage: React.FC = () => {
     setEmpPassword(`Enx@${randomChars}`);
     setShowEmpPassword(true);
     setName('');
+    setAddress('');
+    setProbationPeriod('3 Months');
+    setResumeUrl('');
+    setResumeName('');
     setRole('');
     setDesignation('');
     setGovernanceRole('Employee');
@@ -1167,6 +1176,10 @@ export const TeamPage: React.FC = () => {
       designation: designation || role || 'Software Engineer',
       department,
       reportingManager: reportingManager || 'Rohit Pawar (Managing Director)',
+      address: address.trim() || undefined,
+      probationPeriod: probationPeriod || '3 Months',
+      resumeUrl: resumeUrl || undefined,
+      ctcAnnual: Number(salary) * 12,
       employmentType: employmentType || 'Full Time',
       qualification: qualification || 'B.Tech / Professional Degree',
       email: email || `${name.toLowerCase().replace(/\s+/g, '')}@enterprenex.com`,
@@ -1453,11 +1466,11 @@ export const TeamPage: React.FC = () => {
 
       {/* ── 1. TEAM ROSTER GRID ── */}
       {tab === 'roster' && (() => {
-        const pendingEmployees = employees.filter(e => e.approvalStatus === 'Pending Director Approval');
+        const pendingEmployees = employees.filter(e => (e.approvalStatus === 'Pending Approval' || e.approvalStatus === 'Pending Director Approval'));
         const approvedEmployees = employees.filter(e => e.approvalStatus === 'Approved' || !e.approvalStatus);
 
         const displayedEmployees = employees.filter(e => {
-          if (rosterFilter === 'pending') return e.approvalStatus === 'Pending Director Approval';
+          if (rosterFilter === 'pending') return (e.approvalStatus === 'Pending Approval' || e.approvalStatus === 'Pending Director Approval');
           if (rosterFilter === 'approved') return e.approvalStatus === 'Approved' || !e.approvalStatus;
           return true;
         });
@@ -1589,7 +1602,7 @@ export const TeamPage: React.FC = () => {
             <div className="adm-grid-3">
               {displayedEmployees.map(emp => {
                 const displayEmpId = emp.employeeId || (emp.id.startsWith('emp-') ? `EPX-10${emp.id.replace('emp-', '')}` : emp.id);
-                const isPending = emp.approvalStatus === 'Pending Director Approval';
+                const isPending = emp.approvalStatus === 'Pending Approval' || emp.approvalStatus === 'Pending Director Approval';
                 const isRejected = emp.approvalStatus === 'Rejected';
 
                 const isSelected = selectedEmployee?.id === emp.id;
@@ -4726,6 +4739,68 @@ export const TeamPage: React.FC = () => {
                 <div className="adm-form-group">
                   <label className="adm-form-label">Official Work Phone</label>
                   <input className="adm-input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91-9876543210" />
+                </div>
+              </div>
+
+              
+              {/* Address and Probation Period */}
+              <div className="adm-form-group">
+                <label className="adm-form-label">Full Residential / Communication Address *</label>
+                <textarea
+                  className="adm-input"
+                  rows={2}
+                  required
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  placeholder="Street, Landmark, City, State, PIN Code"
+                  style={{ width: '100%', padding: '0.6rem' }}
+                />
+              </div>
+
+              <div className="adm-grid-2">
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Probation Period *</label>
+                  <select className="adm-select" value={probationPeriod} onChange={e => setProbationPeriod(e.target.value)}>
+                    <option value="3 Months">3 Months (Standard)</option>
+                    <option value="6 Months">6 Months (Extended)</option>
+                    <option value="1 Month">1 Month</option>
+                    <option value="None">None (Direct Confirmation)</option>
+                  </select>
+                </div>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Calculated Annual CTC</label>
+                  <div style={{ height: '38px', display: 'flex', alignItems: 'center', padding: '0 0.85rem', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '6px', fontWeight: 700, color: '#10b981' }}>
+                    ₹{(salary * 12).toLocaleString('en-IN')} / Year
+                  </div>
+                </div>
+              </div>
+
+              {/* Resume Upload */}
+              <div className="adm-form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="adm-form-label">Resume / CV & Verification Documents</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <label className="adm-btn adm-btn-secondary" style={{ cursor: 'pointer', margin: 0, gap: '6px' }}>
+                    <FileText size={14} color="var(--adm-primary)" />
+                    <span>{resumeName ? 'Change Resume Document' : 'Upload Candidate Resume (PDF)'}</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      style={{ display: 'none' }}
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setResumeName(file.name);
+                          setResumeUrl(URL.createObjectURL(file));
+                          showToast('Resume Attached', `Loaded ${file.name}`, 'info');
+                        }
+                      }}
+                    />
+                  </label>
+                  {resumeName && (
+                    <span style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 600 }}>
+                      ✓ {resumeName}
+                    </span>
+                  )}
                 </div>
               </div>
 

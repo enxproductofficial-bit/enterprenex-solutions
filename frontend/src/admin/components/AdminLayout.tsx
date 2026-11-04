@@ -243,6 +243,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       return [
         { section: t('sec.humanCapital', 'Individual Workspace') },
         { to: '/admin', label: 'My Workspace', icon: LayoutDashboard, exact: true },
+        { to: '/admin/offer-letters', label: 'My Offer Letter & Contract', icon: FileCheck },
         { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
         { to: '/admin/tasks', label: t('nav.tasks', 'My Assigned Tasks'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
         { to: '/admin/team', label: t('nav.team', 'Colleagues Directory & Attendance'), icon: UserCheck },
@@ -267,6 +268,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
         { section: t('sec.humanCapital', 'Human Capital & Delivery') },
         { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck },
+        { to: '/admin/offer-letters', label: 'Offer Letters & Contracts', icon: FileText, badge: (offerLetters || []).filter(o => o.status === 'Pending Approval').length > 0 ? `${(offerLetters || []).filter(o => o.status === 'Pending Approval').length} Due` : undefined },
         { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk & SLA Governance'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
         { to: '/admin/documents', label: t('nav.documents', 'Compliance Vault & Records'), icon: FileText },
         { to: '/admin/calendar', label: t('nav.calendar', 'Corporate Calendar & Sessions'), icon: Calendar },
@@ -294,6 +296,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
       { section: 'People & Organization' },
       { to: '/admin/team', label: 'Personnel Directory & Payroll', icon: UserCheck },
+      { to: '/admin/offer-letters', label: 'Offer Letters & Approvals', icon: FileText, badge: (offerLetters || []).filter(o => o.status === 'Pending Approval').length > 0 ? `${(offerLetters || []).filter(o => o.status === 'Pending Approval').length} Due` : undefined },
 
       { section: 'Communication & Meetings' },
       { to: '/admin/calendar', label: 'Corporate Calendar & Sessions', icon: Calendar },
@@ -313,6 +316,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const matchingClients = searchQuery ? safeClients.filter(c => c && (c.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) || c.primaryContact?.name?.toLowerCase().includes(searchQuery.toLowerCase()))) : [];
   const matchingTasks = searchQuery ? safeTasks.filter(t => t && t.title?.toLowerCase().includes(searchQuery.toLowerCase())) : [];
   const matchingLeads = searchQuery ? safeLeads.filter(l => l && (l.company?.toLowerCase().includes(searchQuery.toLowerCase()) || l.name?.toLowerCase().includes(searchQuery.toLowerCase()))) : [];
+
+  const unreadNotifCount = (notifications || []).filter(n => !n.read).length;
 
   const hasSearchResults = matchingProjects.length > 0 || matchingClients.length > 0 || matchingTasks.length > 0 || matchingLeads.length > 0;
 
@@ -650,7 +655,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <div style={{ position: 'relative' }}>
               <button className="adm-topbar-btn" onClick={() => setShowNotifMenu(!showNotifMenu)} title="Notifications">
                 <Bell size={17} />
-                {(openTicketsCount > 0 || (isDirector && pendingInvoicesCount > 0)) && <span className="adm-badge-dot" />}
+                {(unreadNotifCount > 0 || openTicketsCount > 0 || (isDirector && pendingInvoicesCount > 0)) && <span className="adm-badge-dot" />}
               </button>
 
               {/* Notification Dropdown */}
@@ -660,7 +665,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     position: 'absolute',
                     top: 'calc(100% + 8px)',
                     right: 0,
-                    width: '320px',
+                    width: '360px',
+                    maxHeight: '440px',
+                    overflowY: 'auto',
                     background: 'var(--adm-surface)',
                     border: '1px solid var(--adm-border-light)',
                     borderRadius: 'var(--adm-radius)',
@@ -670,32 +677,60 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--adm-border)' }}>
-                    <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fff' }}>Corporate System Alerts</span>
-                    <span className="adm-badge adm-badge-primary">{openTicketsCount + (isDirector ? pendingInvoicesCount : 0)} Active</span>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--adm-text)' }}>System Alerts & Workflow</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="adm-badge adm-badge-primary">{unreadNotifCount} New</span>
+                      {unreadNotifCount > 0 && (
+                        <button
+                          onClick={() => markAllNotificationsRead()}
+                          style={{ background: 'none', border: 'none', color: 'var(--adm-primary)', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 600 }}
+                        >
+                          Clear All
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                    {safeTickets.slice(0, 2).map(t => (
-                      <div
-                        key={t.id}
-                        onClick={() => { navigate('/admin/support'); setShowNotifMenu(false); }}
-                        style={{ padding: '0.5rem', background: 'var(--adm-bg)', borderRadius: '6px', cursor: 'pointer' }}
-                      >
-                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#fff' }}>{t.ticketNumber}: {t.subject}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--adm-warning)', marginTop: '2px' }}>SLA: {t.slaHoursRemaining || 24}h remaining • {t.clientName || 'General'}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {(notifications || []).length === 0 ? (
+                      <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--adm-text-muted)', fontSize: '0.8rem' }}>
+                        No pending notifications.
                       </div>
-                    ))}
-
-                    {isDirector && safeInvoices.filter(i => i && i.status === 'Pending').slice(0, 1).map(i => (
-                      <div
-                        key={i.id}
-                        onClick={() => { navigate('/admin/finance'); setShowNotifMenu(false); }}
-                        style={{ padding: '0.5rem', background: 'var(--adm-bg)', borderRadius: '6px', cursor: 'pointer' }}
-                      >
-                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--adm-text)' }}>{i.invoiceNumber}: Payment Pending</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--adm-danger)', marginTop: '2px' }}>₹{(Number(i.totalAmount) || 0).toLocaleString('en-IN')} • Due {i.dueDate || 'N/A'}</div>
-                      </div>
-                    ))}
+                    ) : (
+                      (notifications || []).slice(0, 10).map(n => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            markNotificationRead(n.id);
+                            if (n.actionUrl) navigate(n.actionUrl);
+                            setShowNotifMenu(false);
+                          }}
+                          style={{
+                            padding: '0.65rem 0.75rem',
+                            background: n.read ? 'var(--adm-bg)' : 'rgba(16, 112, 200, 0.08)',
+                            borderLeft: n.read ? '2px solid transparent' : '2px solid var(--adm-primary)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            transition: 'background 0.2s'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: n.read ? 600 : 700, color: 'var(--adm-text)' }}>
+                              {n.title}
+                            </div>
+                            {!n.read && (
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--adm-primary)', marginTop: '4px' }} />
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', marginTop: '2px', lineHeight: '1.4' }}>
+                            {n.message}
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>
+                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Click to view
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

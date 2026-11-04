@@ -42,6 +42,7 @@ import { CmsPage } from './admin/pages/CmsPage';
 import { AnalyticsPage } from './admin/pages/AnalyticsPage';
 import { SecurityPage } from './admin/pages/SecurityPage';
 import { EmailsPage } from './admin/pages/EmailsPage';
+import { OfferLettersPage } from './admin/pages/OfferLettersPage';
 
 function ScrollToTopOnRoute() {
   const { pathname, search } = useLocation();
@@ -290,6 +291,15 @@ function MainAppRoutes() {
           <IpRestrictionGuard>
             <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'HR Manager', 'Team Member', 'Developer']} moduleName="Team & Attendance">
               <TeamPage />
+            </AdminRouteGuard>
+          </IpRestrictionGuard>
+        } />
+
+        {/* EWMS Offer Letter & Contract Management */}
+        <Route path="/admin/offer-letters" element={
+          <IpRestrictionGuard>
+            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'HR Manager', 'Team Member', 'Developer', 'Sales Lead', 'Finance Officer']} moduleName="Offer Letter Management">
+              <OfferLettersPage />
             </AdminRouteGuard>
           </IpRestrictionGuard>
         } />

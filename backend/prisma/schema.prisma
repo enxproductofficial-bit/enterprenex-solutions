@@ -38,26 +38,36 @@ model Employee {
   personalEmail      String?
   personalPhone      String?
   avatar             String?
+  address            String?
+  reportingManager   String?
+  probationPeriod    String?  @default("3 Months")
+  resumeUrl          String?
+  documentsJson      String?
   salaryMonthly      Float    @default(50000)
+  ctcAnnual          Float?   @default(600000)
   workloadPercentage Int      @default(100)
   performanceRating  Float    @default(5.0)
-  status             String   @default("Active") // "Active" | "Resigned" | "Terminated"
-  approvalStatus     String   @default("Approved") // "Approved" | "Pending Director Approval" | "Rejected"
+  status             String   @default("Active")
+  approvalStatus     String   @default("Pending Approval")
+  approvalRemarks    String?
   approvedBy         String?
   approvedAt         DateTime?
+  isAccountActivated Boolean  @default(false)
+  accountActivatedAt DateTime?
+  accountActivatedBy String?
   panNumber          String?
   panDocUrl          String?
   aadhaarNumber      String?
   aadhaarDocUrl      String?
-  kycStatus          String   @default("Not Submitted") // "Verified" | "Pending Verification" | "Rejected" | "Not Submitted"
+  kycStatus          String   @default("Not Submitted")
   kycVerifiedBy      String?
   kycVerifiedAt      DateTime?
-  employmentType     String   @default("Full Time") // "Full Time" | "Part Time" | "Intern" | "Contract"
-  workMode           String   @default("Hybrid") // "Office" | "Remote" | "Hybrid"
+  employmentType     String   @default("Full Time")
+  workMode           String   @default("Hybrid")
   kpiScore           Float?   @default(90.0)
   okrScore           Float?   @default(85.0)
-  skillsMatrixJson   String?  // JSON string storing skills, levels, and manager verification
-  educationJson      String?  // JSON string storing degrees, institutes, scores
+  skillsMatrixJson   String?
+  educationJson      String?
   joinDate           String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -109,23 +119,33 @@ model Project {
 
 // 6. Sprint Tasks, Stopwatch & Review Pipeline
 model Task {
-  id             String   @id @default(uuid())
-  title          String
-  description    String?
-  projectId      String
-  projectName    String
-  assignedTo     String
-  reviewer       String?
-  priority       String   @default("Medium") // "Low" | "Medium" | "High" | "Urgent"
-  status         String   @default("To Do") // "To Do" | "In Progress" | "In Review" | "Changes Required" | "Approved" | "Done"
-  dueDate        String
-  loggedHours    Float    @default(0)
-  estimatedHours Float    @default(8)
-  tagsJson       String?  // JSON array
-  reviewNotes    String?
-  subtasksJson   String?  // JSON array of subtasks
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                      String    @id @default(uuid())
+  title                   String
+  description             String?
+  projectId               String?
+  projectName             String?
+  assignedTo              String
+  department              String?
+  assignedBy              String?
+  assignedByRole          String?   @default("Director")
+  reviewer                String?
+  priority                String    @default("Medium")
+  status                  String    @default("Assigned")
+  startDate               String?
+  dueDate                 String
+  loggedHours             Float     @default(0)
+  estimatedHours          Float     @default(8)
+  tagsJson                String?
+  attachmentsJson         String?
+  completionRemarks       String?
+  supportingDocumentsJson String?
+  submittedAt             DateTime?
+  reviewedBy              String?
+  reviewedAt              DateTime?
+  reviewNotes             String?
+  subtasksJson            String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 }
 
 // 7. Live Task Stopwatch Sessions with Anti-Tamper Heartbeat & Idle Verification
@@ -246,3 +266,43 @@ model ScheduledMeeting {
   createdAt       DateTime @default(now())
 }
 
+
+// 2b. Offer Letter Management & Approval Workflow
+model OfferLetter {
+  id                         String    @id @default(uuid())
+  offerLetterNo              String    @unique
+  employeeId                 String
+  employeeName               String
+  employeeEmail              String
+  department                 String
+  designation                String
+  joiningDate                String
+  employmentType             String    @default("Full-time")
+  salaryMonthly              Float
+  ctcAnnual                  Float
+  probationPeriod            String    @default("3 Months")
+  termsAndConditions         String
+  status                     String    @default("Draft")
+  directorRemarks            String?
+  directorApprovedBy         String?
+  directorApprovedAt         DateTime?
+  sentAt                     DateTime?
+  respondedAt                DateTime?
+  candidateResponseRemarks   String?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+}
+
+// 15. Real-Time EWMS Notification Stream
+model EwmsNotification {
+  id                   String    @id @default(uuid())
+  type                 String
+  title                String
+  message              String
+  recipientRole        String?
+  recipientEmail       String?
+  recipientEmployeeId  String?
+  actionUrl            String?
+  read                 Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+}

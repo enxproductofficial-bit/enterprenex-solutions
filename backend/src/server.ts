@@ -12,6 +12,8 @@ import kpiRoutes from './routes/kpi.routes';
 import leaveRoutes from './routes/leave.routes';
 import ticketRoutes from './routes/ticket.routes';
 import meetingRoutes from './routes/meeting.routes';
+import offerLetterRoutes from './routes/offerLetter.routes';
+import notificationRoutes from './routes/notification.routes';
 import { securityHeaders, sanitizeInputs, rateLimiter, globalErrorHandler } from './middleware/security';
 
 // Global Process Crash Prevention
@@ -206,6 +208,8 @@ app.use('/api/kpi', kpiRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/meetings', meetingRoutes);
+app.use('/api/offer-letters', offerLetterRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Global Error Handler & Crash Boundary
 app.use(globalErrorHandler);

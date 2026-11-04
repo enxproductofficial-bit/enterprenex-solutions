@@ -292,6 +292,10 @@ export const TasksPage: React.FC = () => {
   const [fTitle, setFTitle] = useState('');
   const [fProjectId, setFProjectId] = useState(projects[0]?.id || '');
   const [fModule, setFModule] = useState(MODULE_OPTIONS[0]);
+  const [fDepartment, setFDepartment] = useState('Engineering');
+  const [completionModalTask, setCompletionModalTask] = useState<Task | null>(null);
+  const [completionRemarks, setCompletionRemarks] = useState('');
+  const [completionDoc, setCompletionDoc] = useState('');
   const [fAssignedBy, setFAssignedBy] = useState('Rohit Pawar (Technical Director)');
   const [fAssignedTo, setFAssignedTo] = useState(employees[0]?.name || currentUser?.name || 'Assigned Engineer');
   const [fReviewer, setFReviewer] = useState('Rohit Pawar');
@@ -454,6 +458,7 @@ export const TasksPage: React.FC = () => {
       projectId: fProjectId,
       projectName: selPrj ? selPrj.title : 'General Engineering',
       module: fModule,
+      department: fDepartment,
       assignedBy: fAssignedBy || 'Rohit Pawar (Technical Director)',
       assignedTo: fAssignedTo,
       reviewer: fReviewer || 'Rohit Pawar',
@@ -1127,7 +1132,7 @@ export const TasksPage: React.FC = () => {
                               type="button"
                               onClick={e => {
                                 e.stopPropagation();
-                                submitTaskForReview(t.id);
+                                setCompletionModalTask(t); setCompletionRemarks(''); setCompletionDoc('');
                               }}
                               style={{
                                 background: 'rgba(245, 158, 11, 0.12)',
@@ -1492,7 +1497,20 @@ export const TasksPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">5. System Module (Field 5) *</label>
+                  
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Department *</label>
+                  <select className="adm-select" value={fDepartment} onChange={e => setFDepartment(e.target.value)}>
+                    <option value="Engineering">Engineering</option>
+                    <option value="AI & ML">AI & ML</option>
+                    <option value="Design">Design</option>
+                    <option value="Product">Product</option>
+                    <option value="Sales & Marketing">Sales & Marketing</option>
+                    <option value="Finance & HR">Finance & HR</option>
+                  </select>
+                </div>
+
+                <label className="adm-form-label">5. System Module (Field 5) *</label>
                   <select className="adm-select" value={fModule} onChange={e => setFModule(e.target.value)}>
                     {MODULE_OPTIONS.map(m => (
                       <option key={m} value={m}>

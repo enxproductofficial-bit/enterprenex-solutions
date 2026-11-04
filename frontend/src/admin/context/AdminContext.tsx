@@ -26,7 +26,10 @@ import type {
   IpSecuritySettings,
   IpWhitelistEntry,
   EmployeeKpiScorecard,
-  ObjectiveKeyResult
+  ObjectiveKeyResult,
+  OfferLetter,
+  OfferLetterStatus,
+  EwmsNotification
 } from '../types';
 import {
   INITIAL_ADMIN_USERS,
@@ -50,7 +53,9 @@ import {
   INITIAL_API_KEYS,
   INITIAL_SESSIONS,
   INITIAL_KPIS,
-  INITIAL_OKRS
+  INITIAL_OKRS,
+  INITIAL_OFFER_LETTERS,
+  INITIAL_NOTIFICATIONS
 } from '../data/initialData';
 import { api } from '../api/client';
 
@@ -203,6 +208,31 @@ interface AdminContextType {
   removeAllowedIp: (id: string) => void;
   toggleEnforceIpRestriction: () => void;
   logAction?: (action: string, moduleName: string, details: string) => void;
+  offerLetters: OfferLetter[];
+  notifications: EwmsNotification[];
+
+  // Offer Letter actions
+  createOfferLetter: (data: any) => Promise<OfferLetter>;
+  updateOfferLetter: (id: string, updates: Partial<OfferLetter>) => Promise<OfferLetter>;
+  directorReviewOfferLetter: (id: string, decision: 'Approve' | 'Reject', remarks?: string) => Promise<OfferLetter>;
+  sendOfferLetter: (id: string) => Promise<OfferLetter>;
+  respondOfferLetter: (id: string, decision: 'Accept' | 'Decline', remarks?: string) => Promise<OfferLetter>;
+  deleteOfferLetter: (id: string) => Promise<void>;
+  refreshOfferLetters: () => Promise<void>;
+
+  // Employee Onboarding Approval & Account Activation
+  approveEmployeeOnboarding: (id: string, decision: 'Approved' | 'Rejected', remarks?: string) => Promise<void>;
+  activateEmployeeAccount: (id: string, role?: string) => Promise<{ temporaryPassword?: string; email: string; message: string }>;
+
+  // Task Lifecycle Enhancements
+  submitTaskCompletion: (taskId: string, remarks: string, documents?: string[]) => Promise<void>;
+  reviewTaskSubmission: (taskId: string, decision: 'Approved' | 'Rejected', remarks?: string) => Promise<void>;
+  reassignTask: (taskId: string, assignedTo: string, dueDate?: string, priority?: string, notes?: string) => Promise<void>;
+
+  // Notification actions
+  markNotificationRead: (id: string) => Promise<void>;
+  markAllNotificationsRead: () => Promise<void>;
+  refreshNotifications: () => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -237,6 +267,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [kpis, setKpis] = useState<EmployeeKpiScorecard[]>(INITIAL_KPIS);
   const [okrs, setOkrs] = useState<ObjectiveKeyResult[]>(INITIAL_OKRS);
+  const [offerLetters, setOfferLetters] = useState<OfferLetter[]>(INITIAL_OFFER_LETTERS);
+  const [notifications, setNotifications] = useState<EwmsNotification[]>(INITIAL_NOTIFICATIONS);
+
 
   // Detect client public IP on mount
   useEffect(() => {
@@ -332,13 +365,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const isOnline = await api.checkBackendHealth();
         if (!isOnline) return;
 
-        const [tRes, eRes, aRes, kRes, oRes, lRes] = await Promise.allSettled([
+        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes] = await Promise.allSettled([
           api.getTasks(),
           api.getEmployees(),
           api.getAttendance(),
           api.getKpis(),
           api.getOkrs(),
-          api.getLeaves()
+          api.getLeaves(),
+          api.getOfferLetters(),
+          api.getNotifications()
         ]);
 
         if (tRes.status === 'fulfilled' && tRes.value.tasks?.length > 0) {
@@ -372,6 +407,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             employeeName: normalizeRohitName(l.employeeName),
             approvedBy: normalizeRohitName(l.approvedBy)
           })));
+        }
+        if (offRes.status === 'fulfilled' && offRes.value.offerLetters?.length > 0) {
+          setOfferLetters(offRes.value.offerLetters);
+        }
+        if (notifRes.status === 'fulfilled' && notifRes.value.notifications?.length > 0) {
+          setNotifications(notifRes.value.notifications);
         }
       } catch (err) {
         console.warn('Backend live sync fallback to local cache:', err);
@@ -1380,6 +1421,242 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Firewall Policy Updated', `IP Restriction is now ${newState ? 'ENFORCED (Strict Mode)' : 'DISABLED (Open Mode)'}.`, 'info');
   };
 
+
+  // ── Offer Letter Operations ──
+  const refreshOfferLetters = async () => {
+    try {
+      const res = await api.getOfferLetters();
+      if (res && res.offerLetters) {
+        setOfferLetters(res.offerLetters);
+      }
+    } catch (e) {
+      console.warn('Failed to refresh offer letters:', e);
+    }
+  };
+
+  const createOfferLetter = async (data: any): Promise<OfferLetter> => {
+    try {
+      const res = await api.createOfferLetter(data);
+      const created = res.offerLetter;
+      setOfferLetters(prev => [created, ...prev.filter(o => o.id !== created.id)]);
+      showToast('Offer Letter Drafted', `Offer Letter ${created.offerLetterNo} generated for ${created.employeeName}.`, 'success');
+      logAction('Offer Letter Created', 'Offer Letters', `Created offer letter ${created.offerLetterNo} for ${created.employeeName}`);
+      refreshNotifications();
+      return created;
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to create offer letter', 'error');
+      throw err;
+    }
+  };
+
+  const updateOfferLetter = async (id: string, updates: Partial<OfferLetter>): Promise<OfferLetter> => {
+    try {
+      const res = await api.updateOfferLetter(id, updates);
+      const updated = res.offerLetter;
+      setOfferLetters(prev => prev.map(o => o.id === id ? updated : o));
+      showToast('Offer Letter Saved', `Offer letter ${updated.offerLetterNo} has been updated.`, 'success');
+      return updated;
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to update offer letter', 'error');
+      throw err;
+    }
+  };
+
+  const directorReviewOfferLetter = async (id: string, decision: 'Approve' | 'Reject', remarks?: string): Promise<OfferLetter> => {
+    try {
+      const res = await api.directorReviewOfferLetter(id, decision, remarks);
+      const updated = res.offerLetter;
+      setOfferLetters(prev => prev.map(o => o.id === id ? updated : o));
+      showToast(
+        decision === 'Approve' ? 'Offer Letter Approved' : 'Offer Letter Rejected',
+        `Offer letter ${updated.offerLetterNo} has been ${decision === 'Approve' ? 'approved for distribution' : 'returned with remarks'}.`,
+        decision === 'Approve' ? 'success' : 'warning'
+      );
+      logAction(
+        decision === 'Approve' ? 'Approved Offer Letter' : 'Rejected Offer Letter',
+        'Offer Letters',
+        `Director ${decision === 'Approve' ? 'approved' : 'rejected'} offer letter ${updated.offerLetterNo} with remarks: "${remarks || 'N/A'}"`
+      );
+      refreshNotifications();
+      return updated;
+    } catch (err: any) {
+      showToast('Error', err.message || 'Review action failed', 'error');
+      throw err;
+    }
+  };
+
+  const sendOfferLetter = async (id: string): Promise<OfferLetter> => {
+    try {
+      const res = await api.sendOfferLetter(id);
+      const updated = res.offerLetter;
+      setOfferLetters(prev => prev.map(o => o.id === id ? updated : o));
+      showToast('Offer Letter Dispatched', `Official offer sent to ${updated.employeeEmail}.`, 'success');
+      logAction('Sent Offer Letter', 'Offer Letters', `Sent offer letter ${updated.offerLetterNo} to ${updated.employeeEmail}`);
+      refreshNotifications();
+      return updated;
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to send offer letter', 'error');
+      throw err;
+    }
+  };
+
+  const respondOfferLetter = async (id: string, decision: 'Accept' | 'Decline', remarks?: string): Promise<OfferLetter> => {
+    try {
+      const res = await api.respondOfferLetter(id, decision, remarks);
+      const updated = res.offerLetter;
+      setOfferLetters(prev => prev.map(o => o.id === id ? updated : o));
+      showToast(
+        decision === 'Accept' ? 'Offer Accepted!' : 'Offer Declined',
+        `Offer status updated to ${updated.status}.`,
+        decision === 'Accept' ? 'success' : 'info'
+      );
+      refreshNotifications();
+      return updated;
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to update offer response', 'error');
+      throw err;
+    }
+  };
+
+  const deleteOfferLetter = async (id: string): Promise<void> => {
+    try {
+      await api.deleteOfferLetter(id);
+      setOfferLetters(prev => prev.filter(o => o.id !== id));
+      showToast('Deleted', 'Offer letter removed successfully.', 'info');
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to delete offer letter', 'error');
+      throw err;
+    }
+  };
+
+  // ── Employee Onboarding & Account Activation ──
+  const approveEmployeeOnboarding = async (id: string, decision: 'Approved' | 'Rejected', remarks?: string) => {
+    try {
+      const actionParam = decision === 'Approved' ? 'Approve' : 'Reject';
+      const res = await api.approveEmployeeOnboarding(id, actionParam, remarks);
+      const updated = res.employee;
+      setEmployees(prev => prev.map(e => e.id === id ? { ...e, approvalStatus: updated.approvalStatus, approvalRemarks: updated.approvalRemarks, approvedBy: updated.approvedBy, approvedAt: updated.approvedAt } : e));
+      showToast(
+        decision === 'Approved' ? 'Onboarding Approved' : 'Onboarding Rejected',
+        `Employee onboarding for ${updated.name} was ${decision.toLowerCase()}.`,
+        decision === 'Approved' ? 'success' : 'warning'
+      );
+      logAction('Employee Onboarding Review', 'HR & Team', `Director marked employee ${updated.name} as ${decision}`);
+      refreshNotifications();
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to process onboarding review', 'error');
+      throw err;
+    }
+  };
+
+  const activateEmployeeAccount = async (id: string, role?: string): Promise<{ temporaryPassword?: string; email: string; message: string }> => {
+    try {
+      const res = await api.activateEmployeeAccount(id, role);
+      setEmployees(prev => prev.map(e => e.id === id ? { ...e, isAccountActivated: true, status: 'Active' } : e));
+      showToast('Account Activated', `User credentials created for ${res.email}.`, 'success');
+      logAction('Account Activated', 'User Auth', `HR activated credentials for employee ${id} (${res.email}) with role ${res.role}`);
+      refreshNotifications();
+      return { temporaryPassword: res.temporaryPassword, email: res.email, message: res.message };
+    } catch (err: any) {
+      showToast('Activation Failed', err.message || 'Could not activate account', 'error');
+      throw err;
+    }
+  };
+
+  // ── Task Management Workflow Enhancements ──
+  const submitTaskCompletion = async (taskId: string, remarks: string, documents?: string[]) => {
+    try {
+      const res = await api.submitTaskCompletion(taskId, remarks, documents);
+      const updated = res.task;
+      setTasks(prev => prev.map(t => (t.id === taskId || t.taskId === taskId) ? {
+        ...t,
+        status: 'Under Review',
+        completionRemarks: updated.completionRemarks,
+        supportingDocumentsJson: updated.supportingDocumentsJson,
+        submittedAt: updated.submittedAt
+      } : t));
+      showToast('Task Submitted', 'Your task completion report has been submitted for review.', 'success');
+      logAction('Task Completed', 'Task Management', `Task ${taskId} submitted for Director/HR review.`);
+      refreshNotifications();
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to submit task completion', 'error');
+      throw err;
+    }
+  };
+
+  const reviewTaskSubmission = async (taskId: string, decision: 'Approved' | 'Rejected', remarks?: string) => {
+    try {
+      const res = await api.reviewTaskSubmission(taskId, decision === 'Approved' ? 'Approve' : 'Reject', remarks);
+      const updated = res.task;
+      setTasks(prev => prev.map(t => (t.id === taskId || t.taskId === taskId) ? {
+        ...t,
+        status: updated.status,
+        reviewNotes: updated.reviewNotes,
+        reviewedBy: updated.reviewedBy,
+        reviewedAt: updated.reviewedAt
+      } : t));
+      showToast(
+        decision === 'Approved' ? 'Task Approved' : 'Task Revision Requested',
+        `Task marked as ${updated.status}.`,
+        decision === 'Approved' ? 'success' : 'warning'
+      );
+      logAction('Task Review Completed', 'Task Management', `Task ${taskId} review decision: ${decision}`);
+      refreshNotifications();
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to process task review', 'error');
+      throw err;
+    }
+  };
+
+  const reassignTask = async (taskId: string, assignedTo: string, dueDate?: string, priority?: string, notes?: string) => {
+    try {
+      const res = await api.reassignTask(taskId, { assignedTo, dueDate, priority, notes });
+      const updated = res.task;
+      setTasks(prev => prev.map(t => (t.id === taskId || t.taskId === taskId) ? {
+        ...t,
+        assignedTo: updated.assignedTo,
+        dueDate: updated.dueDate || t.dueDate,
+        priority: updated.priority || t.priority
+      } : t));
+      showToast('Task Reassigned', `Task has been reassigned to ${assignedTo}.`, 'info');
+      refreshNotifications();
+    } catch (err: any) {
+      showToast('Error', err.message || 'Failed to reassign task', 'error');
+      throw err;
+    }
+  };
+
+  // ── Notification Operations ──
+  const refreshNotifications = async () => {
+    try {
+      const res = await api.getNotifications();
+      if (res && res.notifications) {
+        setNotifications(res.notifications);
+      }
+    } catch (e) {
+      console.warn('Failed to refresh notifications:', e);
+    }
+  };
+
+  const markNotificationRead = async (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    try {
+      await api.markNotificationRead(id);
+    } catch (e) {
+      console.warn('Backend mark notification read deferred:', e);
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    try {
+      await api.markAllNotificationsRead();
+      showToast('Notifications Cleared', 'All alerts marked as read.', 'info');
+    } catch (e) {
+      console.warn('Backend mark all notifications read deferred:', e);
+    }
+  };
+
   const resetAllData = () => {
     localStorage.removeItem(STORAGE_KEY);
     setClients(INITIAL_CLIENTS);
@@ -1502,7 +1779,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateKpiMetric,
         updateOkrProgress,
         verifyEmployeeSkill,
-        updateAttendanceRecord
+        updateAttendanceRecord,
+        offerLetters,
+        notifications,
+        createOfferLetter,
+        updateOfferLetter,
+        directorReviewOfferLetter,
+        sendOfferLetter,
+        respondOfferLetter,
+        deleteOfferLetter,
+        refreshOfferLetters,
+        approveEmployeeOnboarding,
+        activateEmployeeAccount,
+        submitTaskCompletion,
+        reviewTaskSubmission,
+        reassignTask,
+        markNotificationRead,
+        markAllNotificationsRead,
+        refreshNotifications,
       }}
     >
       {children}

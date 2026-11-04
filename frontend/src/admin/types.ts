@@ -246,7 +246,16 @@ export interface Employee {
   salaryMonthly: number;
   performanceRating: number; // 1-5
   status: 'Active' | 'On Leave' | 'Remote' | 'Resigned' | 'Terminated' | 'Inactive';
-  approvalStatus?: 'Approved' | 'Pending Director Approval' | 'Rejected';
+  address?: string;
+  probationPeriod?: string;
+  resumeUrl?: string;
+  ctcAnnual?: number;
+  documents?: Array<{ name: string; url?: string; category?: string; uploadDate?: string }>;
+  approvalStatus?: 'Approved' | 'Pending Approval' | 'Pending Director Approval' | 'Rejected';
+  approvalRemarks?: string;
+  isAccountActivated?: boolean;
+  accountActivatedAt?: string;
+  accountActivatedBy?: string;
   approvedBy?: string;
   approvedAt?: string;
   panNumber?: string;
@@ -309,17 +318,21 @@ export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
 
 // EWMS Section 10: 9-Stage Task Lifecycle Progression + backward compatibility
 export type TaskColumn =
+  | 'Assigned'
+  | 'Accepted'
+  | 'In Progress'
+  | 'Under Review'
+  | 'Completed'
+  | 'Rejected'
+  | 'On Hold'
   | 'Backlog'
   | 'To Do'
-  | 'In Progress'
   | 'Blocked'
   | 'In Review'
   | 'Revision Required'
   | 'Approved'
-  | 'Completed'
   | 'Cancelled'
   | 'Changes Required'
-  | 'Assigned'
   | 'Done'
   | 'Testing';
 
@@ -629,4 +642,53 @@ export interface IpWhitelistEntry {
 export interface IpSecuritySettings {
   enforceIpRestriction: boolean;
   allowedIps: IpWhitelistEntry[];
+}
+
+// ── Offer Letter Management & Approval Workflow ──
+export type OfferLetterStatus =
+  | 'Draft'
+  | 'Pending Approval'
+  | 'Approved'
+  | 'Rejected'
+  | 'Sent'
+  | 'Accepted'
+  | 'Declined';
+
+export interface OfferLetter {
+  id: string;
+  offerLetterNo: string;
+  employeeId: string;
+  employeeName: string;
+  employeeEmail: string;
+  department: string;
+  designation: string;
+  joiningDate: string;
+  employmentType: 'Full-time' | 'Part-time' | 'Intern' | string;
+  salaryMonthly: number;
+  ctcAnnual: number;
+  probationPeriod: string;
+  termsAndConditions: string;
+  status: OfferLetterStatus;
+  directorRemarks?: string;
+  directorApprovedBy?: string;
+  directorApprovedAt?: string;
+  sentAt?: string;
+  respondedAt?: string;
+  candidateResponseRemarks?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ── EWMS Real-Time System Notification ──
+export interface EwmsNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  recipientRole?: string;
+  recipientEmail?: string;
+  recipientEmployeeId?: string;
+  actionUrl?: string;
+  read: boolean;
+  createdAt: string;
 }

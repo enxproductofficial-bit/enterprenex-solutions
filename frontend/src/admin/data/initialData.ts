@@ -1173,3 +1173,102 @@ export const INITIAL_SESSIONS: UserSession[] = [
     isCurrent: true
   }
 ];
+
+export const INITIAL_OFFER_LETTERS: OfferLetter[] = [
+  {
+    id: 'off-101',
+    offerLetterNo: 'ENX-OFF-2026-0001',
+    employeeId: '202600000002',
+    employeeName: 'POLAMREDDY REVANTH REDDY',
+    employeeEmail: 'revanth@enterprenex.solutions',
+    department: 'Engineering',
+    designation: 'Full Stack Engineer & AI Specialist',
+    joiningDate: '2026-02-01',
+    employmentType: 'Full-time',
+    salaryMonthly: 85000,
+    ctcAnnual: 1020000,
+    probationPeriod: '3 Months',
+    termsAndConditions: '1. Appointment & Scope of Employment: Appointed as Full Stack Engineer & AI Specialist at Enterprenex Solutions Pvt Ltd.\n2. Probation Period: 3 Months with evaluation prior to confirmation.\n3. Working Hours: 09:30 AM to 06:30 PM IST (Hybrid Operations).\n4. Annual CTC: INR 10,20,000/- subject to applicable taxes.\n5. Confidentiality & IP: Perpetual non-disclosure of enterprise algorithms, client data, and proprietary code.',
+    status: 'Accepted',
+    directorRemarks: 'Approved unconditionally by Managing Director.',
+    directorApprovedBy: 'Rohit Pawar (Managing Director)',
+    directorApprovedAt: '2026-01-20T10:00:00.000Z',
+    sentAt: '2026-01-20T11:00:00.000Z',
+    respondedAt: '2026-01-21T14:30:00.000Z',
+    candidateResponseRemarks: 'I am honored to accept this appointment offer and look forward to contributing to Enterprenex.',
+    createdAt: '2026-01-19T09:00:00.000Z'
+  },
+  {
+    id: 'off-102',
+    offerLetterNo: 'ENX-OFF-2026-0002',
+    employeeId: '202600000003',
+    employeeName: 'Ananya Sharma',
+    employeeEmail: 'ananya.sharma@enterprenex.solutions',
+    department: 'Engineering',
+    designation: 'Senior Frontend Developer',
+    joiningDate: '2026-03-01',
+    employmentType: 'Full-time',
+    salaryMonthly: 75000,
+    ctcAnnual: 900000,
+    probationPeriod: '3 Months',
+    termsAndConditions: '1. Standard Enterprenex appointment terms.\n2. Working hours: 09:30 AM to 06:30 PM IST.\n3. 3-month probation period.',
+    status: 'Sent',
+    directorRemarks: 'Approved for rollout.',
+    directorApprovedBy: 'Rohit Pawar',
+    directorApprovedAt: '2026-02-15T12:00:00.000Z',
+    sentAt: '2026-02-15T15:00:00.000Z',
+    createdAt: '2026-02-14T11:00:00.000Z'
+  },
+  {
+    id: 'off-103',
+    offerLetterNo: 'ENX-OFF-2026-0003',
+    employeeId: '202600000004',
+    employeeName: 'Vikramaditya Patil',
+    employeeEmail: 'vikram.patil@enterprenex.solutions',
+    department: 'Engineering',
+    designation: 'DevOps & SRE Engineer',
+    joiningDate: '2026-04-01',
+    employmentType: 'Full-time',
+    salaryMonthly: 80000,
+    ctcAnnual: 960000,
+    probationPeriod: '3 Months',
+    termsAndConditions: '1. Standard Enterprenex SRE appointment terms.\n2. 24x7 rotation on-call allowance applicable.',
+    status: 'Pending Approval',
+    createdAt: '2026-03-01T10:00:00.000Z'
+  }
+];
+
+export const INITIAL_NOTIFICATIONS: EwmsNotification[] = [
+  {
+    id: 'notif-1',
+    type: 'OFFER_PENDING_APPROVAL',
+    title: 'Offer Letter Pending Review',
+    message: 'Offer Letter ENX-OFF-2026-0003 for Vikramaditya Patil is awaiting Director review and approval.',
+    recipientRole: 'Super Admin',
+    actionUrl: '/admin/offer-letters',
+    read: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'notif-2',
+    type: 'TASK_ASSIGNED',
+    title: 'New Sprint Task Assigned',
+    message: 'You have been assigned task "Live Task Stopwatch & Time Tracker" by Rohit Pawar.',
+    recipientRole: 'Developer',
+    recipientEmail: 'revanth@enterprenex.solutions',
+    recipientEmployeeId: '202600000002',
+    actionUrl: '/admin/tasks',
+    read: false,
+    createdAt: new Date(Date.now() - 3600000).toISOString()
+  },
+  {
+    id: 'notif-3',
+    type: 'OFFER_ACCEPTED',
+    title: 'Offer Accepted by Candidate',
+    message: 'POLAMREDDY REVANTH REDDY has accepted offer ENX-OFF-2026-0001. Account ready for activation.',
+    recipientRole: 'Project Manager',
+    actionUrl: '/admin/offer-letters',
+    read: true,
+    createdAt: new Date(Date.now() - 86400000).toISOString()
+  }
+];

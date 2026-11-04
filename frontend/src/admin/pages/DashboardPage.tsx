@@ -310,6 +310,19 @@ export const DashboardPage: React.FC = () => {
     ? Math.round(safeEmployees.reduce((acc, e) => acc + (Number(e?.workloadPercentage) || 0), 0) / safeEmployees.length)
     : 0;
 
+
+  // ── EWMS Enhanced Onboarding, Offer Letter & Task Monitoring Telemetry ──
+  const pendingOnboardingCount = safeEmployees.filter(e => e.approvalStatus === 'Pending Approval' || e.approvalStatus === 'Pending Director Approval').length;
+  const totalOfferCount = (offerLetters || []).length;
+  const pendingOfferCount = (offerLetters || []).filter(o => o.status === 'Pending Approval').length;
+  const approvedOfferCount = (offerLetters || []).filter(o => o.status === 'Approved').length;
+  const rejectedOfferCount = (offerLetters || []).filter(o => o.status === 'Rejected').length;
+  const totalTasksCount = safeTasks.length;
+  const pendingTasksCount = safeTasks.filter(t => t.status === 'Assigned' || t.status === 'Accepted' || t.status === 'To Do' || t.status === 'Backlog').length;
+  const inProgressTasksCount = safeTasks.filter(t => t.status === 'In Progress').length;
+  const underReviewTasksCount = safeTasks.filter(t => t.status === 'Under Review' || t.status === 'In Review').length;
+  const completedTasksCount = safeTasks.filter(t => t.status === 'Completed' || t.status === 'Approved' || t.status === 'Done').length;
+
   // ── Manager Dashboard Telemetry (Jyothi Anbhule Specification) ──
   const tasksDueToday = safeTasks.filter(
     t => t.dueDate === todayStr && t.status !== 'Completed' && t.status !== 'Approved'

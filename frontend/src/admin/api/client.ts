@@ -185,6 +185,110 @@ class ApiClient {
     });
   }
 
+
+  // 6. Offer Letter Management & Approval Workflow
+  async getOfferLetters() {
+    return this.request<{ offerLetters: any[] }>('/offer-letters');
+  }
+
+  async getOfferLetter(id: string) {
+    return this.request<{ offerLetter: any }>(`/offer-letters/${id}`);
+  }
+
+  async createOfferLetter(data: any) {
+    return this.request<{ message: string; offerLetter: any }>('/offer-letters', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateOfferLetter(id: string, updates: any) {
+    return this.request<{ message: string; offerLetter: any }>(`/offer-letters/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  }
+
+  async directorReviewOfferLetter(id: string, action: 'Approve' | 'Reject', remarks?: string) {
+    return this.request<{ message: string; offerLetter: any }>(`/offer-letters/${id}/director-review`, {
+      method: 'PUT',
+      body: JSON.stringify({ action, remarks })
+    });
+  }
+
+  async sendOfferLetter(id: string) {
+    return this.request<{ message: string; offerLetter: any }>(`/offer-letters/${id}/send`, {
+      method: 'POST'
+    });
+  }
+
+  async respondOfferLetter(id: string, action: 'Accept' | 'Decline', remarks?: string) {
+    return this.request<{ message: string; offerLetter: any }>(`/offer-letters/${id}/respond`, {
+      method: 'POST',
+      body: JSON.stringify({ action, remarks })
+    });
+  }
+
+  async deleteOfferLetter(id: string) {
+    return this.request<{ message: string }>(`/offer-letters/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // 7. Employee Onboarding & Account Activation
+  async approveEmployeeOnboarding(id: string, action: 'Approve' | 'Reject', remarks?: string) {
+    return this.request<{ message: string; employee: any }>(`/employees/${id}/approval`, {
+      method: 'PUT',
+      body: JSON.stringify({ action, remarks })
+    });
+  }
+
+  async activateEmployeeAccount(id: string, assignedRole?: string) {
+    return this.request<{ message: string; employeeId: string; email: string; role: string; temporaryPassword?: string }>(`/employees/${id}/activate`, {
+      method: 'POST',
+      body: JSON.stringify({ assignedRole })
+    });
+  }
+
+  // 8. Task Workflow: Submit Completion, Director Review, Reassign
+  async submitTaskCompletion(taskId: string, completionRemarks: string, supportingDocuments?: string[]) {
+    return this.request<{ message: string; task: any }>(`/tasks/${taskId}/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ completionRemarks, supportingDocuments })
+    });
+  }
+
+  async reviewTaskSubmission(taskId: string, action: 'Approve' | 'Reject', remarks?: string) {
+    return this.request<{ message: string; task: any }>(`/tasks/${taskId}/director-review`, {
+      method: 'POST',
+      body: JSON.stringify({ action, remarks })
+    });
+  }
+
+  async reassignTask(taskId: string, data: { assignedTo: string; dueDate?: string; priority?: string; notes?: string }) {
+    return this.request<{ message: string; task: any }>(`/tasks/${taskId}/reassign`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  // 9. Notifications Stream
+  async getNotifications() {
+    return this.request<{ notifications: any[] }>('/notifications');
+  }
+
+  async markNotificationRead(id: string) {
+    return this.request<{ notification: any }>(`/notifications/${id}/read`, {
+      method: 'PUT'
+    });
+  }
+
+  async markAllNotificationsRead() {
+    return this.request<{ message: string }>('/notifications/read-all', {
+      method: 'PUT'
+    });
+  }
+
   // Health check
   async checkBackendHealth(): Promise<boolean> {
     try {
