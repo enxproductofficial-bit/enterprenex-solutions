@@ -85,7 +85,28 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
     const workingHours = offer.workingHours || '4 to 6 hours per day, as assigned by the Reporting Manager';
     const workingDays = offer.workingDays || 'Monday - saturday';
     const address = offer.candidateAddress || 'Burdwan, West Bengal';
-    const startDate = offer.joiningDate === '2026-04-01' || offer.joiningDate === '2026-10-25' ? '25Oct2026' : (offer.joiningDate || '25Oct2026');
+    const formatJoiningDate = (raw?: string | null): string => {
+      if (!raw) {
+        const today = new Date();
+        const d = String(today.getDate()).padStart(2, '0');
+        const m = today.toLocaleString('en-US', { month: 'short' });
+        const y = today.getFullYear();
+        return `${d}${m}${y}`;
+      }
+      if (/^\d{1,2}[A-Za-z]{3}\d{4}$/.test(raw.trim())) {
+        return raw.trim();
+      }
+      const parsed = new Date(raw);
+      if (!isNaN(parsed.getTime())) {
+        const d = String(parsed.getDate()).padStart(2, '0');
+        const m = parsed.toLocaleString('en-US', { month: 'short' });
+        const y = parsed.getFullYear();
+        return `${d}${m}${y}`;
+      }
+      return raw;
+    };
+
+    const startDate = formatJoiningDate(offer.joiningDate);
     const stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
 
     // Signatory resolution

@@ -71,7 +71,7 @@ export const OfferLettersPage: React.FC = () => {
   const [formEmail, setFormEmail] = useState<string>('');
   const [formDept, setFormDept] = useState<string>('IT');
   const [formDesignation, setFormDesignation] = useState<string>('Web Development Intern');
-  const [formJoinDate, setFormJoinDate] = useState<string>('2026-10-25');
+  const [formJoinDate, setFormJoinDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [formEmpType, setFormEmpType] = useState<string>('Intern');
   const [formSalary, setFormSalary] = useState<number>(0);
   const [formProbation, setFormProbation] = useState<string>('3 (Three) Months from the Date of Joining');
@@ -154,7 +154,7 @@ export const OfferLettersPage: React.FC = () => {
     setFormEmail('');
     setFormDept('IT');
     setFormDesignation('Web Development Intern');
-    setFormJoinDate('2026-10-25');
+    setFormJoinDate(new Date().toISOString().split('T')[0]);
     setFormEmpType('Intern');
     setFormSalary(0);
     setFormProbation('3 (Three) Months from the Date of Joining');
@@ -1031,7 +1031,29 @@ export const OfferLettersPage: React.FC = () => {
               const placeOfJoining = offer.placeOfJoining || 'chh sambhajinagar,Maharashtra,india';
               const workMode = offer.workMode || 'online';
               const durationText = offer.probationPeriod || '3 (Three) Months from the Date of Joining';
-              const startDate = offer.joiningDate === '2026-04-01' || offer.joiningDate === '2026-10-25' ? '25Oct2026' : (offer.joiningDate || '25Oct2026');
+
+              const formatJoiningDate = (raw?: string | null): string => {
+                if (!raw) {
+                  const today = new Date();
+                  const d = String(today.getDate()).padStart(2, '0');
+                  const m = today.toLocaleString('en-US', { month: 'short' });
+                  const y = today.getFullYear();
+                  return `${d}${m}${y}`;
+                }
+                if (/^\d{1,2}[A-Za-z]{3}\d{4}$/.test(raw.trim())) {
+                  return raw.trim();
+                }
+                const parsed = new Date(raw);
+                if (!isNaN(parsed.getTime())) {
+                  const d = String(parsed.getDate()).padStart(2, '0');
+                  const m = parsed.toLocaleString('en-US', { month: 'short' });
+                  const y = parsed.getFullYear();
+                  return `${d}${m}${y}`;
+                }
+                return raw;
+              };
+
+              const startDate = formatJoiningDate(offer.joiningDate);
               const workingHours = offer.workingHours || '4 to 6 hours per day, as assigned by the Reporting Manager';
               const workingDays = offer.workingDays || 'Monday - saturday';
               const address = offer.candidateAddress || 'Burdwan, West Bengal';
