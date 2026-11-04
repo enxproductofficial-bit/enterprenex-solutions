@@ -23,9 +23,9 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     token = String(req.query.token);
   }
 
-  // In local development, allow direct browser GET requests for testing without manual curl/postman headers
+  // In local development, allow direct requests without manual bearer token
   if (!token) {
-    if (process.env.NODE_ENV !== 'production' && req.method === 'GET') {
+    if (process.env.NODE_ENV !== 'production') {
       req.user = {
         id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
         email: 'director@enterprenex.solutions',

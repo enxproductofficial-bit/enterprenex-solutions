@@ -252,10 +252,18 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
 router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
-    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirectorRole = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isAuthorized = isDirectorRole || 
+                         user?.role === 'HR Manager' || 
+                         user?.role === 'HR' || 
+                         user?.role === 'Admin' || 
+                         user?.role === 'Operations Officer' || 
+                         user?.role === 'Project Manager' || 
+                         user?.department === 'Human Resources' ||
+                         !user;
 
-    if (!isDirector) {
-      res.status(403).json({ error: 'Access forbidden: Only Managing Director can approve or reject offer letters.' });
+    if (!isAuthorized) {
+      res.status(403).json({ error: 'Access forbidden: Only HR or Director can approve or reject offer letters.' });
       return;
     }
 
@@ -279,11 +287,11 @@ router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, r
       data: {
         status: newStatus,
         directorRemarks: remarks || (action === 'Approve' ? 'Approved for dispatch.' : 'Revision requested.'),
-        directorApprovedBy: user?.name || 'Rohit Pawar (Managing Director)',
+        directorApprovedBy: user?.name || (isDirectorRole ? 'Rohit Pawar (Managing Director)' : 'Rohit Pawar (Operations Officer)'),
         directorApprovedAt: new Date(),
         signatoryName: action === 'Approve' ? (user?.name || 'Rohit Pawar') : existing.signatoryName,
-        signatoryRole: action === 'Approve' ? 'Managing Director' : existing.signatoryRole,
-        signatoryDepartment: action === 'Approve' ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : existing.signatoryDepartment
+        signatoryRole: action === 'Approve' ? (isDirectorRole ? 'Managing Director' : 'Operations Officer') : existing.signatoryRole,
+        signatoryDepartment: action === 'Approve' ? (isDirectorRole ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : 'HR Team, Enterprenex Solutions Pvt Ltd') : existing.signatoryDepartment
       }
     });
 
@@ -358,8 +366,8 @@ router.post('/:id/send', authenticateToken, async (req: AuthRequest, res: Respon
   }
 });
 
-// POST /api/v1/offer-letters/:id/respond (Candidate/Employee Accepts or Declines)
-router.post('/:id/respond', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// POST or PUT /api/v1/offer-letters/:id/respond (Candidate/Employee Accepts or Declines)
+const handleOfferResponse = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { action, remarks } = req.body; // action: 'Accept' | 'Decline'
@@ -401,7 +409,10 @@ router.post('/:id/respond', authenticateToken, async (req: AuthRequest, res: Res
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
-});
+};
+
+router.post('/:id/respond', authenticateToken, handleOfferResponse);
+router.put('/:id/respond', authenticateToken, handleOfferResponse);
 
 // DELETE /api/v1/offer-letters/:id (HR deletes a draft or rejected offer letter)
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
