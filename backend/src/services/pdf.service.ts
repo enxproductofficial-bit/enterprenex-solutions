@@ -76,28 +76,17 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
     const year = dateObj.getFullYear();
     const formattedDate = `${day} ${month} ${year}`;
 
-    const isInternship =
-      offer.employmentType?.toLowerCase().includes('intern') ||
-      offer.designation?.toLowerCase().includes('intern') ||
-      offer.probationPeriod?.toLowerCase().includes('intern');
-
-    const durationText = offer.probationPeriod || (isInternship ? '3 (Three) Months from the Date of Joining' : '6 Months Probation');
-    const reportingTo = offer.reportingManager || (offer.directorApprovedBy ? offer.directorApprovedBy : 'Rohit pawar');
+    const isInternship = true;
+    const department = offer.department && offer.department !== 'Engineering' ? offer.department : 'IT';
+    const durationText = offer.probationPeriod || '3 (Three) Months from the Date of Joining';
+    const reportingTo = offer.reportingManager || 'Rohit pawar';
     const placeOfJoining = offer.placeOfJoining || 'chh sambhajinagar,Maharashtra,india';
     const workMode = offer.workMode || 'online';
-    const workingHours = offer.workingHours || (isInternship ? '4 to 6 hours per day, as assigned by the Reporting Manager' : '8 hours per day, Monday to Friday');
+    const workingHours = offer.workingHours || '4 to 6 hours per day, as assigned by the Reporting Manager';
     const workingDays = offer.workingDays || 'Monday - saturday';
     const address = offer.candidateAddress || 'Burdwan, West Bengal';
-
-    // Stipend / Compensation text
-    let stipendText = '';
-    if (isInternship && (!offer.salaryMonthly || offer.salaryMonthly === 0)) {
-      stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
-    } else if (offer.salaryMonthly > 0) {
-      stipendText = `₹${offer.salaryMonthly.toLocaleString('en-IN')} / month (Annual CTC: ₹${offer.ctcAnnual?.toLocaleString('en-IN') || (offer.salaryMonthly * 12).toLocaleString('en-IN')})`;
-    } else {
-      stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
-    }
+    const startDate = offer.joiningDate === '2026-04-01' || offer.joiningDate === '2026-10-25' ? '25Oct2026' : (offer.joiningDate || '25Oct2026');
+    const stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
 
     // Signatory resolution
     const signatoryName = offer.signatoryName || 'Rohit Pawar';
@@ -367,26 +356,26 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
     </div>
 
     <div class="offer-title">
-      OFFER LETTER FOR ${isInternship ? 'INTERNSHIP' : 'EMPLOYMENT'}
+      OFFER LETTER FOR INTERNSHIP
     </div>
 
     <div class="salutation">Dear ${offer.employeeName.toUpperCase()},</div>
 
     <p class="intro-p">
-      We are pleased to offer you the position of <strong>${offer.designation}</strong> at Enterprenex Solutions Pvt Ltd. We were impressed with your profile during the selection process and believe you will be a valuable addition to our team. Please find below the terms and conditions of your ${isInternship ? 'internship' : 'employment'}.
+      We are pleased to offer you the position of <strong>${offer.designation}</strong> at Enterprenex Solutions Pvt Ltd. We were impressed with your profile during the selection process and believe you will be a valuable addition to our team. Please find below the terms and conditions of your internship.
     </p>
 
-    <div class="section-heading">${isInternship ? 'INTERNSHIP DETAILS' : 'EMPLOYMENT DETAILS'}</div>
+    <div class="section-heading">INTERNSHIP DETAILS</div>
     <div class="section-line"></div>
 
     <table class="details-table">
       <tbody>
         <tr>
-          <td class="lbl">${isInternship ? 'Intern Name:' : 'Employee Name:'}</td>
+          <td class="lbl">Intern Name:</td>
           <td class="val"><strong>${offer.employeeName.toUpperCase()}</strong></td>
         </tr>
         <tr>
-          <td class="lbl">${isInternship ? 'Intern ID:' : 'Employee ID:'}</td>
+          <td class="lbl">Intern ID:</td>
           <td class="val">${offer.employeeId || offer.offerLetterNo}</td>
         </tr>
         <tr>
@@ -395,7 +384,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
         </tr>
         <tr>
           <td class="lbl">Department:</td>
-          <td class="val">${offer.department}</td>
+          <td class="val">${department}</td>
         </tr>
         <tr>
           <td class="lbl">Reporting To:</td>
@@ -415,7 +404,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
         </tr>
         <tr>
           <td class="lbl">Start Date:</td>
-          <td class="val">${offer.joiningDate}</td>
+          <td class="val">${startDate}</td>
         </tr>
         <tr>
           <td class="lbl">Working Hours:</td>
@@ -426,7 +415,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
           <td class="val">${workingDays}</td>
         </tr>
         <tr>
-          <td class="lbl">${isInternship ? 'Stipend:' : 'Compensation:'}</td>
+          <td class="lbl">Stipend:</td>
           <td class="val">${stipendText}</td>
         </tr>
       </tbody>

@@ -69,19 +69,19 @@ export const OfferLettersPage: React.FC = () => {
   const [selectedEmpId, setSelectedEmpId] = useState<string>('');
   const [formName, setFormName] = useState<string>('');
   const [formEmail, setFormEmail] = useState<string>('');
-  const [formDept, setFormDept] = useState<string>('Engineering');
-  const [formDesignation, setFormDesignation] = useState<string>('Software Engineer');
-  const [formJoinDate, setFormJoinDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [formEmpType, setFormEmpType] = useState<string>('Full-time');
-  const [formSalary, setFormSalary] = useState<number>(50000);
-  const [formProbation, setFormProbation] = useState<string>('3 Months');
+  const [formDept, setFormDept] = useState<string>('IT');
+  const [formDesignation, setFormDesignation] = useState<string>('Web Development Intern');
+  const [formJoinDate, setFormJoinDate] = useState<string>('2026-10-25');
+  const [formEmpType, setFormEmpType] = useState<string>('Intern');
+  const [formSalary, setFormSalary] = useState<number>(0);
+  const [formProbation, setFormProbation] = useState<string>('3 (Three) Months from the Date of Joining');
   const [formAddress, setFormAddress] = useState<string>('Burdwan, West Bengal');
   const [formPlaceOfJoining, setFormPlaceOfJoining] = useState<string>('chh sambhajinagar,Maharashtra,india');
   const [formWorkMode, setFormWorkMode] = useState<string>('online');
   const [formWorkingHours, setFormWorkingHours] = useState<string>('4 to 6 hours per day, as assigned by the Reporting Manager');
   const [formWorkingDays, setFormWorkingDays] = useState<string>('Monday - saturday');
   const [formReportingManager, setFormReportingManager] = useState<string>('Rohit pawar');
-  const [formSignatoryType, setFormSignatoryType] = useState<'Director' | 'HR'>('Director');
+  const [formSignatoryType, setFormSignatoryType] = useState<'Director' | 'HR'>('HR');
   const [formSignatoryName, setFormSignatoryName] = useState<string>('Rohit Pawar');
   const [formTerms, setFormTerms] = useState<string>(
 `1. Working Hours & Modality: Regular work hours are 09:30 AM to 06:30 PM IST, Monday through Friday, operating under a Hybrid arrangement.
@@ -152,19 +152,19 @@ export const OfferLettersPage: React.FC = () => {
     setSelectedEmpId('');
     setFormName('');
     setFormEmail('');
-    setFormDept('Engineering');
-    setFormDesignation('Software Engineer');
-    setFormJoinDate(new Date().toISOString().split('T')[0]);
-    setFormEmpType('Full-time');
-    setFormSalary(50000);
-    setFormProbation('3 Months');
+    setFormDept('IT');
+    setFormDesignation('Web Development Intern');
+    setFormJoinDate('2026-10-25');
+    setFormEmpType('Intern');
+    setFormSalary(0);
+    setFormProbation('3 (Three) Months from the Date of Joining');
     setFormAddress('Burdwan, West Bengal');
     setFormPlaceOfJoining('chh sambhajinagar,Maharashtra,india');
     setFormWorkMode('online');
     setFormWorkingHours('4 to 6 hours per day, as assigned by the Reporting Manager');
     setFormWorkingDays('Monday - saturday');
     setFormReportingManager('Rohit pawar');
-    setFormSignatoryType('Director');
+    setFormSignatoryType('HR');
     setFormSignatoryName('Rohit Pawar');
   };
 
@@ -608,6 +608,7 @@ export const OfferLettersPage: React.FC = () => {
                     className="adm-input"
                     style={{ width: '100%', height: '38px' }}
                   >
+                    <option value="IT">IT</option>
                     <option value="Engineering">Engineering</option>
                     <option value="AI & Machine Learning">AI & Machine Learning</option>
                     <option value="Design & UX">Design & UX</option>
@@ -654,6 +655,7 @@ export const OfferLettersPage: React.FC = () => {
                     className="adm-input"
                     style={{ width: '100%', height: '38px' }}
                   >
+                    <option value="3 (Three) Months from the Date of Joining">3 (Three) Months from the Date of Joining</option>
                     <option value="3 Months">3 Months</option>
                     <option value="6 Months">6 Months</option>
                     <option value="1 Month">1 Month</option>
@@ -1022,30 +1024,21 @@ export const OfferLettersPage: React.FC = () => {
             {/* Printable A4 2-Page Letterhead Body */}
             {(() => {
               const offer = selectedOfferForPreview;
-              const isInternship =
-                offer.employmentType?.toLowerCase().includes('intern') ||
-                offer.designation?.toLowerCase().includes('intern') ||
-                offer.probationPeriod?.toLowerCase().includes('intern');
+              const isInternship = true;
 
-              const durationText = offer.probationPeriod || (isInternship ? '3 (Three) Months from the Date of Joining' : '6 Months Probation');
-              const reportingTo = offer.reportingManager || (offer.directorApprovedBy ? offer.directorApprovedBy : 'Rohit pawar');
+              const department = offer.department && offer.department !== 'Engineering' ? offer.department : 'IT';
+              const reportingTo = offer.reportingManager || 'Rohit pawar';
               const placeOfJoining = offer.placeOfJoining || 'chh sambhajinagar,Maharashtra,india';
               const workMode = offer.workMode || 'online';
-              const workingHours = offer.workingHours || (isInternship ? '4 to 6 hours per day, as assigned by the Reporting Manager' : '8 hours per day, Monday to Friday');
+              const durationText = offer.probationPeriod || '3 (Three) Months from the Date of Joining';
+              const startDate = offer.joiningDate === '2026-04-01' || offer.joiningDate === '2026-10-25' ? '25Oct2026' : (offer.joiningDate || '25Oct2026');
+              const workingHours = offer.workingHours || '4 to 6 hours per day, as assigned by the Reporting Manager';
               const workingDays = offer.workingDays || 'Monday - saturday';
               const address = offer.candidateAddress || 'Burdwan, West Bengal';
+              const stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
 
               const dateObj = new Date(offer.createdAt);
               const formattedDate = `${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })} ${dateObj.getFullYear()}`;
-
-              let stipendText = '';
-              if (isInternship && (!offer.salaryMonthly || offer.salaryMonthly === 0)) {
-                stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
-              } else if (offer.salaryMonthly > 0) {
-                stipendText = `₹${offer.salaryMonthly.toLocaleString('en-IN')} / month (Annual CTC: ₹${(offer.ctcAnnual || offer.salaryMonthly * 12).toLocaleString('en-IN')})`;
-              } else {
-                stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
-              }
 
               const signatoryName = offer.signatoryName || 'Rohit Pawar';
               const signatoryRole = offer.signatoryRole || 'Operations Officer';
@@ -1131,7 +1124,7 @@ export const OfferLettersPage: React.FC = () => {
 
                       {/* Title */}
                       <div style={{ textAlign: 'center', fontSize: '1.05rem', fontWeight: 800, letterSpacing: '0.5px', color: '#0f172a', textDecoration: 'underline', marginBottom: '14px' }}>
-                        OFFER LETTER FOR {isInternship ? 'INTERNSHIP' : 'EMPLOYMENT'}
+                        OFFER LETTER FOR INTERNSHIP
                       </div>
 
                       {/* Salutation */}
@@ -1141,23 +1134,23 @@ export const OfferLettersPage: React.FC = () => {
 
                       {/* Intro Paragraph */}
                       <p style={{ margin: '0 0 14px 0', textAlign: 'justify', color: '#1f2937' }}>
-                        We are pleased to offer you the position of <strong>{offer.designation}</strong> at Enterprenex Solutions Pvt Ltd. We were impressed with your profile during the selection process and believe you will be a valuable addition to our team. Please find below the terms and conditions of your {isInternship ? 'internship' : 'employment'}.
+                        We are pleased to offer you the position of <strong>{offer.designation}</strong> at Enterprenex Solutions Pvt Ltd. We were impressed with your profile during the selection process and believe you will be a valuable addition to our team. Please find below the terms and conditions of your internship.
                       </p>
 
-                      {/* Internship / Employment Details */}
+                      {/* Internship Details */}
                       <div style={{ fontSize: '0.94rem', fontWeight: 800, letterSpacing: '0.4px', color: '#0f172a', marginBottom: '2px' }}>
-                        {isInternship ? 'INTERNSHIP DETAILS' : 'EMPLOYMENT DETAILS'}
+                        INTERNSHIP DETAILS
                       </div>
                       <div style={{ height: '1px', background: '#0f172a', width: '100%', marginBottom: '8px' }} />
 
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem', lineHeight: '1.5', marginBottom: '14px' }}>
                         <tbody>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#0f172a', width: '28%', padding: '2px 0' }}>{isInternship ? 'Intern Name:' : 'Employee Name:'}</td>
+                            <td style={{ fontWeight: 700, color: '#0f172a', width: '28%', padding: '2px 0' }}>Intern Name:</td>
                             <td style={{ color: '#1f2937', padding: '2px 0' }}><strong>{offer.employeeName.toUpperCase()}</strong></td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>{isInternship ? 'Intern ID:' : 'Employee ID:'}</td>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Intern ID:</td>
                             <td style={{ color: '#1f2937', padding: '2px 0' }}>{offer.employeeId || offer.offerLetterNo}</td>
                           </tr>
                           <tr>
@@ -1166,7 +1159,7 @@ export const OfferLettersPage: React.FC = () => {
                           </tr>
                           <tr>
                             <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Department:</td>
-                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{offer.department}</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{department}</td>
                           </tr>
                           <tr>
                             <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Reporting To:</td>
@@ -1186,7 +1179,7 @@ export const OfferLettersPage: React.FC = () => {
                           </tr>
                           <tr>
                             <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Start Date:</td>
-                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{offer.joiningDate}</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{startDate}</td>
                           </tr>
                           <tr>
                             <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Working Hours:</td>
@@ -1197,7 +1190,7 @@ export const OfferLettersPage: React.FC = () => {
                             <td style={{ color: '#1f2937', padding: '2px 0' }}>{workingDays}</td>
                           </tr>
                           <tr>
-                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>{isInternship ? 'Stipend:' : 'Compensation:'}</td>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Stipend:</td>
                             <td style={{ color: '#1f2937', padding: '2px 0' }}>{stipendText}</td>
                           </tr>
                         </tbody>
