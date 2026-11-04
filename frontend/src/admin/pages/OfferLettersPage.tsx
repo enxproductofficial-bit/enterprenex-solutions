@@ -75,6 +75,14 @@ export const OfferLettersPage: React.FC = () => {
   const [formEmpType, setFormEmpType] = useState<string>('Full-time');
   const [formSalary, setFormSalary] = useState<number>(50000);
   const [formProbation, setFormProbation] = useState<string>('3 Months');
+  const [formAddress, setFormAddress] = useState<string>('Burdwan, West Bengal');
+  const [formPlaceOfJoining, setFormPlaceOfJoining] = useState<string>('chh sambhajinagar,Maharashtra,india');
+  const [formWorkMode, setFormWorkMode] = useState<string>('online');
+  const [formWorkingHours, setFormWorkingHours] = useState<string>('4 to 6 hours per day, as assigned by the Reporting Manager');
+  const [formWorkingDays, setFormWorkingDays] = useState<string>('Monday - saturday');
+  const [formReportingManager, setFormReportingManager] = useState<string>('Rohit pawar');
+  const [formSignatoryType, setFormSignatoryType] = useState<'Director' | 'HR'>('Director');
+  const [formSignatoryName, setFormSignatoryName] = useState<string>('Rohit Pawar');
   const [formTerms, setFormTerms] = useState<string>(
 `1. Working Hours & Modality: Regular work hours are 09:30 AM to 06:30 PM IST, Monday through Friday, operating under a Hybrid arrangement.
 2. Probation Period: You will undergo a 3-month probation period evaluating technical capability, cultural alignment, and KPI benchmarks.
@@ -96,6 +104,8 @@ export const OfferLettersPage: React.FC = () => {
       if (emp.employmentType) setFormEmpType(emp.employmentType);
       if (emp.probationPeriod) setFormProbation(emp.probationPeriod);
       if (emp.joinDate) setFormJoinDate(emp.joinDate);
+      if ((emp as any).address) setFormAddress((emp as any).address);
+      if ((emp as any).reportingManager) setFormReportingManager((emp as any).reportingManager);
     }
   };
 
@@ -119,7 +129,16 @@ export const OfferLettersPage: React.FC = () => {
         ctcAnnual: Number(formSalary) * 12,
         probationPeriod: formProbation,
         termsAndConditions: formTerms,
-        status: submitForApproval ? 'Pending Approval' : 'Draft'
+        status: submitForApproval ? 'Pending Approval' : 'Draft',
+        candidateAddress: formAddress,
+        placeOfJoining: formPlaceOfJoining,
+        workMode: formWorkMode,
+        workingHours: formWorkingHours,
+        workingDays: formWorkingDays,
+        reportingManager: formReportingManager,
+        signatoryName: formSignatoryType === 'Director' ? (formSignatoryName || 'Rohit Pawar') : (currentUser?.name || 'Operations Officer'),
+        signatoryRole: formSignatoryType === 'Director' ? 'Managing Director' : 'Operations Officer',
+        signatoryDepartment: formSignatoryType === 'Director' ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : 'HR Team, Enterprenex Solutions Pvt Ltd'
       });
 
       setShowGenerateModal(false);
@@ -139,6 +158,14 @@ export const OfferLettersPage: React.FC = () => {
     setFormEmpType('Full-time');
     setFormSalary(50000);
     setFormProbation('3 Months');
+    setFormAddress('Burdwan, West Bengal');
+    setFormPlaceOfJoining('chh sambhajinagar,Maharashtra,india');
+    setFormWorkMode('online');
+    setFormWorkingHours('4 to 6 hours per day, as assigned by the Reporting Manager');
+    setFormWorkingDays('Monday - saturday');
+    setFormReportingManager('Rohit pawar');
+    setFormSignatoryType('Director');
+    setFormSignatoryName('Rohit Pawar');
   };
 
   const handleDirectorReviewSubmit = async () => {
@@ -637,24 +664,141 @@ export const OfferLettersPage: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                 <div className="adm-form-group">
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Monthly Salary (INR) *</label>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Monthly Salary / Stipend (INR) *</label>
                   <input
                     type="number"
                     required
-                    min={1000}
+                    min={0}
                     step={1000}
                     value={formSalary}
                     onChange={e => setFormSalary(Number(e.target.value))}
                     className="adm-input"
                     style={{ width: '100%', height: '38px' }}
                   />
+                  <small style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem' }}>Enter 0 for unpaid internship</small>
                 </div>
 
                 <div className="adm-form-group">
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Annual CTC (Calculated)</label>
                   <div style={{ height: '38px', display: 'flex', alignItems: 'center', padding: '0 0.85rem', background: 'var(--adm-surface-soft)', border: '1px solid var(--adm-border)', borderRadius: '6px', fontWeight: 700, color: '#10b981' }}>
-                    ₹{(formSalary * 12).toLocaleString('en-IN')} / Year
+                    {formSalary > 0 ? `₹${(formSalary * 12).toLocaleString('en-IN')} / Year` : 'Unpaid Internship'}
                   </div>
+                </div>
+              </div>
+
+              {/* Template Specific Details (Matching 2-Page Letterhead) */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div className="adm-form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Candidate Address</label>
+                  <input
+                    type="text"
+                    value={formAddress}
+                    onChange={e => setFormAddress(e.target.value)}
+                    placeholder="e.g. Burdwan, West Bengal"
+                    className="adm-input"
+                    style={{ width: '100%', height: '38px' }}
+                  />
+                </div>
+
+                <div className="adm-form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Reporting Manager</label>
+                  <input
+                    type="text"
+                    value={formReportingManager}
+                    onChange={e => setFormReportingManager(e.target.value)}
+                    placeholder="e.g. Rohit pawar"
+                    className="adm-input"
+                    style={{ width: '100%', height: '38px' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div className="adm-form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Place of Joining</label>
+                  <input
+                    type="text"
+                    value={formPlaceOfJoining}
+                    onChange={e => setFormPlaceOfJoining(e.target.value)}
+                    placeholder="chh sambhajinagar,Maharashtra,india"
+                    className="adm-input"
+                    style={{ width: '100%', height: '38px' }}
+                  />
+                </div>
+
+                <div className="adm-form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Work Mode</label>
+                  <select
+                    value={formWorkMode}
+                    onChange={e => setFormWorkMode(e.target.value)}
+                    className="adm-input"
+                    style={{ width: '100%', height: '38px' }}
+                  >
+                    <option value="online">Online / Remote</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="on-site">On-site / Chhatrapati Sambhajinagar</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div className="adm-form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Working Hours</label>
+                  <input
+                    type="text"
+                    value={formWorkingHours}
+                    onChange={e => setFormWorkingHours(e.target.value)}
+                    placeholder="4 to 6 hours per day, as assigned by the Reporting Manager"
+                    className="adm-input"
+                    style={{ width: '100%', height: '38px' }}
+                  />
+                </div>
+
+                <div className="adm-form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Working Days</label>
+                  <input
+                    type="text"
+                    value={formWorkingDays}
+                    onChange={e => setFormWorkingDays(e.target.value)}
+                    placeholder="Monday - saturday"
+                    className="adm-input"
+                    style={{ width: '100%', height: '38px' }}
+                  />
+                </div>
+              </div>
+
+              {/* Signatory Person (Director vs HR) */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div className="adm-form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Signatory Authority *</label>
+                  <select
+                    value={formSignatoryType}
+                    onChange={e => {
+                      const val = e.target.value as 'Director' | 'HR';
+                      setFormSignatoryType(val);
+                      if (val === 'Director') {
+                        setFormSignatoryName('Rohit Pawar');
+                      } else {
+                        setFormSignatoryName(currentUser?.name || 'Operations Officer');
+                      }
+                    }}
+                    className="adm-input"
+                    style={{ width: '100%', height: '38px' }}
+                  >
+                    <option value="Director">Managing Director (Rohit Pawar - Board of Directors)</option>
+                    <option value="HR">HR Team (Operations Officer)</option>
+                  </select>
+                </div>
+
+                <div className="adm-form-group">
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Signatory Officer Name</label>
+                  <input
+                    type="text"
+                    value={formSignatoryName}
+                    onChange={e => setFormSignatoryName(e.target.value)}
+                    className="adm-input"
+                    style={{ width: '100%', height: '38px' }}
+                  />
                 </div>
               </div>
 
@@ -875,162 +1019,384 @@ export const OfferLettersPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Printable A4 Letterhead Body */}
-            <div id="printable-offer-letter" style={{ padding: '3rem', fontFamily: "'Inter', system-ui, -apple-system, sans-serif", fontSize: '0.9rem', lineHeight: '1.6', position: 'relative' }}>
-              {/* Background Watermark */}
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.035, pointerEvents: 'none', zIndex: 0 }}>
-                <span style={{ fontSize: '10rem', fontWeight: 900, transform: 'rotate(-30deg)', userSelect: 'none' }}>ENTERPRENEX</span>
-              </div>
+            {/* Printable A4 2-Page Letterhead Body */}
+            {(() => {
+              const offer = selectedOfferForPreview;
+              const isInternship =
+                offer.employmentType?.toLowerCase().includes('intern') ||
+                offer.designation?.toLowerCase().includes('intern') ||
+                offer.probationPeriod?.toLowerCase().includes('intern');
 
-              {/* Letterhead Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #0f172a', paddingBottom: '1.5rem', marginBottom: '2rem', position: 'relative', zIndex: 1 }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '42px', height: '42px', background: '#0f172a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '1.4rem' }}>
-                      E
-                    </div>
+              const durationText = offer.probationPeriod || (isInternship ? '3 (Three) Months from the Date of Joining' : '6 Months Probation');
+              const reportingTo = offer.reportingManager || (offer.directorApprovedBy ? offer.directorApprovedBy : 'Rohit pawar');
+              const placeOfJoining = offer.placeOfJoining || 'chh sambhajinagar,Maharashtra,india';
+              const workMode = offer.workMode || 'online';
+              const workingHours = offer.workingHours || (isInternship ? '4 to 6 hours per day, as assigned by the Reporting Manager' : '8 hours per day, Monday to Friday');
+              const workingDays = offer.workingDays || 'Monday - saturday';
+              const address = offer.candidateAddress || 'Burdwan, West Bengal';
+
+              const dateObj = new Date(offer.createdAt);
+              const formattedDate = `${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })} ${dateObj.getFullYear()}`;
+
+              let stipendText = '';
+              if (isInternship && (!offer.salaryMonthly || offer.salaryMonthly === 0)) {
+                stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
+              } else if (offer.salaryMonthly > 0) {
+                stipendText = `₹${offer.salaryMonthly.toLocaleString('en-IN')} / month (Annual CTC: ₹${(offer.ctcAnnual || offer.salaryMonthly * 12).toLocaleString('en-IN')})`;
+              } else {
+                stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
+              }
+
+              const isDirectorSignatory =
+                (offer.signatoryRole && offer.signatoryRole.toLowerCase().includes('director')) ||
+                (offer.directorApprovedBy && (
+                  offer.directorApprovedBy.toLowerCase().includes('director') ||
+                  offer.directorApprovedBy.toLowerCase().includes('cmd') ||
+                  offer.directorApprovedBy.toLowerCase().includes('rohit')
+                )) ||
+                offer.status === 'Approved' ||
+                offer.status === 'Sent' ||
+                offer.status === 'Accepted';
+
+              let signatoryName = offer.signatoryName || offer.directorApprovedBy || 'Rohit Pawar';
+              let signatoryRole = offer.signatoryRole;
+              let signatoryDepartment = offer.signatoryDepartment;
+
+              if (!signatoryRole) {
+                if (isDirectorSignatory) {
+                  signatoryRole = 'Managing Director';
+                  signatoryDepartment = 'Board of Directors, Enterprenex Solutions Pvt Ltd';
+                } else {
+                  signatoryRole = 'Operations Officer';
+                  signatoryDepartment = 'HR Team, Enterprenex Solutions Pvt Ltd';
+                }
+              }
+              if (!signatoryDepartment) {
+                signatoryDepartment = signatoryRole.toLowerCase().includes('director')
+                  ? 'Board of Directors, Enterprenex Solutions Pvt Ltd'
+                  : 'HR Team, Enterprenex Solutions Pvt Ltd';
+              }
+
+              return (
+                <div id="printable-offer-letter" style={{ background: '#f1f5f9', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
+                  <style>{`
+                    @media print {
+                      body * { visibility: hidden !important; }
+                      #printable-offer-letter, #printable-offer-letter * { visibility: visible !important; }
+                      #printable-offer-letter {
+                        position: absolute !important;
+                        left: 0 !important;
+                        top: 0 !important;
+                        width: 100% !important;
+                        padding: 0 !important;
+                        background: none !important;
+                        gap: 0 !important;
+                      }
+                      .offer-preview-sheet {
+                        box-shadow: none !important;
+                        border: none !important;
+                        margin: 0 !important;
+                        width: 100% !important;
+                        min-height: 285mm !important;
+                        page-break-after: always !important;
+                        padding: 12mm 18mm 12mm 18mm !important;
+                      }
+                      .no-print { display: none !important; }
+                    }
+                  `}</style>
+
+                  {/* ════════ PAGE 1 ════════ */}
+                  <div
+                    className="offer-preview-sheet"
+                    style={{
+                      width: '100%',
+                      maxWidth: '780px',
+                      background: '#ffffff',
+                      color: '#1a1a1a',
+                      padding: '2.5rem 3rem 2rem 3rem',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      borderRadius: '4px',
+                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                      fontSize: '0.86rem',
+                      lineHeight: '1.45',
+                      boxSizing: 'border-box',
+                      minHeight: '1050px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}
+                  >
                     <div>
-                      <h1 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, color: '#0f172a', letterSpacing: '-0.5px' }}>
-                        ENTERPRENEX SOLUTIONS PVT LTD
-                      </h1>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        Empowering Enterprise Engineering • CIN: U72900PN2026PTC239841
+                      {/* Page 1 Header */}
+                      <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+                        <img
+                          src="/images/enterprenex-logo.png"
+                          alt="Enterprenex Logo"
+                          style={{ width: '56px', height: '56px', objectFit: 'contain', margin: '0 auto 4px auto', display: 'block' }}
+                        />
+                        <div style={{ fontFamily: "'Cinzel', Georgia, 'Times New Roman', serif", fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.8px', color: '#0f172a' }}>
+                          ENTERPRENEX SOLUTIONS PVT LTD
+                        </div>
+                        <div style={{ fontSize: '0.78rem', fontStyle: 'italic', color: '#475569', marginBottom: '8px' }}>
+                          www.enterprenexsolution.com
+                        </div>
+                        <div style={{ height: '2.5px', background: '#c28b38', width: '100%', marginBottom: '12px' }} />
+                      </div>
+
+                      {/* Date Row */}
+                      <div style={{ textAlign: 'right', fontWeight: 700, fontSize: '0.88rem', color: '#0f172a', marginBottom: '12px' }}>
+                        Date: {formattedDate}
+                      </div>
+
+                      {/* To Block */}
+                      <div style={{ fontSize: '0.88rem', lineHeight: '1.4', marginBottom: '14px', color: '#0f172a' }}>
+                        <strong>To,</strong><br />
+                        <strong>{offer.employeeName.toUpperCase()}</strong><br />
+                        <span style={{ color: '#334155' }}>{address}</span>
+                      </div>
+
+                      {/* Title */}
+                      <div style={{ textAlign: 'center', fontSize: '1.05rem', fontWeight: 800, letterSpacing: '0.5px', color: '#0f172a', textDecoration: 'underline', marginBottom: '14px' }}>
+                        OFFER LETTER FOR {isInternship ? 'INTERNSHIP' : 'EMPLOYMENT'}
+                      </div>
+
+                      {/* Salutation */}
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a', marginBottom: '10px' }}>
+                        Dear {offer.employeeName.toUpperCase()},
+                      </div>
+
+                      {/* Intro Paragraph */}
+                      <p style={{ margin: '0 0 14px 0', textAlign: 'justify', color: '#1f2937' }}>
+                        We are pleased to offer you the position of <strong>{offer.designation}</strong> at Enterprenex Solutions Pvt Ltd. We were impressed with your profile during the selection process and believe you will be a valuable addition to our team. Please find below the terms and conditions of your {isInternship ? 'internship' : 'employment'}.
+                      </p>
+
+                      {/* Internship / Employment Details */}
+                      <div style={{ fontSize: '0.94rem', fontWeight: 800, letterSpacing: '0.4px', color: '#0f172a', marginBottom: '2px' }}>
+                        {isInternship ? 'INTERNSHIP DETAILS' : 'EMPLOYMENT DETAILS'}
+                      </div>
+                      <div style={{ height: '1px', background: '#0f172a', width: '100%', marginBottom: '8px' }} />
+
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem', lineHeight: '1.5', marginBottom: '14px' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', width: '28%', padding: '2px 0' }}>{isInternship ? 'Intern Name:' : 'Employee Name:'}</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}><strong>{offer.employeeName.toUpperCase()}</strong></td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>{isInternship ? 'Intern ID:' : 'Employee ID:'}</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{offer.employeeId || offer.offerLetterNo}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Position / Role:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{offer.designation}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Department:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{offer.department}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Reporting To:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{reportingTo}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Place of Joining:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{placeOfJoining}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Work Mode:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{workMode}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Duration:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{durationText}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Start Date:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{offer.joiningDate}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Working Hours:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{workingHours}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>Working Days:</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{workingDays}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ fontWeight: 700, color: '#0f172a', padding: '2px 0' }}>{isInternship ? 'Stipend:' : 'Compensation:'}</td>
+                            <td style={{ color: '#1f2937', padding: '2px 0' }}>{stipendText}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      {/* Terms & General Policies - Bullets 1 to 4 */}
+                      <div style={{ fontSize: '0.94rem', fontWeight: 800, letterSpacing: '0.4px', color: '#0f172a', marginBottom: '2px' }}>
+                        TERMS & GENERAL POLICIES
+                      </div>
+                      <div style={{ height: '1px', background: '#0f172a', width: '100%', marginBottom: '8px' }} />
+
+                      <ul style={{ paddingLeft: '1.25rem', margin: 0, fontSize: '0.83rem', lineHeight: '1.45', color: '#1f2937' }}>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          This {isInternship ? 'internship' : 'employment'} is for a fixed period of {durationText} from the date of joining and may be extended or converted into a full-time offer at the sole discretion of the Company, based on performance.
+                        </li>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          The {isInternship ? 'intern' : 'employee'} is expected to maintain regular attendance and complete assigned tasks within the given deadlines with due diligence and professionalism.
+                        </li>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          The {isInternship ? 'intern' : 'employee'} shall report to their designated Reporting Manager / Department Lead and follow the task and reporting structure communicated to them.
+                        </li>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          All work, content, code, designs, strategies, documents, and materials created during the {isInternship ? 'internship' : 'employment'} shall remain the exclusive property of Enterprenex Solutions Pvt Ltd.
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Page 1 Footer */}
+                    <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                      <div style={{ height: '2px', background: '#c28b38', width: '100%', marginBottom: '6px' }} />
+                      <div style={{ fontSize: '0.74rem', color: '#475569', lineHeight: '1.35' }}>
+                        enterprenexsolutionpvtltd@gmail.com &nbsp;|&nbsp; +91-9226860060<br />
+                        Plot No. 148, Shrinand Plaza, CIDCO Waluj Mahanagar 1, Chhatrapati Sambhajinagar, MH 431136
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
+                        Page 1 of 2
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ════════ PAGE 2 ════════ */}
+                  <div
+                    className="offer-preview-sheet"
+                    style={{
+                      width: '100%',
+                      maxWidth: '780px',
+                      background: '#ffffff',
+                      color: '#1a1a1a',
+                      padding: '2.5rem 3rem 2rem 3rem',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      borderRadius: '4px',
+                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                      fontSize: '0.86rem',
+                      lineHeight: '1.45',
+                      boxSizing: 'border-box',
+                      minHeight: '1050px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <div>
+                      {/* Page 2 Header */}
+                      <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+                        <img
+                          src="/images/enterprenex-logo.png"
+                          alt="Enterprenex Logo"
+                          style={{ width: '56px', height: '56px', objectFit: 'contain', margin: '0 auto 4px auto', display: 'block' }}
+                        />
+                        <div style={{ fontFamily: "'Cinzel', Georgia, 'Times New Roman', serif", fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.8px', color: '#0f172a' }}>
+                          ENTERPRENEX SOLUTIONS PVT LTD
+                        </div>
+                        <div style={{ fontSize: '0.78rem', fontStyle: 'italic', color: '#475569', marginBottom: '8px' }}>
+                          www.enterprenexsolution.com
+                        </div>
+                        <div style={{ height: '2.5px', background: '#c28b38', width: '100%', marginBottom: '14px' }} />
+                      </div>
+
+                      {/* Terms & General Policies - Bullets 5 to 10 */}
+                      <ul style={{ paddingLeft: '1.25rem', margin: '0 0 16px 0', fontSize: '0.83rem', lineHeight: '1.45', color: '#1f2937' }}>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          The {isInternship ? 'intern' : 'employee'} shall maintain strict confidentiality regarding the Company's business information, client data, social media credentials, internal tools, and processes, both during and after the {isInternship ? 'internship' : 'employment'} period.
+                        </li>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          The {isInternship ? 'intern' : 'employee'} shall not engage in any activity that conflicts with the interests of the Company, including but not limited to sharing confidential information with third parties.
+                        </li>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          The {isInternship ? 'intern' : 'employee'} is expected to adhere to the Company's code of conduct, maintain professional behavior, and respect fellow team members at all times.
+                        </li>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          This {isInternship ? 'internship' : 'employment'} does not guarantee any full-time employment offer upon completion, unless communicated separately in writing by the Company.
+                        </li>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          Either party (the Company or the {isInternship ? 'Intern' : 'Employee'}) may terminate this {isInternship ? 'internship' : 'employment'} by providing 10 (ten) days' written notice to the other party.
+                        </li>
+                        <li style={{ marginBottom: '4px', textAlign: 'justify' }}>
+                          In case of unsatisfactory performance, misconduct, or breach of any terms mentioned herein, the Company reserves the right to terminate the {isInternship ? 'internship' : 'employment'} without prior notice.
+                        </li>
+                      </ul>
+
+                      {/* On Successful Completion */}
+                      <div style={{ fontSize: '0.94rem', fontWeight: 800, letterSpacing: '0.4px', color: '#0f172a', marginBottom: '2px' }}>
+                        ON SUCCESSFUL COMPLETION
+                      </div>
+                      <div style={{ height: '1px', background: '#0f172a', width: '100%', marginBottom: '8px' }} />
+                      <p style={{ margin: '0 0 14px 0', textAlign: 'justify', color: '#1f2937', fontSize: '0.84rem' }}>
+                        Upon successful completion of the {isInternship ? 'internship' : 'probation'} period and satisfactory performance, the {isInternship ? 'intern' : 'employee'} shall be provided with a Letter of Recommendation and an Experience/Completion Certificate from Enterprenex Solutions Pvt Ltd.
+                      </p>
+
+                      {/* Acceptance Section */}
+                      <div style={{ fontSize: '0.94rem', fontWeight: 800, letterSpacing: '0.4px', color: '#0f172a', textDecoration: 'underline', marginBottom: '6px' }}>
+                        ACCEPTANCE
+                      </div>
+                      <p style={{ margin: '0 0 8px 0', color: '#1f2937', fontSize: '0.84rem' }}>
+                        Please sign and return a copy of this letter as a token of your acceptance of the above terms and conditions of the {isInternship ? 'internship' : 'employment'} offer.
+                      </p>
+                      <p style={{ margin: '0 0 18px 0', color: '#1f2937', fontSize: '0.84rem' }}>
+                        We look forward to having you on board and wish you a great learning experience at Enterprenex Solutions Pvt Ltd.
+                      </p>
+
+                      {/* Dynamic Signatory Block (Director vs HR) */}
+                      <div style={{ margin: '16px 0 24px 0', fontSize: '0.88rem', lineHeight: '1.35' }}>
+                        <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: '12px' }}>
+                          For Enterprenex Solutions Pvt Ltd,
+                        </div>
+                        <div style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0f172a' }}>
+                          {signatoryName}
+                        </div>
+                        <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#334155' }}>
+                          {signatoryRole}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#475569' }}>
+                          {signatoryDepartment}
+                        </div>
+                        {offer.directorApprovedAt && isDirectorSignatory && (
+                          <div style={{ fontSize: '0.72rem', color: '#166534', marginTop: '4px', fontWeight: 600 }}>
+                            ✓ Digitally Authorized by Director: {new Date(offer.directorApprovedAt).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Candidate Acceptance Form */}
+                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
+                        Acceptance by {isInternship ? 'Intern' : 'Employee'}
+                      </div>
+                      <div style={{ fontSize: '0.85rem', lineHeight: '2.1', color: '#0f172a' }}>
+                        <div>
+                          Signature: {offer.status === 'Accepted' ? (
+                            <span style={{ fontFamily: "'Brush Script MT', cursive, sans-serif", fontSize: '1.4rem', color: '#166534', marginLeft: '8px' }}>
+                              {offer.employeeName}
+                            </span>
+                          ) : '______________________________'}
+                        </div>
+                        <div>Name: {offer.employeeName}</div>
+                        <div>Date: {offer.respondedAt ? new Date(offer.respondedAt).toLocaleDateString() : '______________________________'}</div>
+                      </div>
+                    </div>
+
+                    {/* Page 2 Footer */}
+                    <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                      <div style={{ height: '2px', background: '#c28b38', width: '100%', marginBottom: '6px' }} />
+                      <div style={{ fontSize: '0.74rem', color: '#475569', lineHeight: '1.35' }}>
+                        enterprenexsolutionpvtltd@gmail.com &nbsp;|&nbsp; +91-9226860060<br />
+                        Plot No. 148, Shrinand Plaza, CIDCO Waluj Mahanagar 1, Chhatrapati Sambhajinagar, MH 431136
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>
+                        Page 2 of 2
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <div style={{ textAlign: 'right', fontSize: '0.78rem', color: '#475569' }}>
-                  <div>Corporate Headquarters: Pune, MH, India</div>
-                  <div>Web: https://enterprenexsolution.com</div>
-                  <div>HR Contact: hr@enterprenex.solutions</div>
-                  <div>Official Dispatch: {selectedOfferForPreview.createdAt.split('T')[0]}</div>
-                </div>
-              </div>
-
-              {/* Reference & Date */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
-                <div>REF: <span style={{ fontFamily: 'monospace', color: '#0f172a' }}>{selectedOfferForPreview.offerLetterNo}</span></div>
-                <div>Date of Issuance: {new Date(selectedOfferForPreview.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-              </div>
-
-              {/* Addressee */}
-              <div style={{ marginBottom: '1.5rem', color: '#0f172a' }}>
-                <div style={{ fontWeight: 700, fontSize: '1rem' }}>To,</div>
-                <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#0f172a' }}>{selectedOfferForPreview.employeeName}</div>
-                <div style={{ color: '#475569' }}>Email: {selectedOfferForPreview.employeeEmail}</div>
-                {selectedOfferForPreview.employeeId && (
-                  <div style={{ color: '#64748b', fontSize: '0.8rem' }}>Employee ID: {selectedOfferForPreview.employeeId}</div>
-                )}
-              </div>
-
-              {/* Subject */}
-              <div style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderLeft: '4px solid #0f172a', marginBottom: '1.5rem', fontWeight: 700, color: '#0f172a', fontSize: '0.95rem' }}>
-                SUBJECT: LETTER OF APPOINTMENT AND FORMAL EMPLOYMENT OFFER
-              </div>
-
-              {/* Letter Opening */}
-              <div style={{ marginBottom: '1.25rem', color: '#334155' }}>
-                <p style={{ margin: '0 0 0.8rem' }}>Dear <strong>{selectedOfferForPreview.employeeName}</strong>,</p>
-                <p style={{ margin: 0 }}>
-                  We are pleased to extend this formal offer of employment for the position of <strong>{selectedOfferForPreview.designation}</strong> in our <strong>{selectedOfferForPreview.department}</strong> division at <strong>Enterprenex Solutions Private Limited</strong>. Based on your technical background, credentials, and interview evaluations, we are confident you will make vital contributions to our engineering roadmap.
-                </p>
-              </div>
-
-              {/* Key Position Details Table */}
-              <div style={{ marginBottom: '1.75rem' }}>
-                <h4 style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#0f172a', marginBottom: '0.6rem' }}>
-                  1. Terms of Engagement & Compensation Breakup
-                </h4>
-                <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}>
-                  <tbody>
-                    <tr style={{ borderBottom: '1px solid #cbd5e1', background: '#f8fafc' }}>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 600, width: '40%', color: '#475569' }}>Designation</td>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 700, color: '#0f172a' }}>{selectedOfferForPreview.designation}</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #cbd5e1' }}>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 600, color: '#475569' }}>Department</td>
-                      <td style={{ padding: '0.6rem 0.8rem' }}>{selectedOfferForPreview.department}</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #cbd5e1', background: '#f8fafc' }}>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 600, color: '#475569' }}>Employment Type</td>
-                      <td style={{ padding: '0.6rem 0.8rem' }}>{selectedOfferForPreview.employmentType}</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #cbd5e1' }}>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 600, color: '#475569' }}>Official Date of Joining</td>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 700, color: '#0f172a' }}>{selectedOfferForPreview.joiningDate}</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #cbd5e1', background: '#f8fafc' }}>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 600, color: '#475569' }}>Probation Period</td>
-                      <td style={{ padding: '0.6rem 0.8rem' }}>{selectedOfferForPreview.probationPeriod}</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #cbd5e1' }}>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 600, color: '#475569' }}>Monthly Gross Remuneration</td>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 700, color: '#0f172a' }}>
-                        ₹{selectedOfferForPreview.salaryMonthly.toLocaleString('en-IN')} / Month
-                      </td>
-                    </tr>
-                    <tr style={{ background: '#f0fdf4', borderTop: '2px solid #cbd5e1' }}>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 800, color: '#166534' }}>Annual Cost to Company (CTC)</td>
-                      <td style={{ padding: '0.6rem 0.8rem', fontWeight: 800, color: '#166534', fontSize: '0.95rem' }}>
-                        ₹{selectedOfferForPreview.ctcAnnual.toLocaleString('en-IN')} per annum
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Terms and Conditions */}
-              <div style={{ marginBottom: '2rem' }}>
-                <h4 style={{ fontSize: '0.9rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#0f172a', marginBottom: '0.6rem' }}>
-                  2. General Terms, Code of Conduct & Policies
-                </h4>
-                <div style={{ background: '#f8fafc', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '6px', whiteSpace: 'pre-line', fontSize: '0.825rem', color: '#334155' }}>
-                  {selectedOfferForPreview.termsAndConditions}
-                </div>
-              </div>
-
-              {/* Signatures Block */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #cbd5e1' }}>
-                <div>
-                  <div style={{ height: '50px', display: 'flex', alignItems: 'flex-end', marginBottom: '8px' }}>
-                    <span style={{ fontFamily: "'Brush Script MT', cursive, sans-serif", fontSize: '1.8rem', color: '#0f172a' }}>
-                      Rohit Pawar
-                    </span>
-                  </div>
-                  <div style={{ fontWeight: 800, color: '#0f172a' }}>Rohit Pawar</div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Managing Director & Chief Executive</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Enterprenex Solutions Pvt Ltd</div>
-                  {selectedOfferForPreview.directorApprovedAt && (
-                    <div style={{ fontSize: '0.7rem', color: '#166534', marginTop: '4px' }}>
-                      ✓ Digitally Authorized: {new Date(selectedOfferForPreview.directorApprovedAt).toLocaleString()}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <div style={{ height: '50px', display: 'flex', alignItems: 'flex-end', marginBottom: '8px' }}>
-                    {selectedOfferForPreview.status === 'Accepted' ? (
-                      <span style={{ fontFamily: "'Brush Script MT', cursive, sans-serif", fontSize: '1.8rem', color: '#166534' }}>
-                        {selectedOfferForPreview.employeeName}
-                      </span>
-                    ) : (
-                      <div style={{ width: '100%', borderBottom: '1px dashed #94a3b8' }} />
-                    )}
-                  </div>
-                  <div style={{ fontWeight: 800, color: '#0f172a' }}>{selectedOfferForPreview.employeeName}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Candidate Signature & Acceptance</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                    Status: {selectedOfferForPreview.status === 'Accepted' ? `Accepted on ${selectedOfferForPreview.respondedAt ? new Date(selectedOfferForPreview.respondedAt).toLocaleDateString() : 'Record'}` : 'Pending Signature'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer Note */}
-              <div style={{ marginTop: '2.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.8rem', textAlign: 'center', fontSize: '0.7rem', color: '#94a3b8' }}>
-                This is a computer-generated authorized document under the Enterprenex Workforce Management System (EWMS). Reference No: {selectedOfferForPreview.offerLetterNo}.
-              </div>
-            </div>
+              );
+            })()}
           </div>
         </div>
       )}

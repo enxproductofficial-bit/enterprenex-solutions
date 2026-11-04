@@ -97,6 +97,15 @@ model OfferLetter {
   sentAt                     DateTime?
   respondedAt                DateTime?
   candidateResponseRemarks   String?
+  candidateAddress           String?   @default("Burdwan, West Bengal")
+  placeOfJoining             String?   @default("chh sambhajinagar,Maharashtra,india")
+  workMode                   String?   @default("online")
+  workingHours               String?   @default("4 to 6 hours per day, as assigned by the Reporting Manager")
+  workingDays                String?   @default("Monday - saturday")
+  reportingManager           String?   @default("Rohit pawar")
+  signatoryName              String?   @default("Rohit Pawar")
+  signatoryRole              String?   @default("Managing Director")
+  signatoryDepartment        String?   @default("Board of Directors, Enterprenex Solutions Pvt Ltd")
   createdAt                  DateTime  @default(now())
   updatedAt                  DateTime  @updatedAt
 }

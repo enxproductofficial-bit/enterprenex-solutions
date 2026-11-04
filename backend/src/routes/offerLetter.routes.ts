@@ -133,7 +133,16 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       ctcAnnual,
       probationPeriod,
       termsAndConditions,
-      status // 'Draft' | 'Pending Approval'
+      status, // 'Draft' | 'Pending Approval'
+      candidateAddress,
+      placeOfJoining,
+      workMode,
+      workingHours,
+      workingDays,
+      reportingManager,
+      signatoryName,
+      signatoryRole,
+      signatoryDepartment
     } = req.body;
 
     if (!employeeName || !employeeEmail || !department || !designation || !joiningDate) {
@@ -164,7 +173,16 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
         ctcAnnual: annual,
         probationPeriod: probationPeriod || '3 Months',
         termsAndConditions: termsAndConditions || defaultTerms,
-        status: status || 'Pending Approval'
+        status: status || 'Pending Approval',
+        candidateAddress: candidateAddress || 'Burdwan, West Bengal',
+        placeOfJoining: placeOfJoining || 'chh sambhajinagar,Maharashtra,india',
+        workMode: workMode || 'online',
+        workingHours: workingHours || '4 to 6 hours per day, as assigned by the Reporting Manager',
+        workingDays: workingDays || 'Monday - saturday',
+        reportingManager: reportingManager || 'Rohit pawar',
+        signatoryName: signatoryName || (isDirector ? (user?.name || 'Rohit Pawar') : (user?.name || 'Operations Officer')),
+        signatoryRole: signatoryRole || (isDirector ? 'Managing Director' : 'Operations Officer'),
+        signatoryDepartment: signatoryDepartment || (isDirector ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : 'HR Team, Enterprenex Solutions Pvt Ltd')
       }
     });
 
@@ -211,7 +229,16 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
         ctcAnnual: data.ctcAnnual !== undefined ? Number(data.ctcAnnual) : existing.ctcAnnual,
         probationPeriod: data.probationPeriod ?? existing.probationPeriod,
         termsAndConditions: data.termsAndConditions ?? existing.termsAndConditions,
-        status: data.status ?? existing.status
+        status: data.status ?? existing.status,
+        candidateAddress: data.candidateAddress ?? existing.candidateAddress,
+        placeOfJoining: data.placeOfJoining ?? existing.placeOfJoining,
+        workMode: data.workMode ?? existing.workMode,
+        workingHours: data.workingHours ?? existing.workingHours,
+        workingDays: data.workingDays ?? existing.workingDays,
+        reportingManager: data.reportingManager ?? existing.reportingManager,
+        signatoryName: data.signatoryName ?? existing.signatoryName,
+        signatoryRole: data.signatoryRole ?? existing.signatoryRole,
+        signatoryDepartment: data.signatoryDepartment ?? existing.signatoryDepartment
       }
     });
 
@@ -253,7 +280,10 @@ router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, r
         status: newStatus,
         directorRemarks: remarks || (action === 'Approve' ? 'Approved for dispatch.' : 'Revision requested.'),
         directorApprovedBy: user?.name || 'Rohit Pawar (Managing Director)',
-        directorApprovedAt: new Date()
+        directorApprovedAt: new Date(),
+        signatoryName: action === 'Approve' ? (user?.name || 'Rohit Pawar') : existing.signatoryName,
+        signatoryRole: action === 'Approve' ? 'Managing Director' : existing.signatoryRole,
+        signatoryDepartment: action === 'Approve' ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : existing.signatoryDepartment
       }
     });
 

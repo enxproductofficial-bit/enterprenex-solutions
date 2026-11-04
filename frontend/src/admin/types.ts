@@ -675,6 +675,15 @@ export interface OfferLetter {
   sentAt?: string;
   respondedAt?: string;
   candidateResponseRemarks?: string;
+  candidateAddress?: string;
+  placeOfJoining?: string;
+  workMode?: string;
+  workingHours?: string;
+  workingDays?: string;
+  reportingManager?: string;
+  signatoryName?: string;
+  signatoryRole?: string;
+  signatoryDepartment?: string;
   createdAt: string;
   updatedAt?: string;
 }

@@ -1,6 +1,8 @@
 import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
 
-interface OfferLetterData {
+export interface OfferLetterData {
   offerLetterNo: string;
   employeeName: string;
   employeeEmail: string;
@@ -14,29 +16,120 @@ interface OfferLetterData {
   probationPeriod: string;
   termsAndConditions: string;
   status: string;
+  directorApprovedBy?: string | null;
   directorApprovedAt?: string | Date | null;
   respondedAt?: string | Date | null;
   createdAt: string | Date;
+  candidateAddress?: string | null;
+  placeOfJoining?: string | null;
+  workMode?: string | null;
+  workingHours?: string | null;
+  workingDays?: string | null;
+  reportingManager?: string | null;
+  signatoryName?: string | null;
+  signatoryRole?: string | null;
+  signatoryDepartment?: string | null;
+}
+
+// Helper: load circular Enterprenex logo as base64
+function getLogoBase64(): string {
+  try {
+    const possiblePaths = [
+      path.resolve(__dirname, '../../../frontend/public/images/enterprenex-logo.png'),
+      path.resolve(__dirname, '../../../../frontend/public/images/enterprenex-logo.png'),
+      path.resolve(process.cwd(), 'frontend/public/images/enterprenex-logo.png'),
+      path.resolve(process.cwd(), '../frontend/public/images/enterprenex-logo.png')
+    ];
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        return fs.readFileSync(p).toString('base64');
+      }
+    }
+  } catch (err) {
+    console.warn('Could not read logo image file:', err);
+  }
+  return '';
 }
 
 export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Buffer> => {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-first-run',
+      '--single-process',
+      '--disable-extensions'
+    ]
   });
 
   try {
     const page = await browser.newPage();
+    const logoBase64 = getLogoBase64();
 
-    const formattedDate = new Date(offer.createdAt).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    // Format Date: e.g. "17 Oct 2026"
+    const dateObj = new Date(offer.createdAt);
+    const day = dateObj.getDate();
+    const month = dateObj.toLocaleString('en-US', { month: 'short' });
+    const year = dateObj.getFullYear();
+    const formattedDate = `${day} ${month} ${year}`;
 
-    const approvedDateStr = offer.directorApprovedAt
-      ? new Date(offer.directorApprovedAt).toLocaleString('en-US')
-      : null;
+    const isInternship =
+      offer.employmentType?.toLowerCase().includes('intern') ||
+      offer.designation?.toLowerCase().includes('intern') ||
+      offer.probationPeriod?.toLowerCase().includes('intern');
+
+    const durationText = offer.probationPeriod || (isInternship ? '3 (Three) Months from the Date of Joining' : '6 Months Probation');
+    const reportingTo = offer.reportingManager || (offer.directorApprovedBy ? offer.directorApprovedBy : 'Rohit pawar');
+    const placeOfJoining = offer.placeOfJoining || 'chh sambhajinagar,Maharashtra,india';
+    const workMode = offer.workMode || 'online';
+    const workingHours = offer.workingHours || (isInternship ? '4 to 6 hours per day, as assigned by the Reporting Manager' : '8 hours per day, Monday to Friday');
+    const workingDays = offer.workingDays || 'Monday - saturday';
+    const address = offer.candidateAddress || 'Burdwan, West Bengal';
+
+    // Stipend / Compensation text
+    let stipendText = '';
+    if (isInternship && (!offer.salaryMonthly || offer.salaryMonthly === 0)) {
+      stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
+    } else if (offer.salaryMonthly > 0) {
+      stipendText = `₹${offer.salaryMonthly.toLocaleString('en-IN')} / month (Annual CTC: ₹${offer.ctcAnnual?.toLocaleString('en-IN') || (offer.salaryMonthly * 12).toLocaleString('en-IN')})`;
+    } else {
+      stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
+    }
+
+    // Dynamic Signatory Logic according to person: HR or Director
+    const isDirectorSignatory = 
+      (offer.signatoryRole && offer.signatoryRole.toLowerCase().includes('director')) ||
+      (offer.directorApprovedBy && (
+        offer.directorApprovedBy.toLowerCase().includes('director') || 
+        offer.directorApprovedBy.toLowerCase().includes('cmd') ||
+        offer.directorApprovedBy.toLowerCase().includes('rohit')
+      )) ||
+      offer.status === 'Approved' ||
+      offer.status === 'Sent' ||
+      offer.status === 'Accepted';
+
+    let signatoryName = offer.signatoryName || offer.directorApprovedBy || 'Rohit Pawar';
+    let signatoryRole = offer.signatoryRole;
+    let signatoryDepartment = offer.signatoryDepartment;
+
+    if (!signatoryRole) {
+      if (isDirectorSignatory) {
+        signatoryRole = 'Managing Director';
+        signatoryDepartment = offer.signatoryDepartment || 'Board of Directors, Enterprenex Solutions Pvt Ltd';
+      } else {
+        signatoryRole = 'Operations Officer';
+        signatoryDepartment = offer.signatoryDepartment || 'HR Team, Enterprenex Solutions Pvt Ltd';
+      }
+    }
+
+    if (!signatoryDepartment) {
+      signatoryDepartment = signatoryRole.toLowerCase().includes('director')
+        ? 'Board of Directors, Enterprenex Solutions Pvt Ltd'
+        : 'HR Team, Enterprenex Solutions Pvt Ltd';
+    }
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -45,355 +138,405 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
   <meta charset="utf-8">
   <title>Offer Letter - ${offer.offerLetterNo}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    
     @page {
-      size: A4;
-      margin: 20mm;
+      size: A4 portrait;
+      margin: 10mm 18mm 12mm 18mm;
     }
-    
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    
+
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #0f172a;
-      line-height: 1.5;
-      font-size: 11pt;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #1a1a1a;
+      background: #ffffff;
+      font-size: 9pt;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     }
-    
-    .watermark {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-30deg);
-      font-size: 55pt;
-      font-weight: 900;
-      color: rgba(15, 23, 42, 0.035);
-      z-index: -1;
-      pointer-events: none;
-      letter-spacing: 0.1em;
-      white-space: nowrap;
+
+    .page-1 {
+      page-break-after: always;
+      break-after: page;
     }
-    
+
+    .page-2 {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+
+    /* ── HEADER ── */
     .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      border-bottom: 2px solid #0f172a;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
+      text-align: center;
+      margin-bottom: 4px;
     }
-    
-    .logo-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+
+    .logo-img {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 4px auto;
+      display: block;
+      object-fit: contain;
     }
-    
-    .logo-badge {
-      width: 44px;
-      height: 44px;
-      background: #0f172a;
-      color: #ffffff;
-      font-size: 18pt;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-    }
-    
+
     .company-title {
-      font-size: 15pt;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: -0.5px;
-    }
-    
-    .company-tagline {
-      font-size: 7.5pt;
-      color: #64748b;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-    }
-    
-    .company-contact {
-      text-align: right;
-      font-size: 8pt;
-      color: #475569;
-      line-height: 1.4;
-    }
-    
-    .meta-bar {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 18px;
-      font-size: 9.5pt;
-      font-weight: 600;
-      color: #334155;
-    }
-    
-    .ref-no {
-      font-family: monospace;
-      font-weight: 700;
-      color: #0f172a;
-    }
-    
-    .recipient-info {
-      margin-bottom: 16px;
-    }
-    
-    .to-label {
-      font-weight: 700;
-      font-size: 9.5pt;
-      color: #475569;
-    }
-    
-    .candidate-name {
+      font-family: 'Cinzel', 'Times New Roman', Georgia, serif;
       font-size: 13pt;
       font-weight: 800;
+      letter-spacing: 0.8px;
       color: #0f172a;
+      margin-bottom: 1px;
     }
-    
-    .subject-box {
-      background: #f8fafc;
-      padding: 9px 14px;
-      border-left: 4px solid #0f172a;
-      margin-bottom: 16px;
-      font-weight: 700;
-      font-size: 10pt;
-      color: #0f172a;
-      letter-spacing: 0.3px;
-    }
-    
-    .content-body {
-      font-size: 9.5pt;
-      color: #334155;
-      margin-bottom: 16px;
-      text-align: justify;
-    }
-    
-    .section-title {
-      font-size: 10pt;
-      font-weight: 800;
-      color: #0f172a;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin: 16px 0 8px 0;
-    }
-    
-    table.data-table {
-      width: 100%;
-      border-collapse: collapse;
-      border: 1px solid #cbd5e1;
-      font-size: 9pt;
-      margin-bottom: 16px;
-    }
-    
-    table.data-table td {
-      padding: 7px 12px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    
-    table.data-table tr:nth-child(even) {
-      background: #f8fafc;
-    }
-    
-    table.data-table .label-col {
-      font-weight: 600;
+
+    .company-web {
+      font-size: 8pt;
+      font-style: italic;
       color: #475569;
-      width: 40%;
+      margin-bottom: 8px;
     }
-    
-    table.data-table .val-col {
-      font-weight: 700;
-      color: #0f172a;
+
+    .gold-bar {
+      height: 2.5px;
+      background: #c28b38;
+      width: 100%;
+      margin-bottom: 10px;
     }
-    
-    .ctc-row {
-      background: #f0fdf4 !important;
-      border-top: 2px solid #cbd5e1;
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 16px;
+      padding-top: 6px;
+      text-align: center;
     }
-    
-    .ctc-row td {
-      font-weight: 800 !important;
-      color: #166534 !important;
-      font-size: 10pt;
-    }
-    
-    .terms-box {
-      background: #f8fafc;
-      padding: 12px 14px;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      font-size: 8.5pt;
-      color: #334155;
-      white-space: pre-line;
-      line-height: 1.5;
-      margin-bottom: 24px;
-    }
-    
-    .signatures {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 28px;
-      padding-top: 14px;
-      border-top: 1px solid #cbd5e1;
-      page-break-inside: avoid;
-    }
-    
-    .sig-col {
-      width: 45%;
-    }
-    
-    .sig-img {
-      height: 40px;
-      font-family: 'Brush Script MT', cursive, sans-serif;
-      font-size: 20pt;
-      color: #0f172a;
-      display: flex;
-      align-items: flex-end;
+
+    .footer-bar {
+      height: 2px;
+      background: #c28b38;
+      width: 100%;
       margin-bottom: 6px;
     }
-    
-    .sig-name {
+
+    .footer-contact {
+      font-size: 7.6pt;
+      color: #475569;
+      line-height: 1.35;
+    }
+
+    /* ── PAGE 1 CONTENT ── */
+    .date-row {
+      text-align: right;
+      font-weight: 700;
+      font-size: 9.2pt;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+
+    .to-block {
+      font-size: 9.2pt;
+      line-height: 1.4;
+      margin-bottom: 14px;
+      color: #0f172a;
+    }
+
+    .to-block strong {
+      font-weight: 700;
+    }
+
+    .offer-title {
+      text-align: center;
+      font-size: 11pt;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      color: #0f172a;
+      text-decoration: underline;
+      margin-bottom: 14px;
+    }
+
+    .salutation {
+      font-weight: 700;
+      font-size: 9.2pt;
+      color: #0f172a;
+      margin-bottom: 10px;
+    }
+
+    .intro-p {
+      font-size: 9pt;
+      line-height: 1.45;
+      color: #1f2937;
+      text-align: justify;
+      margin-bottom: 14px;
+    }
+
+    .section-heading {
+      font-size: 9.8pt;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+
+    .section-line {
+      height: 1px;
+      background: #0f172a;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.8pt;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .details-table td {
+      padding: 1.5px 0;
+      vertical-align: top;
+    }
+
+    .details-table td.lbl {
+      font-weight: 700;
+      color: #0f172a;
+      width: 25%;
+    }
+
+    .details-table td.val {
+      color: #1f2937;
+      width: 75%;
+    }
+
+    .policy-list {
+      padding-left: 18px;
+      margin: 0;
+      font-size: 8.7pt;
+      line-height: 1.45;
+      color: #1f2937;
+    }
+
+    .policy-list li {
+      margin-bottom: 4px;
+      text-align: justify;
+    }
+
+    .acceptance-p {
+      font-size: 8.8pt;
+      line-height: 1.45;
+      color: #1f2937;
+      margin-bottom: 10px;
+    }
+
+    .signatory-block {
+      margin-top: 14px;
+      margin-bottom: 22px;
+      font-size: 9.2pt;
+      line-height: 1.35;
+    }
+
+    .signatory-firm {
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: #0f172a;
+    }
+
+    .signatory-name {
+      font-size: 10pt;
       font-weight: 800;
       color: #0f172a;
-      font-size: 10pt;
     }
-    
-    .sig-sub {
-      font-size: 8pt;
-      color: #64748b;
-    }
-    
-    .sig-verified {
-      font-size: 7.5pt;
-      color: #166534;
+
+    .signatory-role {
+      font-size: 8.8pt;
       font-weight: 600;
-      margin-top: 4px;
+      color: #334155;
     }
-    
-    .footer-note {
-      margin-top: 30px;
-      border-top: 1px solid #e2e8f0;
-      padding-top: 8px;
-      text-align: center;
-      font-size: 7pt;
-      color: #94a3b8;
+
+    .signatory-dept {
+      font-size: 8.4pt;
+      color: #475569;
+    }
+
+    .acceptance-form {
+      font-size: 9pt;
+      line-height: 2.1;
+      color: #0f172a;
     }
   </style>
 </head>
 <body>
-  <div class="watermark">ENTERPRENEX</div>
 
-  <div class="header">
-    <div class="logo-box">
-      <div class="logo-badge">E</div>
-      <div>
-        <div class="company-title">ENTERPRENEX SOLUTIONS PVT LTD</div>
-        <div class="company-tagline">Empowering Enterprise Engineering • CIN: U72900PN2026PTC239841</div>
-      </div>
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- PAGE 1 -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="page page-1">
+    <div class="header">
+      ${logoBase64 ? `<img src="data:image/png;base64,${logoBase64}" class="logo-img" alt="Enterprenex Solutions" />` : ''}
+      <div class="company-title">ENTERPRENEX SOLUTIONS PVT LTD</div>
+      <div class="company-web">www.enterprenexsolution.com</div>
+      <div class="gold-bar"></div>
     </div>
-    <div class="company-contact">
-      <div>Headquarters: Pune, MH, India</div>
-      <div>Web: https://enterprenexsolution.com</div>
-      <div>HR Portal: hr@enterprenex.solutions</div>
+
+    <div class="date-row">Date:${formattedDate}</div>
+
+    <div class="to-block">
+      <strong>To,</strong><br>
+      <strong>${offer.employeeName.toUpperCase()}</strong><br>
+      <span>${address}</span>
     </div>
-  </div>
 
-  <div class="meta-bar">
-    <div>REF NO: <span class="ref-no">${offer.offerLetterNo}</span></div>
-    <div>Date of Issuance: ${formattedDate}</div>
-  </div>
+    <div class="offer-title">
+      OFFER LETTER FOR ${isInternship ? 'INTERNSHIP' : 'EMPLOYMENT'}
+    </div>
 
-  <div class="recipient-info">
-    <div class="to-label">To,</div>
-    <div class="candidate-name">${offer.employeeName}</div>
-    <div style="font-size: 8.5pt; color: #475569;">Email: ${offer.employeeEmail}</div>
-    ${offer.employeeId ? `<div style="font-size: 8pt; color: #64748b;">Candidate Reference ID: ${offer.employeeId}</div>` : ''}
-  </div>
+    <div class="salutation">Dear ${offer.employeeName.toUpperCase()},</div>
 
-  <div class="subject-box">
-    SUBJECT: FORMAL APPOINTMENT AND EMPLOYMENT CONTRACT OFFER
-  </div>
-
-  <div class="content-body">
-    <p style="margin-bottom: 8px;">Dear <strong>${offer.employeeName}</strong>,</p>
-    <p>
-      Following your technical evaluations and discussions with our engineering leadership, we are delighted to extend this formal offer of appointment for the position of <strong>${offer.designation}</strong> in our <strong>${offer.department}</strong> division at <strong>Enterprenex Solutions Private Limited</strong>.
+    <p class="intro-p">
+      We are pleased to offer you the position of <strong>${offer.designation}</strong> at Enterprenex Solutions Pvt Ltd. We were impressed with your profile during the selection process and believe you will be a valuable addition to our team. Please find below the terms and conditions of your ${isInternship ? 'internship' : 'employment'}.
     </p>
+
+    <div class="section-heading">${isInternship ? 'INTERNSHIP DETAILS' : 'EMPLOYMENT DETAILS'}</div>
+    <div class="section-line"></div>
+
+    <table class="details-table">
+      <tbody>
+        <tr>
+          <td class="lbl">${isInternship ? 'Intern Name:' : 'Employee Name:'}</td>
+          <td class="val"><strong>${offer.employeeName.toUpperCase()}</strong></td>
+        </tr>
+        <tr>
+          <td class="lbl">${isInternship ? 'Intern ID:' : 'Employee ID:'}</td>
+          <td class="val">${offer.employeeId || offer.offerLetterNo}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Position / Role:</td>
+          <td class="val">${offer.designation}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Department:</td>
+          <td class="val">${offer.department}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Reporting To:</td>
+          <td class="val">${reportingTo}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Place of Joining:</td>
+          <td class="val">${placeOfJoining}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Work Mode:</td>
+          <td class="val">${workMode}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Duration:</td>
+          <td class="val">${durationText}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Start Date:</td>
+          <td class="val">${offer.joiningDate}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Working Hours:</td>
+          <td class="val">${workingHours}</td>
+        </tr>
+        <tr>
+          <td class="lbl">Working Days:</td>
+          <td class="val">${workingDays}</td>
+        </tr>
+        <tr>
+          <td class="lbl">${isInternship ? 'Stipend:' : 'Compensation:'}</td>
+          <td class="val">${stipendText}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-heading" style="margin-top: 6px;">TERMS & GENERAL POLICIES</div>
+    <div class="section-line"></div>
+
+    <ul class="policy-list">
+      <li>This ${isInternship ? 'internship' : 'employment'} is for a fixed period of ${durationText} from the date of joining and may be extended or converted into a full-time offer at the sole discretion of the Company, based on performance.</li>
+      <li>The ${isInternship ? 'intern' : 'employee'} is expected to maintain regular attendance and complete assigned tasks within the given deadlines with due diligence and professionalism.</li>
+      <li>The ${isInternship ? 'intern' : 'employee'} shall report to their designated Reporting Manager / Department Lead and follow the task and reporting structure communicated to them.</li>
+      <li>All work, content, code, designs, strategies, documents, and materials created during the ${isInternship ? 'internship' : 'employment'} shall remain the exclusive property of Enterprenex Solutions Pvt Ltd.</li>
+    </ul>
+
+    <div class="footer">
+      <div class="footer-bar"></div>
+      <div class="footer-contact">
+        enterprenexsolutionpvtltd@gmail.com &nbsp;|&nbsp; +91-9226860060<br>
+        Plot No. 148, Shrinand Plaza, CIDCO Waluj Mahanagar 1, Chhatrapati Sambhajinagar, MH 431136
+      </div>
+    </div>
   </div>
 
-  <div class="section-title">1. Terms of Engagement & Compensation Structure</div>
-  <table class="data-table">
-    <tbody>
-      <tr>
-        <td class="label-col">Position Title</td>
-        <td class="val-col">${offer.designation}</td>
-      </tr>
-      <tr>
-        <td class="label-col">Assigned Department</td>
-        <td class="val-col">${offer.department}</td>
-      </tr>
-      <tr>
-        <td class="label-col">Engagement Classification</td>
-        <td class="val-col">${offer.employmentType}</td>
-      </tr>
-      <tr>
-        <td class="label-col">Official Joining Date</td>
-        <td class="val-col">${offer.joiningDate}</td>
-      </tr>
-      <tr>
-        <td class="label-col">Probation Period</td>
-        <td class="val-col">${offer.probationPeriod}</td>
-      </tr>
-      <tr>
-        <td class="label-col">Gross Monthly Compensation</td>
-        <td class="val-col">INR ${offer.salaryMonthly.toLocaleString('en-IN')} per month</td>
-      </tr>
-      <tr class="ctc-row">
-        <td>Total Cost to Company (CTC)</td>
-        <td>INR ${offer.ctcAnnual.toLocaleString('en-IN')} per annum</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="section-title">2. Policies, Code of Conduct & Intellectual Property</div>
-  <div class="terms-box">
-${offer.termsAndConditions}
-  </div>
-
-  <div class="signatures">
-    <div class="sig-col">
-      <div class="sig-img">Rohit Pawar</div>
-      <div class="sig-name">Rohit Pawar</div>
-      <div class="sig-sub">Managing Director & Chief Executive</div>
-      <div class="sig-sub">Enterprenex Solutions Pvt Ltd</div>
-      ${approvedDateStr ? `<div class="sig-verified">✓ Digitally Authorized: ${approvedDateStr}</div>` : ''}
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- PAGE 2 -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="page page-2">
+    <div class="header">
+      ${logoBase64 ? `<img src="data:image/png;base64,${logoBase64}" class="logo-img" alt="Enterprenex Solutions" />` : ''}
+      <div class="company-title">ENTERPRENEX SOLUTIONS PVT LTD</div>
+      <div class="company-web">www.enterprenexsolution.com</div>
+      <div class="gold-bar"></div>
     </div>
 
-    <div class="sig-col">
-      <div class="sig-img" style="font-family: inherit; font-size: 11pt; color: #166534; font-weight: 700;">
-        ${offer.status === 'Accepted' ? offer.employeeName : '<span style="border-bottom: 1px dashed #94a3b8; width: 100%; display: inline-block;"></span>'}
-      </div>
-      <div class="sig-name">${offer.employeeName}</div>
-      <div class="sig-sub">Candidate Acceptance & Confirmation</div>
-      <div class="sig-sub">
-        ${offer.status === 'Accepted' ? `Accepted: ${offer.respondedAt ? new Date(offer.respondedAt).toLocaleDateString() : 'On Record'}` : 'Pending Signature'}
+    <ul class="policy-list" style="margin-top: 4px;">
+      <li>The ${isInternship ? 'intern' : 'employee'} shall maintain strict confidentiality regarding the Company's business information, client data, social media credentials, internal tools, and processes, both during and after the ${isInternship ? 'internship' : 'employment'} period.</li>
+      <li>The ${isInternship ? 'intern' : 'employee'} shall not engage in any activity that conflicts with the interests of the Company, including but not limited to sharing confidential information with third parties.</li>
+      <li>The ${isInternship ? 'intern' : 'employee'} is expected to adhere to the Company's code of conduct, maintain professional behavior, and respect fellow team members at all times.</li>
+      <li>This ${isInternship ? 'internship' : 'employment'} does not guarantee any full-time employment offer upon completion, unless communicated separately in writing by the Company.</li>
+      <li>Either party (the Company or the ${isInternship ? 'Intern' : 'Employee'}) may terminate this ${isInternship ? 'internship' : 'employment'} by providing 10 (ten) days' written notice to the other party.</li>
+      <li>In case of unsatisfactory performance, misconduct, or breach of any terms mentioned herein, the Company reserves the right to terminate the ${isInternship ? 'internship' : 'employment'} without prior notice.</li>
+    </ul>
+
+    <div class="section-heading" style="margin-top: 14px;">ON SUCCESSFUL COMPLETION</div>
+    <div class="section-line"></div>
+    <p class="intro-p" style="margin-bottom: 12px;">
+      Upon successful completion of the ${isInternship ? 'internship' : 'probation'} period and satisfactory performance, the ${isInternship ? 'intern' : 'employee'} shall be provided with a Letter of Recommendation and an Experience/Completion Certificate from Enterprenex Solutions Pvt Ltd.
+    </p>
+
+    <div class="section-heading" style="text-decoration: underline; margin-bottom: 6px;">ACCEPTANCE</div>
+    <p class="acceptance-p">
+      Please sign and return a copy of this letter as a token of your acceptance of the above terms and conditions of the ${isInternship ? 'internship' : 'employment'} offer.
+    </p>
+    <p class="acceptance-p" style="margin-bottom: 18px;">
+      We look forward to having you on board and wish you a great learning experience at Enterprenex Solutions Pvt Ltd.
+    </p>
+
+    <div class="signatory-block">
+      <div class="signatory-firm">For Enterprenex Solutions Pvt Ltd,</div>
+      <div class="signatory-name">${signatoryName}</div>
+      <div class="signatory-role">${signatoryRole}</div>
+      <div class="signatory-dept">${signatoryDepartment}</div>
+    </div>
+
+    <div class="section-heading" style="font-size: 9.4pt; margin-bottom: 8px;">
+      Acceptance by ${isInternship ? 'Intern' : 'Employee'}
+    </div>
+    <div class="acceptance-form">
+      Signature: ______________________________<br>
+      Name: ______________________________<br>
+      Date: ______________________________
+    </div>
+
+    <div class="footer">
+      <div class="footer-bar"></div>
+      <div class="footer-contact">
+        enterprenexsolutionpvtltd@gmail.com &nbsp;|&nbsp; +91-9226860060<br>
+        Plot No. 148, Shrinand Plaza, CIDCO Waluj Mahanagar 1, Chhatrapati Sambhajinagar, MH 431136
       </div>
     </div>
   </div>
 
-  <div class="footer-note">
-    Enterprenex Workforce Management System (EWMS) Verified Document • Ref: ${offer.offerLetterNo} • Valid without physical seal when digitally signed.
-  </div>
 </body>
 </html>
     `;
@@ -404,10 +547,10 @@ ${offer.termsAndConditions}
       format: 'A4',
       printBackground: true,
       margin: {
-        top: '15mm',
-        right: '15mm',
-        bottom: '15mm',
-        left: '15mm'
+        top: '10mm',
+        right: '18mm',
+        bottom: '12mm',
+        left: '18mm'
       }
     });
 
@@ -440,7 +583,15 @@ export interface PayslipPdfData {
 export const generatePayslipPdf = async (item: PayslipPdfData): Promise<Buffer> => {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-first-run',
+      '--single-process',
+      '--disable-extensions'
+    ]
   });
 
   try {
@@ -553,7 +704,15 @@ export interface RelievingPdfData {
 export const generateRelievingLetterPdf = async (item: RelievingPdfData): Promise<Buffer> => {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-first-run',
+      '--single-process',
+      '--disable-extensions'
+    ]
   });
 
   try {
@@ -565,14 +724,14 @@ export const generateRelievingLetterPdf = async (item: RelievingPdfData): Promis
   <meta charset="utf-8">
   <title>Relieving & Experience Certificate - ${item.employeeName}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; line-height: 1.7; font-size: 10.5pt; }
     .header { border-bottom: 2px solid #0f172a; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; }
     .logo-text { font-size: 20pt; font-weight: 800; color: #0284c7; }
     .doc-title { text-align: center; font-size: 14pt; font-weight: 800; margin-bottom: 25px; text-decoration: underline; }
     p { margin-bottom: 18px; }
     .signature { margin-top: 60px; }
-    .footer { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 8pt; color: #94a3b8; text-align: center; }
+    .footer { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 8pt; color: #64748b; text-align: center; }
   </style>
 </head>
 <body>
@@ -617,4 +776,3 @@ export const generateRelievingLetterPdf = async (item: RelievingPdfData): Promis
     await browser.close();
   }
 };
-
