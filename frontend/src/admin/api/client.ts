@@ -331,7 +331,22 @@ class ApiClient {
 
   // 9. Notifications Stream
   async getNotifications() {
-    return this.request<{ notifications: any[] }>('/notifications');
+    return this.request<{ notifications: any[]; unreadCount?: number; moduleCounts?: Record<string, number> }>('/notifications');
+  }
+
+  async createNotification(data: {
+    type: string;
+    title: string;
+    message: string;
+    recipientRole?: string;
+    recipientEmail?: string;
+    recipientEmployeeId?: string;
+    actionUrl?: string;
+  }) {
+    return this.request<{ notification: any }>('/notifications', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 
   async markNotificationRead(id: string) {

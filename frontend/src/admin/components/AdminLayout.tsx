@@ -63,6 +63,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     employees,
     offerLetters,
     notifications,
+    leaves,
+    unreadEmailsCount,
     markNotificationRead,
     markAllNotificationsRead,
     refreshNotifications,
@@ -166,6 +168,21 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const notifDropdownRef = useRef<HTMLDivElement>(null);
+  const [notifFilter, setNotifFilter] = useState<string>('All');
+
+  // Click outside listener for notifications dropdown
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (notifDropdownRef.current && !notifDropdownRef.current.contains(e.target as Node)) {
+        setShowNotifMenu(false);
+      }
+    };
+    if (showNotifMenu) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [showNotifMenu]);
 
   // Live Portal Theme (Default to clean Light minimalism, with instant toggle)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -199,6 +216,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const pendingInvoicesCount = safeInvoices.filter(i => i && i.status === 'Pending').length;
   const newLeadsCount = safeLeads.filter(l => l && l.status === 'New Lead').length;
   const activeProjectsCount = safeProjects.filter(p => p && p.status !== 'Delivered').length;
+  const pendingOffersCount = (offerLetters || []).filter(o => o && o.status === 'Pending Approval').length;
+  const candidateOfferPendingCount = (offerLetters || []).filter(o => o && (o.employeeEmail === currentUser?.email || o.employeeId === currentUser?.employeeId) && o.status === 'Sent').length;
+  const pendingLeavesCount = (leaves || []).filter(l => l && l.status === 'Pending').length;
+  const pendingOnboardingsCount = (employees || []).filter(e => e && e.status === 'Pending Approval').length;
+  const pendingHrActionsCount = pendingLeavesCount + pendingOnboardingsCount;
+  const assignedTasksCount = safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length;
+  const actionableTasksCount = safeTasks.filter(t => t && (t.status === 'Submitted' || t.status === 'Under Review' || (t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done'))).length;
 
   // Determine current user role with alias mapping
   const userRole = currentUser?.role || 'Super Admin';
@@ -270,12 +294,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       return [
         { section: t('sec.humanCapital', 'Individual Workspace') },
         { to: '/admin', label: 'My Workspace', icon: LayoutDashboard, exact: true },
-        { to: '/admin/offer-letters', label: 'My Offer Letter & Contract', icon: FileCheck },
-        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
-        { to: '/admin/tasks', label: t('nav.tasks', 'My Assigned Tasks'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length },
+        { to: '/admin/offer-letters', label: 'My Offer Letter & Contract', icon: FileCheck, badge: candidateOfferPendingCount > 0 ? '1 Action' : undefined },
+        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: unreadEmailsCount > 0 ? `${unreadEmailsCount} New` : undefined },
+        { to: '/admin/tasks', label: t('nav.tasks', 'My Assigned Tasks'), icon: CheckSquare, badge: assignedTasksCount > 0 ? `${assignedTasksCount}` : undefined },
         { to: '/admin/team', label: t('nav.team', 'Colleagues Directory & Attendance'), icon: UserCheck },
         { to: '/admin/calendar', label: t('nav.calendar', 'Scheduled Meetings & Calendar'), icon: Calendar },
-        { to: '/admin/support', label: t('nav.helpdesk', 'Support Requests & Tickets'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/support', label: t('nav.helpdesk', 'Support Requests & Tickets'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount} Open` : undefined },
         { to: '/admin/documents', label: t('nav.documents', 'Shared Documents & Vault'), icon: FileText }
       ];
     }
@@ -287,16 +311,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { to: '/admin', label: t('nav.dashboard', 'Executive Operations Dashboard'), icon: LayoutDashboard, exact: true },
         { to: '/admin/clients', label: t('nav.clients', 'Client Accounts Directory'), icon: Users, badge: safeClients.length },
         { to: '/admin/projects', label: t('nav.projects', 'Project Portfolio & Milestones'), icon: Briefcase, badge: activeProjectsCount },
-        { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
-        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
+        { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: actionableTasksCount > 0 ? `${actionableTasksCount} Active` : undefined },
+        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: unreadEmailsCount > 0 ? `${unreadEmailsCount} New` : undefined },
 
         { section: t('sec.commercial', 'Commercial Governance') },
         { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
 
         { section: t('sec.humanCapital', 'Human Capital & Delivery') },
-        { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck },
+        { to: '/admin/team', label: t('nav.team', 'Workforce Roster & Attendance'), icon: UserCheck, badge: pendingHrActionsCount > 0 ? `${pendingHrActionsCount} Due` : undefined },
         { to: '/admin/offer-letters', label: 'Offer Letters & Contracts', icon: FileText, badge: (offerLetters || []).filter(o => o.status === 'Pending Approval').length > 0 ? `${(offerLetters || []).filter(o => o.status === 'Pending Approval').length} Due` : undefined },
-        { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk & SLA Governance'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+        { to: '/admin/support', label: t('nav.helpdesk', 'Service Desk & SLA Governance'), icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount} Open` : undefined },
         { to: '/admin/documents', label: t('nav.documents', 'Compliance Vault & Records'), icon: FileText },
         { to: '/admin/calendar', label: t('nav.calendar', 'Corporate Calendar & Sessions'), icon: Calendar },
 
@@ -314,20 +338,20 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       { section: 'Enterprise Operations' },
       { to: '/admin/clients', label: 'Client Accounts Directory', icon: Users, badge: safeClients.length },
       { to: '/admin/projects', label: 'Project Portfolio & Milestones', icon: Briefcase, badge: activeProjectsCount },
-      { to: '/admin/tasks', label: 'Sprint Backlog & Kanban', icon: CheckSquare, badge: safeTasks.filter(t => t && t.status !== 'Done').length },
-      { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: '2 New' },
+      { to: '/admin/tasks', label: 'Sprint Backlog & Kanban', icon: CheckSquare, badge: actionableTasksCount > 0 ? `${actionableTasksCount} Active` : undefined },
+      { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: unreadEmailsCount > 0 ? `${unreadEmailsCount} New` : undefined },
 
       { section: 'Finance & Commerce' },
       { to: '/admin/finance', label: 'Finance Dashboard & P&L', icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },
       { to: '/admin/crm', label: 'Enterprise CRM & Sales Pipeline', icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
 
       { section: 'People & Organization' },
-      { to: '/admin/team', label: 'Personnel Directory & Payroll', icon: UserCheck },
+      { to: '/admin/team', label: 'Personnel Directory & Payroll', icon: UserCheck, badge: pendingHrActionsCount > 0 ? `${pendingHrActionsCount} Due` : undefined },
       { to: '/admin/offer-letters', label: 'Offer Letters & Approvals', icon: FileText, badge: (offerLetters || []).filter(o => o.status === 'Pending Approval').length > 0 ? `${(offerLetters || []).filter(o => o.status === 'Pending Approval').length} Due` : undefined },
 
       { section: 'Communication & Meetings' },
       { to: '/admin/calendar', label: 'Corporate Calendar & Sessions', icon: Calendar },
-      { to: '/admin/support', label: 'Service Desk & Escalations', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount}` : undefined },
+      { to: '/admin/support', label: 'Service Desk & Escalations', icon: LifeBuoy, badge: openTicketsCount > 0 ? `${openTicketsCount} Open` : undefined },
 
       { section: 'Governance & Security' },
       { to: '/admin/documents', label: 'Compliance Vault & Records', icon: FileText },
@@ -679,85 +703,216 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </button>
             )}
 
-            {/* Notifications Bell */}
-            <div style={{ position: 'relative' }}>
-              <button className="adm-topbar-btn" onClick={() => setShowNotifMenu(!showNotifMenu)} title="Notifications">
-                <Bell size={17} />
-                {(unreadNotifCount > 0 || openTicketsCount > 0 || (isDirector && pendingInvoicesCount > 0)) && <span className="adm-badge-dot" />}
+            {/* Centralized Global Notifications Bell */}
+            <div style={{ position: 'relative' }} ref={notifDropdownRef}>
+              <button
+                className="adm-topbar-btn"
+                onClick={() => setShowNotifMenu(!showNotifMenu)}
+                title={`Enterprise Notifications (${unreadNotifCount} unread)`}
+                aria-label="Notifications"
+                style={{ position: 'relative' }}
+              >
+                <Bell size={18} />
+                {unreadNotifCount > 0 && (
+                  <span className="adm-notif-count-badge">
+                    {unreadNotifCount > 99 ? '99+' : unreadNotifCount}
+                  </span>
+                )}
               </button>
 
-              {/* Notification Dropdown */}
+              {/* Centralized Global Notification Panel */}
               {showNotifMenu && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 8px)',
-                    right: 0,
-                    width: '360px',
-                    maxHeight: '440px',
-                    overflowY: 'auto',
-                    background: 'var(--adm-surface)',
-                    border: '1px solid var(--adm-border-light)',
-                    borderRadius: 'var(--adm-radius)',
-                    boxShadow: 'var(--adm-shadow-lg)',
-                    zIndex: 1000,
-                    padding: '1rem'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--adm-border)' }}>
-                    <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--adm-text)' }}>System Alerts & Workflow</span>
+                <div className="adm-notif-dropdown">
+                  {/* Header */}
+                  <div className="adm-notif-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="adm-badge adm-badge-primary">{unreadNotifCount} New</span>
+                      <Bell size={16} color="var(--adm-primary)" />
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--adm-text)' }}>
+                        Enterprise Notifications
+                      </span>
+                      {unreadNotifCount > 0 ? (
+                        <span className="adm-badge adm-badge-danger" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
+                          {unreadNotifCount} Unread
+                        </span>
+                      ) : (
+                        <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
+                          All Caught Up
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => refreshNotifications()}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--adm-text-muted)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '3px'
+                        }}
+                        title="Refresh notifications"
+                      >
+                        <RefreshCw size={13} />
+                      </button>
+
                       {unreadNotifCount > 0 && (
                         <button
+                          type="button"
                           onClick={() => markAllNotificationsRead()}
-                          style={{ background: 'none', border: 'none', color: 'var(--adm-primary)', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 600 }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--adm-primary)',
+                            fontSize: '0.74rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            padding: '2px 6px'
+                          }}
                         >
-                          Clear All
+                          Mark All Read
                         </button>
                       )}
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {/* Module Filter Tabs */}
+                  {safeNotifications.length > 0 && (
+                    <div className="adm-notif-filter-bar">
+                      {['All', ...Array.from(new Set(safeNotifications.map(n => n.module || 'System Alerts')))].map(modName => {
+                        const countInMod = modName === 'All'
+                          ? safeNotifications.filter(n => !n.read).length
+                          : safeNotifications.filter(n => !n.read && (n.module || 'System Alerts') === modName).length;
+                        return (
+                          <button
+                            key={modName}
+                            type="button"
+                            className={`adm-notif-filter-btn ${notifFilter === modName ? 'active' : ''}`}
+                            onClick={() => setNotifFilter(modName)}
+                          >
+                            {modName}
+                            {countInMod > 0 && (
+                              <span style={{ marginLeft: '4px', opacity: 0.85 }}>({countInMod})</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Notification List */}
+                  <div className="adm-notif-list">
                     {safeNotifications.length === 0 ? (
-                      <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--adm-text-muted)', fontSize: '0.8rem' }}>
-                        No pending notifications.
+                      <div style={{ padding: '2.5rem 1.5rem', textAlign: 'center', color: 'var(--adm-text-muted)', fontSize: '0.82rem' }}>
+                        <CheckCircle2 size={32} color="#10b981" style={{ margin: '0 auto 8px auto', display: 'block', opacity: 0.8 }} />
+                        <div style={{ fontWeight: 600, color: 'var(--adm-text)' }}>All Caught Up</div>
+                        <div style={{ fontSize: '0.74rem', marginTop: '4px' }}>No active alerts or workflow pending items.</div>
                       </div>
                     ) : (
-                      safeNotifications.slice(0, 10).map(n => (
-                        <div
-                          key={n.id}
-                          onClick={() => {
-                            markNotificationRead(n.id);
-                            if (n.actionUrl) navigate(n.actionUrl);
-                            setShowNotifMenu(false);
-                          }}
-                          style={{
-                            padding: '0.65rem 0.75rem',
-                            background: n.read ? 'var(--adm-bg)' : 'rgba(16, 112, 200, 0.08)',
-                            borderLeft: n.read ? '2px solid transparent' : '2px solid var(--adm-primary)',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            transition: 'background 0.2s'
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div style={{ fontSize: '0.8rem', fontWeight: n.read ? 600 : 700, color: 'var(--adm-text)' }}>
+                      (notifFilter === 'All'
+                        ? safeNotifications
+                        : safeNotifications.filter(n => (n.module || 'System Alerts') === notifFilter)
+                      ).map(n => {
+                        const modName = n.module || 'System Alerts';
+                        const modColors: Record<string, { bg: string; color: string }> = {
+                          'Offer Letters': { bg: 'rgba(16, 185, 129, 0.12)', color: '#059669' },
+                          'Tasks': { bg: 'rgba(59, 130, 246, 0.12)', color: '#2563eb' },
+                          'Support Desk': { bg: 'rgba(245, 158, 11, 0.12)', color: '#d97706' },
+                          'Finance': { bg: 'rgba(139, 92, 246, 0.12)', color: '#7c3aed' },
+                          'Enterprise CRM': { bg: 'rgba(236, 72, 153, 0.12)', color: '#db2777' },
+                          'Personnel & HR': { bg: 'rgba(6, 182, 212, 0.12)', color: '#0891b2' },
+                          'Communications': { bg: 'rgba(99, 102, 241, 0.12)', color: '#4f46e5' },
+                          'Compliance Vault': { bg: 'rgba(20, 184, 166, 0.12)', color: '#0d9488' },
+                          'Corporate Calendar': { bg: 'rgba(249, 115, 22, 0.12)', color: '#ea580c' },
+                          'System Alerts': { bg: 'rgba(100, 116, 139, 0.12)', color: '#475569' }
+                        };
+                        const mStyle = modColors[modName] || modColors['System Alerts'];
+
+                        // Calculate relative time
+                        let timeLabel = 'Recently';
+                        if (n.createdAt) {
+                          try {
+                            const diffMins = Math.floor((Date.now() - new Date(n.createdAt).getTime()) / 60000);
+                            if (diffMins < 1) timeLabel = 'Just now';
+                            else if (diffMins < 60) timeLabel = `${diffMins}m ago`;
+                            else if (diffMins < 1440) timeLabel = `${Math.floor(diffMins / 60)}h ago`;
+                            else timeLabel = new Date(n.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' });
+                          } catch (e) {
+                            timeLabel = 'Recently';
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={n.id}
+                            className={`adm-notif-item ${n.read ? 'read' : 'unread'}`}
+                            onClick={() => {
+                              markNotificationRead(n.id);
+                              if (n.actionUrl) navigate(n.actionUrl);
+                              setShowNotifMenu(false);
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span
+                                  className="adm-module-badge"
+                                  style={{ background: mStyle.bg, color: mStyle.color }}
+                                >
+                                  {modName}
+                                </span>
+                                {!n.read && (
+                                  <span style={{ fontSize: '0.64rem', fontWeight: 800, color: '#e11d48', background: 'rgba(225, 29, 72, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                    ACTION
+                                  </span>
+                                )}
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '0.67rem', color: 'var(--adm-text-dim)' }}>
+                                  {timeLabel}
+                                </span>
+                                {!n.read && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      markNotificationRead(n.id);
+                                    }}
+                                    title="Mark as read"
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      color: 'var(--adm-text-muted)',
+                                      cursor: 'pointer',
+                                      padding: '2px',
+                                      display: 'flex',
+                                      alignItems: 'center'
+                                    }}
+                                  >
+                                    <Check size={12} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            <div style={{ fontSize: '0.82rem', fontWeight: n.read ? 600 : 700, color: 'var(--adm-text)', lineHeight: '1.3' }}>
                               {n.title}
                             </div>
-                            {!n.read && (
-                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--adm-primary)', marginTop: '4px' }} />
-                            )}
+
+                            <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', marginTop: '3px', lineHeight: '1.4' }}>
+                              {n.message}
+                            </div>
+
+                            <div style={{ fontSize: '0.67rem', color: 'var(--adm-primary)', marginTop: '5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>Open in {modName}</span>
+                              <ExternalLink size={10} />
+                            </div>
                           </div>
-                          <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', marginTop: '2px', lineHeight: '1.4' }}>
-                            {n.message}
-                          </div>
-                          <div style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>
-                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Click to view
-                          </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>

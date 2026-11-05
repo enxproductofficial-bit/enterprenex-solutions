@@ -235,6 +235,7 @@ interface AdminContextType {
   markNotificationRead: (id: string) => Promise<void>;
   markAllNotificationsRead: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
+  unreadEmailsCount: number;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -271,6 +272,34 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [okrs, setOkrs] = useState<ObjectiveKeyResult[]>(INITIAL_OKRS);
   const [offerLetters, setOfferLetters] = useState<OfferLetter[]>(INITIAL_OFFER_LETTERS);
   const [notifications, setNotifications] = useState<EwmsNotification[]>(INITIAL_NOTIFICATIONS);
+  const [unreadEmailsCount, setUnreadEmailsCount] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('ewms_enterprise_emails');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed.filter((e: any) => e.isUnread).length;
+      }
+    } catch (e) {}
+    return 2;
+  });
+
+  useEffect(() => {
+    const handleEmailsUpdated = (e: any) => {
+      if (e.detail && typeof e.detail.unreadCount === 'number') {
+        setUnreadEmailsCount(e.detail.unreadCount);
+      }
+    };
+    window.addEventListener('ewms_emails_updated', handleEmailsUpdated);
+    return () => window.removeEventListener('ewms_emails_updated', handleEmailsUpdated);
+  }, []);
+
+  // Periodic live notification polling (every 25 seconds)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      refreshNotifications();
+    }, 25000);
+    return () => clearInterval(timer);
+  }, []);
 
 
 
@@ -1676,8 +1705,17 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const refreshNotifications = async () => {
     try {
       const res = await api.getNotifications();
-      if (res && res.notifications) {
-        setNotifications(res.notifications);
+      if (res && Array.isArray(res.notifications)) {
+        let readIds: string[] = [];
+        try {
+          readIds = JSON.parse(localStorage.getItem('ewms_read_notif_ids') || '[]');
+        } catch (e) {}
+
+        const synchronized = res.notifications.map((n: any) => ({
+          ...n,
+          read: n.read || readIds.includes(n.id)
+        }));
+        setNotifications(synchronized);
       }
     } catch (e) {
       console.warn('Failed to refresh notifications:', e);
@@ -1687,6 +1725,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const markNotificationRead = async (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     try {
+      const readIds = JSON.parse(localStorage.getItem('ewms_read_notif_ids') || '[]');
+      if (!readIds.includes(id)) {
+        readIds.push(id);
+        localStorage.setItem('ewms_read_notif_ids', JSON.stringify(readIds));
+      }
+    } catch (e) {}
+    try {
       await api.markNotificationRead(id);
     } catch (e) {
       console.warn('Backend mark notification read deferred:', e);
@@ -1694,7 +1739,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const markAllNotificationsRead = async () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => {
+      const allIds = prev.map(n => n.id);
+      try {
+        localStorage.setItem('ewms_read_notif_ids', JSON.stringify(allIds));
+      } catch (e) {}
+      return prev.map(n => ({ ...n, read: true }));
+    });
     try {
       await api.markAllNotificationsRead();
       showToast('Notifications Cleared', 'All alerts marked as read.', 'info');
@@ -1844,6 +1895,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         markNotificationRead,
         markAllNotificationsRead,
         refreshNotifications,
+        unreadEmailsCount,
       }}
     >
       {children}

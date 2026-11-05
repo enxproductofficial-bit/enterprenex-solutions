@@ -694,6 +694,8 @@ export interface EwmsNotification {
   type: string;
   title: string;
   message: string;
+  module?: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
   recipientRole?: string;
   recipientEmail?: string;
   recipientEmployeeId?: string;

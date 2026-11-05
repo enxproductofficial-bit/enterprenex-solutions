@@ -301,6 +301,8 @@ export const EmailsPage: React.FC = () => {
   // Persist emails
   useEffect(() => {
     localStorage.setItem('ewms_enterprise_emails', JSON.stringify(emails));
+    const unread = emails.filter(e => e.isUnread).length;
+    window.dispatchEvent(new CustomEvent('ewms_emails_updated', { detail: { unreadCount: unread } }));
   }, [emails]);
 
   // Persist pane width

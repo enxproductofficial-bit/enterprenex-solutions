@@ -3,6 +3,7 @@ import { prisma } from '../db';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 import { logAuditSecurityEntry } from '../services/security.service';
 import { IntegrationService } from '../services/integration.service';
+import { emitNotification } from '../services/notification.service';
 
 const router = Router();
 
@@ -77,6 +78,15 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       data: { ticketNumber, title, category, requester: req.user?.name }
     });
 
+    // Broadcast Real-Time System Notification
+    await emitNotification({
+      type: 'TICKET_RAISED',
+      title: `Support Ticket Raised: ${ticketNumber}`,
+      message: `${req.user?.name || 'Staff'} raised ticket ${ticketNumber} (${category}: "${title}"). Priority: ${priority || 'Medium'}.`,
+      recipientRole: 'Super Admin',
+      actionUrl: '/admin/support'
+    });
+
     res.status(201).json({
       message: `Support ticket ${ticketNumber} raised successfully.`,
       ticket: newTicket
@@ -123,6 +133,14 @@ router.patch('/:id', authenticateToken, requireRole(['Super Admin', 'Project Man
         subject: `Update on your ticket ${ticket.ticketNumber}: ${status}`,
         template: 'TICKET_STATUS',
         data: { ticketNumber: ticket.ticketNumber, status, notes: responseNotes }
+      });
+
+      await emitNotification({
+        type: 'TICKET_UPDATED',
+        title: `Ticket ${ticket.ticketNumber} Updated: ${status || ticket.status}`,
+        message: `Your ticket ${ticket.ticketNumber} is now marked as "${status || ticket.status}". Notes: ${responseNotes || 'None'}.`,
+        recipientEmail: ticket.requestedByEmail,
+        actionUrl: '/admin/support'
       });
     }
 

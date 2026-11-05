@@ -46,6 +46,7 @@ export const emitRealtimeNotification = (notification: {
   recipientEmail?: string | null;
   recipientEmployeeId?: string | null;
   actionUrl?: string | null;
+  read?: boolean;
   createdAt: string | Date;
 }) => {
   if (!io) return;
