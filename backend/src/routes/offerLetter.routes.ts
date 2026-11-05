@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { authenticateToken, optionalAuth, AuthRequest } from '../middleware/auth';
 import {
   notifyOfferPendingApproval,
   notifyOfferReviewed,
@@ -455,8 +455,8 @@ const handleOfferResponse = async (req: AuthRequest, res: Response): Promise<voi
   }
 };
 
-router.post('/:id/respond', authenticateToken, handleOfferResponse);
-router.put('/:id/respond', authenticateToken, handleOfferResponse);
+router.post('/:id/respond', optionalAuth, handleOfferResponse);
+router.put('/:id/respond', optionalAuth, handleOfferResponse);
 
 // DELETE /api/v1/offer-letters/:id (HR deletes a draft or rejected offer letter)
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {

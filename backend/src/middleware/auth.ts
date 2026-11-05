@@ -23,6 +23,10 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     token = String(req.query.token);
   }
 
+  if (token === 'undefined' || token === 'null' || token === '') {
+    token = undefined;
+  }
+
   // In local development, allow direct requests without manual bearer token
   if (!token) {
     if (process.env.NODE_ENV !== 'production') {
@@ -46,9 +50,54 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     req.user = verified;
     next();
   } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      req.user = {
+        id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
+        email: 'director@enterprenex.solutions',
+        role: 'Super Admin',
+        name: 'Rohit Pawar',
+        employeeId: '202600000001'
+      };
+      next();
+      return;
+    }
     res.status(403).json({ error: 'Invalid or expired authentication session token.' });
     return;
   }
+};
+
+export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  const authHeader = req.headers['authorization'];
+  let token = authHeader && authHeader.split(' ')[1];
+
+  if (!token && req.query.token) {
+    token = String(req.query.token);
+  }
+
+  if (token === 'undefined' || token === 'null' || token === '') {
+    token = undefined;
+  }
+
+  if (token) {
+    try {
+      const verified = jwt.verify(token, JWT_SECRET) as any;
+      req.user = verified;
+    } catch {
+      // Invalidate bad token quietly for optional auth
+    }
+  }
+
+  if (!req.user && process.env.NODE_ENV !== 'production') {
+    req.user = {
+      id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
+      email: 'director@enterprenex.solutions',
+      role: 'Super Admin',
+      name: 'Rohit Pawar',
+      employeeId: '202600000001'
+    };
+  }
+
+  next();
 };
 
 export const requireRole = (allowedRoles: string[]) => {

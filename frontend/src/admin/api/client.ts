@@ -19,7 +19,11 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || (getBackendBaseUrl() ? `${g
 
 class ApiClient {
   private getToken(): string | null {
-    return localStorage.getItem('ewms_auth_token') || localStorage.getItem('ewms_token');
+    const token = localStorage.getItem('ewms_auth_token') || localStorage.getItem('ewms_token');
+    if (!token || token === 'undefined' || token === 'null' || token.trim() === '') {
+      return null;
+    }
+    return token;
   }
 
   public setToken(token: string): void {
