@@ -383,7 +383,6 @@ export const OfferLettersPage: React.FC = () => {
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600 }}>Candidate</th>
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600 }}>Role & Dept</th>
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600 }}>Joining Date</th>
-                  <th style={{ padding: '0.85rem 1rem', fontWeight: 600 }}>Compensation</th>
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600 }}>Status</th>
                   <th style={{ padding: '0.85rem 1rem', fontWeight: 600, textAlign: 'right' }}>Actions</th>
                 </tr>
@@ -415,15 +414,6 @@ export const OfferLettersPage: React.FC = () => {
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
                         Probation: {offer.probationPeriod}
-                      </div>
-                    </td>
-
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ fontWeight: 700, color: '#10b981' }}>
-                        ₹{offer.salaryMonthly.toLocaleString('en-IN')}<span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', fontWeight: 400 }}>/mo</span>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
-                        ₹{offer.ctcAnnual.toLocaleString('en-IN')} CTC
                       </div>
                     </td>
 
@@ -874,10 +864,6 @@ export const OfferLettersPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <span style={{ color: 'var(--adm-text-muted)' }}>Role & Department:</span>
                 <span>{reviewOffer.designation} ({reviewOffer.department})</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span style={{ color: 'var(--adm-text-muted)' }}>Annual CTC:</span>
-                <span style={{ fontWeight: 700, color: '#10b981' }}>₹{reviewOffer.ctcAnnual.toLocaleString('en-IN')}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--adm-text-muted)' }}>Joining Date:</span>
