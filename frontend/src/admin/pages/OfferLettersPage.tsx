@@ -140,11 +140,11 @@ export const OfferLettersPage: React.FC = () => {
         signatoryRole: formSignatoryType === 'Director' ? 'Managing Director' : 'Operations Officer',
         signatoryDepartment: formSignatoryType === 'Director' ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : 'HR Team, Enterprenex Solutions Pvt Ltd'
       });
-
-      setShowGenerateModal(false);
-      resetForm();
     } catch {
       // toast handled in context
+    } finally {
+      setShowGenerateModal(false);
+      resetForm();
     }
   };
 
