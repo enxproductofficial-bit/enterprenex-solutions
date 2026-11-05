@@ -660,7 +660,7 @@ export type OfferLetterStatus =
 export interface OfferLetter {
   id: string;
   offerLetterNo: string;
-  employeeId: string;
+  employeeId?: string;
   employeeName: string;
   employeeEmail: string;
   department: string;

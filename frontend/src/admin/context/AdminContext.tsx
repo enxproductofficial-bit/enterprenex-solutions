@@ -1595,6 +1595,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...(targetOffer || {
         id,
         offerLetterNo: id,
+        employeeId: '',
         employeeName: 'Candidate',
         employeeEmail: 'candidate@enterprenex.solutions',
         department: 'Engineering',
@@ -1644,6 +1645,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...(targetOffer || {
         id,
         offerLetterNo: id,
+        employeeId: '',
         employeeName: 'Candidate',
         employeeEmail: 'candidate@enterprenex.solutions',
         department: 'Engineering',
@@ -1684,6 +1686,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...(targetOffer || {
         id,
         offerLetterNo: id,
+        employeeId: '',
         employeeName: 'Candidate',
         employeeEmail: 'candidate@enterprenex.solutions',
         department: 'Engineering',
