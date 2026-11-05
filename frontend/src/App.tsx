@@ -74,7 +74,7 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
     return <Navigate to="/create-new-password" replace />;
   }
 
-  const userRole = currentUser.role || '';
+  const userRole = (currentUser.role || '') as string;
   const userEmail = (currentUser.email || '').toLowerCase();
 
   const isDirector =

@@ -1344,7 +1344,7 @@ export const DocumentsPage: React.FC = () => {
             empId={getDocEmployeeInfo(previewDoc).empId}
             emp={getDocEmployeeInfo(previewDoc).emp}
             verificationStatus={getDocEmployeeInfo(previewDoc).verificationStatus}
-            effectiveUrl={getEffectiveDocUrl(previewDoc)}
+            effectiveUrl={getEffectiveDocUrl(previewDoc) || ''}
             generateDocumentHtml={generateDocumentHtml}
           />
         </React.Suspense>

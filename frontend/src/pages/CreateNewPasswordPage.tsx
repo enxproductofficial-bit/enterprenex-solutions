@@ -17,7 +17,7 @@ import './register/register.css';
 
 export const CreateNewPasswordPage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentUser, employees, completePasswordSetup, showToast } = useAdmin();
+  const { currentUser, completePasswordSetup, showToast } = useAdmin();
 
   const [identifier, setIdentifier] = useState('');
   const [temporaryPassword, setTemporaryPassword] = useState('');

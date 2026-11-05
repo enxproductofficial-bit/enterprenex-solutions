@@ -43,7 +43,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { Task, TaskColumn, Employee, Project } from '../types';
+import type { Task } from '../types';
 import { TaskPreviewDrawer } from '../components/TaskPreviewDrawer';
 import { StaffPixelPlanDashboard } from '../components/StaffPixelPlanDashboard';
 

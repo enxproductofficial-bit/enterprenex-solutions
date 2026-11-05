@@ -207,6 +207,7 @@ export interface Invoice {
   paidAmount: number;
   paymentDate?: string;
   paymentMethod?: string;
+  paymentReference?: string;
   type: 'Tax Invoice' | 'Quotation' | 'Proforma';
 }
 
@@ -338,8 +339,9 @@ export type TaskColumn =
 
 export interface TaskComment {
   id: string;
+  taskId?: string;
   author: string;
-  authorAvatar: string;
+  authorAvatar?: string;
   text: string;
   createdAt: string;
 }
@@ -378,6 +380,7 @@ export interface Task {
   module?: string; // 5. Module (e.g. Core Engine, Billing, Security)
   assignedBy?: string; // 6. Assigned By (e.g. Rohit Pawar - Technical Director)
   assignedTo: string; // 7. Assigned To (Employee name)
+  department?: string;
   reviewer?: string; // 8. Reviewer (Peer/Lead Reviewer)
   priority: TaskPriority; // 9. Priority
   status: TaskColumn; // 10. Status (9-Stage Lifecycle)
@@ -454,12 +457,12 @@ export interface SupportTicket {
   ticketNumber: string;
   subject: string;
   clientName: string;
-  clientEmail: string;
+  clientEmail?: string;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   status: 'Open' | 'In Progress' | 'Waiting on Client' | 'Resolved' | 'Closed';
-  assignedTo: string;
+  assignedTo?: string;
   category: 'Bug Fix' | 'Feature Request' | 'Server Issue' | 'Billing' | 'General Query' | 'Attendance Correction' | 'Certificate Request' | 'Leave & Permission' | 'HR & Stipend' | 'IT & Setup';
-  slaHoursRemaining: number;
+  slaHoursRemaining?: number;
   createdAt: string;
   messages: {
     id: string;

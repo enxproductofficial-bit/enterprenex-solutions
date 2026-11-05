@@ -641,6 +641,22 @@ export const TeamPage: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  // Generators for 12-digit Employee ID and temporary passwords
+  const generateUnique12DigitId = (): string => {
+    const year = new Date().getFullYear().toString();
+    const random8 = Math.floor(10000000 + Math.random() * 90000000).toString();
+    return `${year}${random8}`;
+  };
+
+  const generateRandomPassword = (prefix = 'EPX'): string => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*';
+    let pass = '';
+    for (let i = 0; i < 8; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `${prefix}@${pass}`;
+  };
+
   // Server-Side Unique Employee ID Fetcher (keeps generator logic strictly on backend)
   const fetchServerEmployeeId = async (dept: string = 'Engineering'): Promise<string> => {
     const token = localStorage.getItem('ewms_token');

@@ -37,7 +37,11 @@ import {
   MessageSquare,
   Lock,
   Shield,
-  ArrowLeftRight
+  ArrowLeftRight,
+  FileCheck,
+  RefreshCw,
+  Check,
+  ExternalLink
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
 import { ToastContainer } from './ToastContainer';
@@ -219,13 +223,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const pendingOffersCount = (offerLetters || []).filter(o => o && o.status === 'Pending Approval').length;
   const candidateOfferPendingCount = (offerLetters || []).filter(o => o && (o.employeeEmail === currentUser?.email || o.employeeId === currentUser?.employeeId) && o.status === 'Sent').length;
   const pendingLeavesCount = (leaves || []).filter(l => l && l.status === 'Pending').length;
-  const pendingOnboardingsCount = (employees || []).filter(e => e && e.status === 'Pending Approval').length;
+  const pendingOnboardingsCount = (employees || []).filter(e => e && (e.status as string) === 'Pending Approval').length;
   const pendingHrActionsCount = pendingLeavesCount + pendingOnboardingsCount;
   const assignedTasksCount = safeTasks.filter(t => t && t.status !== 'Done' && (t.assignedTo === currentUser?.name || t.assignedTo === currentUser?.employeeId)).length;
-  const actionableTasksCount = safeTasks.filter(t => t && (t.status === 'Submitted' || t.status === 'Under Review' || (t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done'))).length;
+  const actionableTasksCount = safeTasks.filter(t => t && ((t.status as string) === 'Submitted' || (t.status as string) === 'Under Review' || (t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done'))).length;
 
   // Determine current user role with alias mapping
-  const userRole = currentUser?.role || 'Super Admin';
+  const userRole = (currentUser?.role || 'Super Admin') as string;
   const userEmail = (currentUser?.email || '').toLowerCase();
 
   const isDirector =

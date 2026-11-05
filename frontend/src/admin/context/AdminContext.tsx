@@ -29,7 +29,6 @@ import type {
   EmployeeKpiScorecard,
   ObjectiveKeyResult,
   OfferLetter,
-  OfferLetterStatus,
   EwmsNotification
 } from '../types';
 import {

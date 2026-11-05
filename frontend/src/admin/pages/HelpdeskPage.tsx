@@ -495,9 +495,9 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                   </td>
                   <td>
                     {tkt.status !== 'Resolved' && tkt.status !== 'Closed' ? (
-                      <span style={{ fontSize: '0.78rem', color: tkt.slaHoursRemaining < 2 ? 'var(--adm-danger)' : 'var(--adm-warning)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '0.78rem', color: (tkt.slaHoursRemaining ?? 24) < 2 ? 'var(--adm-danger)' : 'var(--adm-warning)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Clock size={12} />
-                        {tkt.slaHoursRemaining}h remaining
+                        {tkt.slaHoursRemaining ?? 24}h remaining
                       </span>
                     ) : (
                       <span style={{ fontSize: '0.78rem', color: 'var(--adm-success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
