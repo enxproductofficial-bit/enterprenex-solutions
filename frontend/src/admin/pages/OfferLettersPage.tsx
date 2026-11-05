@@ -183,10 +183,11 @@ export const OfferLettersPage: React.FC = () => {
     if (!respondOffer) return;
     try {
       await respondOfferLetter(respondOffer.id || respondOffer.offerLetterNo, decision, respondRemarks);
-      setRespondOffer(null);
-      setRespondRemarks('');
     } catch {
       // toast handled in context
+    } finally {
+      setRespondOffer(null);
+      setRespondRemarks('');
     }
   };
 
