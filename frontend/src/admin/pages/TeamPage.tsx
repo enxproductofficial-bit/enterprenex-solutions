@@ -42,7 +42,7 @@ import {
   UserCheck,
   UserX
 } from 'lucide-react';
-import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64 } from '../data/companyLogo';
+import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64, ROHIT_SIGNATURE_BASE64 } from '../data/companyLogo';
 import type { Employee, LeaveRequest, AttendanceRecord } from '../types';
 
 export const ENTERPRENEX_HOLIDAYS_2026 = [
@@ -849,7 +849,7 @@ export const TeamPage: React.FC = () => {
           <!-- Official Company Logo & Identity Header -->
           <div style="position: relative; z-index: 1; margin-bottom: 2px;">
             <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 6px;">
-              <img src="${COMPANY_LOGO_BASE64}" alt="Enterprenex Solutions" style="height: 54px; max-width: 270px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));" />
+              <img src="${COMPANY_LOGO_BASE64}" alt="Enterprenex Solutions" style="height: 78px; max-width: 360px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08)); margin-bottom: 2px;" />
             </div>
             <h1 class="header-title">ENTERPRENEX SOLUTIONS PRIVATE LIMITED</h1>
             <div class="header-sub">Corporate Identity: U72900MH2026PTC000000 &bull; ISO 9001:2015 Registered Entity</div>
@@ -876,7 +876,7 @@ export const TeamPage: React.FC = () => {
           <div class="footer-section">
             <!-- Managing Director Signature Block -->
             <div class="sig-block">
-              <div style="font-family: 'Dancing Script', cursive; font-size: 26px; font-weight: 700; color: #1e3a8a; transform: rotate(-3deg); margin-bottom: 2px;">Rohit Pawar</div>
+              <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px;"><img src="${ROHIT_SIGNATURE_BASE64}" alt="Rohit Pawar Signature" style="height: 48px; max-width: 140px; object-fit: contain; filter: contrast(1.15);" /></div>
               <div style="font-size: 8px; color: #0284c7; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px;">✓ Digitally Certified</div>
               <div class="sig-line">MANAGING DIRECTOR</div>
               <div class="sig-role">Enterprenex Solutions Pvt Ltd</div>

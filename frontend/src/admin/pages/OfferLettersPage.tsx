@@ -1108,7 +1108,7 @@ export const OfferLettersPage: React.FC = () => {
                         <img
                           src="/images/enterprenex-logo.png"
                           alt="Enterprenex Logo"
-                          style={{ width: '56px', height: '56px', objectFit: 'contain', margin: '0 auto 4px auto', display: 'block' }}
+                          style={{ width: '74px', height: '74px', objectFit: 'contain', margin: '0 auto 6px auto', display: 'block' }}
                         />
                         <div style={{ fontFamily: "'Cinzel', Georgia, 'Times New Roman', serif", fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.8px', color: '#0f172a' }}>
                           ENTERPRENEX SOLUTIONS PVT LTD
@@ -1267,7 +1267,7 @@ export const OfferLettersPage: React.FC = () => {
                         <img
                           src="/images/enterprenex-logo.png"
                           alt="Enterprenex Logo"
-                          style={{ width: '56px', height: '56px', objectFit: 'contain', margin: '0 auto 4px auto', display: 'block' }}
+                          style={{ width: '74px', height: '74px', objectFit: 'contain', margin: '0 auto 6px auto', display: 'block' }}
                         />
                         <div style={{ fontFamily: "'Cinzel', Georgia, 'Times New Roman', serif", fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.8px', color: '#0f172a' }}>
                           ENTERPRENEX SOLUTIONS PVT LTD
@@ -1322,8 +1322,15 @@ export const OfferLettersPage: React.FC = () => {
 
                       {/* Signatory Block */}
                       <div style={{ margin: '16px 0 24px 0', fontSize: '0.88rem', lineHeight: '1.35' }}>
-                        <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: '12px' }}>
+                        <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: '4px' }}>
                           For Enterprenex Solutions Pvt Ltd,
+                        </div>
+                        <div style={{ height: '46px', margin: '4px 0' }}>
+                          <img
+                            src="/images/rohit-signature.png"
+                            alt="Signature"
+                            style={{ height: '44px', objectFit: 'contain' }}
+                          />
                         </div>
                         <div style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0f172a' }}>
                           Rohit Pawar

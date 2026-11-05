@@ -51,6 +51,25 @@ function getLogoBase64(): string {
   return '';
 }
 
+function getSignatureBase64(): string {
+  try {
+    const possiblePaths = [
+      path.resolve(__dirname, '../../../frontend/public/images/rohit-signature.png'),
+      path.resolve(__dirname, '../../../../frontend/public/images/rohit-signature.png'),
+      path.resolve(process.cwd(), 'frontend/public/images/rohit-signature.png'),
+      path.resolve(process.cwd(), '../frontend/public/images/rohit-signature.png')
+    ];
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        return fs.readFileSync(p).toString('base64');
+      }
+    }
+  } catch (err) {
+    console.warn('Could not read signature image file:', err);
+  }
+  return '';
+}
+
 export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Buffer> => {
   const browser = await puppeteer.launch({
     headless: true,
@@ -67,6 +86,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
   try {
     const page = await browser.newPage();
     const logoBase64 = getLogoBase64();
+    const sigBase64 = getSignatureBase64();
 
     // Format Date: e.g. "17 Oct 2026"
     const dateObj = new Date(offer.createdAt);
@@ -163,9 +183,9 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
     }
 
     .logo-img {
-      width: 58px;
-      height: 58px;
-      margin: 0 auto 4px auto;
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 6px auto;
       display: block;
       object-fit: contain;
     }
@@ -496,6 +516,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
 
     <div class="signatory-block">
       <div class="signatory-firm">For Enterprenex Solutions Pvt Ltd,</div>
+      ${sigBase64 ? `<div style="height: 48px; margin: 4px 0;"><img src="data:image/png;base64,${sigBase64}" style="height: 46px; object-fit: contain;" alt="Signature" /></div>` : ''}
       <div class="signatory-name">${signatoryName}</div>
       <div class="signatory-role">${signatoryRole}</div>
       <div class="signatory-dept">${signatoryDepartment}</div>
