@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { useLanguage } from '../i18n/LanguageContext';
