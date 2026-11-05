@@ -642,7 +642,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
             {/* Quick Action Button - Scoped by RBAC (No direct CRUD for employees) */}
             {!isEmployee ? (
-              <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowQuickCreate(true)}>
+              <button type="button" className="adm-btn adm-btn-primary adm-btn-sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowQuickCreate(true); }}>
                 <Plus size={15} />
                 <span>{t('btn.add', 'Create New')}</span>
               </button>

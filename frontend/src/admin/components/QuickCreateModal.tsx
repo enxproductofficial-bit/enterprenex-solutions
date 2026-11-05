@@ -10,7 +10,18 @@ interface QuickCreateModalProps {
 }
 
 export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onClose, defaultTab = 'project' }) => {
-  const { addProject, addClient, addLead, addInvoice, addTask, addTicket, uploadDocument, clients, projects, employees, currentUser } = useAdmin();
+  const { addProject, addClient, addLead, addInvoice, addTask, addTicket, uploadDocument, clients, projects, employees, services, currentUser } = useAdmin();
+  const safeClients = Array.isArray(clients) ? clients : [];
+  const safeProjects = Array.isArray(projects) ? projects : [];
+  const safeEmployees = Array.isArray(employees) ? employees : [];
+  const safeServices = Array.isArray(services) ? services : [];
+  const fallbackServices = [
+    { id: 's-1', name: 'Web Development' },
+    { id: 's-2', name: 'AI/ML Solutions' },
+    { id: 's-3', name: 'Cloud Architecture and DevOps' },
+    { id: 's-4', name: 'Mobile Application' }
+  ];
+  const activeServiceList = safeServices.length > 0 ? safeServices : fallbackServices;
   const isEmployee = currentUser?.role === 'Team Member' || currentUser?.role === 'Developer';
   const [activeTab, setActiveTab] = useState<'project' | 'client' | 'lead' | 'invoice' | 'task' | 'ticket' | 'document'>(isEmployee ? 'ticket' : defaultTab);
 
@@ -306,7 +317,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               <div className="adm-form-group">
                 <label className="adm-form-label">Client *</label>
                 <select className="adm-select" value={pClientId} onChange={e => setPClientId(e.target.value)}>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
+                  {safeClients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
                 </select>
               </div>
             </div>
@@ -314,7 +325,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               <div className="adm-form-group">
                 <label className="adm-form-label">Service Category</label>
                 <select className="adm-select" value={pCategory} onChange={e => setPCategory(e.target.value)}>
-                  {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                  {activeServiceList.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                 </select>
               </div>
               <div className="adm-form-group">
@@ -427,7 +438,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               <div className="adm-form-group">
                 <label className="adm-form-label">Service Interested</label>
                 <select className="adm-select" value={lService} onChange={e => setLService(e.target.value)}>
-                  {services.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                  {activeServiceList.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                 </select>
               </div>
               <div className="adm-form-group">
@@ -460,7 +471,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               <div className="adm-form-group">
                 <label className="adm-form-label">Associated Project</label>
                 <select className="adm-select" value={tProjectId} onChange={e => setTProjectId(e.target.value)}>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                  {safeProjects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
                 </select>
               </div>
             </div>
@@ -468,7 +479,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               <div className="adm-form-group">
                 <label className="adm-form-label">Assignee</label>
                 <select className="adm-select" value={tAssignedTo} onChange={e => setTAssignedTo(e.target.value)}>
-                  {employees.map(emp => <option key={emp.id} value={emp.name}>{emp.name} ({emp.role})</option>)}
+                  {safeEmployees.map(emp => <option key={emp.id} value={emp.name}>{emp.name} ({emp.role})</option>)}
                 </select>
               </div>
               <div className="adm-form-group">
@@ -503,7 +514,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               <div className="adm-form-group">
                 <label className="adm-form-label">Select Client *</label>
                 <select className="adm-select" value={iClientId} onChange={e => setIClientId(e.target.value)}>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
+                  {safeClients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
                 </select>
               </div>
               <div className="adm-form-group">
@@ -563,7 +574,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
               <div className="adm-form-group">
                 <label className="adm-form-label">Assign Support Staff</label>
                 <select className="adm-select" value={tkAssignedTo} onChange={e => setTkAssignedTo(e.target.value)}>
-                  {employees.map(e => <option key={e.id} value={e.name}>{e.name}</option>)}
+                  {safeEmployees.map(e => <option key={e.id} value={e.name}>{e.name}</option>)}
                 </select>
               </div>
             </div>
