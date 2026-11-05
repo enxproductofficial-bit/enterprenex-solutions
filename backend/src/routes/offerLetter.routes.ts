@@ -26,6 +26,50 @@ const logAuditSecurityEntry = async (entry: {
   }
 };
 
+// Robust resolver to locate offer letters by UUID, sequential offerLetterNo, mock ID (off-101/102/103), or email
+export const resolveOfferLetter = async (idOrRef: string) => {
+  if (!idOrRef) return null;
+
+  // 1. Direct match by id or offerLetterNo
+  let offer = await prisma.offerLetter.findFirst({
+    where: {
+      OR: [
+        { id: idOrRef },
+        { offerLetterNo: idOrRef }
+      ]
+    }
+  });
+
+  if (offer) return offer;
+
+  // 2. Map frontend mock IDs (off-101, off-102, off-103)
+  const mockRefMap: Record<string, string> = {
+    'off-101': 'ENX-OFF-2026-0001',
+    'off-102': 'ENX-OFF-2026-0002',
+    'off-103': 'ENX-OFF-2026-0003'
+  };
+
+  const mappedNo = mockRefMap[idOrRef];
+  if (mappedNo) {
+    offer = await prisma.offerLetter.findUnique({
+      where: { offerLetterNo: mappedNo }
+    });
+    if (offer) return offer;
+  }
+
+  // 3. Fallback: match by employee name or email
+  offer = await prisma.offerLetter.findFirst({
+    where: {
+      OR: [
+        { employeeName: { contains: idOrRef } },
+        { employeeEmail: { contains: idOrRef } }
+      ]
+    }
+  });
+
+  return offer;
+};
+
 // GET /api/v1/offer-letters (List all or filter by status / employeeId)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -75,7 +119,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const offerLetter = await prisma.offerLetter.findUnique({ where: { id } });
+    const offerLetter = await resolveOfferLetter(id);
 
     if (!offerLetter) {
       res.status(404).json({ error: 'Offer letter not found.' });
@@ -92,7 +136,7 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
 router.get('/:id/pdf', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const offer = await prisma.offerLetter.findUnique({ where: { id } });
+    const offer = await resolveOfferLetter(id);
 
     if (!offer) {
       res.status(404).json({ error: 'Offer letter not found.' });
@@ -212,14 +256,14 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
     const { id } = req.params;
     const data = req.body;
 
-    const existing = await prisma.offerLetter.findUnique({ where: { id } });
+    const existing = await resolveOfferLetter(id);
     if (!existing) {
       res.status(404).json({ error: 'Offer letter not found.' });
       return;
     }
 
     const updated = await prisma.offerLetter.update({
-      where: { id },
+      where: { id: existing.id },
       data: {
         designation: data.designation ?? existing.designation,
         department: data.department ?? existing.department,
@@ -275,7 +319,7 @@ router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, r
       return;
     }
 
-    const existing = await prisma.offerLetter.findUnique({ where: { id } });
+    const existing = await resolveOfferLetter(id);
     if (!existing) {
       res.status(404).json({ error: 'Offer letter not found.' });
       return;
@@ -283,7 +327,7 @@ router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, r
 
     const newStatus = action === 'Approve' ? 'Approved' : 'Rejected';
     const updated = await prisma.offerLetter.update({
-      where: { id },
+      where: { id: existing.id },
       data: {
         status: newStatus,
         directorRemarks: remarks || (action === 'Approve' ? 'Approved for dispatch.' : 'Revision requested.'),
@@ -319,7 +363,7 @@ router.post('/:id/send', authenticateToken, async (req: AuthRequest, res: Respon
     const user = req.user;
     const { id } = req.params;
 
-    const existing = await prisma.offerLetter.findUnique({ where: { id } });
+    const existing = await resolveOfferLetter(id);
     if (!existing) {
       res.status(404).json({ error: 'Offer letter not found.' });
       return;
@@ -331,7 +375,7 @@ router.post('/:id/send', authenticateToken, async (req: AuthRequest, res: Respon
     }
 
     const updated = await prisma.offerLetter.update({
-      where: { id },
+      where: { id: existing.id },
       data: {
         status: 'Sent',
         sentAt: new Date()
@@ -377,7 +421,7 @@ const handleOfferResponse = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    const existing = await prisma.offerLetter.findUnique({ where: { id } });
+    const existing = await resolveOfferLetter(id);
     if (!existing) {
       res.status(404).json({ error: 'Offer letter not found.' });
       return;
@@ -385,7 +429,7 @@ const handleOfferResponse = async (req: AuthRequest, res: Response): Promise<voi
 
     const newStatus = action === 'Accept' ? 'Accepted' : 'Declined';
     const updated = await prisma.offerLetter.update({
-      where: { id },
+      where: { id: existing.id },
       data: {
         status: newStatus,
         respondedAt: new Date(),
@@ -418,13 +462,13 @@ router.put('/:id/respond', authenticateToken, handleOfferResponse);
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const existing = await prisma.offerLetter.findUnique({ where: { id } });
+    const existing = await resolveOfferLetter(id);
     if (!existing) {
       res.status(404).json({ error: 'Offer letter not found.' });
       return;
     }
 
-    await prisma.offerLetter.delete({ where: { id } });
+    await prisma.offerLetter.delete({ where: { id: existing.id } });
     res.json({ message: 'Offer letter deleted.' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

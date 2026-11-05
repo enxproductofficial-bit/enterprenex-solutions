@@ -1498,7 +1498,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const res = await api.directorReviewOfferLetter(id, decision, remarks);
       const updated = res.offerLetter;
-      setOfferLetters(prev => prev.map(o => o.id === id ? updated : o));
+      setOfferLetters(prev => prev.map(o => (o.id === id || o.id === updated.id || o.offerLetterNo === updated.offerLetterNo) ? updated : o));
       showToast(
         decision === 'Approve' ? 'Offer Letter Approved' : 'Offer Letter Rejected',
         `Offer letter ${updated.offerLetterNo} has been ${decision === 'Approve' ? 'approved for distribution' : 'returned with remarks'}.`,
@@ -1521,7 +1521,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const res = await api.sendOfferLetter(id);
       const updated = res.offerLetter;
-      setOfferLetters(prev => prev.map(o => o.id === id ? updated : o));
+      setOfferLetters(prev => prev.map(o => (o.id === id || o.id === updated.id || o.offerLetterNo === updated.offerLetterNo) ? updated : o));
       showToast('Offer Letter Dispatched', `Official offer sent to ${updated.employeeEmail}.`, 'success');
       logAction('Sent Offer Letter', 'Offer Letters', `Sent offer letter ${updated.offerLetterNo} to ${updated.employeeEmail}`);
       refreshNotifications();
@@ -1536,7 +1536,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const res = await api.respondOfferLetter(id, decision, remarks);
       const updated = res.offerLetter;
-      setOfferLetters(prev => prev.map(o => o.id === id ? updated : o));
+      setOfferLetters(prev => prev.map(o => (o.id === id || o.id === updated.id || o.offerLetterNo === updated.offerLetterNo) ? updated : o));
       showToast(
         decision === 'Accept' ? 'Offer Accepted!' : 'Offer Declined',
         `Offer status updated to ${updated.status}.`,

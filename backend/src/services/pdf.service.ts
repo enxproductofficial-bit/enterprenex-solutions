@@ -132,7 +132,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: 'Times New Roman', Times, serif;
       color: #1a1a1a;
       background: #ffffff;
       font-size: 9pt;
@@ -588,7 +588,7 @@ export const generatePayslipPdf = async (item: PayslipPdfData): Promise<Buffer> 
   <title>Payslip - ${item.payrollNo}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    body { font-family: 'Inter', sans-serif; padding: 25px; color: #1e293b; background: #ffffff; }
+    body { font-family: 'Times New Roman', Times, serif; padding: 25px; color: #1e293b; background: #ffffff; }
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 15px; margin-bottom: 20px; }
     .logo-text { font-size: 20pt; font-weight: 800; color: #0284c7; }
     .title { font-size: 14pt; font-weight: 700; text-align: right; color: #334155; }
@@ -705,7 +705,7 @@ export const generateRelievingLetterPdf = async (item: RelievingPdfData): Promis
   <title>Relieving & Experience Certificate - ${item.employeeName}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; line-height: 1.7; font-size: 10.5pt; }
+    body { font-family: 'Times New Roman', Times, serif; padding: 40px; color: #1e293b; line-height: 1.7; font-size: 10.5pt; }
     .header { border-bottom: 2px solid #0f172a; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; }
     .logo-text { font-size: 20pt; font-weight: 800; color: #0284c7; }
     .doc-title { text-align: center; font-size: 14pt; font-weight: 800; margin-bottom: 25px; text-decoration: underline; }

@@ -116,7 +116,7 @@ export const AdminLoginPage: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem 1rem',
-        fontFamily: "'Outfit', sans-serif"
+        fontFamily: "'Aptos', 'Aptos Display', system-ui, -apple-system, sans-serif"
       }}
     >
       <div

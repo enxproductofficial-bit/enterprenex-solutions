@@ -4449,7 +4449,7 @@ export const TeamPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)' }}>Add Team Member to Roster</h3>
-              <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
             </div>

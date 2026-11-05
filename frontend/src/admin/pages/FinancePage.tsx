@@ -713,11 +713,11 @@ export const FinancePage: React.FC = () => {
           <p>Statutory GST tax invoices under Rule 46 CGST Act, commercial quotations, expenditure general ledger, compliant payroll (EPF/PT), and fiscal treasury analytics</p>
         </div>
         <div className="adm-page-actions">
-          <button className="adm-btn adm-btn-secondary" onClick={() => setShowAddExpenseModal(true)}>
+          <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowAddExpenseModal(true)}>
             <Plus size={15} />
             <span>Record Expenditure</span>
           </button>
-          <button className="adm-btn adm-btn-primary" onClick={() => setShowAddInvoiceModal(true)}>
+          <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddInvoiceModal(true)}>
             <Plus size={16} />
             <span>Issue Tax Invoice</span>
           </button>
@@ -1574,7 +1574,7 @@ export const FinancePage: React.FC = () => {
                 </p>
               </div>
 
-              <button className="adm-btn adm-btn-primary" onClick={() => setShowAddContractModal(true)}>
+              <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddContractModal(true)}>
                 <Plus size={16} />
                 <span>Commission Master Contract / SOW</span>
               </button>
@@ -1971,7 +1971,7 @@ export const FinancePage: React.FC = () => {
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
                 Generate Tax Invoice / Quotation
               </h3>
-              <button className="adm-modal-close" onClick={() => setShowAddInvoiceModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddInvoiceModal(false)}>
                 <X size={18} />
               </button>
             </div>
@@ -2032,7 +2032,7 @@ export const FinancePage: React.FC = () => {
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
                 Record Company Expense
               </h3>
-              <button className="adm-modal-close" onClick={() => setShowAddExpenseModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddExpenseModal(false)}>
                 <X size={18} />
               </button>
             </div>
@@ -2296,7 +2296,7 @@ export const FinancePage: React.FC = () => {
                   Execute institutional client contract with DocuSign digital workflow and SLA bindings
                 </p>
               </div>
-              <button className="adm-modal-close" onClick={() => setShowAddContractModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddContractModal(false)}>
                 <X size={18} />
               </button>
             </div>

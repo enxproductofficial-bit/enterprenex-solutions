@@ -1435,7 +1435,7 @@ export const TasksPage: React.FC = () => {
                   Manager Task Assignment & Governance
                 </h3>
               </div>
-              <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
             </div>

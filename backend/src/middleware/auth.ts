@@ -58,10 +58,48 @@ export const requireRole = (allowedRoles: string[]) => {
       return;
     }
 
-    const userRole = req.user.role;
-    const isDirector = userRole === 'Super Admin' || req.user.email?.includes('director');
+    const userRole = req.user.role || '';
+    const userEmail = (req.user.email || '').toLowerCase();
 
-    if (isDirector || allowedRoles.includes(userRole)) {
+    const isDirector =
+      userRole === 'Super Admin' ||
+      userRole === 'Director / CEO' ||
+      userRole.includes('Director') ||
+      userRole.includes('CMD') ||
+      userEmail.includes('director');
+
+    const isManager =
+      isDirector ||
+      userRole === 'Project Manager' ||
+      userRole === 'Manager' ||
+      userRole.includes('Manager') ||
+      userEmail.includes('manager');
+
+    const isHR =
+      isDirector ||
+      userRole === 'HR Manager' ||
+      userRole === 'HR' ||
+      userRole.includes('HR') ||
+      req.user.department === 'Human Resources' ||
+      userEmail.includes('hr');
+
+    // Director has universal access across all modules
+    if (isDirector) {
+      next();
+      return;
+    }
+
+    // Match role against allowed list with aliases
+    const isAuthorized = !allowedRoles || allowedRoles.some(allowed => {
+      if (allowed === userRole) return true;
+      if (allowed === 'Super Admin' && isDirector) return true;
+      if (allowed === 'Project Manager' && isManager) return true;
+      if (allowed === 'HR Manager' && isHR) return true;
+      if ((allowed === 'Team Member' || allowed === 'Developer') && (userRole === 'Employee' || userRole === 'Developer' || userRole === 'Team Member')) return true;
+      return false;
+    });
+
+    if (isAuthorized) {
       next();
     } else {
       res.status(403).json({

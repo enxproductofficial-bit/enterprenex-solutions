@@ -75,7 +75,6 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
   const [tkClientEmail, setTkClientEmail] = useState(clients[0]?.primaryContact?.email || currentUser?.email || '');
   const [tkPriority, setTkPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
   const [tkCategory, setTkCategory] = useState<string>('Bug Fix');
-  const [tkCostEstimate, setTkCostEstimate] = useState<number>(0);
   const [tkAssignedTo, setTkAssignedTo] = useState(employees[0]?.name || 'Support Specialist');
 
   // 7. Document form
@@ -89,7 +88,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
-    const selClient = clients.find(c => c.id === pClientId);
+    const selClient = safeClients.find(c => c.id === pClientId) || safeClients[0];
     addProject({
       title: pTitle || 'New Enterprise Project',
       clientName: selClient ? selClient.companyName : 'Enterprise Client',
@@ -157,7 +156,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
-    const selPrj = projects.find(p => p.id === tProjectId);
+    const selPrj = safeProjects.find(p => p.id === tProjectId) || safeProjects[0];
     addTask({
       title: tTitle || 'Task Item',
       description: tDesc || 'Task description and acceptance criteria.',
@@ -179,7 +178,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
 
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
-    const selClient = clients.find(c => c.id === iClientId);
+    const selClient = safeClients.find(c => c.id === iClientId) || safeClients[0];
     const subtotal = Number(iAmount);
     const tax = Math.round(subtotal * 0.18);
     const total = subtotal + tax;

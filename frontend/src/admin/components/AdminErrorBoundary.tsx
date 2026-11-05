@@ -40,7 +40,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
             padding: '2rem 1rem',
             background: 'var(--adm-bg, #090a0d)',
             color: 'var(--adm-text, #ffffff)',
-            fontFamily: "'Outfit', sans-serif"
+            fontFamily: "var(--font-ewms, 'Times New Roman', Times, serif)"
           }}
         >
           <div

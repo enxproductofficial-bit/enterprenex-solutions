@@ -70,14 +70,57 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
   }
 
   // Mandatory First-Time Password Setup Guard:
-  // Employees cannot access the dashboard or any enterprise module until they complete password setup
   if (currentUser.mustChangePassword) {
     return <Navigate to="/create-new-password" replace />;
   }
 
+  const userRole = currentUser.role || '';
+  const userEmail = (currentUser.email || '').toLowerCase();
+
+  const isDirector =
+    userRole === 'Super Admin' ||
+    userRole === 'Director / CEO' ||
+    userRole.includes('Director') ||
+    userRole.includes('CMD') ||
+    userEmail.includes('director');
+
+  const isManager =
+    isDirector ||
+    userRole === 'Project Manager' ||
+    userRole === 'Manager' ||
+    userRole.includes('Manager') ||
+    userEmail.includes('manager');
+
+  const isHR =
+    isDirector ||
+    userRole === 'HR Manager' ||
+    userRole === 'HR' ||
+    userRole.includes('HR') ||
+    currentUser.department === 'Human Resources' ||
+    userEmail.includes('hr');
+
+  // Director has universal access across all modules
+  if (isDirector) {
+    return (
+      <AdminErrorBoundary fallbackTitle={`${moduleName} Workspace`}>
+        <AdminLayout>{children}</AdminLayout>
+      </AdminErrorBoundary>
+    );
+  }
+
+  // Check role authorization with aliases
+  const isAuthorized = !allowedRoles || allowedRoles.some(allowed => {
+    if (allowed === userRole) return true;
+    if (allowed === 'Super Admin' && isDirector) return true;
+    if (allowed === 'Project Manager' && isManager) return true;
+    if (allowed === 'HR Manager' && isHR) return true;
+    if ((allowed === 'Team Member' || allowed === 'Developer') && (userRole === 'Employee' || userRole === 'Developer' || userRole === 'Team Member')) return true;
+    return false;
+  });
+
   // If role is not authorized for this specific module
-  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    const isEmployeeRole = currentUser.role === 'Team Member' || currentUser.role === 'Developer';
+  if (!isAuthorized) {
+    const isEmployeeRole = userRole === 'Team Member' || userRole === 'Developer' || userRole === 'Employee';
     return (
       <AdminErrorBoundary fallbackTitle="Unauthorized Module Access">
         <AdminLayout>

@@ -117,7 +117,7 @@ export const CrmLeadsPage: React.FC = () => {
             </button>
           </div>
 
-          <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
+          <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
             <span>Initiate Commercial Opportunity</span>
           </button>
@@ -401,7 +401,7 @@ export const CrmLeadsPage: React.FC = () => {
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
                 Add Sales Lead Opportunity
               </h3>
-              <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
             </div>

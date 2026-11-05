@@ -50,7 +50,7 @@ export const EmployeeTermsModal: React.FC<EmployeeTermsModalProps> = ({ onClose,
           flexDirection: 'column',
           overflow: 'hidden',
           border: '1px solid #e2e8f0',
-          fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, sans-serif"
+          fontFamily: "'Aptos', 'Aptos Display', system-ui, -apple-system, sans-serif"
         }}
         onClick={e => e.stopPropagation()}
       >

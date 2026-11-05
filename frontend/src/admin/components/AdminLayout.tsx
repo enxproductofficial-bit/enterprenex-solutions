@@ -200,11 +200,33 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const newLeadsCount = safeLeads.filter(l => l && l.status === 'New Lead').length;
   const activeProjectsCount = safeProjects.filter(p => p && p.status !== 'Delivered').length;
 
-  // Determine current user role
+  // Determine current user role with alias mapping
   const userRole = currentUser?.role || 'Super Admin';
-  const isEmployee = userRole === 'Team Member' || userRole === 'Developer';
-  const isManagerOrHr = userRole === 'Project Manager' || userRole === 'HR Manager' || userRole === 'Sales Lead' || userRole === 'Finance Officer';
-  const isDirector = userRole === 'Super Admin';
+  const userEmail = (currentUser?.email || '').toLowerCase();
+
+  const isDirector =
+    userRole === 'Super Admin' ||
+    userRole === 'Director / CEO' ||
+    userRole.includes('Director') ||
+    userRole.includes('CMD') ||
+    userEmail.includes('director');
+
+  const isManagerOrHr =
+    !isDirector && (
+      userRole === 'Project Manager' ||
+      userRole === 'Manager' ||
+      userRole.includes('Manager') ||
+      userRole === 'HR Manager' ||
+      userRole === 'HR' ||
+      userRole.includes('HR') ||
+      userRole === 'Sales Lead' ||
+      userRole === 'Finance Officer' ||
+      currentUser?.department === 'Human Resources' ||
+      userEmail.includes('manager') ||
+      userEmail.includes('hr')
+    );
+
+  const isEmployee = !isDirector && !isManagerOrHr;
 
   const currentEmpRecord = employees?.find(e => 
     (currentUser?.id && e.id === currentUser.id) || 
@@ -328,7 +350,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const hasSearchResults = matchingProjects.length > 0 || matchingClients.length > 0 || matchingTasks.length > 0 || matchingLeads.length > 0;
 
   return (
-    <div className={`adm-app theme-${theme}`}>
+    <div className={`adm-app theme-${theme} ewms-module ewms-section`}>
       {/* Toast Notifications */}
       <ToastContainer />
 

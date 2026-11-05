@@ -56,7 +56,10 @@
   --gray-100:    #F2F3F5;
   --gray-50:     #F8F8F8;
   --white:       #FFFFFF;
-  --font:        'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-primary: 'Aptos', 'Aptos Display', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-ewms: 'Times New Roman', Times, 'Tinos', serif;
+  --font-handwriting: 'Dancing Script', 'Caveat', 'Brush Script MT', cursive;
+  --font: var(--font-primary);
   --radius:      8px;
   --radius-lg:   16px;
   --radius-xl:   24px;
@@ -1046,4 +1049,54 @@ button, input, select, textarea {
   .ex-metric-card {
     padding: 1.25rem 1rem;
   }
+}
+
+
+/* ── EWMS Module Scoped Typography (Times New Roman) ────── */
+.ewms-module,
+.ewms-section,
+.adm-app,
+.adm-sidebar,
+.adm-topbar,
+.adm-card,
+.adm-table,
+.adm-btn,
+.adm-badge,
+.adm-modal-overlay,
+.adm-modal-content,
+.adm-toast,
+.adm-toast-container,
+.adm-notification-card,
+.adm-drawer,
+.ewms-module h1, .ewms-module h2, .ewms-module h3, .ewms-module h4, .ewms-module h5, .ewms-module h6,
+.ewms-module p, .ewms-module span, .ewms-module a, .ewms-module label,
+.ewms-module input, .ewms-module select, .ewms-module textarea, .ewms-module button,
+.ewms-module table, .ewms-module th, .ewms-module td,
+.adm-app h1, .adm-app h2, .adm-app h3, .adm-app h4, .adm-app h5, .adm-app h6,
+.adm-app p, .adm-app span, .adm-app a, .adm-app label,
+.adm-app input, .adm-app select, .adm-app textarea, .adm-app button,
+.adm-app table, .adm-app th, .adm-app td,
+.adm-modal-overlay *,
+.adm-toast *,
+.adm-toast-container *,
+.adm-drawer * {
+  font-family: var(--font-ewms) !important;
+}
+
+/* ── Handwriting Signature & Executive Accent Typography ── */
+.font-handwriting,
+.signature-text,
+.signature-script,
+.signature-handwriting,
+.signature-preview,
+.digital-signature,
+.acceptance-signature,
+.handwritten-sign,
+.handwritten-note,
+.director-signoff,
+[data-font="handwriting"] {
+  font-family: 'Dancing Script', 'Caveat', 'Brush Script MT', cursive !important;
+  font-style: italic;
+  font-size: 1.25em;
+  letter-spacing: 0.02em;
 }

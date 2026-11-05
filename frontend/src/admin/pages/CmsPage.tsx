@@ -179,7 +179,7 @@ export const CmsPage: React.FC = () => {
       {tab === 'portfolio' && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-            <button className="adm-btn adm-btn-primary" onClick={() => setShowAddPortfolio(true)}>
+            <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddPortfolio(true)}>
               <Plus size={15} />
               <span>Add Case Study</span>
             </button>
@@ -236,7 +236,7 @@ export const CmsPage: React.FC = () => {
       {tab === 'blog' && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-            <button className="adm-btn adm-btn-primary" onClick={() => setShowAddBlog(true)}>
+            <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddBlog(true)}>
               <Plus size={15} />
               <span>Write New Article</span>
             </button>

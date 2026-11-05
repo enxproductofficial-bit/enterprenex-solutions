@@ -115,7 +115,7 @@ export const ServicesManagePage: React.FC = () => {
           <p>Institutional solution offerings, Master Service Agreement (MSA) baseline rate cards, deliverable milestones & technology stacks</p>
         </div>
         <div className="adm-page-actions">
-          <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
+          <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
             <span>Commission Solution Offering</span>
           </button>

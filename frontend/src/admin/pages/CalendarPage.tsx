@@ -247,14 +247,14 @@ export const CalendarPage: React.FC = () => {
 
         <div className="adm-page-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           {activeTab === 'meetings' && (
-            <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)} style={{ borderRadius: '10px' }}>
+            <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)} style={{ borderRadius: '10px' }}>
               <Plus size={16} />
               <span>Schedule Meeting</span>
             </button>
           )}
 
           {activeTab === 'community' && canPostAnnouncement && (
-            <button className="adm-btn adm-btn-primary" onClick={() => setShowAddAnnModal(true)} style={{ borderRadius: '10px' }}>
+            <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddAnnModal(true)} style={{ borderRadius: '10px' }}>
               <Plus size={16} />
               <span>Post Director Bulletin</span>
             </button>
@@ -602,7 +602,7 @@ export const CalendarPage: React.FC = () => {
             </div>
 
             {canPostAnnouncement && (
-              <button
+              <button type="button"
                 className="adm-btn adm-btn-primary"
                 onClick={() => setShowAddAnnModal(true)}
                 style={{ borderRadius: '10px' }}
@@ -1237,7 +1237,7 @@ export const CalendarPage: React.FC = () => {
                   Enterprenex calendar integration with automated WhatsApp link dispatch
                 </p>
               </div>
-              <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
             </div>
@@ -1382,7 +1382,7 @@ export const CalendarPage: React.FC = () => {
                   Publish an executive notice to the entire Enterprenex workforce
                 </p>
               </div>
-              <button className="adm-modal-close" onClick={() => setShowAddAnnModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddAnnModal(false)}>
                 <X size={18} />
               </button>
             </div>

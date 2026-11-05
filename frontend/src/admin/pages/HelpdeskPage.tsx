@@ -254,7 +254,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
           </p>
         </div>
         <div className="adm-page-actions">
-          <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
+          <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
             <span>{isEmployee ? 'Log Institutional Incident' : 'Open Statutory Ticket'}</span>
           </button>
@@ -433,7 +433,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                         : 'Adjust your search query or status filter to see other helpdesk records.'}
                     </p>
                     {isEmployee && (
-                      <button className="adm-btn adm-btn-primary" style={{ marginTop: '0.5rem' }} onClick={() => setShowAddModal(true)}>
+                      <button type="button" className="adm-btn adm-btn-primary" style={{ marginTop: '0.5rem' }} onClick={() => setShowAddModal(true)}>
                         <Plus size={15} />
                         <span>Raise Your First Ticket</span>
                       </button>
@@ -599,7 +599,7 @@ Enterprenex Portal: https://www.enterprenexsolution.com/admin/support`;
                     : 'Dispatch technical support or client servicing tickets.'}
                 </p>
               </div>
-              <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
             </div>

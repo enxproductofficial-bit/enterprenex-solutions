@@ -178,7 +178,7 @@ export const CreateNewPasswordPage: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2.5rem 1rem',
-        fontFamily: "'Outfit', sans-serif"
+        fontFamily: "'Aptos', 'Aptos Display', system-ui, -apple-system, sans-serif"
       }}
     >
       <div style={{ width: '100%', maxWidth: '480px' }}>

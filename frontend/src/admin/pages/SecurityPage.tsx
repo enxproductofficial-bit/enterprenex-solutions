@@ -204,7 +204,7 @@ export const SecurityPage: React.FC = () => {
                 <Globe size={18} color="var(--adm-primary)" />
                 Authorized IP Whitelist Registry
               </div>
-              <button className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowAddIpModal(true)}>
+              <button type="button" className="adm-btn adm-btn-primary adm-btn-sm" onClick={() => setShowAddIpModal(true)}>
                 <Plus size={15} />
                 <span>Add Static IP</span>
               </button>
@@ -262,7 +262,7 @@ export const SecurityPage: React.FC = () => {
               <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
                 <div className="adm-modal-header">
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)' }}>Add IP to Admin Whitelist</h3>
-                  <button className="adm-modal-close" onClick={() => setShowAddIpModal(false)}>
+                  <button type="button" className="adm-modal-close" onClick={() => setShowAddIpModal(false)}>
                     <X size={18} />
                   </button>
                 </div>

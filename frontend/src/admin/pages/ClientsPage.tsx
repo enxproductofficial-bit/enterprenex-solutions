@@ -100,7 +100,7 @@ export const ClientsPage: React.FC = () => {
           <p>Institutional client profiles, authorized corporate signatories, statutory tax compliance (GSTIN), executed Master Service Agreements (MSA/NDA), and cumulative ledger records</p>
         </div>
         <div className="adm-page-actions">
-          <button className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
+          <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={16} />
             <span>Onboard Institutional Client</span>
           </button>
@@ -378,7 +378,7 @@ export const ClientsPage: React.FC = () => {
           <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-header">
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Onboard Institutional Client Account</h3>
-              <button className="adm-modal-close" onClick={() => setShowAddModal(false)}>
+              <button type="button" className="adm-modal-close" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
             </div>

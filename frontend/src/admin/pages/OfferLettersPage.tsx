@@ -171,7 +171,7 @@ export const OfferLettersPage: React.FC = () => {
   const handleDirectorReviewSubmit = async () => {
     if (!reviewOffer) return;
     try {
-      await directorReviewOfferLetter(reviewOffer.id, reviewAction, reviewRemarks);
+      await directorReviewOfferLetter(reviewOffer.id || reviewOffer.offerLetterNo, reviewAction, reviewRemarks);
       setReviewOffer(null);
       setReviewRemarks('');
     } catch {
@@ -182,7 +182,7 @@ export const OfferLettersPage: React.FC = () => {
   const handleCandidateRespondSubmit = async (decision: 'Accept' | 'Decline') => {
     if (!respondOffer) return;
     try {
-      await respondOfferLetter(respondOffer.id, decision, respondRemarks);
+      await respondOfferLetter(respondOffer.id || respondOffer.offerLetterNo, decision, respondRemarks);
       setRespondOffer(null);
       setRespondRemarks('');
     } catch {
@@ -1105,7 +1105,7 @@ export const OfferLettersPage: React.FC = () => {
                       padding: '2.5rem 3rem 2rem 3rem',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                       borderRadius: '4px',
-                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                      fontFamily: "'Times New Roman', Times, serif",
                       fontSize: '0.86rem',
                       lineHeight: '1.45',
                       boxSizing: 'border-box',
@@ -1264,7 +1264,7 @@ export const OfferLettersPage: React.FC = () => {
                       padding: '2.5rem 3rem 2rem 3rem',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                       borderRadius: '4px',
-                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                      fontFamily: "'Times New Roman', Times, serif",
                       fontSize: '0.86rem',
                       lineHeight: '1.45',
                       boxSizing: 'border-box',
