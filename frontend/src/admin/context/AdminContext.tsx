@@ -493,7 +493,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setClients(INITIAL_CLIENTS);
         }
         if (parsed.projects && parsed.projects.length > 0) {
-          setProjects(parsed.projects);
+          const hasLegacy = parsed.projects.some((p: any) => p.id === 'proj-1' || p.id === 'proj-2' || p.id === 'proj-3');
+          if (hasLegacy) {
+            setProjects(INITIAL_PROJECTS);
+          } else {
+            setProjects(parsed.projects);
+          }
         } else {
           setProjects(INITIAL_PROJECTS);
         }
