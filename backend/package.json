@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "description": "Enterprenex Solutions EWMS - Enterprise Operations & Management Backend API",
   "main": "dist/server.js",
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "prisma:seed": "tsx src/seed.ts"
+    "prisma:seed": "tsx src/seed.ts",
+    "render-build": "npm install && npx prisma generate --schema=prisma/schema.prisma && npx prisma db push --schema=prisma/schema.prisma && npm run build",
+    "render-start": "node dist/server.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
