@@ -4,8 +4,9 @@
   "private": true,
   "description": "Enterprenex Solutions Private Limited - Enterprise Operations & Management Platform",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build",
-    "preview": "npm --prefix frontend run preview"
+    "dev": "npm --prefix backend run dev",
+    "build": "cd backend && npm install && npx prisma generate && npx prisma db push && npm run build",
+    "start": "cd backend && npm start",
+    "frontend:build": "npm --prefix frontend run build"
   }
 }
