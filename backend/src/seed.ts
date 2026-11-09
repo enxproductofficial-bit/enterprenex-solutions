@@ -441,6 +441,74 @@ async function seed() {
     });
   }
 
+  // 11. Seed Enterprise Emails & Communications
+  const existingEmails = await prisma.enterpriseEmail.count();
+  if (existingEmails === 0) {
+    await prisma.enterpriseEmail.createMany({
+      data: [
+        {
+          id: 'em-001',
+          sender: 'Siddharth Mehta (Vice President)',
+          senderEmail: 'smehta@tata-enterprises.com',
+          senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          recipient: 'Rohit Pawar (Managing Director)',
+          recipientEmail: 'director@enterprenex.solutions',
+          subject: 'Enterprise Cloud ERP Phase 2 Milestone Sign-Off & SLA Acceptance',
+          snippet: 'We have thoroughly reviewed the performance benchmark reports for the Phase 2 cloud migration. The microservices latency is well within our 45ms SLA...',
+          body: 'Dear Mr. Rohit Pawar & Engineering Leadership Team,\n\nWe have thoroughly reviewed the performance benchmark reports and disaster-recovery replication tests conducted for Phase 2 of the Enterprise Cloud Migration architecture.\n\nOn behalf of Tata Enterprise Systems, we are issuing official sign-off for Milestone 2. Please proceed with Phase 3 sprint planning.\n\nWarm regards,\nSiddharth Mehta\nVice President - Corporate Infrastructure',
+          timestamp: '10:42 AM',
+          date: 'Today',
+          category: 'Clients & Sales',
+          isUnread: true,
+          isStarred: true,
+          securityLevel: 'Institutional Restricted',
+          attachmentsJson: JSON.stringify([
+            { name: 'Tata_ERP_Phase2_Signoff_Signed.pdf', size: '2.4 MB', type: 'pdf' },
+            { name: 'Cluster_Failover_Benchmark_Telemetry.xlsx', size: '890 KB', type: 'excel' }
+          ])
+        },
+        {
+          id: 'em-002',
+          sender: 'DevOps & CI/CD Automated Governance',
+          senderEmail: 'devops-alerts@enterprenex.solutions',
+          senderAvatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150',
+          recipient: 'All Engineering Staff',
+          recipientEmail: 'engineering@enterprenex.solutions',
+          subject: 'Production Deployment Successful: Kernel v4.12.0 Zero-Downtime Rollout',
+          snippet: 'Automated notification: Build #2894 was deployed to production Kubernetes cluster at 04:30 AM IST. All 28 health probes reporting 100% green...',
+          body: 'Automated Operations Telemetry Notice:\n\nBuild Identifier: #2894-STABLE (commit b704a84)\nCluster: prod-ind-mumbai-01 (16 Nodes, 64 Pods)\nDeployment Time: 04:30:12 IST (17 Oct 2026)\n\nZero packet loss detected during Canary deployment.',
+          timestamp: '04:31 AM',
+          date: 'Today',
+          category: 'Projects & Delivery',
+          isUnread: false,
+          isStarred: false,
+          securityLevel: 'General Operations',
+          attachmentsJson: JSON.stringify([])
+        },
+        {
+          id: 'em-003',
+          sender: 'K.K. Singhania & Co. (Chartered Accountants)',
+          senderEmail: 'audit@kksinghania-ca.com',
+          senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          recipient: 'Rohit Pawar (Director)',
+          recipientEmail: 'director@enterprenex.solutions',
+          subject: 'Statutory GST & MCA Annual Filing Audit Notification (FY 2025-26)',
+          snippet: 'Notice of internal audit readiness: Please find attached the preliminary checklist for MCA AOC-4 and MGT-7 corporate filings...',
+          body: 'Dear Mr. Pawar,\n\nPlease find attached the statutory checklist for our upcoming financial year compliance audit.\n\nAll invoices generated through the newly integrated EWMS Billing Engine have matched our GSTR-1 outward records with 100% reconciliation accuracy.\n\nSincerely,\nCA Rajesh Singhania\nPartner, K.K. Singhania & Co.',
+          timestamp: 'Yesterday',
+          date: 'Yesterday',
+          category: 'Finance & Billing',
+          isUnread: false,
+          isStarred: true,
+          securityLevel: 'Confidential',
+          attachmentsJson: JSON.stringify([
+            { name: 'MCA_Statutory_Audit_Checklist_FY2526.pdf', size: '1.1 MB', type: 'pdf' }
+          ])
+        }
+      ]
+    });
+  }
+
   console.log('✅ Enterprenex EWMS Database Seeded Successfully!');
 }
 

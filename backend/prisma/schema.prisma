@@ -520,3 +520,25 @@ model VaultDocument {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 }
+
+// 20. Enterprise Communications & Email Dispatch Audit Log
+model EnterpriseEmail {
+  id                   String    @id @default(uuid())
+  sender               String
+  senderEmail          String
+  senderAvatar         String?
+  recipient            String
+  recipientEmail       String
+  subject              String
+  snippet              String?
+  body                 String
+  timestamp            String
+  date                 String
+  category             String    @default("Clients & Sales")
+  isUnread             Boolean   @default(true)
+  isStarred            Boolean   @default(false)
+  attachmentsJson      String?
+  securityLevel        String?   @default("General Operations")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}

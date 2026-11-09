@@ -24,6 +24,7 @@ import assetRoutes from './routes/asset.routes';
 import expenseRoutes from './routes/expense.routes';
 import leadRoutes from './routes/lead.routes';
 import documentRoutes from './routes/document.routes';
+import emailRoutes from './routes/email.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import { initSocketService } from './services/socket.service';
 import { securityHeaders, sanitizeInputs, rateLimiter, globalErrorHandler } from './middleware/security';
@@ -243,6 +244,7 @@ app.use('/api/v1/assets', assetRoutes);
 app.use('/api/v1/expenses', expenseRoutes);
 app.use('/api/v1/leads', leadRoutes);
 app.use('/api/v1/documents', documentRoutes);
+app.use('/api/v1/emails', emailRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 
 // ── Backwards-Compatible /api/ Routes Aliasing ──
@@ -265,6 +267,7 @@ app.use('/api/assets', assetRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/emails', emailRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 // Global Error Handler & Crash Boundary

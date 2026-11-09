@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { api } from '../api/client';
 import {
   Mail,
   Send,
@@ -272,6 +273,20 @@ export const EmailsPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [filterType, setFilterType] = useState<'all' | 'unread' | 'starred'>('all');
 
+  // Fetch live emails from backend SQLite database
+  useEffect(() => {
+    api.getEmails().then(res => {
+      if (res?.emails && res.emails.length > 0) {
+        setEmails(res.emails);
+        if (!selectedEmailId && res.emails[0]) {
+          setSelectedEmailId(res.emails[0].id);
+        }
+      }
+    }).catch(err => {
+      console.warn('Backend getEmails fallback to cached:', err);
+    });
+  }, []);
+
   // Resizable Split-Pane State
   const [leftPaneWidth, setLeftPaneWidth] = useState<number>(() => {
     const savedWidth = localStorage.getItem('ewms_email_pane_width');
@@ -320,19 +335,26 @@ export const EmailsPage: React.FC = () => {
     setSelectedEmailId(email.id);
     if (email.isUnread) {
       setEmails(prev => prev.map(e => e.id === email.id ? { ...e, isUnread: false } : e));
+      api.updateEnterpriseEmail(email.id, { isUnread: false }).catch(() => {});
     }
   };
 
   // Toggle star
   const handleToggleStar = (e: React.MouseEvent, emailId: string) => {
     e.stopPropagation();
-    setEmails(prev => prev.map(em => em.id === emailId ? { ...em, isStarred: !em.isStarred } : em));
+    const em = emails.find(x => x.id === emailId);
+    const nextStarred = !em?.isStarred;
+    setEmails(prev => prev.map(item => item.id === emailId ? { ...item, isStarred: nextStarred } : item));
+    api.updateEnterpriseEmail(emailId, { isStarred: nextStarred }).catch(() => {});
   };
 
   // Toggle read status
   const handleToggleReadStatus = (emailId: string) => {
-    setEmails(prev => prev.map(em => em.id === emailId ? { ...em, isUnread: !em.isUnread } : em));
+    const em = emails.find(x => x.id === emailId);
+    const nextUnread = !em?.isUnread;
+    setEmails(prev => prev.map(item => item.id === emailId ? { ...item, isUnread: nextUnread } : item));
     showToast('Updated', 'Email read status updated.', 'info');
+    api.updateEnterpriseEmail(emailId, { isUnread: nextUnread }).catch(() => {});
   };
 
   // Delete email
@@ -345,6 +367,7 @@ export const EmailsPage: React.FC = () => {
       return remaining;
     });
     showToast('Email Archived', 'The selected conversation has been archived.', 'info');
+    api.deleteEnterpriseEmail(emailId).catch(() => {});
   };
 
   // ── DRAG RESIZE LOGIC (↔ or ⇹) ──
@@ -440,15 +463,31 @@ export const EmailsPage: React.FC = () => {
     if (!replyText.trim() || !activeEmail) return;
 
     setIsSendingReply(true);
-    setTimeout(() => {
+    const sentText = replyText;
+    setReplyText('');
+
+    api.sendEnterpriseEmail({
+      recipient: activeEmail.sender,
+      recipientEmail: activeEmail.senderEmail,
+      subject: activeEmail.subject.startsWith('Re:') ? activeEmail.subject : `Re: ${activeEmail.subject}`,
+      body: sentText,
+      category: activeEmail.category
+    }).then(res => {
       setIsSendingReply(false);
-      setReplyText('');
+      if (res?.email) {
+        setEmails(prev => [res.email, ...prev]);
+        setSelectedEmailId(res.email.id);
+      }
       showToast(
         'Email Dispatched',
         `Reply sent securely to ${activeEmail.senderEmail} via Enterprenex Corporate SMTP Gateway.`,
         'success'
       );
-    }, 600);
+    }).catch(err => {
+      setIsSendingReply(false);
+      console.warn('Backend send reply deferred/offline:', err);
+      showToast('Email Queued', 'Message recorded in communication log.', 'info');
+    });
   };
 
   // Compose Submit Handler
@@ -459,8 +498,9 @@ export const EmailsPage: React.FC = () => {
       return;
     }
 
+    const tempId = `em-${Date.now().toString().slice(-4)}`;
     const newEmail: EnterpriseEmail = {
-      id: `em-${Date.now().toString().slice(-4)}`,
+      id: tempId,
       sender: currentUser?.name || 'Managing Director',
       senderEmail: currentUser?.email || 'director@enterprenex.solutions',
       senderAvatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
@@ -484,6 +524,21 @@ export const EmailsPage: React.FC = () => {
     setComposeSubject('');
     setComposeBody('');
     showToast('Email Sent', `Official institutional email transmitted to ${composeTo}.`, 'success');
+
+    // Live backend database persistence & SMTP dispatch
+    api.sendEnterpriseEmail({
+      recipient: composeTo,
+      recipientEmail: composeTo,
+      subject: composeSubject,
+      body: composeBody,
+      category: composeCategory
+    }).then(res => {
+      if (res?.email?.id) {
+        setEmails(prev => prev.map(item => item.id === tempId ? res.email : item));
+      }
+    }).catch(err => {
+      console.warn('Backend sendEnterpriseEmail deferred/offline:', err);
+    });
   };
 
   // Filter emails

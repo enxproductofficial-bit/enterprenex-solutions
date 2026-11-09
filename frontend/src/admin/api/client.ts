@@ -573,6 +573,32 @@ class ApiClient {
     });
   }
 
+  // 20. Enterprise Communications & Emails
+  async getEmails(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ emails: any[] }>(`/emails${qs ? `?${qs}` : ''}`);
+  }
+
+  async sendEnterpriseEmail(data: any) {
+    return this.request<{ message: string; email: any }>('/emails', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateEnterpriseEmail(id: string, data: any) {
+    return this.request<{ message: string; email: any }>(`/emails/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteEnterpriseEmail(id: string) {
+    return this.request<{ message: string }>(`/emails/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   // 16. Payroll & Payslips
   async getPayroll(params: Record<string, string> = {}) {
     const qs = new URLSearchParams(params).toString();
