@@ -43,6 +43,7 @@ import { AnalyticsPage } from './admin/pages/AnalyticsPage';
 import { SecurityPage } from './admin/pages/SecurityPage';
 import { EmailsPage } from './admin/pages/EmailsPage';
 import { OfferLettersPage } from './admin/pages/OfferLettersPage';
+import { EmployeeSelfServiceHub } from './admin/components/EmployeeSelfServiceHub';
 
 function ScrollToTopOnRoute() {
   const { pathname, search } = useLocation();
@@ -415,6 +416,15 @@ function MainAppRoutes() {
           <IpRestrictionGuard>
             <AdminRouteGuard allowedRoles={['Super Admin']} moduleName="Admin & RBAC Security">
               <SecurityPage />
+            </AdminRouteGuard>
+          </IpRestrictionGuard>
+        } />
+
+        {/* ── EMPLOYEE SELF SERVICE HUB — Role 3 Individual Workspace ── */}
+        <Route path="/admin/my-hub" element={
+          <IpRestrictionGuard>
+            <AdminRouteGuard allowedRoles={['Team Member', 'Developer']} moduleName="Employee Self Service Hub">
+              <EmployeeSelfServiceHub />
             </AdminRouteGuard>
           </IpRestrictionGuard>
         } />

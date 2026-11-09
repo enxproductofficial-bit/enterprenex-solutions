@@ -22,7 +22,9 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
       subtasks: t.subtasksJson ? JSON.parse(t.subtasksJson) : [],
       tags: t.tagsJson ? JSON.parse(t.tagsJson) : [],
       attachments: t.attachmentsJson ? JSON.parse(t.attachmentsJson) : [],
-      supportingDocuments: t.supportingDocumentsJson ? JSON.parse(t.supportingDocumentsJson) : []
+      supportingDocuments: t.supportingDocumentsJson ? JSON.parse(t.supportingDocumentsJson) : [],
+      comments: [],
+      acceptanceCriteria: []
     }));
 
     res.json({ tasks: formatted });

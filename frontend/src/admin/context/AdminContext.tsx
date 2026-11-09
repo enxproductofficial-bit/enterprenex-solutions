@@ -279,7 +279,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (Array.isArray(parsed)) return parsed.filter((e: any) => e.isUnread).length;
       }
     } catch (e) {}
-    return 2;
+    return 3;
   });
 
   useEffect(() => {

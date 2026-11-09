@@ -93,7 +93,7 @@ export const DocumentsPage: React.FC = () => {
   const [hrEmpId, setHrEmpId] = useState(employees[0]?.id || '');
   const [hrCandidateName, setHrCandidateName] = useState('');
   const [hrRole, setHrRole] = useState('Senior Software Engineer');
-  const [hrCtc, setHrCtc] = useState(1200000);
+  const [hrCtc, setHrCtc] = useState<number>(employees[0]?.ctcAnnual || (employees[0]?.salaryMonthly ? employees[0].salaryMonthly * 12 : 0));
   const [hrJoiningDate, setHrJoiningDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Helper to extract or resolve Employee ID and Verification Status for any document
@@ -428,7 +428,7 @@ export const DocumentsPage: React.FC = () => {
     if (isOffer) {
       const empName = emp?.name || doc.uploadedBy || 'Candidate';
       const role = emp?.role || hrRole || 'Senior Software Engineer';
-      const grossMonthly = emp?.salaryMonthly || Math.round(hrCtc / 12) || 100000;
+      const grossMonthly = emp?.salaryMonthly || (hrCtc ? Math.round(hrCtc / 12) : 0);
       const ctcAnnual = grossMonthly * 12;
       const basic = Math.round(grossMonthly * 0.5);
       const hra = Math.round(grossMonthly * 0.3);
@@ -1541,7 +1541,7 @@ export const DocumentsPage: React.FC = () => {
                   required
                   value={fTitle}
                   onChange={e => setFTitle(e.target.value)}
-                  placeholder="e.g. PAN Card - Polamreddy Revanth Reddy"
+                  placeholder="e.g. PAN Card - Aarav Sharma"
                 />
               </div>
 

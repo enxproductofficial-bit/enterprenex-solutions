@@ -526,7 +526,8 @@ export const TeamPage: React.FC = () => {
   const [personalEmail, setPersonalEmail] = useState('');
   const [personalPhone, setPersonalPhone] = useState('');
   const [skills, setSkills] = useState('React, TypeScript, Node.js');
-  const [salary, setSalary] = useState(100000);
+  const [salary, setSalary] = useState<number | ''>('');
+  const [ctcAnnual, setCtcAnnual] = useState<number | ''>('');
   const [workload, setWorkload] = useState(100);
   const [avatar, setAvatar] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80');
   const [avatarPreview, setAvatarPreview] = useState('');
@@ -648,13 +649,23 @@ export const TeamPage: React.FC = () => {
     return `${year}${random8}`;
   };
 
-  const generateRandomPassword = (prefix = 'EPX'): string => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*';
-    let pass = '';
-    for (let i = 0; i < 8; i++) {
-      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+  // ✅ SECURE: Password generation moved to backend — no logic exposed in browser DevTools
+  const generateRandomPassword = async (): Promise<string> => {
+    const token = localStorage.getItem('ewms_token');
+    try {
+      const res = await fetch('/api/employees/generate-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (data.password) return data.password;
+    } catch {
+      // silent fallback — network issue only
     }
-    return `${prefix}@${pass}`;
+    return '';
   };
 
   // Server-Side Unique Employee ID Fetcher (keeps generator logic strictly on backend)
@@ -847,9 +858,9 @@ export const TeamPage: React.FC = () => {
           <div class="corner-ornament br"></div>
 
           <!-- Official Company Logo & Identity Header -->
-          <div style="position: relative; z-index: 1; margin-bottom: 2px;">
-            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 6px;">
-              <img src="${COMPANY_LOGO_BASE64}" alt="Enterprenex Solutions" style="height: 78px; max-width: 360px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08)); margin-bottom: 2px;" />
+          <div style="position: relative; z-index: 1; margin-bottom: 4px;">
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 4px;">
+              <img src="${COMPANY_LOGO_BASE64}" alt="Enterprenex Solutions" style="height: 68px; max-width: 340px; object-fit: contain; margin-bottom: 2px;" />
             </div>
             <h1 class="header-title">ENTERPRENEX SOLUTIONS PRIVATE LIMITED</h1>
             <div class="header-sub">Corporate Identity: U72900MH2026PTC000000 &bull; ISO 9001:2015 Registered Entity</div>
@@ -1132,7 +1143,8 @@ export const TeamPage: React.FC = () => {
     setPersonalEmail('');
     setPersonalPhone('');
     setSkills('React, TypeScript, Node.js');
-    setSalary(100000);
+    setSalary('');
+    setCtcAnnual('');
     setAvatarPreview('');
     setWorkload(100);
     setPanNumber('');
@@ -1182,6 +1194,9 @@ export const TeamPage: React.FC = () => {
     const finalAvatar =
       avatarPreview || avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
 
+    const finalCtc = Number(ctcAnnual || (Number(salary) ? Number(salary) * 12 : 0));
+    const finalSalaryMonthly = Number(salary || (Number(ctcAnnual) ? Math.round(Number(ctcAnnual) / 12) : 0));
+
     addEmployee({
       employeeId: finalEmpId,
       password: finalPassword,
@@ -1195,7 +1210,7 @@ export const TeamPage: React.FC = () => {
       address: address.trim() || undefined,
       probationPeriod: probationPeriod || '3 Months',
       resumeUrl: resumeUrl || undefined,
-      ctcAnnual: Number(salary) * 12,
+      ctcAnnual: finalCtc,
       employmentType: employmentType || 'Full Time',
       qualification: qualification || 'B.Tech / Professional Degree',
       email: email || `${name.toLowerCase().replace(/\s+/g, '')}@enterprenex.com`,
@@ -1207,7 +1222,7 @@ export const TeamPage: React.FC = () => {
       currentProjects: [],
       workloadPercentage: Number(workload || 100),
       joinDate: joinDate || new Date().toISOString().split('T')[0],
-      salaryMonthly: Number(salary),
+      salaryMonthly: finalSalaryMonthly,
       performanceRating: 5.0,
       status: accountStatus || 'Active',
       approvalStatus: initialApprovalStatus,
@@ -1239,7 +1254,7 @@ export const TeamPage: React.FC = () => {
           department,
           email: email || `${name.toLowerCase().replace(/\s+/g, '')}@enterprenex.com`,
           phone: phone || '+91-9876543210',
-          salaryMonthly: Number(salary),
+          salaryMonthly: finalSalaryMonthly,
           workloadPercentage: Number(workload || 100),
           approvalStatus: initialApprovalStatus
         })
@@ -4540,7 +4555,7 @@ export const TeamPage: React.FC = () => {
                       <label className="adm-form-label" style={{ margin: 0, fontSize: '0.78rem' }}>Initial Access Password *</label>
                       <button
                         type="button"
-                        onClick={() => setEmpPassword(generateRandomPassword('EPX'))}
+                        onClick={async () => { const pwd = await generateRandomPassword(); setEmpPassword(pwd); }}
                         style={{ background: 'none', border: 'none', color: '#34d399', fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}
                       >
                         <RefreshCw size={11} /> Generate
@@ -4742,8 +4757,21 @@ export const TeamPage: React.FC = () => {
                   <input className="adm-input" value={qualification} onChange={e => setQualification(e.target.value)} placeholder="e.g. B.Tech Computer Science / MCA" />
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Monthly Compensation (₹)</label>
-                  <input className="adm-input" type="number" value={salary} onChange={e => setSalary(Number(e.target.value))} />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <label className="adm-form-label" style={{ margin: 0 }}>Monthly Compensation (₹)</label>
+                    <span style={{ fontSize: '0.68rem', color: '#64748b' }}>HR / Director Specified</span>
+                  </div>
+                  <input
+                    className="adm-input"
+                    type="number"
+                    value={salary}
+                    onChange={e => {
+                      const val = e.target.value === '' ? '' : Number(e.target.value);
+                      setSalary(val);
+                      setCtcAnnual(val !== '' ? val * 12 : '');
+                    }}
+                    placeholder="e.g. 50000"
+                  />
                 </div>
               </div>
 
@@ -4784,10 +4812,32 @@ export const TeamPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Calculated Annual CTC</label>
-                  <div style={{ height: '38px', display: 'flex', alignItems: 'center', padding: '0 0.85rem', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '6px', fontWeight: 700, color: '#10b981' }}>
-                    ₹{(salary * 12).toLocaleString('en-IN')} / Year
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <label className="adm-form-label" style={{ margin: 0 }}>Annual CTC (₹) *</label>
+                    <span style={{ fontSize: '0.68rem', color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      <Shield size={11} /> Mentioned by HR / Director
+                    </span>
                   </div>
+                  <input
+                    className="adm-input"
+                    type="number"
+                    value={ctcAnnual}
+                    onChange={e => {
+                      const val = e.target.value === '' ? '' : Number(e.target.value);
+                      setCtcAnnual(val);
+                      setSalary(val !== '' ? Math.round(val / 12) : '');
+                    }}
+                    placeholder="Enter Annual CTC (Mentioned by HR / Director)"
+                  />
+                  {ctcAnnual !== '' && Number(ctcAnnual) > 0 ? (
+                    <div style={{ fontSize: '0.72rem', color: '#10b981', marginTop: '4px', fontWeight: 600 }}>
+                      ₹{Number(ctcAnnual).toLocaleString('en-IN')} / Year {salary !== '' ? `(≈ ₹${Number(salary).toLocaleString('en-IN')}/mo)` : ''}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.70rem', color: '#94a3b8', marginTop: '4px' }}>
+                      To be mentioned & decided by HR or Director
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -5225,7 +5275,7 @@ export const TeamPage: React.FC = () => {
                   <button
                     type="button"
                     className="adm-btn adm-btn-secondary"
-                    onClick={() => setNewPasswordInput(generateRandomPassword('EPX'))}
+                    onClick={async () => { const pwd = await generateRandomPassword(); setNewPasswordInput(pwd); }}
                     title="Generate secure random password"
                   >
                     <RefreshCw size={14} />
@@ -6116,7 +6166,7 @@ export const TeamPage: React.FC = () => {
                       required
                       value={certRecipientName}
                       onChange={e => setCertRecipientName(e.target.value)}
-                      placeholder="e.g. Polamreddy Revanth Reddy"
+                      placeholder="e.g. Aarav Sharma"
                     />
                   </div>
                   <div className="adm-form-group">
@@ -6125,7 +6175,7 @@ export const TeamPage: React.FC = () => {
                       className="adm-input"
                       value={certRecipientEmpId}
                       onChange={e => setCertRecipientEmpId(e.target.value)}
-                      placeholder="e.g. 202600000002"
+                      placeholder="e.g. 202601004"
                     />
                   </div>
                 </div>

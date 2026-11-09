@@ -108,6 +108,8 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
 
   const safeAcceptanceCriteria = task.acceptanceCriteria || [];
   const completedCriteria = safeAcceptanceCriteria.filter(c => c.met).length;
+  const safeComments = task.comments || [];
+  const safeAttachments = task.attachments || [];
 
   const handleSubtaskClick = (stId: string) => {
     onToggleSubtask(task.id, stId);
@@ -1010,7 +1012,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                 }}
               >
                 <Paperclip size={15} color="#6366f1" />
-                Attached Specifications & Artifacts ({(task.attachments || []).length})
+                Attached Specifications & Artifacts ({safeAttachments.length})
               </h4>
               <button
                 className="adm-btn adm-btn-secondary adm-btn-sm"
@@ -1047,7 +1049,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {(task.attachments || []).map(att => (
+              {safeAttachments.map(att => (
                 <div
                   key={att.id}
                   style={{
@@ -1078,7 +1080,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                   )}
                 </div>
               ))}
-              {(!task.attachments || task.attachments.length === 0) && (
+              {safeAttachments.length === 0 && (
                 <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontStyle: 'italic' }}>
                   No files or technical documents attached yet.
                 </div>
@@ -1107,7 +1109,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
               }}
             >
               <MessageSquare size={15} color="#0284c7" />
-              Engineering Discussion Thread ({task.comments.length})
+              Engineering Discussion Thread ({safeComments.length})
             </h4>
 
             {/* Post comment input */}
@@ -1131,7 +1133,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
 
             {/* Comments list */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              {task.comments.map(c => (
+              {safeComments.map(c => (
                 <div
                   key={c.id}
                   style={{

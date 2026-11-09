@@ -146,7 +146,7 @@ Enterprenex Solutions Private Limited`,
     timestamp: 'Yesterday',
     date: '16 Oct 2026',
     category: 'Finance & Billing',
-    isUnread: false,
+    isUnread: true,
     isStarred: true,
     securityLevel: 'Institutional Restricted',
     attachments: [

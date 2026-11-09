@@ -522,4 +522,14 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
   }
 });
 
+// POST /api/employees/generate-password (Secure server-side password generator — Director/Manager/HR only)
+router.post('/generate-password', authenticateToken, requireRole(['Super Admin', 'Project Manager', 'HR Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const password = generateSecureTemporaryPassword();
+    res.json({ password });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Secure password generation failed.' });
+  }
+});
+
 export default router;

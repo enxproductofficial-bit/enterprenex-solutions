@@ -1420,6 +1420,103 @@ export const TasksPage: React.FC = () => {
         </div>
       )}
 
+      {/* ── SUBMIT FOR VERIFICATION & REVIEW MODAL ── */}
+      {completionModalTask && (
+        <div className="adm-modal-overlay" onClick={() => setCompletionModalTask(null)}>
+          <div className="adm-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="adm-modal-header">
+              <div>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '2px' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#d97706', background: 'rgba(245, 158, 11, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                    Section 10 Review Gate
+                  </span>
+                </div>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
+                  Submit Task for Lead Verification
+                </h3>
+              </div>
+              <button className="adm-modal-close" onClick={() => setCompletionModalTask(null)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '0.5rem 0 1rem 0' }}>
+              <div style={{ background: 'var(--adm-bg, #fafafa)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--adm-border)', marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)', marginBottom: '3px' }}>
+                  TASK IDENTIFIER: <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--adm-primary)' }}>{completionModalTask.taskId || completionModalTask.id}</span>
+                </div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--adm-text)' }}>
+                  {completionModalTask.title}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
+                  Assignee: <strong>{completionModalTask.assignedTo}</strong> • Reviewer: <strong>{completionModalTask.reviewer || 'Rohit Pawar'}</strong>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="adm-form-label" style={{ fontWeight: 700, fontSize: '0.8rem' }}>
+                  Completion Remarks & Deliverables Summary *
+                </label>
+                <textarea
+                  className="adm-textarea"
+                  rows={3}
+                  placeholder="Detail deliverables completed, PR / branch references, deployment verification or test results..."
+                  value={completionRemarks}
+                  onChange={e => setCompletionRemarks(e.target.value)}
+                  style={{ fontSize: '0.82rem' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '0.5rem' }}>
+                <label className="adm-form-label" style={{ fontWeight: 700, fontSize: '0.8rem' }}>
+                  Deliverable Artifact Link / Documentation URL (Optional)
+                </label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  placeholder="e.g. GitHub PR #42, Google Drive folder, Figma link..."
+                  value={completionDoc}
+                  onChange={e => setCompletionDoc(e.target.value)}
+                  style={{ fontSize: '0.82rem' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--adm-border)' }}>
+              <button className="adm-btn adm-btn-secondary" onClick={() => setCompletionModalTask(null)}>
+                Cancel
+              </button>
+              <button
+                className="adm-btn adm-btn-primary"
+                style={{ background: '#d97706', borderColor: '#d97706', display: 'flex', alignItems: 'center', gap: '6px' }}
+                onClick={() => {
+                  const remarksText = completionRemarks.trim() || 'Deliverables finalized and submitted for technical sign-off.';
+                  const fullNotes = completionDoc.trim()
+                    ? `${remarksText}\n\nDeliverable Document / URL: ${completionDoc.trim()}`
+                    : remarksText;
+
+                  submitTaskForReview(completionModalTask.id, fullNotes);
+
+                  if (selectedTask?.id === completionModalTask.id) {
+                    setSelectedTask({
+                      ...selectedTask,
+                      status: 'In Review',
+                      reviewNotes: fullNotes
+                    });
+                  }
+                  setCompletionModalTask(null);
+                  setCompletionRemarks('');
+                  setCompletionDoc('');
+                }}
+              >
+                <span>Confirm & Submit</span>
+                <span>📤</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── SECTION 11: COMMISSION TASK (MANAGER ASSIGNMENT FLOW MODAL) ── */}
       {showAddModal && (
         <div className="adm-modal-overlay" onClick={() => setShowAddModal(false)}>
