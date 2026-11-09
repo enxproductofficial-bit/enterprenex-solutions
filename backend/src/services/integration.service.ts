@@ -7,6 +7,8 @@
  * 4. Enterprise Cloud Asset & CDN Service (Cloudinary / AWS S3 abstraction)
  */
 
+import nodemailer from 'nodemailer';
+
 export interface EmailPayload {
   to: string;
   subject: string;
@@ -37,9 +39,47 @@ export class IntegrationService {
       return { success: true, messageId };
     }
 
-    // In production with credentials:
-    // e.g. await nodemailerTransport.sendMail({ from: process.env.SYSTEM_EMAIL, ... })
-    return { success: true, messageId };
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: Number(process.env.SMTP_PORT) === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+
+      const fromAddress = process.env.SMTP_FROM || `"Enterprenex Solutions" <contact@enterprenex.solutions>`;
+      const replyToAddress = process.env.SMTP_REPLY_TO || 'contact@enterprenex.solutions';
+
+      const info = await transporter.sendMail({
+        from: fromAddress,
+        replyTo: replyToAddress,
+        to: payload.to,
+        subject: payload.subject,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; background: #0f172a; color: #f8fafc; border-radius: 8px;">
+            <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px;">
+              <h2 style="margin: 0; color: #38bdf8;">Enterprenex Solutions</h2>
+              <p style="margin: 4px 0 0; font-size: 0.85rem; color: #94a3b8;">Enterprise Work Management System (EWMS)</p>
+            </div>
+            <div style="font-size: 1rem; line-height: 1.6; color: #e2e8f0;">
+              ${payload.data?.body ? payload.data.body.replace(/\n/g, '<br/>') : `<p>${payload.subject}</p>`}
+            </div>
+            <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem; color: #64748b;">
+              <p>Official communication from Enterprenex Solutions Pvt Ltd.<br>Reply to this email directly at <a href="mailto:${replyToAddress}" style="color: #38bdf8;">${replyToAddress}</a></p>
+            </div>
+          </div>
+        `
+      });
+
+      console.log(`[REAL EMAIL DISPATCHED] To: ${payload.to} | MessageId: ${info.messageId}`);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.error('[REAL EMAIL DISPATCH ERROR]:', error);
+      throw error;
+    }
   }
 
   /**

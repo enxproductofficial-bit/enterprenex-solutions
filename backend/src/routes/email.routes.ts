@@ -128,7 +128,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
           title: subject,
           ticketNumber: 'COMM-' + Date.now().toString().slice(-4),
           category,
-          requester: senderName
+          requester: senderName,
+          body
         }
       });
     } catch (err) {
