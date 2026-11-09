@@ -425,7 +425,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const isOnline = await api.checkBackendHealth();
         if (!isOnline) return;
 
-        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes, pRes, annRes, tktRes, meetRes, expRes, leadRes] = await Promise.allSettled([
+        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes, pRes, annRes, tktRes, meetRes, expRes, leadRes, docRes] = await Promise.allSettled([
           api.getTasks(),
           api.getEmployees(),
           api.getAttendance(),
@@ -439,7 +439,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           api.getTickets(),
           api.getMeetings(),
           api.getExpenses(),
-          api.getLeads()
+          api.getLeads(),
+          api.getDocuments()
         ]);
 
         if (tRes.status === 'fulfilled' && tRes.value.tasks?.length > 0) {
@@ -594,6 +595,26 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             createdAt: l.createdAt ? new Date(l.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
           }));
           setLeads(mappedLeads);
+        }
+        if (docRes.status === 'fulfilled' && Array.isArray(docRes.value?.documents) && docRes.value.documents.length > 0) {
+          const mappedDocs: VaultDocument[] = docRes.value.documents.map((d: any) => ({
+            id: d.id,
+            title: d.title,
+            category: (d.category as any) || 'Technical Docs',
+            version: d.version || 'v1.0',
+            fileFormat: d.fileFormat || 'PDF',
+            fileSize: d.fileSize || '1.0 MB',
+            uploadedBy: d.uploadedBy || 'Admin',
+            uploadDate: d.uploadDate || (d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : '2026-01-01'),
+            accessPermission: (d.accessPermission as any) || 'Internal',
+            tags: Array.isArray(d.tags) ? d.tags : [],
+            url: d.url || '#',
+            employeeId: d.employeeId,
+            verificationStatus: (d.verificationStatus as any) || 'Verified',
+            verifiedBy: d.verifiedBy,
+            verifiedAt: d.verifiedAt
+          }));
+          setDocuments(mappedDocs);
         }
       } catch (err) {
         console.warn('Backend live sync fallback to local cache:', err);
@@ -1589,24 +1610,55 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const uploadDocument = (docData: Omit<VaultDocument, 'id' | 'uploadDate' | 'uploadedBy'>) => {
+    const tempId = 'vdoc-' + Date.now();
     const newDoc: VaultDocument = {
       ...docData,
-      id: 'vdoc-' + Date.now(),
+      id: tempId,
       uploadDate: new Date().toISOString().split('T')[0],
       uploadedBy: currentUser?.name || 'Admin'
     };
     setDocuments(prev => [newDoc, ...prev]);
     logAction('Uploaded Document', 'Document Vault', `Uploaded ${newDoc.title} (${newDoc.category})`);
     showToast('Document Uploaded', `${newDoc.title} secured in central vault.`, 'success');
+
+    // Live backend database persistence
+    api.uploadVaultDocument({
+      title: newDoc.title,
+      category: newDoc.category,
+      version: newDoc.version,
+      fileFormat: newDoc.fileFormat,
+      fileSize: newDoc.fileSize,
+      accessPermission: newDoc.accessPermission,
+      tags: newDoc.tags,
+      url: newDoc.url,
+      employeeId: newDoc.employeeId,
+      verificationStatus: newDoc.verificationStatus
+    }).then(res => {
+      if (res?.document?.id) {
+        setDocuments(prev => prev.map(d => d.id === tempId ? { ...d, id: res.document.id } : d));
+      }
+    }).catch(err => {
+      console.warn('Backend uploadVaultDocument deferred/offline:', err);
+    });
   };
 
   const updateDocument = (id: string, updates: Partial<VaultDocument>) => {
     setDocuments(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
+
+    // Live backend database persistence
+    api.updateVaultDocument(id, updates).catch(err => {
+      console.warn('Backend updateVaultDocument deferred/offline:', err);
+    });
   };
 
   const deleteDocument = (id: string) => {
     setDocuments(prev => prev.filter(d => d.id !== id));
     showToast('Document Deleted', 'File deleted from vault.', 'warning');
+
+    // Live backend database persistence
+    api.deleteVaultDocument(id).catch(err => {
+      console.warn('Backend deleteVaultDocument deferred/offline:', err);
+    });
   };
 
   const addMeeting = (meetData: Omit<CalendarMeeting, 'id'>) => {

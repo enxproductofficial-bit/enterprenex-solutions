@@ -357,6 +357,90 @@ async function seed() {
     });
   }
 
+  // 10. Seed Vault Documents
+  const existingDocs = await prisma.vaultDocument.count();
+  if (existingDocs === 0) {
+    await prisma.vaultDocument.createMany({
+      data: [
+        {
+          id: 'vdoc-1',
+          title: 'Enterprenex Standard Master Services Agreement (MSA) 2026',
+          category: 'Contracts',
+          version: 'v1.0',
+          fileFormat: 'PDF',
+          fileSize: '1.8 MB',
+          uploadedBy: 'Rohit Pawar',
+          uploadDate: '2026-01-01',
+          accessPermission: 'Admin Only',
+          tagsJson: JSON.stringify(['Legal', 'MSA', 'Template', 'Enterprise']),
+          url: '#',
+          verificationStatus: 'Verified',
+          checksumHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+        },
+        {
+          id: 'vdoc-2',
+          title: 'Mutual Non-Disclosure Agreement (NDA) Template',
+          category: 'NDA',
+          version: 'v1.0',
+          fileFormat: 'DOCX',
+          fileSize: '420 KB',
+          uploadedBy: 'Rohit Pawar',
+          uploadDate: '2026-01-01',
+          accessPermission: 'Internal',
+          tagsJson: JSON.stringify(['Legal', 'NDA', 'Compliance']),
+          url: '#',
+          verificationStatus: 'Verified',
+          checksumHash: 'ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb'
+        },
+        {
+          id: 'vdoc-3',
+          title: 'IEEE-830 EWMS Software Requirements Specification (SRS)',
+          category: 'Technical Docs',
+          version: 'v2.4',
+          fileFormat: 'PDF',
+          fileSize: '3.4 MB',
+          uploadedBy: 'Rohit Pawar',
+          uploadDate: '2026-10-17',
+          accessPermission: 'Internal',
+          tagsJson: JSON.stringify(['Architecture', 'SRS', 'IEEE-830', 'EWMS']),
+          url: '#',
+          verificationStatus: 'Verified',
+          checksumHash: '4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce'
+        },
+        {
+          id: 'vdoc-4',
+          title: 'ENX Money GST & Multi-Godown Architecture Blueprint',
+          category: 'Technical Docs',
+          version: 'v1.2',
+          fileFormat: 'PDF',
+          fileSize: '2.8 MB',
+          uploadedBy: 'Rohit Pawar',
+          uploadDate: '2026-09-30',
+          accessPermission: 'Confidential',
+          tagsJson: JSON.stringify(['ENX Money', 'GST API', 'Database Schema']),
+          url: '#',
+          verificationStatus: 'Verified',
+          checksumHash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a'
+        },
+        {
+          id: 'vdoc-5',
+          title: 'Minutes of Meeting - Official Corporate Directives (Oct 17, 2026)',
+          category: 'Technical Docs',
+          version: 'v1.0',
+          fileFormat: 'PDF',
+          fileSize: '512 KB',
+          uploadedBy: 'Rohit Pawar',
+          uploadDate: '2026-10-17',
+          accessPermission: 'Internal',
+          tagsJson: JSON.stringify(['MoM', 'Governance', 'Board Directives']),
+          url: '#',
+          verificationStatus: 'Verified',
+          checksumHash: 'ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d'
+        }
+      ]
+    });
+  }
+
   console.log('✅ Enterprenex EWMS Database Seeded Successfully!');
 }
 

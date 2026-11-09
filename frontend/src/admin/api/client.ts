@@ -547,6 +547,32 @@ class ApiClient {
     });
   }
 
+  // 19. Document Vault & Compliance
+  async getDocuments(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ documents: any[] }>(`/documents${qs ? `?${qs}` : ''}`);
+  }
+
+  async uploadVaultDocument(data: any) {
+    return this.request<{ message: string; document: any }>('/documents', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateVaultDocument(id: string, data: any) {
+    return this.request<{ message: string; document: any }>(`/documents/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteVaultDocument(id: string) {
+    return this.request<{ message: string }>(`/documents/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   // 16. Payroll & Payslips
   async getPayroll(params: Record<string, string> = {}) {
     const qs = new URLSearchParams(params).toString();
