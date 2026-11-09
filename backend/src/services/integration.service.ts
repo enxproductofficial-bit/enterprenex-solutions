@@ -86,9 +86,10 @@ export class IntegrationService {
    * 2. Official WhatsApp Business Cloud API Integration
    */
   static async sendWhatsApp(payload: WhatsAppPayload): Promise<{ success: boolean; status: string }> {
-    const isMock = !process.env.WHATSAPP_API_TOKEN;
+    const token = process.env.WHATSAPP_API_TOKEN;
+    const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || '1338842652645626';
 
-    if (isMock) {
+    if (!token) {
       console.log(`[WHATSAPP DISPATCH - TWILIO / META CLOUD API]:`);
       console.log(`  Recipient: ${payload.recipientPhone}`);
       console.log(`  Template: ${payload.templateName}`);
@@ -96,7 +97,37 @@ export class IntegrationService {
       return { success: true, status: 'DELIVERED_SIMULATED' };
     }
 
-    return { success: true, status: 'DELIVERED' };
+    try {
+      const cleanPhone = payload.recipientPhone.replace(/[^0-9]/g, '');
+      const response = await fetch(`https://graph.facebook.com/v22.0/${phoneId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: cleanPhone,
+          type: 'template',
+          template: {
+            name: payload.templateName || 'hello_world',
+            language: { code: 'en_US' }
+          }
+        })
+      });
+
+      const resData: any = await response.json();
+      if (!response.ok) {
+        console.warn('[WHATSAPP DISPATCH DEFERRED / PENDING ALLOWLIST]:', resData?.error?.message || response.statusText);
+        return { success: false, status: resData?.error?.message || 'ERROR' };
+      }
+
+      console.log(`[REAL WHATSAPP DISPATCHED] To: ${cleanPhone} | Status: SENT`);
+      return { success: true, status: 'DELIVERED' };
+    } catch (error: any) {
+      console.error('[REAL WHATSAPP DISPATCH ERROR]:', error.message);
+      return { success: false, status: error.message };
+    }
   }
 
   /**
