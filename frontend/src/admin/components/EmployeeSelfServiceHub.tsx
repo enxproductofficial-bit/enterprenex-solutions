@@ -14,14 +14,14 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAdmin } from '../context/AdminContext';
-import type { Task, LeaveRequest, SupportTicket } from '../types';
+import type { LeaveRequest, SupportTicket } from '../types';
 import {
   User, Briefcase, Clock, Calendar, MessageCircle,
-  Ticket, ChevronRight, Play, Pause, Square,
-  Phone, Mail, Video, CheckCircle, AlertCircle,
-  PlusCircle, LogIn, LogOut, FileText, Shield,
-  Bell, Star, TrendingUp, Zap, Coffee, ArrowRight,
-  RefreshCw, Send, X, Check, ChevronDown, Activity
+  Ticket, Play, Pause, Square,
+  Phone, Mail, Video, CheckCircle,
+  PlusCircle, LogIn, LogOut, Shield,
+  TrendingUp, ArrowRight,
+  RefreshCw, Send, X, Check, Activity
 } from 'lucide-react';
 
 // ── Tab Definitions ──
@@ -66,7 +66,7 @@ export const EmployeeSelfServiceHub: React.FC = () => {
   const {
     currentUser, employees, tasks, leaves, tickets, attendance,
     addLeaveRequest, addTicket, updateTaskStatus, submitTaskForReview,
-    markAttendanceToday, showToast, addTaskComment
+    markAttendanceToday, showToast
   } = useAdmin();
 
   const [activeTab, setActiveTab] = useState<HubTab>('workspace');
@@ -103,8 +103,9 @@ export const EmployeeSelfServiceHub: React.FC = () => {
   // ─── SECTION: Anti-Tamper Stopwatch ───────────────────────────────
   const [activeTimerTaskId, setActiveTimerTaskId] = useState<string | null>(null);
   const [timerSeconds, setTimerSeconds] = useState(0);
+  const timerSecondsRef = useRef(0);
+  timerSecondsRef.current = timerSeconds;
   const [timerRunning, setTimerRunning] = useState(false);
-  const [isTabVisible, setIsTabVisible] = useState(true);
   const lastActivityRef = useRef<number>(Date.now());
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -113,7 +114,6 @@ export const EmployeeSelfServiceHub: React.FC = () => {
   useEffect(() => {
     const handleVisibility = () => {
       const visible = document.visibilityState === 'visible';
-      setIsTabVisible(visible);
       if (!visible && timerRunning) {
         setTimerRunning(false);
         showToast('⏸ Stopwatch Paused', 'Timer auto-paused — tab switched detected.', 'warning');
@@ -121,7 +121,7 @@ export const EmployeeSelfServiceHub: React.FC = () => {
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [timerRunning]);
+  }, [timerRunning, showToast]);
 
   // Activity tracker (mouse / keyboard)
   useEffect(() => {
@@ -150,9 +150,10 @@ export const EmployeeSelfServiceHub: React.FC = () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     }
     return () => { if (timerIntervalRef.current) clearInterval(timerIntervalRef.current); };
-  }, [timerRunning]);
+  }, [timerRunning, showToast]);
 
   // 60-second server heartbeat
+  const employeeId = myEmployee?.id;
   useEffect(() => {
     if (timerRunning && activeTimerTaskId) {
       heartbeatRef.current = setInterval(async () => {
@@ -161,7 +162,7 @@ export const EmployeeSelfServiceHub: React.FC = () => {
           await fetch(`/api/tasks/${activeTimerTaskId}/stopwatch/heartbeat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ elapsedSeconds: timerSeconds, employeeId: myEmployee?.id })
+            body: JSON.stringify({ elapsedSeconds: timerSecondsRef.current, employeeId })
           });
         } catch { /* silent — network issue */ }
       }, 60000);
@@ -169,7 +170,7 @@ export const EmployeeSelfServiceHub: React.FC = () => {
       if (heartbeatRef.current) clearInterval(heartbeatRef.current);
     }
     return () => { if (heartbeatRef.current) clearInterval(heartbeatRef.current); };
-  }, [timerRunning, activeTimerTaskId]);
+  }, [timerRunning, activeTimerTaskId, employeeId]);
 
   const startTimer = useCallback((taskId: string) => {
     setActiveTimerTaskId(taskId);
@@ -177,7 +178,7 @@ export const EmployeeSelfServiceHub: React.FC = () => {
     setTimerRunning(true);
     lastActivityRef.current = Date.now();
     showToast('▶ Timer Started', 'Anti-tamper stopwatch is now running. Stay active!', 'info');
-  }, []);
+  }, [showToast]);
 
   const pauseTimer = () => {
     setTimerRunning(false);
