@@ -204,5 +204,16 @@ router.patch('/:id/team', authenticateToken, requireRole(['Super Admin', 'Projec
   }
 });
 
+// DELETE /api/v1/projects/:id (Delete project)
+router.delete('/:id', authenticateToken, requireRole(['Super Admin', 'Project Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    await prisma.project.delete({ where: { id } });
+    res.json({ message: 'Project deleted successfully.' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
 

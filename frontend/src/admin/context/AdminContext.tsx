@@ -425,7 +425,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const isOnline = await api.checkBackendHealth();
         if (!isOnline) return;
 
-        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes] = await Promise.allSettled([
+        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes, pRes, annRes] = await Promise.allSettled([
           api.getTasks(),
           api.getEmployees(),
           api.getAttendance(),
@@ -433,7 +433,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           api.getOkrs(),
           api.getLeaves(),
           api.getOfferLetters(),
-          api.getNotifications()
+          api.getNotifications(),
+          api.getProjects(),
+          api.getAnnouncements()
         ]);
 
         if (tRes.status === 'fulfilled' && tRes.value.tasks?.length > 0) {
@@ -473,6 +475,47 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
         if (notifRes.status === 'fulfilled' && Array.isArray(notifRes.value?.notifications)) {
           setNotifications(notifRes.value.notifications);
+        }
+        if (pRes.status === 'fulfilled' && Array.isArray(pRes.value?.projects) && pRes.value.projects.length > 0) {
+          const mappedProjects: Project[] = pRes.value.projects.map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            clientName: p.client || p.clientName || 'Internal Client',
+            clientId: p.clientId || 'cli-1',
+            status: (p.status as ProjectStatus) || 'Planning',
+            progress: typeof p.completionRate === 'number' ? p.completionRate : (p.progress || 0),
+            budget: typeof p.budget === 'number' ? p.budget : 0,
+            expenses: typeof p.expenses === 'number' ? p.expenses : 0,
+            startDate: p.startDate || new Date().toISOString().split('T')[0],
+            targetEndDate: p.deadline || p.targetEndDate || '2026-12-31',
+            assignedTeam: Array.isArray(p.teamMembers) ? p.teamMembers : (p.assignedTeam || ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY']),
+            techStack: p.techStack || ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
+            serviceCategory: p.serviceCategory || 'Enterprise Software',
+            description: p.description || '',
+            milestones: Array.isArray(p.milestones) ? p.milestones : [],
+            tasks: Array.isArray(p.tasks) ? p.tasks : [],
+            documentsCount: p.documentsCount || 0,
+            priority: p.priority || 'High'
+          }));
+          setProjects(mappedProjects);
+        }
+        if (annRes.status === 'fulfilled' && Array.isArray(annRes.value?.announcements) && annRes.value.announcements.length > 0) {
+          const mappedAnnouncements: CommunityAnnouncement[] = annRes.value.announcements.map((a: any) => ({
+            id: a.id,
+            title: a.title,
+            content: a.content,
+            authorName: a.author || 'Rohit Pawar',
+            authorRole: a.authorRole || 'Managing Director & Lead Architect',
+            authorAvatar: a.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            isDirectorPost: a.authorRole?.includes('Director') || a.author?.includes('Rohit') || true,
+            priority: (a.priority as any) || 'Urgent',
+            postedAt: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Today',
+            likes: Array.isArray(a.readBy) ? a.readBy.length : 0,
+            likedBy: Array.isArray(a.readBy) ? a.readBy : [],
+            tags: a.tags || ['Enterprise Update', 'Official Announcement'],
+            meetingLink: a.meetingLink
+          }));
+          setAnnouncements(mappedAnnouncements);
         }
       } catch (err) {
         console.warn('Backend live sync fallback to local cache:', err);
@@ -786,21 +829,54 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addProject = (projectData: Omit<Project, 'id' | 'documentsCount' | 'tasks'>) => {
+    const tempId = 'prj-' + Date.now();
     const newProject: Project = {
       ...projectData,
-      id: 'prj-' + Date.now(),
+      id: tempId,
       documentsCount: 0,
       tasks: []
     };
     setProjects(prev => [newProject, ...prev]);
     logAction('Created Project', 'Project Management', `Created project ${newProject.title} for ${newProject.clientName}`);
     showToast('Project Created', `${newProject.title} is now tracked in pipeline.`, 'success');
+
+    // Live backend database persistence
+    api.createProject({
+      title: newProject.title,
+      description: newProject.description,
+      client: newProject.clientName,
+      status: newProject.status,
+      budget: newProject.budget,
+      startDate: newProject.startDate,
+      deadline: newProject.targetEndDate,
+      teamMembers: newProject.assignedTeam,
+      milestones: newProject.milestones || []
+    }).then(res => {
+      if (res?.project?.id) {
+        setProjects(prev => prev.map(p => p.id === tempId ? { ...p, id: res.project.id } : p));
+      }
+    }).catch(err => {
+      console.warn('Backend createProject deferred/offline:', err);
+    });
   };
 
   const updateProject = (id: string, updates: Partial<Project>) => {
     setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     logAction('Updated Project', 'Project Management', `Modified project details for ID: ${id}`);
     showToast('Project Updated', 'Project updated successfully.', 'success');
+
+    // Live backend database persistence
+    api.updateProject(id, {
+      title: updates.title,
+      description: updates.description,
+      client: updates.clientName,
+      status: updates.status,
+      budget: updates.budget,
+      deadline: updates.targetEndDate,
+      completionRate: updates.progress
+    }).catch(err => {
+      console.warn('Backend updateProject deferred/offline:', err);
+    });
   };
 
   const updateProjectStatus = (id: string, status: ProjectStatus) => {
@@ -808,6 +884,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProjects(prev => prev.map(p => p.id === id ? { ...p, status } : p));
     logAction('Project Status Changed', 'Project Management', `Moved ${prj?.title || id} to ${status}`);
     showToast('Status Updated', `Project status changed to ${status}.`, 'info');
+
+    // Live backend database persistence
+    api.updateProject(id, { status }).catch(err => {
+      console.warn('Backend updateProjectStatus deferred/offline:', err);
+    });
   };
 
   const deleteProject = (id: string) => {
@@ -815,6 +896,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProjects(prev => prev.filter(p => p.id !== id));
     logAction('Deleted Project', 'Project Management', `Removed project ${prj?.title || id}`);
     showToast('Project Deleted', 'Project has been removed.', 'warning');
+
+    // Live backend database persistence
+    api.deleteProject(id).catch(err => {
+      console.warn('Backend deleteProject deferred/offline:', err);
+    });
   };
 
   const addService = (serviceData: Omit<ServiceCatalogueItem, 'id' | 'leadsCount'>) => {
@@ -1375,15 +1461,29 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addAnnouncement = (annData: Omit<CommunityAnnouncement, 'id' | 'postedAt' | 'likes'>) => {
+    const tempId = 'ann-' + Date.now();
     const newAnn: CommunityAnnouncement = {
       ...annData,
-      id: 'ann-' + Date.now(),
+      id: tempId,
       postedAt: 'Just now',
       likes: 0,
       likedBy: []
     };
     setAnnouncements(prev => [newAnn, ...prev]);
     showToast('Announcement Posted', `"${newAnn.title}" published to community board.`, 'success');
+
+    // Live backend database persistence
+    api.createAnnouncement({
+      title: newAnn.title,
+      content: newAnn.content,
+      targetAudience: 'All Employees'
+    }).then(res => {
+      if (res?.announcement?.id) {
+        setAnnouncements(prev => prev.map(a => a.id === tempId ? { ...a, id: res.announcement.id } : a));
+      }
+    }).catch(err => {
+      console.warn('Backend createAnnouncement deferred/offline:', err);
+    });
   };
 
   const likeAnnouncement = (id: string) => {

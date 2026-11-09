@@ -7,35 +7,37 @@ async function seed() {
   const defaultPasswordHash = await bcrypt.hash('Enx_sol_121006', 10);
 
   // 1. Seed Users
-  await prisma.user.upsert({
-    where: { email: 'director@enterprenex.solutions' },
-    update: {},
-    create: {
-      email: 'director@enterprenex.solutions',
-      password: defaultPasswordHash,
-      name: 'Rohit Pawar',
-      role: 'Super Admin',
-      employeeId: '202600000001',
-      department: 'Engineering',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-      status: 'Active'
-    }
-  });
+  const user1 = await prisma.user.findFirst({ where: { employeeId: '202600000001' } });
+  if (!user1) {
+    await prisma.user.create({
+      data: {
+        email: 'director@enterprenex.solutions',
+        password: defaultPasswordHash,
+        name: 'Rohit Pawar',
+        role: 'Super Admin',
+        employeeId: '202600000001',
+        department: 'Engineering',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        status: 'Active'
+      }
+    });
+  }
 
-  await prisma.user.upsert({
-    where: { email: 'revanth@enterprenex.solutions' },
-    update: {},
-    create: {
-      email: 'revanth@enterprenex.solutions',
-      password: defaultPasswordHash,
-      name: 'POLAMREDDY REVANTH REDDY',
-      role: 'Developer',
-      employeeId: '202600000002',
-      department: 'Engineering',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-      status: 'Active'
-    }
-  });
+  const user2 = await prisma.user.findFirst({ where: { employeeId: '202600000002' } });
+  if (!user2) {
+    await prisma.user.create({
+      data: {
+        email: 'revanth@enterprenex.solutions',
+        password: defaultPasswordHash,
+        name: 'POLAMREDDY REVANTH REDDY',
+        role: 'Developer',
+        employeeId: '202600000002',
+        department: 'Engineering',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        status: 'Active'
+      }
+    });
+  }
 
   // 2. Seed Employees
   await prisma.employee.upsert({
@@ -229,6 +231,92 @@ async function seed() {
       }
     });
   }
+
+  // 7. Seed Real Enterprise Projects
+  await prisma.project.upsert({
+    where: { id: 'proj-enx-money' },
+    update: {},
+    create: {
+      id: 'proj-enx-money',
+      title: 'ENX Money',
+      description: 'GST-based business management application with billing, inventory, ledger, expenses and payment management. Development completed.',
+      client: 'Enterprenex Solutions (Internal / Enterprise Products)',
+      status: 'Development',
+      budget: 0,
+      startDate: '2026-01-15',
+      deadline: '2026-11-30',
+      teamSize: 2,
+      completionRate: 75,
+      managerName: 'Rohit Pawar',
+      managerEmail: 'director@enterprenex.solutions',
+      teamMembersJson: JSON.stringify(['Rohit Pawar', 'POLAMREDDY REVANTH REDDY']),
+      milestonesJson: JSON.stringify([
+        { id: 'ms-em-1', title: 'Phase 1: GST Billing Engine & Invoice Generator', dueDate: '2026-03-31', completed: true },
+        { id: 'ms-em-2', title: 'Phase 2: Real-Time Inventory & Multi-Godown Tracking', dueDate: '2026-06-30', completed: true },
+        { id: 'ms-em-3', title: 'Phase 3: Ledger, Expenses & Bank Reconciliation', dueDate: '2026-09-30', completed: true },
+        { id: 'ms-em-4', title: 'Phase 4: Payment Gateway Integration & UAT Deployment', dueDate: '2026-11-30', completed: false }
+      ])
+    }
+  });
+
+  await prisma.project.upsert({
+    where: { id: 'proj-granthsetu' },
+    update: {},
+    create: {
+      id: 'proj-granthsetu',
+      title: 'GranthSetu – Abhyasika Management System',
+      description: 'Study-centre management platform with student enrollment, live seat allocation, QR admission, payments and admin management. Planning completed; development pending.',
+      client: 'GranthSetu Study Centers & Libraries',
+      status: 'Planning',
+      budget: 0,
+      startDate: '2026-03-01',
+      deadline: '2026-12-15',
+      teamSize: 2,
+      completionRate: 35,
+      managerName: 'Rohit Pawar',
+      managerEmail: 'director@enterprenex.solutions',
+      teamMembersJson: JSON.stringify(['Rohit Pawar', 'POLAMREDDY REVANTH REDDY']),
+      milestonesJson: JSON.stringify([
+        { id: 'ms-gs-1', title: 'Phase 1: Architecture Blueprint, SRS & Database Schema', dueDate: '2026-04-15', completed: true },
+        { id: 'ms-gs-2', title: 'Phase 2: QR Admission Engine & Real-Time Seat Allocation Map', dueDate: '2026-07-31', completed: false },
+        { id: 'ms-gs-3', title: 'Phase 3: Automated WhatsApp Notifications & Fee Reminders', dueDate: '2026-09-30', completed: false },
+        { id: 'ms-gs-4', title: 'Phase 4: Multi-Branch Admin Dashboard & Analytics', dueDate: '2026-12-15', completed: false }
+      ])
+    }
+  });
+
+  // 8. Seed Company Announcements
+  await prisma.companyAnnouncement.upsert({
+    where: { id: 'ann-1' },
+    update: {},
+    create: {
+      id: 'ann-1',
+      title: 'Welcome to Enterprenex Work Management System (EWMS) V2.4',
+      content: 'Dear Enterprenex Family, we are proud to introduce our unified enterprise portal covering Daily Attendance Geo-Check, Automated Monthly Payroll, Direct WhatsApp Meeting Dispatch, and our new Company Community. All employees are requested to review project milestones and mark daily punch-in on time.',
+      author: 'Rohit Pawar',
+      authorRole: 'Managing Director & Lead Architect',
+      targetAudience: 'All Employees',
+      publishedAt: new Date(),
+      readByJson: '["202600000002"]',
+      acknowledgedByJson: '["202600000002"]'
+    }
+  });
+
+  await prisma.companyAnnouncement.upsert({
+    where: { id: 'ann-2' },
+    update: {},
+    create: {
+      id: 'ann-2',
+      title: 'Google Meet Calendar Sync & WhatsApp Instant Invitations',
+      content: 'All sprint planning meetings will now broadcast calendar links directly to team WhatsApp groups. When scheduling any meeting from the Calendar, choose "Schedule & Share on WhatsApp" to notify all attendees automatically with time, agenda, and Google Meet link.',
+      author: 'Jyothi Anbhule',
+      authorRole: 'Lead Project Manager & Mentor',
+      targetAudience: 'All Employees',
+      publishedAt: new Date(),
+      readByJson: '[]',
+      acknowledgedByJson: '[]'
+    }
+  });
 
   console.log('✅ Enterprenex EWMS Database Seeded Successfully!');
 }

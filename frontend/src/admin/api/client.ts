@@ -439,6 +439,12 @@ class ApiClient {
     });
   }
 
+  async deleteProject(id: string) {
+    return this.request<{ message: string }>(`/projects/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   // 15. Company Announcements
   async getAnnouncements() {
     return this.request<{ announcements: any[] }>('/announcements');
