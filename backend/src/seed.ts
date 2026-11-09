@@ -318,6 +318,45 @@ async function seed() {
     }
   });
 
+  // 9. Seed CRM Leads
+  const existingLeads = await prisma.lead.count();
+  if (existingLeads === 0) {
+    await prisma.lead.createMany({
+      data: [
+        {
+          id: 'lead-1',
+          name: 'Rajesh Sharma',
+          company: 'Apex Logistics & Supply Chain',
+          email: 'rajesh@apexlogistics.in',
+          phone: '+91-9820112233',
+          source: 'Website Form',
+          status: 'Proposal',
+          estimatedValue: 350000,
+          serviceInterested: 'Custom ERP & Fleet Management Engine',
+          assignedSalesperson: 'Rohit Pawar',
+          probability: 60,
+          nextFollowUpDate: '2026-11-15',
+          notes: 'Client requested architecture demo for ENX Money integration with inventory.'
+        },
+        {
+          id: 'lead-2',
+          name: 'Dr. Sunita Deshmukh',
+          company: 'Vidya Mandir Educational Trust',
+          email: 'contact@vidyamandir.edu.in',
+          phone: '+91-9822998877',
+          source: 'Referral',
+          status: 'Qualified',
+          estimatedValue: 120000,
+          serviceInterested: 'GranthSetu Abhyasika Platform Deployment',
+          assignedSalesperson: 'Rohit Pawar',
+          probability: 75,
+          nextFollowUpDate: '2026-11-18',
+          notes: 'Wants multi-branch student seat allocation and QR entry gates.'
+        }
+      ]
+    });
+  }
+
   console.log('✅ Enterprenex EWMS Database Seeded Successfully!');
 }
 

@@ -22,6 +22,7 @@ import payrollRoutes from './routes/payroll.routes';
 import exitRoutes from './routes/exit.routes';
 import assetRoutes from './routes/asset.routes';
 import expenseRoutes from './routes/expense.routes';
+import leadRoutes from './routes/lead.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import { initSocketService } from './services/socket.service';
 import { securityHeaders, sanitizeInputs, rateLimiter, globalErrorHandler } from './middleware/security';
@@ -239,6 +240,7 @@ app.use('/api/v1/payroll', payrollRoutes);
 app.use('/api/v1/exit', exitRoutes);
 app.use('/api/v1/assets', assetRoutes);
 app.use('/api/v1/expenses', expenseRoutes);
+app.use('/api/v1/leads', leadRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 
 // ── Backwards-Compatible /api/ Routes Aliasing ──
@@ -259,6 +261,7 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/exit', exitRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/leads', leadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 // Global Error Handler & Crash Boundary

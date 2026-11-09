@@ -425,7 +425,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const isOnline = await api.checkBackendHealth();
         if (!isOnline) return;
 
-        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes, pRes, annRes, tktRes, meetRes, expRes] = await Promise.allSettled([
+        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes, pRes, annRes, tktRes, meetRes, expRes, leadRes] = await Promise.allSettled([
           api.getTasks(),
           api.getEmployees(),
           api.getAttendance(),
@@ -438,7 +438,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           api.getAnnouncements(),
           api.getTickets(),
           api.getMeetings(),
-          api.getExpenses()
+          api.getExpenses(),
+          api.getLeads()
         ]);
 
         if (tRes.status === 'fulfilled' && tRes.value.tasks?.length > 0) {
@@ -573,6 +574,26 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             paidBy: e.employeeName || 'Corporate Account'
           }));
           setExpenses(mappedExpenses);
+        }
+        if (leadRes.status === 'fulfilled' && Array.isArray(leadRes.value?.leads) && leadRes.value.leads.length > 0) {
+          const mappedLeads: Lead[] = leadRes.value.leads.map((l: any) => ({
+            id: l.id,
+            name: l.name,
+            company: l.company,
+            email: l.email || '',
+            phone: l.phone || '',
+            source: (l.source as any) || 'Website Form',
+            status: (l.status as LeadStatus) || 'New Lead',
+            estimatedValue: Number(l.estimatedValue || 0),
+            serviceInterested: l.serviceInterested || 'Enterprise Software',
+            assignedSalesperson: l.assignedSalesperson || 'Rohit Pawar',
+            probability: typeof l.probability === 'number' ? l.probability : 20,
+            nextFollowUpDate: l.nextFollowUpDate || '',
+            notes: l.notes || '',
+            activities: Array.isArray(l.activities) ? l.activities : [],
+            createdAt: l.createdAt ? new Date(l.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+          }));
+          setLeads(mappedLeads);
         }
       } catch (err) {
         console.warn('Backend live sync fallback to local cache:', err);
@@ -992,20 +1013,48 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addLead = (leadData: Omit<Lead, 'id' | 'createdAt' | 'activities'>) => {
+    const tempId = 'lead-' + Date.now();
     const newLead: Lead = {
       ...leadData,
-      id: 'lead-' + Date.now(),
+      id: tempId,
       activities: [],
       createdAt: new Date().toISOString().split('T')[0]
     };
     setLeads(prev => [newLead, ...prev]);
     logAction('Created Lead', 'Lead & CRM', `Added lead ${newLead.name} (${newLead.company})`);
     showToast('Lead Added', `Lead for ${newLead.company} created.`, 'success');
+
+    // Live backend database persistence
+    api.createLead({
+      name: newLead.name,
+      company: newLead.company,
+      email: newLead.email,
+      phone: newLead.phone,
+      source: newLead.source,
+      status: newLead.status,
+      estimatedValue: newLead.estimatedValue,
+      serviceInterested: newLead.serviceInterested,
+      assignedSalesperson: newLead.assignedSalesperson,
+      probability: newLead.probability,
+      nextFollowUpDate: newLead.nextFollowUpDate,
+      notes: newLead.notes
+    }).then(res => {
+      if (res?.lead?.id) {
+        setLeads(prev => prev.map(l => l.id === tempId ? { ...l, id: res.lead.id } : l));
+      }
+    }).catch(err => {
+      console.warn('Backend createLead deferred/offline:', err);
+    });
   };
 
   const updateLead = (id: string, updates: Partial<Lead>) => {
     setLeads(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l));
     showToast('Lead Updated', 'Lead details saved.', 'success');
+
+    // Live backend database persistence
+    api.updateLead(id, updates).catch(err => {
+      console.warn('Backend updateLead deferred/offline:', err);
+    });
   };
 
   const updateLeadStatus = (id: string, status: LeadStatus) => {
@@ -1013,6 +1062,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l));
     logAction('Lead Stage Moved', 'Lead & CRM', `Moved ${lead?.company || id} to ${status}`);
     showToast('Pipeline Updated', `${lead?.company} moved to ${status}.`, 'info');
+
+    // Live backend database persistence
+    api.updateLead(id, { status }).catch(err => {
+      console.warn('Backend updateLeadStatus deferred/offline:', err);
+    });
   };
 
   const addLeadActivity = (leadId: string, activity: { type: 'Call' | 'Meeting' | 'Email' | 'Note'; summary: string }) => {
@@ -1024,11 +1078,21 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setLeads(prev => prev.map(l => l.id === leadId ? { ...l, activities: [newAct, ...l.activities] } : l));
     showToast('Activity Logged', `${activity.type} recorded.`, 'success');
+
+    // Live backend database persistence
+    api.logLeadActivity(leadId, activity).catch(err => {
+      console.warn('Backend logLeadActivity deferred/offline:', err);
+    });
   };
 
   const deleteLead = (id: string) => {
     setLeads(prev => prev.filter(l => l.id !== id));
     showToast('Lead Deleted', 'Lead removed from CRM.', 'warning');
+
+    // Live backend database persistence
+    api.deleteLead(id).catch(err => {
+      console.warn('Backend deleteLead deferred/offline:', err);
+    });
   };
 
   const addInvoice = (invData: Omit<Invoice, 'id' | 'paidAmount'>) => {

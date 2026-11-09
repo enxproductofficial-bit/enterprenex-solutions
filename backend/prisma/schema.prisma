@@ -478,3 +478,23 @@ model EwmsNotification {
   read                 Boolean   @default(false)
   createdAt            DateTime  @default(now())
 }
+
+// 18. Enterprise CRM & Sales Leads
+model Lead {
+  id                   String    @id @default(uuid())
+  name                 String
+  company              String
+  email                String
+  phone                String
+  source               String    @default("Website Form")
+  status               String    @default("New Lead")
+  estimatedValue       Float     @default(0)
+  serviceInterested    String
+  assignedSalesperson  String?
+  probability          Int       @default(20)
+  nextFollowUpDate     String?
+  notes                String?
+  activitiesJson       String?   // JSON array of LeadActivity
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}

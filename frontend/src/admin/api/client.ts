@@ -514,6 +514,39 @@ class ApiClient {
     });
   }
 
+  // 18. CRM Leads & Sales Pipeline
+  async getLeads(params: Record<string, string> = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request<{ leads: any[] }>(`/leads${qs ? `?${qs}` : ''}`);
+  }
+
+  async createLead(data: any) {
+    return this.request<{ message: string; lead: any }>('/leads', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateLead(id: string, data: any) {
+    return this.request<{ message: string; lead: any }>(`/leads/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async logLeadActivity(id: string, data: { type: string; summary: string }) {
+    return this.request<{ message: string; activity: any; lead: any }>(`/leads/${id}/activity`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteLead(id: string) {
+    return this.request<{ message: string }>(`/leads/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   // 16. Payroll & Payslips
   async getPayroll(params: Record<string, string> = {}) {
     const qs = new URLSearchParams(params).toString();
