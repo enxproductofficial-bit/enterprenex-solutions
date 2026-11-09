@@ -469,6 +469,51 @@ class ApiClient {
     });
   }
 
+  // 16. Helpdesk & Support Tickets
+  async getTickets() {
+    return this.request<{ tickets: any[] }>('/tickets');
+  }
+
+  async createTicket(data: any) {
+    return this.request<{ message: string; ticket: any }>('/tickets', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateTicket(id: string, data: any) {
+    return this.request<{ message: string; ticket: any }>(`/tickets/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  // 17. Calendar & Corporate Meetings
+  async getMeetings() {
+    return this.request<{ meetings: any[] }>('/meetings');
+  }
+
+  async createMeeting(data: any) {
+    return this.request<{ message: string; meeting: any }>('/meetings', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async rsvpMeeting(id: string, status: string) {
+    return this.request<{ message: string; meeting: any }>(`/meetings/${id}/rsvp`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
+  }
+
+  async saveMeetingNotes(id: string, notes: string, actionItems?: any[]) {
+    return this.request<{ message: string; meeting: any }>(`/meetings/${id}/notes`, {
+      method: 'PATCH',
+      body: JSON.stringify({ notes, actionItems })
+    });
+  }
+
   // 16. Payroll & Payslips
   async getPayroll(params: Record<string, string> = {}) {
     const qs = new URLSearchParams(params).toString();

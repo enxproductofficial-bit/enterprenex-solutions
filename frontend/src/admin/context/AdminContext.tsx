@@ -425,7 +425,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const isOnline = await api.checkBackendHealth();
         if (!isOnline) return;
 
-        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes, pRes, annRes] = await Promise.allSettled([
+        const [tRes, eRes, aRes, kRes, oRes, lRes, offRes, notifRes, pRes, annRes, tktRes, meetRes, expRes] = await Promise.allSettled([
           api.getTasks(),
           api.getEmployees(),
           api.getAttendance(),
@@ -435,7 +435,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           api.getOfferLetters(),
           api.getNotifications(),
           api.getProjects(),
-          api.getAnnouncements()
+          api.getAnnouncements(),
+          api.getTickets(),
+          api.getMeetings(),
+          api.getExpenses()
         ]);
 
         if (tRes.status === 'fulfilled' && tRes.value.tasks?.length > 0) {
@@ -516,6 +519,60 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             meetingLink: a.meetingLink
           }));
           setAnnouncements(mappedAnnouncements);
+        }
+        if (tktRes.status === 'fulfilled' && Array.isArray(tktRes.value?.tickets) && tktRes.value.tickets.length > 0) {
+          const mappedTickets: SupportTicket[] = tktRes.value.tickets.map((t: any) => ({
+            id: t.id,
+            ticketNumber: t.ticketNumber || `TKT-${t.id.slice(0, 6)}`,
+            subject: t.title || t.subject,
+            clientName: t.requestedBy || t.clientName || 'Staff Member',
+            clientEmail: t.requestedByEmail || t.clientEmail,
+            priority: (t.priority as any) || 'Medium',
+            status: (t.status as any) || 'Open',
+            assignedTo: t.assignedTo || 'Unassigned',
+            category: (t.category as any) || 'General Query',
+            slaHoursRemaining: t.slaHoursRemaining || 24,
+            createdAt: t.createdAt ? new Date(t.createdAt).toLocaleString() : 'Just now',
+            messages: Array.isArray(t.messages) ? t.messages : (t.description ? [{
+              id: 'msg-' + t.id,
+              sender: t.requestedBy || 'Staff Member',
+              isClient: true,
+              text: t.description,
+              timestamp: t.createdAt ? new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '09:00 AM'
+            }] : [])
+          }));
+          setTickets(mappedTickets);
+        }
+        if (meetRes.status === 'fulfilled' && Array.isArray(meetRes.value?.meetings) && meetRes.value.meetings.length > 0) {
+          const mappedMeetings: CalendarMeeting[] = meetRes.value.meetings.map((m: any) => {
+            const meetingDate = m.meetingTime ? m.meetingTime.split('T')[0] : new Date().toISOString().split('T')[0];
+            const meetingTimeStr = m.meetingTime ? new Date(m.meetingTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '10:00 AM';
+            return {
+              id: m.id,
+              title: m.title,
+              type: m.type || 'Internal Sync',
+              date: m.date || meetingDate,
+              time: m.time || meetingTimeStr,
+              attendees: Array.isArray(m.attendees) ? m.attendees : ['Engineering Squad'],
+              location: m.meetUrl ? 'Google Meet' : (m.location || 'Online'),
+              meetUrl: m.meetUrl || 'https://meet.google.com/enx-edwm-all',
+              description: m.agenda || m.description || 'Sprint sync'
+            };
+          });
+          setMeetings(mappedMeetings);
+        }
+        if (expRes.status === 'fulfilled' && Array.isArray(expRes.value?.expenses) && expRes.value.expenses.length > 0) {
+          const mappedExpenses: ExpenseRecord[] = expRes.value.expenses.map((e: any) => ({
+            id: e.id,
+            category: (e.category as any) || 'Office & Admin',
+            description: e.description || e.title || 'Operational Expense',
+            amount: Number(e.amount || 0),
+            date: e.date || new Date().toISOString().split('T')[0],
+            vendor: e.vendor || e.employeeName || 'Vendor',
+            receiptUrl: e.receiptUrl,
+            paidBy: e.employeeName || 'Corporate Account'
+          }));
+          setExpenses(mappedExpenses);
         }
       } catch (err) {
         console.warn('Backend live sync fallback to local cache:', err);
@@ -1009,13 +1066,30 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addExpense = (expData: Omit<ExpenseRecord, 'id'>) => {
+    const tempId = 'exp-' + Date.now();
     const newExp: ExpenseRecord = {
       ...expData,
-      id: 'exp-' + Date.now()
+      id: tempId
     };
     setExpenses(prev => [newExp, ...prev]);
     logAction('Recorded Expense', 'Finance & Billing', `Added ₹${newExp.amount.toLocaleString('en-IN')} for ${newExp.description}`);
     showToast('Expense Logged', `Recorded ₹${newExp.amount.toLocaleString('en-IN')}.`, 'success');
+
+    // Live backend database persistence
+    api.submitExpense({
+      title: newExp.description,
+      category: newExp.category,
+      amount: newExp.amount,
+      date: newExp.date,
+      description: newExp.description,
+      receiptUrl: newExp.receiptUrl
+    }).then(res => {
+      if (res?.expense?.id) {
+        setExpenses(prev => prev.map(e => e.id === tempId ? { ...e, id: res.expense.id } : e));
+      }
+    }).catch(err => {
+      console.warn('Backend submitExpense deferred/offline:', err);
+    });
   };
 
   const addEmployee = (empData: Omit<Employee, 'id'>) => {
@@ -1397,20 +1471,40 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addTicket = (tktData: Omit<SupportTicket, 'id' | 'createdAt' | 'messages'>) => {
+    const tempId = 'tkt-' + Date.now();
     const newTicket: SupportTicket = {
       ...tktData,
-      id: 'tkt-' + Date.now(),
+      id: tempId,
       createdAt: new Date().toLocaleString(),
       messages: []
     };
     setTickets(prev => [newTicket, ...prev]);
     logAction('Created Ticket', 'Support & Helpdesk', `Opened ticket ${newTicket.ticketNumber}: ${newTicket.subject}`);
     showToast('Ticket Opened', `Support ticket ${newTicket.ticketNumber} created.`, 'success');
+
+    // Live backend database persistence
+    api.createTicket({
+      title: newTicket.subject,
+      description: newTicket.subject,
+      category: newTicket.category,
+      priority: newTicket.priority
+    }).then(res => {
+      if (res?.ticket?.id) {
+        setTickets(prev => prev.map(t => t.id === tempId ? { ...t, id: res.ticket.id, ticketNumber: res.ticket.ticketNumber || t.ticketNumber } : t));
+      }
+    }).catch(err => {
+      console.warn('Backend createTicket deferred/offline:', err);
+    });
   };
 
   const updateTicketStatus = (id: string, status: SupportTicket['status']) => {
     setTickets(prev => prev.map(t => t.id === id ? { ...t, status } : t));
     showToast('Ticket Updated', `Ticket marked as ${status}.`, 'info');
+
+    // Live backend database persistence
+    api.updateTicket(id, { status }).catch(err => {
+      console.warn('Backend updateTicket deferred/offline:', err);
+    });
   };
 
   const addTicketReply = (ticketId: string, text: string) => {
@@ -1423,6 +1517,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, messages: [...t.messages, newMsg] } : t));
     showToast('Reply Sent', 'Client response dispatched.', 'success');
+
+    // Live backend database persistence
+    api.updateTicket(ticketId, { responseNotes: text }).catch(err => {
+      console.warn('Backend addTicketReply deferred/offline:', err);
+    });
   };
 
   const uploadDocument = (docData: Omit<VaultDocument, 'id' | 'uploadDate' | 'uploadedBy'>) => {
@@ -1447,12 +1546,29 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addMeeting = (meetData: Omit<CalendarMeeting, 'id'>) => {
+    const tempId = 'meet-' + Date.now();
     const newMeeting: CalendarMeeting = {
       ...meetData,
-      id: 'meet-' + Date.now()
+      id: tempId
     };
     setMeetings(prev => [...prev, newMeeting]);
     showToast('Event Scheduled', `"${newMeeting.title}" added to calendar.`, 'success');
+
+    // Live backend database persistence
+    const isoMeetingTime = newMeeting.date ? new Date(`${newMeeting.date}T10:00:00`).toISOString() : new Date().toISOString();
+    api.createMeeting({
+      title: newMeeting.title,
+      agenda: newMeeting.description,
+      meetUrl: newMeeting.meetUrl || 'https://meet.google.com/enx-edwm-all',
+      meetingTime: isoMeetingTime,
+      attendees: newMeeting.attendees || []
+    }).then(res => {
+      if (res?.meeting?.id) {
+        setMeetings(prev => prev.map(m => m.id === tempId ? { ...m, id: res.meeting.id } : m));
+      }
+    }).catch(err => {
+      console.warn('Backend createMeeting deferred/offline:', err);
+    });
   };
 
   const deleteMeeting = (id: string) => {
