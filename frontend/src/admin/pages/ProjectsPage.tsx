@@ -36,7 +36,7 @@ export const ProjectsPage: React.FC = () => {
   const [fTitle, setFTitle] = useState('');
   const [fClientId, setFClientId] = useState(clients[0]?.id || '');
   const [fStatus, setFStatus] = useState<ProjectStatus>('Planning');
-  const [fBudget, setFBudget] = useState(1500000);
+  const [fBudget, setFBudget] = useState(0);
   const [fCategory, setFCategory] = useState('Web Development');
   const [fStart, setFStart] = useState(new Date().toISOString().split('T')[0]);
   const [fEnd, setFEnd] = useState('2026-06-30');
@@ -216,9 +216,11 @@ export const ProjectsPage: React.FC = () => {
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
                           <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.68rem' }}>{p.serviceCategory}</span>
-                          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--adm-success)' }}>
-                            ₹{(p.budget / 100000).toFixed(1)}L
-                          </span>
+                          {p.budget > 0 && (
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--adm-success)' }}>
+                              ₹{(p.budget / 100000).toFixed(1)}L
+                            </span>
+                          )}
                         </div>
 
                         <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', marginBottom: '4px', lineHeight: 1.3 }}>
@@ -357,8 +359,14 @@ export const ProjectsPage: React.FC = () => {
                       </div>
                     </td>
                     <td>
-                      <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', fontVariantNumeric: 'tabular-nums' }}>₹{p.budget.toLocaleString('en-IN')}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', fontVariantNumeric: 'tabular-nums' }}>Exp: ₹{p.expenses.toLocaleString('en-IN')}</div>
+                      {p.budget > 0 ? (
+                        <>
+                          <div style={{ fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', fontVariantNumeric: 'tabular-nums' }}>₹{p.budget.toLocaleString('en-IN')}</div>
+                          {p.expenses > 0 && <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', fontVariantNumeric: 'tabular-nums' }}>Exp: ₹{p.expenses.toLocaleString('en-IN')}</div>}
+                        </>
+                      ) : (
+                        <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontStyle: 'italic' }}>Internal / Not specified</div>
+                      )}
                     </td>
                     <td style={{ fontVariantNumeric: 'tabular-nums' }}>{p.targetEndDate}</td>
                     <td className="adm-table-sticky-right" style={{ minWidth: '160px' }} onClick={e => e.stopPropagation()}>

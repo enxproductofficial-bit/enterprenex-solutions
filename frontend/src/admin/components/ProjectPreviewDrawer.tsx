@@ -261,12 +261,14 @@ export const ProjectPreviewDrawer: React.FC<ProjectPreviewDrawerProps> = ({
                 <DollarSign size={13} />
                 <span>Contract Budget</span>
               </div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--adm-success)', marginTop: '4px' }}>
-                ₹{project.budget.toLocaleString('en-IN')}
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: project.budget > 0 ? 'var(--adm-success)' : 'var(--adm-text-muted)', marginTop: '4px' }}>
+                {project.budget > 0 ? `₹${project.budget.toLocaleString('en-IN')}` : 'Internal / To be allocated'}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
-                Expenses: ₹{project.expenses.toLocaleString('en-IN')}
-              </div>
+              {project.expenses > 0 && (
+                <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
+                  Expenses: ₹{project.expenses.toLocaleString('en-IN')}
+                </div>
+              )}
             </div>
 
             <div

@@ -172,8 +172,8 @@ export const INITIAL_PROJECTS: Project[] = [
     clientId: 'cli-1',
     status: 'Development',
     progress: 75,
-    budget: 2500000,
-    expenses: 1650000,
+    budget: 0,
+    expenses: 0,
     startDate: '2026-01-15',
     targetEndDate: '2026-11-30',
     assignedTeam: ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
@@ -181,10 +181,10 @@ export const INITIAL_PROJECTS: Project[] = [
     serviceCategory: 'Fintech & Business Management',
     description: 'GST-based business management application with billing, inventory, ledger, expenses and payment management. Development completed.',
     milestones: [
-      { id: 'ms-em-1', title: 'Phase 1: GST Billing Engine & Invoice Generator', dueDate: '2026-03-31', completed: true, amount: 650000 },
-      { id: 'ms-em-2', title: 'Phase 2: Real-Time Inventory & Multi-Godown Tracking', dueDate: '2026-06-30', completed: true, amount: 650000 },
-      { id: 'ms-em-3', title: 'Phase 3: Ledger, Expenses & Bank Reconciliation', dueDate: '2026-09-30', completed: true, amount: 600000 },
-      { id: 'ms-em-4', title: 'Phase 4: Payment Gateway Integration & UAT Deployment', dueDate: '2026-11-30', completed: false, amount: 600000 }
+      { id: 'ms-em-1', title: 'Phase 1: GST Billing Engine & Invoice Generator', dueDate: '2026-03-31', completed: true },
+      { id: 'ms-em-2', title: 'Phase 2: Real-Time Inventory & Multi-Godown Tracking', dueDate: '2026-06-30', completed: true },
+      { id: 'ms-em-3', title: 'Phase 3: Ledger, Expenses & Bank Reconciliation', dueDate: '2026-09-30', completed: true },
+      { id: 'ms-em-4', title: 'Phase 4: Payment Gateway Integration & UAT Deployment', dueDate: '2026-11-30', completed: false }
     ],
     tasks: [],
     documentsCount: 5,
@@ -197,8 +197,8 @@ export const INITIAL_PROJECTS: Project[] = [
     clientId: 'cli-2',
     status: 'Planning',
     progress: 35,
-    budget: 1400000,
-    expenses: 320000,
+    budget: 0,
+    expenses: 0,
     startDate: '2026-03-01',
     targetEndDate: '2026-12-15',
     assignedTeam: ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
@@ -206,10 +206,10 @@ export const INITIAL_PROJECTS: Project[] = [
     serviceCategory: 'Study-Centre & Operations Platform',
     description: 'Study-centre management platform with student enrollment, live seat allocation, QR admission, payments and admin management. Planning completed; development pending.',
     milestones: [
-      { id: 'ms-gs-1', title: 'Phase 1: Requirements Gathering, UX Wireframes & SRS', dueDate: '2026-04-15', completed: true, amount: 350000 },
-      { id: 'ms-gs-2', title: 'Phase 2: Database Architecture & Seat Layout Engine Planning', dueDate: '2026-06-30', completed: true, amount: 350000 },
-      { id: 'ms-gs-3', title: 'Phase 3: Student QR Admission, Enrollment & Live Seat App Dev', dueDate: '2026-09-30', completed: false, amount: 350000 },
-      { id: 'ms-gs-4', title: 'Phase 4: Fee Payment Gateways & Admin Audit Portal', dueDate: '2026-12-15', completed: false, amount: 350000 }
+      { id: 'ms-gs-1', title: 'Phase 1: Requirements Gathering, UX Wireframes & SRS', dueDate: '2026-04-15', completed: true },
+      { id: 'ms-gs-2', title: 'Phase 2: Database Architecture & Seat Layout Engine Planning', dueDate: '2026-06-30', completed: true },
+      { id: 'ms-gs-3', title: 'Phase 3: Student QR Admission, Enrollment & Live Seat App Dev', dueDate: '2026-09-30', completed: false },
+      { id: 'ms-gs-4', title: 'Phase 4: Fee Payment Gateways & Admin Audit Portal', dueDate: '2026-12-15', completed: false }
     ],
     tasks: [],
     documentsCount: 4,
