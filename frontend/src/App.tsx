@@ -115,13 +115,29 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
     if (allowed === 'Super Admin' && isDirector) return true;
     if (allowed === 'Project Manager' && isManager) return true;
     if (allowed === 'HR Manager' && isHR) return true;
-    if ((allowed === 'Team Member' || allowed === 'Developer') && (userRole === 'Employee' || userRole === 'Developer' || userRole === 'Team Member')) return true;
+    if ((allowed === 'Team Member' || allowed === 'Developer') && (
+      userRole === 'Employee' ||
+      userRole === 'Developer' ||
+      userRole === 'Team Member' ||
+      userRole.includes('Developer') ||
+      userRole.includes('Employee') ||
+      userRole.includes('Engineer') ||
+      userRole.includes('Staff') ||
+      userRole.includes('Member') ||
+      userRole.includes('Intern')
+    )) return true;
     return false;
   });
 
   // If role is not authorized for this specific module
   if (!isAuthorized) {
-    const isEmployeeRole = userRole === 'Team Member' || userRole === 'Developer' || userRole === 'Employee';
+    const isEmployeeRole =
+      userRole === 'Team Member' ||
+      userRole === 'Developer' ||
+      userRole === 'Employee' ||
+      userRole.includes('Developer') ||
+      userRole.includes('Employee') ||
+      userRole.includes('Engineer');
     return (
       <AdminErrorBoundary fallbackTitle="Unauthorized Module Access">
         <AdminLayout>
@@ -423,7 +439,7 @@ function MainAppRoutes() {
         {/* ── EMPLOYEE SELF SERVICE HUB — Role 3 Individual Workspace ── */}
         <Route path="/admin/my-hub" element={
           <IpRestrictionGuard>
-            <AdminRouteGuard allowedRoles={['Team Member', 'Developer']} moduleName="Employee Self Service Hub">
+            <AdminRouteGuard allowedRoles={['Super Admin', 'Project Manager', 'HR Manager', 'Team Member', 'Developer', 'Employee']} moduleName="Employee Self Service Hub">
               <EmployeeSelfServiceHub />
             </AdminRouteGuard>
           </IpRestrictionGuard>
