@@ -153,6 +153,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       where: { email: newEmp.email },
       update: {
         employeeId: newEmp.employeeId,
+        password: hashedPassword,
         name: newEmp.name,
         role: userRole,
         department: newEmp.department,
@@ -283,13 +284,8 @@ router.post('/:id/activate', authenticateToken, async (req: AuthRequest, res: Re
       return;
     }
 
-    if (emp.approvalStatus !== 'Approved') {
-      res.status(400).json({ error: 'Cannot activate account: Employee onboarding must be approved by the Director first.' });
-      return;
-    }
-
-    // Generate secure temporary password
-    const temporaryPassword = generateSecureTemporaryPassword();
+    // Use existing password, provided password, or company standard default
+    const temporaryPassword = req.body.password || emp.temporaryPassword || 'Enx_sol_121006';
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
 
     // Determine target User role
@@ -305,6 +301,7 @@ router.post('/:id/activate', authenticateToken, async (req: AuthRequest, res: Re
     const updatedEmp = await prisma.employee.update({
       where: { id: emp.id },
       data: {
+        approvalStatus: 'Approved',
         password: hashedPassword,
         temporaryPassword,
         mustChangePassword: true,
@@ -518,6 +515,8 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
     }
 
     const canUpdateContact = isDirector || isHr || isSelf;
+    const canUpdatePassword = isDirector || isHr || isSelf;
+    const newHash = (canUpdatePassword && updates.password) ? await bcrypt.hash(updates.password.trim(), 10) : undefined;
 
     const updated = await prisma.employee.update({
       where: { id: emp.id },
@@ -525,6 +524,9 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
         name: isDirector ? updates.name : undefined,
         role: isDirector ? updates.role : undefined,
         department: isDirector || isManager || isHr ? updates.department : undefined,
+        password: newHash,
+        temporaryPassword: (canUpdatePassword && updates.password) ? updates.password.trim() : undefined,
+        mustChangePassword: updates.password ? false : undefined,
         phone: canUpdateContact && updates.phone !== undefined ? updates.phone : emp.phone,
         personalEmail: canUpdateContact && updates.personalEmail !== undefined ? updates.personalEmail : emp.personalEmail,
         personalPhone: canUpdateContact && updates.personalPhone !== undefined ? updates.personalPhone : emp.personalPhone,
@@ -535,8 +537,8 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
         salaryMonthly: isDirector && updates.salaryMonthly !== undefined ? Number(updates.salaryMonthly) : undefined,
         ctcAnnual: isDirector && updates.ctcAnnual !== undefined ? Number(updates.ctcAnnual) : undefined,
         workloadPercentage: (isDirector || isManager) && updates.workloadPercentage !== undefined ? Number(updates.workloadPercentage) : undefined,
-        status: isDirector ? updates.status : undefined,
-        approvalStatus: isDirector ? updates.approvalStatus : undefined,
+        status: isDirector || isHr ? updates.status : undefined,
+        approvalStatus: isDirector || isHr ? (updates.approvalStatus || 'Approved') : undefined,
         panNumber: isDirector ? updates.panNumber : undefined,
         aadhaarNumber: isDirector ? updates.aadhaarNumber : undefined,
         kycStatus: isDirector || isManager ? updates.kycStatus : undefined,
@@ -544,6 +546,22 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
         educationJson: updates.education ? JSON.stringify(updates.education) : undefined
       }
     });
+
+    // Synchronize password and status with User authentication table
+    if (newHash || updates.status || updates.role) {
+      await prisma.user.updateMany({
+        where: {
+          OR: [
+            { email: emp.email },
+            { employeeId: emp.employeeId }
+          ]
+        },
+        data: {
+          ...(newHash ? { password: newHash, mustChangePassword: false } : {}),
+          ...(updates.status ? { status: updates.status } : {})
+        }
+      }).catch(err => console.warn('User update sync fallback:', err));
+    }
 
     res.json({ message: 'Employee record successfully updated.', employee: updated });
   } catch (error: any) {

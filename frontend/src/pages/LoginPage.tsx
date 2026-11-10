@@ -103,6 +103,7 @@ export const LoginPage: React.FC = () => {
         }
         return;
       } else {
+        const errData = await res.json().catch(() => ({}));
         const isExecutive = DIRECTOR_EMAILS.includes(inputEmail) || MANAGER_HR_EMAILS.includes(inputEmail) || inputEmail.startsWith('hr@');
         if (!isExecutive) {
           // Check if employee exists in client context roster (local or cached)
@@ -117,8 +118,8 @@ export const LoginPage: React.FC = () => {
           if (matchedEmp) {
             const isEmpPasswordValid =
               inputPassword === REQUIRED_PASSWORD ||
-              inputPassword === matchedEmp.password ||
-              inputPassword === (matchedEmp as any).temporaryPassword;
+              (matchedEmp.password && !matchedEmp.password.startsWith('$2a$') && inputPassword === matchedEmp.password) ||
+              (matchedEmp.temporaryPassword && inputPassword === matchedEmp.temporaryPassword);
 
             if (isEmpPasswordValid) {
               setIsLoading(false);
@@ -137,14 +138,9 @@ export const LoginPage: React.FC = () => {
               setStatusMessage(`Authenticated successfully as ${matchedEmp.name}. Opening Workspace...`);
               setTimeout(() => navigate('/admin'), 500);
               return;
-            } else {
-              setIsLoading(false);
-              setErrorMessage('Access Denied: Incorrect security password.');
-              return;
             }
           }
 
-          const errData = await res.json().catch(() => ({}));
           setIsLoading(false);
           setErrorMessage(errData.error || 'Access Denied: Invalid credentials provided. Please verify with HR.');
           return;
