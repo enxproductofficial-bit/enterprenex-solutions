@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
+import { useAdmin } from '../context/AdminContext';
 import {
   X,
   CheckCircle2,
+  CheckSquare,
   Circle,
   Phone,
   Mail,
@@ -55,6 +57,16 @@ export const ProjectPreviewDrawer: React.FC<ProjectPreviewDrawerProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
+
+  const { tasks } = useAdmin();
+
+  const linkedTasks = tasks.filter(t => 
+    t.projectId === project.id || 
+    (t.projectName && t.projectName.toLowerCase() === project.title.toLowerCase()) ||
+    (project.id === 'proj-enx-money' && ((t.projectName || '').toLowerCase().includes('enx') || (t.title || '').toLowerCase().includes('enx'))) ||
+    (project.id === 'proj-granthsetu' && ((t.projectName || '').toLowerCase().includes('granth') || (t.title || '').toLowerCase().includes('granth')))
+  );
+  const completedTasksCount = linkedTasks.filter(t => t.status === 'Completed' || t.status === 'Done').length;
 
   const clientPhone = client?.primaryContact?.phone || '+91-9876543210';
   const clientEmail = client?.primaryContact?.email || '';
@@ -394,6 +406,66 @@ export const ProjectPreviewDrawer: React.FC<ProjectPreviewDrawerProps> = ({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Linked Engineering Tasks Coordination */}
+          <div
+            style={{
+              padding: '1rem',
+              background: 'var(--adm-surface)',
+              borderRadius: '10px',
+              border: '1px solid var(--adm-border)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
+              <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text, #1a1a1a)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckSquare size={15} color="var(--adm-primary)" />
+                <span>Sprint Tasks & Engineering Delivery</span>
+              </h4>
+              <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.72rem', fontWeight: 700 }}>
+                {completedTasksCount} / {linkedTasks.length} Completed
+              </span>
+            </div>
+
+            {linkedTasks.length === 0 ? (
+              <p style={{ fontSize: '0.78rem', color: 'var(--adm-text-muted)', margin: 0 }}>
+                No tasks linked yet. All engineering tasks assigned to this project will sync here automatically.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.75rem' }}>
+                {linkedTasks.slice(0, 5).map(t => (
+                  <div
+                    key={t.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.45rem 0.65rem',
+                      background: 'var(--adm-surface-alt, rgba(0,0,0,0.02))',
+                      borderRadius: '6px',
+                      border: '1px solid var(--adm-border)',
+                      fontSize: '0.78rem'
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, color: 'var(--adm-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>
+                      {t.title}
+                    </span>
+                    <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>
+                      {t.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <a
+              href={`/admin/tasks?project=${project.id}`}
+              className="adm-btn adm-btn-sm adm-btn-secondary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none', fontSize: '0.75rem', marginTop: '0.25rem' }}
+            >
+              <span>View Tasks Board for {project.title}</span>
+              <ArrowRight size={12} />
+            </a>
           </div>
 
           {/* Assigned Squad & Tech Stack */}

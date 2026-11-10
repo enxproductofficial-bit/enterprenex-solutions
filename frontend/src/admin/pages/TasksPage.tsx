@@ -69,8 +69,16 @@ export const TasksPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('All');
   const [moduleFilter, setModuleFilter] = useState<string>('All');
+  const [projectFilter, setProjectFilter] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
   const [showAllStages, setShowAllStages] = useState(true);
+
+  // Sync project filter from URL if navigated from Projects page
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const prj = params.get('project');
+    if (prj) setProjectFilter(prj);
+  }, []);
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -358,8 +366,14 @@ export const TasksPage: React.FC = () => {
 
     const matchPriority = priorityFilter === 'All' || t.priority === priorityFilter;
     const matchModule = moduleFilter === 'All' || (t.module || '').toLowerCase().includes(moduleFilter.toLowerCase());
+    const matchProject =
+      projectFilter === 'All' ||
+      t.projectId === projectFilter ||
+      (t.projectName || '').toLowerCase() === projectFilter.toLowerCase() ||
+      (projectFilter === 'proj-enx-money' && ((t.projectName || '').toLowerCase().includes('enx') || (t.title || '').toLowerCase().includes('enx') || t.projectId === 'proj-enx-money')) ||
+      (projectFilter === 'proj-granthsetu' && ((t.projectName || '').toLowerCase().includes('granth') || (t.title || '').toLowerCase().includes('granth') || t.projectId === 'proj-granthsetu'));
 
-    return matchSearch && matchPriority && matchModule;
+    return matchSearch && matchPriority && matchModule && matchProject;
   });
 
   // Assignee Capacity Helper
@@ -747,6 +761,21 @@ export const TasksPage: React.FC = () => {
             <option value="Medium">Medium</option>
             <option value="High">High</option>
             <option value="Urgent">Urgent</option>
+          </select>
+
+          {/* Project Filter */}
+          <select
+            className="adm-select"
+            value={projectFilter}
+            onChange={e => setProjectFilter(e.target.value)}
+            style={{ fontSize: '0.82rem', maxWidth: '200px' }}
+          >
+            <option value="All">All Projects</option>
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
           </select>
 
           {/* Scope Filter */}

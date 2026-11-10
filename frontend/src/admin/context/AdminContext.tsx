@@ -1297,9 +1297,55 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateLeaveStatus = (id: string, status: 'Approved' | 'Rejected') => {
+    const targetLeave = leaves.find(l => l.id === id);
     setLeaves(prev => prev.map(l => l.id === id ? { ...l, status } : l));
     logAction('Leave Request Processed', 'Team Management', `Leave ID ${id} set to ${status}`);
     showToast('Leave Request', `Leave request has been ${status}.`, 'info');
+
+    // Cross-module coordination: if approved, update employee attendance on leave date(s)
+    if (status === 'Approved' && targetLeave) {
+      setAttendance(prev => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const isToday = targetLeave.startDate <= todayStr && todayStr <= targetLeave.endDate;
+        if (isToday) {
+          const emp = employees.find(e => e.name === targetLeave.employeeName || e.id === targetLeave.employeeId);
+          const existing = prev.find(a => a.date === todayStr && (a.employeeName === targetLeave.employeeName || a.employeeId === targetLeave.employeeId));
+          if (existing) {
+            return prev.map(a => a.id === existing.id ? { ...a, status: 'On Leave', remarks: `Approved ${targetLeave.type}` } : a);
+          } else {
+            return [
+              {
+                id: `att-leave-${Date.now()}`,
+                employeeId: targetLeave.employeeId || emp?.id || 'emp-id',
+                employeeName: targetLeave.employeeName,
+                date: todayStr,
+                checkIn: '-',
+                checkOut: '-',
+                workingHours: 0,
+                status: 'On Leave',
+                remarks: `Approved ${targetLeave.type}`
+              },
+              ...prev
+            ];
+          }
+        }
+        return prev;
+      });
+
+      // Send real-time notification
+      const newNotif: EwmsNotification = {
+        id: `notif-leave-${Date.now()}`,
+        type: 'LEAVE_STATUS',
+        title: `Leave ${status}: ${targetLeave.employeeName}`,
+        message: `${targetLeave.type} from ${targetLeave.startDate} to ${targetLeave.endDate} was approved by Management.`,
+        recipientRole: 'Employee',
+        recipientEmail: targetLeave.employeeEmail,
+        actionUrl: '/employee',
+        read: false,
+        createdAt: new Date().toISOString()
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+    }
 
     // Async backend sync
     api.updateLeaveStatus(id, status).catch(err => {
@@ -1467,6 +1513,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const submitTaskForReview = (taskId: string, notes?: string) => {
+    const targetTask = tasks.find(t => t.id === taskId);
     setTasks(prev => prev.map(t => {
       if (t.id !== taskId) return t;
       return {
@@ -1475,12 +1522,27 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reviewNotes: notes || t.reviewNotes
       };
     }));
+
+    // Cross-module notification for Super Admin & PM
+    const newNotif: EwmsNotification = {
+      id: `notif-review-${Date.now()}`,
+      type: 'TASK_ASSIGNED',
+      title: `Task Review Requested: ${targetTask?.title || taskId}`,
+      message: `${targetTask?.assignedTo || 'Employee'} submitted task for Stage 10 verification.`,
+      recipientRole: 'Super Admin',
+      actionUrl: '/admin/tasks',
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+
     api.reviewTask(taskId, 'submit', notes).catch(() => {});
     logAction('Submitted Task for Review', 'Task Workflow', `Task ID ${taskId} submitted for Lead review.`);
     showToast('Submitted for Review', 'Task submitted to Team Lead/Director for review approval.', 'info');
   };
 
   const reviewTask = (taskId: string, decision: 'Approved' | 'Changes Required', notes?: string) => {
+    const targetTask = tasks.find(t => t.id === taskId);
     setTasks(prev => prev.map(t => {
       if (t.id !== taskId) return t;
       return {
@@ -1489,6 +1551,22 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reviewNotes: notes || t.reviewNotes
       };
     }));
+
+    // Cross-module notification for employee
+    const newNotif: EwmsNotification = {
+      id: `notif-decision-${Date.now()}`,
+      type: 'TASK_ASSIGNED',
+      title: `Task ${decision}: ${targetTask?.title || taskId}`,
+      message: decision === 'Approved'
+        ? `Management approved task "${targetTask?.title}". Ready for production.`
+        : `Changes requested on task "${targetTask?.title}". Check notes for revision.`,
+      recipientRole: 'Employee',
+      actionUrl: '/admin/tasks',
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+
     api.reviewTask(taskId, decision === 'Approved' ? 'approve' : 'rework', notes).catch(() => {});
     logAction('Task Reviewed', 'Task Workflow', `Task ID ${taskId} was marked as ${decision}.`);
     showToast(

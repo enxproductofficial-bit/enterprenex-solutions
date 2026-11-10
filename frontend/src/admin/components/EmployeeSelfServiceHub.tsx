@@ -272,7 +272,12 @@ export const EmployeeSelfServiceHub: React.FC = () => {
   };
 
   const handlePunchOut = () => {
-    showToast('👋 Punched Out', `See you tomorrow! Time: ${nowTime()}`, 'info');
+    setPunchLoading(true);
+    setTimeout(() => {
+      markAttendanceToday('Present');
+      showToast('👋 Punched Out', `Attendance recorded at ${nowTime()}. See you tomorrow!`, 'info');
+      setPunchLoading(false);
+    }, 800);
   };
 
   // ─────────────────────────────────────────────
