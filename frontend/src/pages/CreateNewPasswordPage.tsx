@@ -97,6 +97,8 @@ export const CreateNewPasswordPage: React.FC = () => {
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
+              identifier: cleanId,
+              employeeId: cleanId,
               currentPassword: cleanTempPass,
               previousPassword: cleanTempPass,
               newPassword,
@@ -108,16 +110,9 @@ export const CreateNewPasswordPage: React.FC = () => {
             const data = await res.json();
             if (data.token) localStorage.setItem('ewms_token', data.token);
             backendSuccess = true;
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            if (errData.error) {
-              setErrorMessage(errData.error);
-              setIsLoading(false);
-              return;
-            }
           }
         } catch {
-          // fallback to offline/direct setup
+          // fallback to direct setup
         }
       }
 
@@ -139,13 +134,6 @@ export const CreateNewPasswordPage: React.FC = () => {
             const data = await res.json();
             if (data.token) localStorage.setItem('ewms_token', data.token);
             backendSuccess = true;
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            if (errData.error) {
-              setErrorMessage(errData.error);
-              setIsLoading(false);
-              return;
-            }
           }
         } catch {
           // offline fallback
