@@ -12,6 +12,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useAdmin } from '../admin/context/AdminContext';
+import type { UserRole } from '../admin/types';
 import { EmployeeTermsModal } from '../components/EmployeeTermsModal';
 import './register/register.css';
 
@@ -85,7 +86,7 @@ export const LoginPage: React.FC = () => {
           id: userObj.id,
           name: userObj.name,
           email: userObj.email,
-          role: userObj.role || 'Team Member',
+          role: (userObj.role as UserRole) || 'Team Member',
           avatar: userObj.avatar,
           department: userObj.department,
           status: 'Active',
@@ -127,7 +128,7 @@ export const LoginPage: React.FC = () => {
                 id: matchedEmp.id,
                 name: matchedEmp.name,
                 email: matchedEmp.email,
-                role: matchedEmp.role || 'Developer',
+                role: (matchedEmp.role as UserRole) || 'Developer',
                 avatar: matchedEmp.avatar,
                 department: matchedEmp.department,
                 status: 'Active',
