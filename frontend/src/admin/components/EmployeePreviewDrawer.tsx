@@ -94,7 +94,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
     employee.employeeId ||
     (employee.id.startsWith('emp-') ? `EPX-10${employee.id.replace('emp-', '')}` : employee.id);
 
-  const isPending = employee.approvalStatus === 'Pending Director Approval';
+  const isPending = employee.approvalStatus === 'Pending Approval' || employee.approvalStatus === 'Pending Director Approval';
   const isRejected = employee.approvalStatus === 'Rejected';
   const isActive = employee.status === 'Active';
 
@@ -314,7 +314,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
 
           {/* Director Controls: Quick Approve & Deactivate/Reactivate */}
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            {isPending && isDirector && (
+            {isPending && (isDirector || currentUser?.department === 'Human Resources' || currentUser?.role?.includes('HR') || currentUser?.role === 'Project Manager') && (
               <button
                 type="button"
                 className="adm-btn adm-btn-sm"

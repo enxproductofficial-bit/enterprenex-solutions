@@ -66,13 +66,6 @@ export const AdminLoginPage: React.FC = () => {
         navigate('/admin');
       }, 400);
     } else if (isEmployee && matchedEmp) {
-      if (matchedEmp.approvalStatus === 'Pending Director Approval') {
-        setTimeout(() => {
-          setIsLoading(false);
-          setError(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} is awaiting approval from Managing Director (Rohit Pawar).`);
-        }, 400);
-        return;
-      }
       if (matchedEmp.approvalStatus === 'Rejected') {
         setTimeout(() => {
           setIsLoading(false);

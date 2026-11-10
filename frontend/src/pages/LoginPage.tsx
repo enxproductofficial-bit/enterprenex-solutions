@@ -220,11 +220,6 @@ export const LoginPage: React.FC = () => {
           return;
         }
 
-        if (matchedEmp.approvalStatus === 'Pending Director Approval') {
-          setErrorMessage(`Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} has been registered by HR and is awaiting approval from the Managing Director (Rohit Pawar). Login will be enabled as soon as the Director approves.`);
-          return;
-        }
-
         if (matchedEmp.approvalStatus === 'Rejected') {
           setErrorMessage(`Access Denied: This employee login account has been disabled or rejected by the Managing Director.`);
           return;
