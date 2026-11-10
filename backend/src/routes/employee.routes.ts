@@ -143,6 +143,35 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       }
     });
 
+    // Auto-provision User login credentials for the employee so they can log in immediately
+    const userRole = (data.role && data.role.includes('Director')) ? 'Super Admin' :
+      ((data.role && data.role.includes('HR')) || data.department === 'Human Resources' ? 'HR Manager' :
+      ((data.role && data.role.includes('Manager')) ? 'Project Manager' :
+      ((data.role && (data.role.includes('Engineer') || data.role.includes('Developer'))) ? 'Developer' : 'Team Member')));
+
+    await prisma.user.upsert({
+      where: { email: newEmp.email },
+      update: {
+        employeeId: newEmp.employeeId,
+        name: newEmp.name,
+        role: userRole,
+        department: newEmp.department,
+        status: 'Active',
+        avatar: newEmp.avatar
+      },
+      create: {
+        email: newEmp.email,
+        employeeId: newEmp.employeeId,
+        password: hashedPassword,
+        name: newEmp.name,
+        role: userRole,
+        department: newEmp.department,
+        avatar: newEmp.avatar,
+        status: 'Active',
+        mustChangePassword: true
+      }
+    }).catch(err => console.warn('User upsert fallback:', err));
+
     // Notify Director if registered by HR and pending approval
     if (initialApprovalStatus === 'Pending Approval') {
       await notifyNewEmployeeRegistered(
