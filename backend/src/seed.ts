@@ -39,6 +39,25 @@ async function seed() {
     });
   }
 
+  // Also seed user account for ZCX-EMP-0001
+  await prisma.user.upsert({
+    where: { email: 'polamreddyrevanth.82@gmail.com' },
+    update: {
+      employeeId: 'ZCX-EMP-0001',
+      status: 'Active'
+    },
+    create: {
+      email: 'polamreddyrevanth.82@gmail.com',
+      password: defaultPasswordHash,
+      name: 'POLAMREDDY REVANTH REDDY',
+      role: 'Developer',
+      employeeId: 'ZCX-EMP-0001',
+      department: 'Engineering',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+      status: 'Active'
+    }
+  });
+
   // 2. Seed Employees
   await prisma.employee.upsert({
     where: { employeeId: '202600000001' },
@@ -71,6 +90,34 @@ async function seed() {
         { name: 'Node.js & Microservices', category: 'Backend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' }
       ]),
       joinDate: '2026-01-01'
+    }
+  });
+
+  await prisma.employee.upsert({
+    where: { employeeId: 'ZCX-EMP-0001' },
+    update: {
+      approvalStatus: 'Approved',
+      isAccountActivated: true,
+      status: 'Active'
+    },
+    create: {
+      employeeId: 'ZCX-EMP-0001',
+      name: 'POLAMREDDY REVANTH REDDY',
+      role: 'Full Stack Developer (Employee)',
+      department: 'Engineering',
+      email: 'polamreddyrevanth.82@gmail.com',
+      personalEmail: 'polamreddyrevanth.82@gmail.com',
+      phone: '+919440829762',
+      personalPhone: '+919440829762',
+      password: defaultPasswordHash,
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+      salaryMonthly: 85000,
+      workloadPercentage: 75,
+      performanceRating: 5.0,
+      status: 'Active',
+      approvalStatus: 'Approved',
+      isAccountActivated: true,
+      joinDate: '2026-11-10'
     }
   });
 

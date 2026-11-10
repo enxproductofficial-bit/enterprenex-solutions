@@ -69,7 +69,10 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
           OR: [
             { employeeId: { equals: loginId } },
             { employeeId: { equals: loginId.toUpperCase() } },
+            { employeeId: { equals: loginId.toLowerCase() } },
+            { email: { equals: loginId } },
             { email: { equals: loginId.toLowerCase() } },
+            { personalEmail: { equals: loginId } },
             { personalEmail: { equals: loginId.toLowerCase() } }
           ]
         }

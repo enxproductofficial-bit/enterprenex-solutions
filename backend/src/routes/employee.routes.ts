@@ -95,11 +95,11 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
     // Auto-generate employee ID if not provided
     const assignedEmployeeId = data.employeeId || await generateSecureEmployeeId(data.department || 'Engineering');
 
-    // Default status: Pending Approval as required
-    const initialApprovalStatus = isDirector ? (data.approvalStatus || 'Approved') : 'Pending Approval';
+    // Default status: Approved so created employees can immediately access workspace
+    const initialApprovalStatus = data.approvalStatus || 'Approved';
 
-    // Temporary password generation
-    const rawPassword = data.password || generateSecureTemporaryPassword();
+    // Password setup: use provided password or default company master password 'Enx_sol_121006'
+    const rawPassword = data.password || 'Enx_sol_121006';
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
     const monthlySalary = Number(data.salaryMonthly || 50000);
@@ -136,7 +136,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
         workMode: data.workMode || 'Hybrid',
         mustChangePassword: true,
         temporaryPassword: rawPassword,
-        isAccountActivated: isDirector && initialApprovalStatus === 'Approved',
+        isAccountActivated: true,
         skillsMatrixJson: JSON.stringify(data.skillsMatrix || []),
         educationJson: JSON.stringify(data.education || []),
         joinDate: data.joinDate || data.joiningDate || new Date().toISOString().split('T')[0]
@@ -195,7 +195,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
         ? `Employee ${data.name} (${assignedEmployeeId}) registered successfully with status 'Pending Approval'. Awaiting Director authorization.`
         : `Employee ${data.name} (${assignedEmployeeId}) created and activated.`,
       employee: newEmp,
-      temporaryPassword: isDirector ? rawPassword : undefined
+      temporaryPassword: rawPassword
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });

@@ -13,6 +13,7 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "tsx src/seed.ts",
+    "postinstall": "node -e \"const fs=require('fs'); const url='postgresql://neondb_owner:npg_QhISxl3XZ1Go@ep-gentle-salad-bdn7t3j3-pooler.c-8.us-east-2.aws.neon.tech/neondb?sslmode=require&connect_timeout=30'; if(!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('file:')) { try { fs.writeFileSync('.env', 'DATABASE_URL=\\\"\" + url + \"\\\"\\nJWT_SECRET=\\\"enterprenex_enterprise_jwt_secret_2026_super_secure\\\"\\nNODE_ENV=\\\"production\\\"\\nPORT=5000\\n'); } catch(e){} }\"",
     "render-build": "npm install && npx prisma generate --schema=prisma/schema.prisma && npx prisma db push --schema=prisma/schema.prisma && npm run build",
     "render-start": "node dist/server.js"
   },
