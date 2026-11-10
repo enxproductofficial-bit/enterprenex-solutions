@@ -1304,26 +1304,26 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Cross-module coordination: if approved, update employee attendance on leave date(s)
     if (status === 'Approved' && targetLeave) {
+      const emp = employees.find(e => e.name === targetLeave.employeeName || (targetLeave.employeeId && e.id === targetLeave.employeeId));
       setAttendance(prev => {
         const todayStr = new Date().toISOString().split('T')[0];
         const isToday = targetLeave.startDate <= todayStr && todayStr <= targetLeave.endDate;
         if (isToday) {
-          const emp = employees.find(e => e.name === targetLeave.employeeName || e.id === targetLeave.employeeId);
-          const existing = prev.find(a => a.date === todayStr && (a.employeeName === targetLeave.employeeName || a.employeeId === targetLeave.employeeId));
+          const existing = prev.find(a => a.date === todayStr && a.employeeName === targetLeave.employeeName);
           if (existing) {
-            return prev.map(a => a.id === existing.id ? { ...a, status: 'On Leave', remarks: `Approved ${targetLeave.type}` } : a);
+            return prev.map(a => a.id === existing.id ? { ...a, status: 'On Leave', absenceReason: `Approved ${targetLeave.type}` } : a);
           } else {
             return [
               {
                 id: `att-leave-${Date.now()}`,
-                employeeId: targetLeave.employeeId || emp?.id || 'emp-id',
+                employeeId: targetLeave.employeeId || emp?.id || emp?.employeeId || 'emp-id',
                 employeeName: targetLeave.employeeName,
                 date: todayStr,
                 checkIn: '-',
                 checkOut: '-',
                 workingHours: 0,
                 status: 'On Leave',
-                remarks: `Approved ${targetLeave.type}`
+                absenceReason: `Approved ${targetLeave.type}`
               },
               ...prev
             ];
@@ -1339,7 +1339,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         title: `Leave ${status}: ${targetLeave.employeeName}`,
         message: `${targetLeave.type} from ${targetLeave.startDate} to ${targetLeave.endDate} was approved by Management.`,
         recipientRole: 'Employee',
-        recipientEmail: targetLeave.employeeEmail,
+        recipientEmail: targetLeave.employeeEmail || emp?.email,
         actionUrl: '/employee',
         read: false,
         createdAt: new Date().toISOString()

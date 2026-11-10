@@ -296,7 +296,7 @@ export interface AttendanceRecord {
   date: string;
   checkIn: string;
   checkOut: string;
-  status: 'Present' | 'Late' | 'Half Day' | 'Absent';
+  status: 'Present' | 'Late' | 'Half Day' | 'Absent' | 'On Leave';
   absenceReason?: string;
   absenceNotes?: string;
   notifiedVia?: string[];
@@ -306,7 +306,9 @@ export interface AttendanceRecord {
 
 export interface LeaveRequest {
   id: string;
+  employeeId?: string;
   employeeName: string;
+  employeeEmail?: string;
   type: 'Sick Leave' | 'Casual Leave' | 'Paid Leave' | 'Unpaid';
   startDate: string;
   endDate: string;
