@@ -72,11 +72,12 @@ export const INITIAL_SERVICES: ServiceCatalogueItem[] = [
     id: 'svc-1',
     name: 'Enterprise Web & Full Stack Architecture',
     category: 'Software Engineering',
-    tagline: 'High-performance, fault-tolerant web applications for scale',
-    description: 'Bespoke enterprise web platforms architected with React, Node.js, and cloud databases. Includes microservices design, SLA-backed resilience, sub-second latency, and bank-grade data security protocols.',
-    iconName: 'Globe',
-    slaTier: 'Platinum',
-    turnaroundWeeks: '8-16 Weeks',
+    shortDesc: 'High-performance, fault-tolerant web applications for scale',
+    fullDesc: 'Bespoke enterprise web platforms architected with React, Node.js, and cloud databases. Includes microservices design, SLA-backed resilience, sub-second latency, and bank-grade data security protocols.',
+    pricingModel: 'Milestone',
+    startingPrice: 350000,
+    typicalTimeline: '8-16 Weeks',
+    technologies: ['React', 'Node.js', 'PostgreSQL', 'Redis', 'Docker'],
     features: [
       'Microservices & Distributed Systems',
       'Bank-Grade End-to-End Encryption',
@@ -85,20 +86,20 @@ export const INITIAL_SERVICES: ServiceCatalogueItem[] = [
       'Zero-Downtime Blue/Green Deployments',
       '99.99% Uptime Guarantee'
     ],
-    pricingModel: 'Fixed Scope / Milestones',
-    startingPrice: 350000,
-    activeContracts: 0,
-    status: 'Active'
+    active: true,
+    iconName: 'Globe',
+    leadsCount: 0
   },
   {
     id: 'svc-2',
     name: 'AI Agents, Copilots & Automation Pipelines',
     category: 'AI & Data Science',
-    tagline: 'Autonomous AI agents embedded into your business workflow',
-    description: 'Custom Large Language Model (LLM) fine-tuning, retrieval-augmented generation (RAG) vector pipelines, and agentic workflows that automate customer intelligence, financial reconciliation, and support.',
-    iconName: 'Bot',
-    slaTier: 'Diamond',
-    turnaroundWeeks: '6-12 Weeks',
+    shortDesc: 'Autonomous AI agents embedded into your business workflow',
+    fullDesc: 'Custom Large Language Model (LLM) fine-tuning, retrieval-augmented generation (RAG) vector pipelines, and agentic workflows that automate customer intelligence, financial reconciliation, and support.',
+    pricingModel: 'Retainer',
+    startingPrice: 450000,
+    typicalTimeline: '6-12 Weeks',
+    technologies: ['Python', 'LangChain', 'FastAPI', 'OpenAI', 'PgVector'],
     features: [
       'Multi-Agent System Orchestration',
       'Enterprise Vector Knowledge Bases (Pinecone / PgVector)',
@@ -106,20 +107,20 @@ export const INITIAL_SERVICES: ServiceCatalogueItem[] = [
       'Strict Zero Data Leakage Privacy Boundary',
       'Real-Time Voice & Multi-Modal Copilots'
     ],
-    pricingModel: 'Retainer + Performance',
-    startingPrice: 450000,
-    activeContracts: 0,
-    status: 'Active'
+    active: true,
+    iconName: 'Brain',
+    leadsCount: 0
   },
   {
     id: 'svc-3',
     name: 'Cloud Infrastructure, DevOps & Containerization',
     category: 'Cloud Solutions',
-    tagline: 'Cloud architectures engineered for 99.99% reliability',
-    description: 'Modern infrastructure as code (Terraform), Kubernetes cluster orchestration, and automated CI/CD pipelines across AWS, GCP, and Hybrid Clouds.',
-    iconName: 'Cloud',
-    slaTier: 'Platinum',
-    turnaroundWeeks: '4-8 Weeks',
+    shortDesc: 'Cloud architectures engineered for 99.99% reliability',
+    fullDesc: 'Modern infrastructure as code (Terraform), Kubernetes cluster orchestration, and automated CI/CD pipelines across AWS, GCP, and Hybrid Clouds.',
+    pricingModel: 'Retainer',
+    startingPrice: 180000,
+    typicalTimeline: '4-8 Weeks',
+    technologies: ['AWS', 'Kubernetes', 'Terraform', 'Docker', 'GitHub Actions'],
     features: [
       'Kubernetes (EKS/GKE) Multi-Node Orchestration',
       'Terraform Infrastructure as Code',
@@ -127,20 +128,20 @@ export const INITIAL_SERVICES: ServiceCatalogueItem[] = [
       'Comprehensive Observability & Tracing',
       '24/7 Automated Disaster Recovery & Failover'
     ],
-    pricingModel: 'Monthly Managed Services',
-    startingPrice: 180000,
-    activeContracts: 0,
-    status: 'Active'
+    active: true,
+    iconName: 'Cloud',
+    leadsCount: 0
   },
   {
     id: 'svc-4',
     name: 'Mobile Application Development (iOS & Android)',
     category: 'Mobile Engineering',
-    tagline: 'Native and cross-platform enterprise mobile applications',
-    description: 'Intuitive, fluid iOS and Android mobile software built with React Native and native Swift/Kotlin bridging. Designed for offline-first resilience, hardware biometrics, and push notifications.',
-    iconName: 'Smartphone',
-    slaTier: 'Gold',
-    turnaroundWeeks: '8-14 Weeks',
+    shortDesc: 'Native and cross-platform enterprise mobile applications',
+    fullDesc: 'Intuitive, fluid iOS and Android mobile software built with React Native and native Swift/Kotlin bridging. Designed for offline-first resilience, hardware biometrics, and push notifications.',
+    pricingModel: 'Milestone',
+    startingPrice: 280000,
+    typicalTimeline: '8-14 Weeks',
+    technologies: ['React Native', 'TypeScript', 'iOS Swift', 'Android Kotlin', 'SQLite'],
     features: [
       'React Native & Flutter Cross-Platform',
       'Biometric Local Auth & Security Vaults',
@@ -148,50 +149,49 @@ export const INITIAL_SERVICES: ServiceCatalogueItem[] = [
       'Live Push Notification Workflows',
       'App Store & Play Store Compliance Sign-Off'
     ],
-    pricingModel: 'Fixed Milestone',
-    startingPrice: 280000,
-    activeContracts: 0,
-    status: 'Active'
+    active: true,
+    iconName: 'Smartphone',
+    leadsCount: 0
   },
   {
     id: 'svc-5',
     name: 'UI/UX Engineering & Modern Design Systems',
     category: 'Product Design',
-    tagline: 'Intuitive, accessible, and high-converting product interfaces',
-    description: 'Enterprise Figma design systems, WCAG 2.1 AA accessibility compliance audits, interactive motion prototypes, and pixel-perfect component libraries tailored for SaaS dashboards.',
-    iconName: 'Layers',
-    slaTier: 'Gold',
-    turnaroundWeeks: '3-6 Weeks',
+    shortDesc: 'Intuitive, accessible, and high-converting product interfaces',
+    fullDesc: 'Enterprise Figma design systems, WCAG 2.1 AA accessibility compliance audits, interactive motion prototypes, and pixel-perfect component libraries tailored for SaaS dashboards.',
+    pricingModel: 'Hourly',
+    startingPrice: 120000,
+    typicalTimeline: '3-6 Weeks',
+    technologies: ['Figma', 'Tailwind CSS', 'Storybook', 'Framer Motion'],
     features: [
       'Complete Figma Component Token Systems',
       'WCAG 2.1 AA Certified Accessibility',
       'Interactive User Journey Flowcharts',
       'Dark/Light Dynamic Mode Theming'
     ],
-    pricingModel: 'Sprint Based',
-    startingPrice: 120000,
-    activeContracts: 0,
-    status: 'Active'
+    active: true,
+    iconName: 'Layout',
+    leadsCount: 0
   },
   {
     id: 'svc-6',
     name: 'Enterprise Security, Compliance & Code Audits',
     category: 'Security & Governance',
-    tagline: 'Vulnerability assessment, pen-testing, and compliance',
-    description: 'Static application security testing (SAST), penetration testing, dependency threat analysis, and automated compliance auditing for ISO 27001, SOC 2, and Indian DPDP Act readiness.',
-    iconName: 'Shield',
-    slaTier: 'Diamond',
-    turnaroundWeeks: '2-4 Weeks',
+    shortDesc: 'Vulnerability assessment, pen-testing, and compliance',
+    fullDesc: 'Static application security testing (SAST), penetration testing, dependency threat analysis, and automated compliance auditing for ISO 27001, SOC 2, and Indian DPDP Act readiness.',
+    pricingModel: 'Fixed',
+    startingPrice: 150000,
+    typicalTimeline: '2-4 Weeks',
+    technologies: ['OWASP ZAP', 'Snyk', 'SonarQube', 'Linux Hardening'],
     features: [
       'Full-Stack Vulnerability Assessment & Pen-Testing',
       'OWASP Top 10 Mitigation Roadmap',
       'Secrets & Environment Exposure Redaction',
       'Executive Security Audit Attestation'
     ],
-    pricingModel: 'Audit Package',
-    startingPrice: 150000,
-    activeContracts: 0,
-    status: 'Active'
+    active: true,
+    iconName: 'Shield',
+    leadsCount: 0
   }
 ];
 
@@ -224,6 +224,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     workMode: 'Hybrid',
     kpiScore: 96.0,
     okrScore: 95.0,
+    skills: ['System Architecture', 'Cloud Infrastructure', 'React/Next.js', 'AI/ML'],
+    currentProjects: [],
     joinDate: '2026-01-01'
   },
   {
@@ -250,6 +252,8 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     workMode: 'Hybrid',
     kpiScore: 94.2,
     okrScore: 92.0,
+    skills: ['Full Stack Architecture', 'React 19', 'TypeScript', 'Node.js', 'PostgreSQL', 'Tailwind CSS'],
+    currentProjects: [],
     joinDate: '2026-11-10'
   }
 ];
@@ -277,30 +281,46 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [];
 export const INITIAL_CMS: WebsiteCmsData = {
   hero: {
     badge: 'Enterprise Software & AI Excellence',
-    title: 'Transforming Business Through Autonomous Digital Engineering',
-    subtitle: 'Enterprenex Solutions engineers enterprise cloud infrastructures, bespoke full-stack applications, and autonomous AI pipelines.',
-    primaryCtaText: 'Explore Enterprise Suite',
-    primaryCtaLink: '/services',
-    secondaryCtaText: 'Schedule Consultation',
-    secondaryCtaLink: '/contact'
+    heading: 'Engineering Scalable Software & AI Solutions for Tomorrow’s Leaders',
+    subheading: 'We design, engineer, and deploy high-performance web platforms, mobile apps, SaaS ecosystems, and custom AI systems that accelerate enterprise growth.',
+    ctaPrimary: 'Explore Our Services',
+    ctaSecondary: 'Schedule a Consultation'
   },
-  metrics: [
-    { label: 'Uptime SLA', value: '99.99%', description: 'Guaranteed enterprise platform availability' },
-    { label: 'Enterprise Security', value: 'ISO 27001', description: 'Certified statutory compliance' },
-    { label: 'Code Review Rigor', value: '100%', description: 'Automated static analysis & manual audit' },
-    { label: 'Customer Trust', value: 'Tier-1', description: 'Selected by high-growth startups' }
+  testimonials: [],
+  portfolioItems: [],
+  blogPosts: [
+    {
+      id: 'blg-1',
+      title: 'Building Zero-Downtime Microservices on Kubernetes for Fintech',
+      slug: 'zero-downtime-fintech-kubernetes',
+      category: 'Engineering',
+      author: 'Enterprenex Engineering',
+      date: 'Feb 15, 2026',
+      readTime: '6 min read',
+      status: 'Published',
+      excerpt: 'How we engineered a blue-green deployment pipeline with automated rollback guarantees for high-volume financial transaction gateways.'
+    }
   ],
-  companyInfo: {
-    registeredName: 'Enterprenex Solutions Pvt Ltd',
-    cin: 'U72900MH2024PTC412345',
-    gstin: '27AABCE1234F1Z5',
-    registeredOffice: 'Plot No. 148, Shrinand Plaza, CIDCO Waluj Mahanagar 1, Aurangabad, MH 431136 IN',
-    directorName: 'Rohit Pawar',
-    leadDeveloperName: 'Polamreddy Revanth Reddy',
-    directorEmail: 'director@enterprenex.solutions',
-    hrEmail: 'hr@enterprenex.solutions',
-    contactEmail: 'contact@enterprenex.solutions',
-    phone: '+91-9226860060'
+  faqs: [
+    {
+      id: 'faq-1',
+      question: 'What is Enterprenex Solutions’ typical project engagement model?',
+      answer: 'We offer flexible engagement models tailored to client needs: Fixed-Scope Delivery with milestone-based signoffs, Dedicated Engineering Squads, and Monthly Retainer Support.',
+      category: 'General'
+    },
+    {
+      id: 'faq-2',
+      question: 'How do you guarantee IP protection and code security?',
+      answer: 'All projects begin with comprehensive mutual NDAs and clear IP assignment clauses. Code repositories are isolated on private enterprise instances with strict zero-trust access controls.',
+      category: 'Security'
+    }
+  ],
+  contactEnquiries: [],
+  seo: {
+    metaTitle: 'Enterprenex Solutions Pvt Ltd | Enterprise Software & AI Engineering',
+    metaDescription: 'Empowering global enterprises with bespoke web development, mobile applications, SaaS architectures, and cutting-edge AI & IoT solutions.',
+    keywords: 'Enterprise Software, AI Agents, Full Stack Engineering, Cloud Infrastructure, Enterprenex',
+    ogImage: 'https://www.enterprenexsolution.com/images/og-preview.png'
   }
 };
 
