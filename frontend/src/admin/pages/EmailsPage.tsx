@@ -48,223 +48,19 @@ export interface EnterpriseEmail {
   securityLevel?: 'Institutional Restricted' | 'Confidential' | 'General Operations';
 }
 
-const INITIAL_EMAILS: EnterpriseEmail[] = [
-  {
-    id: 'em-001',
-    sender: 'Siddharth Mehta (Vice President)',
-    senderEmail: 'smehta@tata-enterprises.com',
-    senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-    recipient: 'Rohit Pawar (Managing Director)',
-    recipientEmail: 'director@enterprenex.solutions',
-    subject: 'Enterprise Cloud ERP Phase 2 Milestone Sign-Off & SLA Acceptance',
-    snippet: 'We have thoroughly reviewed the performance benchmark reports for the Phase 2 cloud migration. The microservices latency is well within our 45ms SLA...',
-    body: `Dear Mr. Rohit Pawar & Engineering Leadership Team,
-
-We have thoroughly reviewed the performance benchmark reports and disaster-recovery replication tests conducted for Phase 2 of the Enterprise Cloud Migration architecture.
-
-Key Highlights of Delivery Acceptance:
-1. Microservices P99 Latency: 42.4ms (Well beneath our institutional SLA benchmark of 65ms).
-2. Distributed Zero-Trust Auth: Fully authenticated against our Okta SAML enterprise tenant.
-3. Multi-Zone High Availability: Zero packet loss during simulated failover across Mumbai and Pune clusters.
-
-On behalf of Tata Enterprise Systems, we are issuing official sign-off for Milestone 2. The procurement team has already processed the stage invoice (INR 18,50,000 + GST).
-
-Please proceed with Phase 3 sprint planning according to the agreed Master Service Agreement (MSA) timetable.
-
-Warm regards,
-Siddharth Mehta
-Vice President - Corporate Infrastructure & Digital Transformation
-Tata Enterprise Technologies Ltd.`,
-    timestamp: '10:42 AM',
-    date: 'Today',
-    category: 'Clients & Sales',
-    isUnread: true,
-    isStarred: true,
-    securityLevel: 'Institutional Restricted',
-    attachments: [
-      { name: 'Tata_ERP_Phase2_Signoff_Signed.pdf', size: '2.4 MB', type: 'pdf' },
-      { name: 'Cluster_Failover_Benchmark_Telemetry.xlsx', size: '890 KB', type: 'excel' }
-    ]
-  },
-  {
-    id: 'em-002',
-    sender: 'DevOps & CI/CD Automated Governance',
-    senderEmail: 'devops-alerts@enterprenex.solutions',
-    recipient: 'All Engineering Staff',
-    recipientEmail: 'engineering@enterprenex.solutions',
-    subject: 'Production Deployment Successful: Kernel v4.12.0 Zero-Downtime Rollout',
-    snippet: 'Automated notification: Build #2894 was deployed to production Kubernetes cluster at 04:30 AM IST. All 28 health probes reporting 100% green...',
-    body: `Automated Operations Telemetry Notice:
-
-Build Identifier: #2894-STABLE (commit b704a84)
-Cluster: prod-ind-mumbai-01 (16 Nodes, 64 Pods)
-Deployment Time: 04:30:12 IST (17 Oct 2026)
-Traffic Shift: 100% via Istio Canary Mesh
-
-Verification Metrics:
-• Active DB Connection Pool: 48/200 Normal
-• Memory Footprint: 2.1 GB / 8.0 GB Allocation
-• HTTP 2xx Success Ratio: 99.98%
-• Active WebSockets: 1,420 Enterprise Sessions
-
-No rollbacks triggered. Automated canary verification passed all 32 synthetic end-to-end tests.`,
-    timestamp: '09:15 AM',
-    date: 'Today',
-    category: 'Projects & Delivery',
-    isUnread: true,
-    isStarred: false,
-    securityLevel: 'General Operations',
-    attachments: [
-      { name: 'deployment_metrics_report_2894.pdf', size: '420 KB', type: 'pdf' }
-    ]
-  },
-  {
-    id: 'em-003',
-    sender: 'Pooja Hegde (Chief Financial Officer)',
-    senderEmail: 'cfo@enterprenex.solutions',
-    senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
-    recipient: 'Finance & Accounts Committee',
-    recipientEmail: 'finance@enterprenex.solutions',
-    subject: 'Monthly Statutory Tax Compliance & GST Form GSTR-3B Filing Confirmation',
-    snippet: 'This is to confirm that the Input Tax Credit reconciliation for September/October 2026 has been completed. The net tax payment of INR 3,84,200 has been remitted...',
-    body: `Dear Directors and Executive Committee,
-
-This is to confirm that our statutory GST Form GSTR-3B and GSTR-1 filings for the current billing cycle have been successfully processed on the GST Common Portal.
-
-Compliance Summary:
-• Gross Corporate Taxable Turnover: INR 48,20,000.00
-• Total Output GST Liability (CGST + SGST): INR 8,67,600.00
-• Eligible Input Tax Credit (ITC) Reconciled: INR 4,83,400.00
-• Net Electronic Cash Ledger Remittance: INR 3,84,200.00
-• Bank Reference / CIN: HDFC2610170094821
-
-The official government e-receipt and challan copies are attached below for archival in our Compliance Vault.
-
-Respectfully,
-Pooja Hegde
-Chief Financial Officer
-Enterprenex Solutions Private Limited`,
-    timestamp: 'Yesterday',
-    date: '16 Oct 2026',
-    category: 'Finance & Billing',
-    isUnread: true,
-    isStarred: true,
-    securityLevel: 'Institutional Restricted',
-    attachments: [
-      { name: 'GST_Challan_Payment_Receipt_OCT2026.pdf', size: '1.1 MB', type: 'pdf' },
-      { name: 'GSTR3B_Government_Filing_Summary.pdf', size: '940 KB', type: 'pdf' }
-    ]
-  },
-  {
-    id: 'em-004',
-    sender: 'Dr. Ananya Roy (Chief People Officer)',
-    senderEmail: 'hr@enterprenex.solutions',
-    senderAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
-    recipient: 'All Enterprenex Staff',
-    recipientEmail: 'team@enterprenex.solutions',
-    subject: 'Notice: Annual Corporate Health & Wellness Checkup Schedule (ISO 45001 Compliance)',
-    snippet: 'In alignment with our statutory ISO 45001 workplace health & safety standard, comprehensive medical screening will be conducted on 24th October at our Pune campus...',
-    body: `Dear Enterprenex Family,
-
-In alignment with our ISO 45001 workplace occupational health and wellbeing governance, the company has partnered with Apollo Diagnostics to conduct our annual comprehensive executive wellness checkup.
-
-Details:
-• Date: Friday, 24th October 2026
-• Venue: Level 4 Health Center, Corporate Headquarters
-• Coverage: 100% company sponsored (Includes CBC, Lipid Profile, Vitamin D3/B12, Ergonomic Vision Assessment)
-
-Please book your preferred 20-minute slot via the Corporate Calendar module by Tuesday, 21st October so logistical arrangements can be confirmed.
-
-Warm regards,
-Dr. Ananya Roy
-Head of Human Resources & Organizational Development`,
-    timestamp: '15 Oct',
-    date: '15 Oct 2026',
-    category: 'HR & Workforce',
-    isUnread: false,
-    isStarred: false,
-    securityLevel: 'General Operations',
-    attachments: [
-      { name: 'Apollo_Corporate_Health_Package_Details.pdf', size: '1.8 MB', type: 'pdf' }
-    ]
-  },
-  {
-    id: 'em-005',
-    sender: 'Vikram Joshi (Senior Legal Counsel)',
-    senderEmail: 'legal@enterprenex.solutions',
-    senderAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    recipient: 'Board of Directors',
-    recipientEmail: 'directors@enterprenex.solutions',
-    subject: 'Proprietary IP Trademark Registration Certificate Received from Controller General',
-    snippet: 'We are pleased to inform the Board that our corporate trademark application for ENTERPRENEX SOLUTIONS (Wordmark & Device Logo Class 42) has been officially registered...',
-    body: `To the Board of Directors,
-
-We are pleased to inform you that the Controller General of Patents, Designs and Trade Marks (Government of India) has officially issued the Certificate of Registration for our corporate identity:
-
-Registration Particulars:
-• Trademark: ENTERPRENEX SOLUTIONS (Circular Node Emblem & Device)
-• Class: 42 (Software Development, Cloud Solutions, Enterprise IT Architecture)
-• Certificate No: TM-IND-2026-0049281
-• Validity: 10 Years from registration date (Renewable in 2036)
-
-The legal status of all brand assets is now fully protected under the Trade Marks Act, 1999. The sealed digital certificate has been deposited into our Documents Vault.
-
-Sincerely,
-Vikram Joshi
-Senior Legal Counsel & Statutory Compliance Officer`,
-    timestamp: '14 Oct',
-    date: '14 Oct 2026',
-    category: 'Executive & Statutory',
-    isUnread: false,
-    isStarred: true,
-    securityLevel: 'Institutional Restricted',
-    attachments: [
-      { name: 'Trademark_Registration_Certificate_Class42.pdf', size: '3.2 MB', type: 'pdf' }
-    ]
-  },
-  {
-    id: 'em-006',
-    sender: 'Kavita Nair (Head of Client Relations)',
-    senderEmail: 'kavita.nair@enterprenex.solutions',
-    senderAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-    recipient: 'Sales & Project Delivery Leads',
-    recipientEmail: 'projects@enterprenex.solutions',
-    subject: 'Client Discovery Call Summary: MedTech AI Diagnostics Platform',
-    snippet: 'Minutes of Meeting from discovery session with MedLife Diagnostics: They require an automated DICOM imaging pipeline integrated with FHIR healthcare API...',
-    body: `Team,
-
-Here is the executive summary from our 90-minute technical discovery session with MedLife Diagnostics:
-
-Core Client Requirements:
-1. DICOM Image Processing: Automated ingestion of MRI/CT scans with HIPAA-compliant cloud anonymization.
-2. AI Inference Engine: Real-time nodule classification pipeline targeting 98%+ precision.
-3. Integration Target: Full bidirectional sync with their Epic EMR instance via standard HL7 FHIR v4 endpoints.
-
-Next Steps:
-• Architecture proposal document to be submitted by Monday, 20th October.
-• Tentative contract valuation: INR 42,00,000 for Phase 1 MVP.
-
-Best,
-Kavita Nair
-Client Relations Lead`,
-    timestamp: '12 Oct',
-    date: '12 Oct 2026',
-    category: 'Clients & Sales',
-    isUnread: false,
-    isStarred: false,
-    securityLevel: 'Confidential'
-  }
-];
+const INITIAL_EMAILS: EnterpriseEmail[] = [];
 
 export const EmailsPage: React.FC = () => {
   const { currentUser, showToast } = useAdmin();
 
   // Email State
   const [emails, setEmails] = useState<EnterpriseEmail[]>(() => {
-    const saved = localStorage.getItem('ewms_enterprise_emails');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* ignore */ }
-    }
+    try {
+      localStorage.removeItem('ewms_enterprise_emails');
+      localStorage.removeItem('ewms_enterprise_emails_v2');
+      const saved = localStorage.getItem('ewms_enterprise_emails_v3');
+      if (saved) return JSON.parse(saved);
+    } catch (e) { /* ignore */ }
     return INITIAL_EMAILS;
   });
 
@@ -315,7 +111,7 @@ export const EmailsPage: React.FC = () => {
 
   // Persist emails
   useEffect(() => {
-    localStorage.setItem('ewms_enterprise_emails', JSON.stringify(emails));
+    localStorage.setItem('ewms_enterprise_emails_v3', JSON.stringify(emails));
     const unread = emails.filter(e => e.isUnread).length;
     window.dispatchEvent(new CustomEvent('ewms_emails_updated', { detail: { unreadCount: unread } }));
   }, [emails]);

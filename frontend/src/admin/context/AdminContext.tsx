@@ -630,6 +630,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       localStorage.removeItem('enterprenex_admin_v2_clean');
       localStorage.removeItem('enterprenex_admin_data_v1');
       localStorage.removeItem('ewms_tasks_stopwatch_state');
+      localStorage.removeItem('ewms_enterprise_emails');
+      localStorage.removeItem('ewms_enterprise_emails_v2');
 
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {

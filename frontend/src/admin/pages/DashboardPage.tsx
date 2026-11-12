@@ -958,42 +958,48 @@ export const DashboardPage: React.FC = () => {
                 <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                   Upcoming Sprint Syncs & Reviews
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {safeMeetings.slice(0, 3).map(m => (
-                    <div
-                      key={m.id}
-                      style={{
-                        padding: '0.65rem 0.85rem',
-                        background: 'var(--adm-bg)',
-                        border: '1px solid var(--adm-border)',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--adm-text)' }}>
-                          {m.title}
+                {safeMeetings.length === 0 ? (
+                  <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontStyle: 'italic', padding: '0.4rem 0' }}>
+                    No upcoming sprint syncs or meetings scheduled.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {safeMeetings.slice(0, 3).map(m => (
+                      <div
+                        key={m.id}
+                        style={{
+                          padding: '0.65rem 0.85rem',
+                          background: 'var(--adm-bg)',
+                          border: '1px solid var(--adm-border)',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--adm-text)' }}>
+                            {m.title}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
+                            {m.date} &bull; {m.time} &bull; {m.type}
+                          </div>
                         </div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--adm-text-dim)' }}>
-                          {m.date} &bull; {m.time} &bull; {m.type}
-                        </div>
+                        {m.meetUrl && (
+                          <a
+                            href={m.meetUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="adm-btn adm-btn-secondary"
+                            style={{ padding: '0.25rem 0.6rem', fontSize: '0.7rem', color: '#10b981' }}
+                          >
+                            Join Meet
+                          </a>
+                        )}
                       </div>
-                      {m.meetUrl && (
-                        <a
-                          href={m.meetUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="adm-btn adm-btn-secondary"
-                          style={{ padding: '0.25rem 0.6rem', fontSize: '0.7rem', color: '#10b981' }}
-                        >
-                          Join Meet
-                        </a>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

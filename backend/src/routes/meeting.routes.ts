@@ -8,31 +8,9 @@ const router = Router();
 // GET /api/meetings - Fetch all scheduled corporate meetings
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    let meetings = await prisma.scheduledMeeting.findMany({
+    const meetings = await prisma.scheduledMeeting.findMany({
       orderBy: { meetingTime: 'asc' }
     });
-
-    // If empty, auto-seed the official upcoming team-wide meeting
-    if (meetings.length === 0) {
-      const tomorrow7PM = new Date();
-      tomorrow7PM.setDate(tomorrow7PM.getDate() + 1);
-      tomorrow7PM.setHours(19, 0, 0, 0); // 7:00 PM
-
-      const defaultMeeting = await prisma.scheduledMeeting.create({
-        data: {
-          title: 'Enterprenex Team-Wide All-Hands & SDLC Governance Review',
-          agenda: 'Review SDLC architectural documentation, strict RBAC compliance, anti-tamper time-tracking protocols, and Oct 25 onboarding readiness with PM (Jyoti).',
-          meetUrl: 'https://meet.google.com/enx-edwm-all',
-          meetingTime: tomorrow7PM.toISOString(),
-          durationMinutes: 60,
-          organizer: 'Rohit Pawar (Managing Director)',
-          department: 'All Hands',
-          attendeesJson: JSON.stringify(['Engineering Squad', 'Jyoti (Project Manager)', 'HR Operations', 'Design Team']),
-          status: 'Scheduled'
-        }
-      });
-      meetings = [defaultMeeting];
-    }
 
     const formatted = meetings.map(m => ({
       ...m,
