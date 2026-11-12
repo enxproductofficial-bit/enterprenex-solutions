@@ -239,7 +239,7 @@ interface AdminContextType {
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'enterprenex_admin_v2_clean';
+const STORAGE_KEY = 'enterprenex_admin_v3_production';
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -626,32 +626,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     try {
+      // Clear legacy mock stores to ensure clean production slate
+      localStorage.removeItem('enterprenex_admin_v2_clean');
+      localStorage.removeItem('enterprenex_admin_data_v1');
+      localStorage.removeItem('ewms_tasks_stopwatch_state');
+
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.clients && parsed.clients.length > 0) {
-          setClients(parsed.clients);
-        } else {
-          setClients(INITIAL_CLIENTS);
-        }
-        if (parsed.projects && parsed.projects.length > 0) {
-          const hasLegacy = parsed.projects.some((p: any) => p.id === 'proj-1' || p.id === 'proj-2' || p.id === 'proj-3');
-          if (hasLegacy) {
-            setProjects(INITIAL_PROJECTS);
-          } else {
-            setProjects(parsed.projects);
-          }
-        } else {
-          setProjects(INITIAL_PROJECTS);
-        }
+        setClients(parsed.clients || []);
+        setProjects(parsed.projects || []);
         if (parsed.services && parsed.services.length > 0) setServices(parsed.services);
-        if (parsed.leads && parsed.leads.length > 0) setLeads(parsed.leads);
-        if (parsed.invoices && parsed.invoices.length > 0) setInvoices(parsed.invoices);
-        if (parsed.expenses && parsed.expenses.length > 0) setExpenses(parsed.expenses);
+        setLeads(parsed.leads || []);
+        setInvoices(parsed.invoices || []);
+        setExpenses(parsed.expenses || []);
         if (parsed.employees) {
           const sanitized = parsed.employees.map((emp: any, idx: number) => sanitizeEmployeeRecord(emp, idx));
 
-          // Ensure permanent initial employees exist across all devices/sessions
+          // Ensure permanent official employees exist across all devices/sessions
           INITIAL_EMPLOYEES.forEach(initEmp => {
             if (!sanitized.some((e: any) => e.employeeId === initEmp.employeeId || e.email === initEmp.email)) {
               sanitized.push(initEmp);
@@ -662,37 +654,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } else {
           setEmployees(INITIAL_EMPLOYEES);
         }
-        if (parsed.attendance) setAttendance(parsed.attendance);
-        if (parsed.leaves) {
-          setLeaves(parsed.leaves.length > 0 ? parsed.leaves : INITIAL_LEAVES);
-        }
-        if (parsed.tasks && parsed.tasks.length > 0) {
-          // Merge with INITIAL_TASKS so standard sprint tasks are never lost
-          const existingIds = new Set(parsed.tasks.map((t: any) => t.id));
-          const mergedTasks = parsed.tasks.map((t: any) => {
-            if (t.status === 'Approved') return { ...t, status: 'Done' };
-            if (t.id === 'tsk-102' && t.status === 'To Do') return { ...t, status: 'In Progress' };
-            return t;
-          });
-          INITIAL_TASKS.forEach(initTask => {
-            if (!existingIds.has(initTask.id)) {
-              mergedTasks.push(initTask);
-            }
-          });
-          setTasks(mergedTasks);
-        } else {
-          setTasks(INITIAL_TASKS);
-        }
-        if (parsed.tickets && parsed.tickets.length > 0) {
-          setTickets(parsed.tickets);
-        } else {
-          setTickets(INITIAL_TICKETS);
-        }
-        if (parsed.documents && parsed.documents.length > 0) {
-          setDocuments(parsed.documents);
-        } else {
-          setDocuments(INITIAL_DOCUMENTS);
-        }
+        setAttendance(parsed.attendance || []);
+        setLeaves(parsed.leaves || []);
+        setTasks(parsed.tasks || []);
+        setTickets(parsed.tickets || []);
+        setDocuments(parsed.documents || []);
         if (parsed.meetings && parsed.meetings.length > 0) {
           const sanitizedMeet = parsed.meetings.map((m: any) => ({
             ...m,
@@ -700,7 +666,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }));
           setMeetings(sanitizedMeet);
         } else {
-          setMeetings(INITIAL_MEETINGS);
+          setMeetings([]);
         }
         if (parsed.announcements && parsed.announcements.length > 0) {
           const sanitizedAnn = parsed.announcements.map((a: any) => ({
@@ -709,7 +675,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }));
           setAnnouncements(sanitizedAnn);
         } else {
-          setAnnouncements(INITIAL_ANNOUNCEMENTS);
+          setAnnouncements([]);
         }
         if (parsed.chatMessages && parsed.chatMessages.length > 0) {
           const sanitizedChat = parsed.chatMessages.map((m: any) => ({
@@ -720,7 +686,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }));
           setChatMessages(sanitizedChat);
         } else {
-          setChatMessages(INITIAL_CHAT_MESSAGES);
+          setChatMessages([]);
         }
         if (parsed.cms) setCms(parsed.cms);
         if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);

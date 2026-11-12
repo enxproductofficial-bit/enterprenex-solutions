@@ -35,323 +35,163 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     department: 'Executive Board',
     status: 'Active',
     lastLogin: 'Just now',
-    phone: '+91-9226860060'
+    phone: '+91-9226860060',
+    employeeId: '202600000001'
   },
   {
     id: 'usr-2',
-    name: 'Operations & HR Lead',
+    name: 'HR Administrator',
     email: 'hr@enterprenex.solutions',
     role: 'Project Manager',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     department: 'Operations & HR Management',
     status: 'Active',
-    lastLogin: '10 mins ago',
+    lastLogin: 'Just now',
     phone: '+91-9226860060'
   },
   {
     id: 'usr-3',
-    name: 'Engineering Staff (EPX-101)',
-    email: 'employee@enterprenex.solutions',
-    role: 'Team Member',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    department: 'Engineering & Operations',
+    name: 'POLAMREDDY REVANTH REDDY',
+    email: 'revanth@enterprenex.solutions',
+    role: 'Developer',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    department: 'Engineering',
     status: 'Active',
-    lastLogin: '1 hour ago',
-    phone: '+91-9226860060'
+    lastLogin: 'Just now',
+    phone: '+919440829762',
+    employeeId: 'ZCX-EMP-0001'
   }
 ];
 
-export const INITIAL_CLIENTS: Client[] = [
-  {
-    id: 'cli-1',
-    companyName: 'NexaCorp Systems Ltd',
-    industry: 'Enterprise Software & Cloud',
-    website: 'https://nexacorpsystems.com',
-    gstin: '27AABCN1234A1Z5',
-    primaryContact: {
-      name: 'Vikramaditya Roy',
-      role: 'Chief Technology Officer',
-      email: 'v.roy@nexacorpsystems.com',
-      phone: '+91-9820154321'
-    },
-    billingAddress: {
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '400051',
-      fullAddress: 'Nexa Towers, BKC, Bandra East, Mumbai, MH - 400051'
-    },
-    status: 'Active',
-    slaTier: 'Enterprise (2h SLA)',
-    totalBilled: 1850000,
-    activeProjectsCount: 2,
-    openTicketsCount: 1,
-    createdAt: '2026-01-15'
-  },
-  {
-    id: 'cli-2',
-    companyName: 'Apex Global Financial Technologies',
-    industry: 'FinTech & Banking',
-    website: 'https://apexglobalfin.com',
-    gstin: '29AAACA5678B1Z2',
-    primaryContact: {
-      name: 'Anita Shenoy',
-      role: 'VP of Engineering',
-      email: 'anita.shenoy@apexglobalfin.com',
-      phone: '+91-9880234567'
-    },
-    billingAddress: {
-      city: 'Bengaluru',
-      state: 'Karnataka',
-      pincode: '560100',
-      fullAddress: 'Electronic City Phase 1, Hosur Road, Bengaluru, KA - 560100'
-    },
-    status: 'Active',
-    slaTier: 'Enterprise (2h SLA)',
-    totalBilled: 2400000,
-    activeProjectsCount: 1,
-    openTicketsCount: 0,
-    createdAt: '2026-02-01'
-  },
-  {
-    id: 'cli-3',
-    companyName: 'Vertex Retail & Logistics Cloud',
-    industry: 'Retail & Supply Chain',
-    website: 'https://vertexretailcloud.io',
-    gstin: '07AAACV9012C1Z8',
-    primaryContact: {
-      name: 'Karan Mehra',
-      role: 'Head of Digital Transformation',
-      email: 'karan.m@vertexretailcloud.io',
-      phone: '+91-9811345678'
-    },
-    billingAddress: {
-      city: 'New Delhi',
-      state: 'Delhi',
-      pincode: '110001',
-      fullAddress: 'Connaught Place, Barakhamba Road, New Delhi, DL - 110001'
-    },
-    status: 'Active',
-    slaTier: 'Standard (6h SLA)',
-    totalBilled: 1200000,
-    activeProjectsCount: 1,
-    openTicketsCount: 1,
-    createdAt: '2026-02-20'
-  },
-  {
-    id: 'cli-4',
-    companyName: 'Zenith HealthTech Solutions',
-    industry: 'Healthcare & AI Diagnostics',
-    website: 'https://zenithhealthtech.com',
-    gstin: '36AAACZ3456D1Z4',
-    primaryContact: {
-      name: 'Dr. Suresh Varma',
-      role: 'Director of Technology',
-      email: 'suresh.varma@zenithhealthtech.com',
-      phone: '+91-9440123456'
-    },
-    billingAddress: {
-      city: 'Hyderabad',
-      state: 'Telangana',
-      pincode: '500081',
-      fullAddress: 'Hitec City, Madhapur, Hyderabad, TS - 500081'
-    },
-    status: 'Active',
-    slaTier: 'Standard (6h SLA)',
-    totalBilled: 950000,
-    activeProjectsCount: 1,
-    openTicketsCount: 0,
-    createdAt: '2026-03-01'
-  }
-];
+export const INITIAL_CLIENTS: Client[] = [];
 
-export const INITIAL_PROJECTS: Project[] = [
-  {
-    id: 'proj-enx-money',
-    title: 'ENX Money',
-    clientName: 'Enterprenex Solutions (Internal / Enterprise Products)',
-    clientId: 'cli-1',
-    status: 'Development',
-    progress: 75,
-    budget: 0,
-    expenses: 0,
-    startDate: '2026-01-15',
-    targetEndDate: '2026-11-30',
-    assignedTeam: ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
-    techStack: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'GST E-Invoice API', 'Docker'],
-    serviceCategory: 'Fintech & Business Management',
-    description: 'GST-based business management application with billing, inventory, ledger, expenses and payment management. Development completed.',
-    milestones: [
-      { id: 'ms-em-1', title: 'Phase 1: GST Billing Engine & Invoice Generator', dueDate: '2026-03-31', completed: true },
-      { id: 'ms-em-2', title: 'Phase 2: Real-Time Inventory & Multi-Godown Tracking', dueDate: '2026-06-30', completed: true },
-      { id: 'ms-em-3', title: 'Phase 3: Ledger, Expenses & Bank Reconciliation', dueDate: '2026-09-30', completed: true },
-      { id: 'ms-em-4', title: 'Phase 4: Payment Gateway Integration & UAT Deployment', dueDate: '2026-11-30', completed: false }
-    ],
-    tasks: [],
-    documentsCount: 5,
-    priority: 'Critical'
-  },
-  {
-    id: 'proj-granthsetu',
-    title: 'GranthSetu – Abhyasika Management System',
-    clientName: 'GranthSetu Study Centers & Libraries',
-    clientId: 'cli-2',
-    status: 'Planning',
-    progress: 35,
-    budget: 0,
-    expenses: 0,
-    startDate: '2026-03-01',
-    targetEndDate: '2026-12-15',
-    assignedTeam: ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
-    techStack: ['React', 'Tailwind CSS', 'Node.js', 'PostgreSQL', 'QR Engine', 'WhatsApp Cloud API'],
-    serviceCategory: 'Study-Centre & Operations Platform',
-    description: 'Study-centre management platform with student enrollment, live seat allocation, QR admission, payments and admin management. Planning completed; development pending.',
-    milestones: [
-      { id: 'ms-gs-1', title: 'Phase 1: Requirements Gathering, UX Wireframes & SRS', dueDate: '2026-04-15', completed: true },
-      { id: 'ms-gs-2', title: 'Phase 2: Database Architecture & Seat Layout Engine Planning', dueDate: '2026-06-30', completed: true },
-      { id: 'ms-gs-3', title: 'Phase 3: Student QR Admission, Enrollment & Live Seat App Dev', dueDate: '2026-09-30', completed: false },
-      { id: 'ms-gs-4', title: 'Phase 4: Fee Payment Gateways & Admin Audit Portal', dueDate: '2026-12-15', completed: false }
-    ],
-    tasks: [],
-    documentsCount: 4,
-    priority: 'High'
-  }
-];
+export const INITIAL_PROJECTS: Project[] = [];
 
 export const INITIAL_SERVICES: ServiceCatalogueItem[] = [
   {
     id: 'svc-1',
-    name: 'Web Development',
-    category: 'Engineering',
-    shortDesc: 'Custom high-performance web applications, portals, and scalable SaaS platforms.',
-    fullDesc: 'We architect and build enterprise-grade web applications using React, Next.js, Node.js, and cloud-native backends with responsive UX and sub-second load speeds.',
-    pricingModel: 'Fixed',
-    startingPrice: 150000,
-    typicalTimeline: '4 - 8 Weeks',
-    technologies: ['React', 'Next.js', 'TypeScript', 'Node.js', 'PostgreSQL', 'Tailwind CSS'],
-    features: ['Custom Frontend Architecture', 'REST & GraphQL APIs', 'Role-Based Authentication', 'SEO & Performance Optimized', 'Automated CI/CD'],
-    active: true,
+    name: 'Enterprise Web & Full Stack Architecture',
+    category: 'Software Engineering',
+    tagline: 'High-performance, fault-tolerant web applications for scale',
+    description: 'Bespoke enterprise web platforms architected with React, Node.js, and cloud databases. Includes microservices design, SLA-backed resilience, sub-second latency, and bank-grade data security protocols.',
     iconName: 'Globe',
-    leadsCount: 0
+    slaTier: 'Platinum',
+    turnaroundWeeks: '8-16 Weeks',
+    features: [
+      'Microservices & Distributed Systems',
+      'Bank-Grade End-to-End Encryption',
+      'Real-Time WebSockets & Telemetry',
+      'High-Throughput Postgres & Redis Pipelines',
+      'Zero-Downtime Blue/Green Deployments',
+      '99.99% Uptime Guarantee'
+    ],
+    pricingModel: 'Fixed Scope / Milestones',
+    startingPrice: 350000,
+    activeContracts: 0,
+    status: 'Active'
   },
   {
     id: 'svc-2',
-    name: 'Mobile App Development',
-    category: 'Engineering',
-    shortDesc: 'Native and cross-platform mobile apps for iOS and Android with intuitive experiences.',
-    fullDesc: 'From consumer apps to internal enterprise tools, we develop fluid cross-platform apps using Flutter and React Native with offline sync and biometrics.',
-    pricingModel: 'Fixed',
-    startingPrice: 200000,
-    typicalTimeline: '6 - 12 Weeks',
-    technologies: ['Flutter', 'React Native', 'Swift', 'Kotlin', 'Firebase', 'SQLite'],
-    features: ['iOS & Android App Store Ready', 'Push Notifications', 'Offline-First Database', 'Biometric Authentication', 'Payment Gateway SDKs'],
-    active: true,
-    iconName: 'Smartphone',
-    leadsCount: 0
+    name: 'AI Agents, Copilots & Automation Pipelines',
+    category: 'AI & Data Science',
+    tagline: 'Autonomous AI agents embedded into your business workflow',
+    description: 'Custom Large Language Model (LLM) fine-tuning, retrieval-augmented generation (RAG) vector pipelines, and agentic workflows that automate customer intelligence, financial reconciliation, and support.',
+    iconName: 'Bot',
+    slaTier: 'Diamond',
+    turnaroundWeeks: '6-12 Weeks',
+    features: [
+      'Multi-Agent System Orchestration',
+      'Enterprise Vector Knowledge Bases (Pinecone / PgVector)',
+      'Autonomous CRM & Email Handlers',
+      'Strict Zero Data Leakage Privacy Boundary',
+      'Real-Time Voice & Multi-Modal Copilots'
+    ],
+    pricingModel: 'Retainer + Performance',
+    startingPrice: 450000,
+    activeContracts: 0,
+    status: 'Active'
   },
   {
     id: 'svc-3',
-    name: 'SaaS Development',
-    category: 'Product',
-    shortDesc: 'End-to-end multi-tenant SaaS platforms with subscriptions, billing, and analytics.',
-    fullDesc: 'Full lifecycle SaaS development: tenant isolation, Stripe/Razorpay billing, webhook integrations, usage metering, and administrative panels.',
-    pricingModel: 'Milestone',
-    startingPrice: 350000,
-    typicalTimeline: '8 - 16 Weeks',
-    technologies: ['React', 'Node.js', 'PostgreSQL', 'Redis', 'Docker', 'AWS'],
-    features: ['Multi-Tenant Architecture', 'Automated Subscription Billing', 'Granular Role Permissions', 'Audit Trails', 'White-labeling'],
-    active: true,
-    iconName: 'Layers',
-    leadsCount: 0
+    name: 'Cloud Infrastructure, DevOps & Containerization',
+    category: 'Cloud Solutions',
+    tagline: 'Cloud architectures engineered for 99.99% reliability',
+    description: 'Modern infrastructure as code (Terraform), Kubernetes cluster orchestration, and automated CI/CD pipelines across AWS, GCP, and Hybrid Clouds.',
+    iconName: 'Cloud',
+    slaTier: 'Platinum',
+    turnaroundWeeks: '4-8 Weeks',
+    features: [
+      'Kubernetes (EKS/GKE) Multi-Node Orchestration',
+      'Terraform Infrastructure as Code',
+      'Automated Multi-Stage CI/CD Deployment Gates',
+      'Comprehensive Observability & Tracing',
+      '24/7 Automated Disaster Recovery & Failover'
+    ],
+    pricingModel: 'Monthly Managed Services',
+    startingPrice: 180000,
+    activeContracts: 0,
+    status: 'Active'
   },
   {
     id: 'svc-4',
-    name: 'AI/ML Solutions',
-    category: 'Artificial Intelligence',
-    shortDesc: 'Predictive intelligence, custom LLM agents, computer vision, and NLP pipelines.',
-    fullDesc: 'We turn enterprise data into predictive value with custom model training, Retrieval-Augmented Generation (RAG), voice automation, and visual QA systems.',
-    pricingModel: 'Milestone',
-    startingPrice: 300000,
-    typicalTimeline: '6 - 14 Weeks',
-    technologies: ['Python', 'PyTorch', 'TensorFlow', 'OpenAI', 'LangChain', 'FastAPI'],
-    features: ['Custom Model Fine-tuning', 'RAG Knowledge Bases', 'Computer Vision & OCR', 'Conversational AI Bots', 'High-throughput Inference APIs'],
-    active: true,
-    iconName: 'Brain',
-    leadsCount: 0
+    name: 'Mobile Application Development (iOS & Android)',
+    category: 'Mobile Engineering',
+    tagline: 'Native and cross-platform enterprise mobile applications',
+    description: 'Intuitive, fluid iOS and Android mobile software built with React Native and native Swift/Kotlin bridging. Designed for offline-first resilience, hardware biometrics, and push notifications.',
+    iconName: 'Smartphone',
+    slaTier: 'Gold',
+    turnaroundWeeks: '8-14 Weeks',
+    features: [
+      'React Native & Flutter Cross-Platform',
+      'Biometric Local Auth & Security Vaults',
+      'Offline-First SQLite / WatermelonDB Sync',
+      'Live Push Notification Workflows',
+      'App Store & Play Store Compliance Sign-Off'
+    ],
+    pricingModel: 'Fixed Milestone',
+    startingPrice: 280000,
+    activeContracts: 0,
+    status: 'Active'
   },
   {
     id: 'svc-5',
-    name: 'IoT Solutions',
-    category: 'Embedded & Hardware',
-    shortDesc: 'Connected device firmware, MQTT telemetry brokers, and hardware integration.',
-    fullDesc: 'End-to-end IoT engineering covering edge device communication, low-latency telemetry processing, remote OTA firmware updates, and live monitoring dashboards.',
-    pricingModel: 'Fixed',
-    startingPrice: 250000,
-    typicalTimeline: '8 - 14 Weeks',
-    technologies: ['C/C++', 'ESP32', 'MQTT', 'Go', 'TimescaleDB', 'Grafana'],
-    features: ['Secure Device Provisioning', 'Real-time Telemetry Ingestion', 'Geofencing & Alerts', 'Over-The-Air (OTA) Updates', 'Hardware Prototypes'],
-    active: true,
-    iconName: 'Cpu',
-    leadsCount: 0
+    name: 'UI/UX Engineering & Modern Design Systems',
+    category: 'Product Design',
+    tagline: 'Intuitive, accessible, and high-converting product interfaces',
+    description: 'Enterprise Figma design systems, WCAG 2.1 AA accessibility compliance audits, interactive motion prototypes, and pixel-perfect component libraries tailored for SaaS dashboards.',
+    iconName: 'Layers',
+    slaTier: 'Gold',
+    turnaroundWeeks: '3-6 Weeks',
+    features: [
+      'Complete Figma Component Token Systems',
+      'WCAG 2.1 AA Certified Accessibility',
+      'Interactive User Journey Flowcharts',
+      'Dark/Light Dynamic Mode Theming'
+    ],
+    pricingModel: 'Sprint Based',
+    startingPrice: 120000,
+    activeContracts: 0,
+    status: 'Active'
   },
   {
     id: 'svc-6',
-    name: 'Cloud & DevOps',
-    category: 'Infrastructure',
-    shortDesc: 'Kubernetes orchestration, CI/CD automation, cloud cost optimization, and security audits.',
-    fullDesc: 'We architect immutable, fault-tolerant infrastructure on AWS, GCP, and DigitalOcean using Infrastructure-as-Code (Terraform) and GitOps.',
-    pricingModel: 'Retainer',
-    startingPrice: 100000,
-    typicalTimeline: '2 - 6 Weeks',
-    technologies: ['AWS', 'Kubernetes', 'Docker', 'Terraform', 'GitHub Actions', 'Prometheus'],
-    features: ['Zero-downtime Deployments', 'Cloud Cost Reductions', 'Auto-scaling Clusters', 'Automated Backups & DR', 'Security Hardening'],
-    active: true,
-    iconName: 'Cloud',
-    leadsCount: 0
-  },
-  {
-    id: 'svc-7',
-    name: 'UI/UX Design',
-    category: 'Design',
-    shortDesc: 'Conversion-driven user research, wireframing, interactive Figma design systems.',
-    fullDesc: 'Design systems that elevate your digital product with human-centered research, intuitive user flows, accessible components, and interactive prototypes.',
-    pricingModel: 'Fixed',
-    startingPrice: 80000,
-    typicalTimeline: '2 - 4 Weeks',
-    technologies: ['Figma', 'Adobe XD', 'Protopie', 'Design Tokens', 'UserTesting'],
-    features: ['Complete Figma Design System', 'Clickable Hi-Fi Prototypes', 'User Journey Mapping', 'Accessibility WCAG AA Compliance', 'Developer Handoff Specs'],
-    active: true,
-    iconName: 'Layout',
-    leadsCount: 0
-  },
-  {
-    id: 'svc-8',
-    name: 'Software Maintenance & Support',
-    category: 'Support',
-    shortDesc: '24/7 uptime monitoring, security patching, bug resolution, and performance tuning.',
-    fullDesc: 'Continuous operational peace of mind with guaranteed SLA response times, routine dependency upgrades, database optimization, and on-call engineers.',
-    pricingModel: 'Retainer',
-    startingPrice: 50000,
-    typicalTimeline: 'Ongoing / Monthly',
-    technologies: ['Sentry', 'Datadog', 'UptimeRobot', 'PostgreSQL', 'Docker'],
-    features: ['Guaranteed 2-Hour SLA', 'Weekly Security Audits', 'Monthly Database Tuning', 'On-call Emergency Support', 'Detailed Monthly Health Reports'],
-    active: true,
-    iconName: 'Wrench',
-    leadsCount: 0
-  },
-  {
-    id: 'svc-9',
-    name: 'Custom Enterprise Software',
-    category: 'Enterprise',
-    shortDesc: 'Tailored ERP, CRM, inventory, and supply chain automation software.',
-    fullDesc: 'Bespoke software systems designed from scratch around your specific business operations, eliminating paper trails and disconnected spreadsheets.',
-    pricingModel: 'Milestone',
-    startingPrice: 400000,
-    typicalTimeline: '10 - 20 Weeks',
-    technologies: ['Java', 'Spring Boot', 'React', 'Oracle/Postgres', 'Kafka', 'Microservices'],
-    features: ['Custom Workflow Automation', 'Legacy ERP Migration', 'Enterprise SSO & IAM', 'Automated Reporting Engine', 'Unlimited Users License'],
-    active: true,
-    iconName: 'Boxes',
-    leadsCount: 0
+    name: 'Enterprise Security, Compliance & Code Audits',
+    category: 'Security & Governance',
+    tagline: 'Vulnerability assessment, pen-testing, and compliance',
+    description: 'Static application security testing (SAST), penetration testing, dependency threat analysis, and automated compliance auditing for ISO 27001, SOC 2, and Indian DPDP Act readiness.',
+    iconName: 'Shield',
+    slaTier: 'Diamond',
+    turnaroundWeeks: '2-4 Weeks',
+    features: [
+      'Full-Stack Vulnerability Assessment & Pen-Testing',
+      'OWASP Top 10 Mitigation Roadmap',
+      'Secrets & Environment Exposure Redaction',
+      'Executive Security Audit Attestation'
+    ],
+    pricingModel: 'Audit Package',
+    startingPrice: 150000,
+    activeContracts: 0,
+    status: 'Active'
   }
 ];
 
@@ -365,893 +205,111 @@ export const INITIAL_EMPLOYEES: Employee[] = [
   {
     id: 'emp-1',
     employeeId: '202600000001',
-    password: 'Enx_sol_121006',
     name: 'Rohit Pawar',
     role: 'Managing Director & Lead Architect',
     department: 'Engineering',
     email: 'director@enterprenex.solutions',
     phone: '+91-9226860060',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Cloud Architecture', 'AI Systems'],
-    currentProjects: [],
-    workloadPercentage: 45,
-    joinDate: '2026-01-01',
     salaryMonthly: 150000,
+    workloadPercentage: 0,
     performanceRating: 5.0,
     status: 'Active',
     approvalStatus: 'Approved',
+    isAccountActivated: true,
     panNumber: 'AAXPE1206M',
     aadhaarNumber: '782390124567',
     kycStatus: 'Verified',
-    kycVerifiedBy: 'Executive Board',
-    kycVerifiedAt: '2026-01-01T00:00:00.000Z',
     employmentType: 'Full Time',
     workMode: 'Hybrid',
     kpiScore: 96.0,
     okrScore: 95.0,
-    skillsMatrix: [
-      { name: 'System Architecture', category: 'Architecture', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' },
-      { name: 'Cloud Infrastructure (AWS)', category: 'Cloud', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' },
-      { name: 'AI & Machine Learning', category: 'AI/ML', level: 'Advanced', rating: 4, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' },
-      { name: 'React / Next.js', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' },
-      { name: 'Node.js & Microservices', category: 'Backend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Board' }
-    ],
-    education: [
-      { degree: 'Master of Technology in Computer Systems', institute: 'Premier Institute of Technology', specialization: 'Cloud & Distributed Systems', startYear: '2016', endYear: '2018', score: '9.2 CGPA' }
-    ]
+    joinDate: '2026-01-01'
   },
   {
     id: 'emp-2',
-    employeeId: '202600000002',
-    password: 'Enx_sol_121006',
+    employeeId: 'ZCX-EMP-0001',
     name: 'POLAMREDDY REVANTH REDDY',
     role: 'Full Stack Developer (Employee)',
     department: 'Engineering',
-    email: 'polamreddyrevanth.82@gmail.com',
-    phone: '+91-9440829762',
+    email: 'revanth@enterprenex.solutions',
+    personalEmail: 'polamreddyrevanth.82@gmail.com',
+    phone: '+919440829762',
+    personalPhone: '+919440829762',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Tailwind CSS', 'Vite'],
-    currentProjects: [],
-    workloadPercentage: 75,
-    joinDate: '2026-10-10',
-    salaryMonthly: 100000,
+    salaryMonthly: 85000,
+    workloadPercentage: 0,
     performanceRating: 5.0,
     status: 'Active',
     approvalStatus: 'Approved',
-    approvedBy: 'Rohit Pawar (Managing Director)',
-    panNumber: 'PRRPS8209K',
-    aadhaarNumber: '674389012345',
+    isAccountActivated: true,
+    panNumber: 'BBYPR4591K',
+    aadhaarNumber: '918234567812',
     kycStatus: 'Verified',
-    kycVerifiedBy: 'Rohit Pawar (Managing Director)',
-    kycVerifiedAt: '2026-10-10T08:00:00.000Z',
     employmentType: 'Full Time',
     workMode: 'Hybrid',
-    kpiScore: 91.5,
-    okrScore: 88.0,
-    skillsMatrix: [
-      { name: 'React & Next.js', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'TypeScript & JavaScript', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'Node.js & Express', category: 'Backend', level: 'Intermediate', rating: 4, verifiedRating: 3, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'PostgreSQL & Database Architecture', category: 'Database', level: 'Intermediate', rating: 3, verifiedRating: 3, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'Tailwind CSS & Minimalist Design', category: 'Frontend', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'Cloud Deployment & Vercel', category: 'DevOps', level: 'Intermediate', rating: 3, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
-    ],
-    education: [
-      { degree: 'B.Tech in Computer Science & Engineering', institute: 'Engineering Institute of Technology', specialization: 'Software Systems & AI', startYear: '2022', endYear: '2026', score: '8.4 CGPA' }
-    ]
-  },
-  {
-    id: 'emp-3',
-    employeeId: '202600000003',
-    password: 'Enx_sol_121006',
-    name: 'Jyothi Anbhule',
-    role: 'Lead Project Manager & Mentor',
-    department: 'Engineering',
-    email: 'jyothi.a@enterprenex.solutions',
-    phone: '+91-9822114455',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    skills: ['Agile / Scrum', 'Project Delivery', 'System Architecture', 'Client Delivery', 'Sprint Governance'],
-    currentProjects: [],
-    workloadPercentage: 60,
-    joinDate: '2026-01-15',
-    salaryMonthly: 120000,
-    performanceRating: 4.9,
-    status: 'Active',
-    approvalStatus: 'Approved',
-    approvedBy: 'Rohit Pawar (Managing Director)',
-    panNumber: 'JANPK7892L',
-    aadhaarNumber: '890123456789',
-    kycStatus: 'Verified',
-    kycVerifiedBy: 'Rohit Pawar (Managing Director)',
-    kycVerifiedAt: '2026-01-15T09:00:00.000Z',
-    employmentType: 'Full Time',
-    workMode: 'Hybrid',
-    kpiScore: 94.0,
-    okrScore: 92.5,
-    skillsMatrix: [
-      { name: 'Sprint & Agile Leadership', category: 'Management', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'Full Stack Architecture', category: 'Architecture', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
-    ],
-    education: [
-      { degree: 'B.E. in Information Technology', institute: 'Pune University', specialization: 'Software Engineering', startYear: '2017', endYear: '2021', score: '8.8 CGPA' }
-    ]
-  },
-  {
-    id: 'emp-4',
-    employeeId: '202600000004',
-    password: 'Enx_sol_121006',
-    name: 'Sneha Patil',
-    role: 'Senior UI/UX & Frontend Designer',
-    department: 'Design',
-    email: 'sneha.p@enterprenex.solutions',
-    phone: '+91-9765432109',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    skills: ['Figma', 'React', 'Minimalist UI', 'Design Tokens', 'Tailwind CSS'],
-    currentProjects: [],
-    workloadPercentage: 55,
-    joinDate: '2026-02-01',
-    salaryMonthly: 95000,
-    performanceRating: 4.8,
-    status: 'Active',
-    approvalStatus: 'Approved',
-    approvedBy: 'Rohit Pawar (Managing Director)',
-    panNumber: 'SNPPB6543M',
-    aadhaarNumber: '901234567890',
-    kycStatus: 'Verified',
-    kycVerifiedBy: 'Rohit Pawar (Managing Director)',
-    kycVerifiedAt: '2026-02-01T09:00:00.000Z',
-    employmentType: 'Full Time',
-    workMode: 'Hybrid',
-    kpiScore: 92.0,
-    okrScore: 90.0,
-    skillsMatrix: [
-      { name: 'Figma & Design Systems', category: 'Design', level: 'Expert', rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'React CSS Frameworks', category: 'Frontend', level: 'Advanced', rating: 4, verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
-    ],
-    education: [
-      { degree: 'B.Des in Digital Product Design', institute: 'National Institute of Design', specialization: 'Interaction Design', startYear: '2018', endYear: '2022', score: '9.0 CGPA' }
-    ]
+    kpiScore: 94.2,
+    okrScore: 92.0,
+    joinDate: '2026-11-10'
   }
 ];
 
-export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
-  {
-    id: 'att-1',
-    employeeId: '202600000001',
-    employeeName: 'Rohit Pawar',
-    date: '2026-10-12',
-    checkIn: '09:05 AM',
-    checkOut: '-',
-    status: 'Present'
-  },
-  {
-    id: 'att-2',
-    employeeId: '202600000002',
-    employeeName: 'POLAMREDDY REVANTH REDDY',
-    date: '2026-10-12',
-    checkIn: '09:20 AM',
-    checkOut: '-',
-    status: 'Present'
-  },
-  {
-    id: 'att-3',
-    employeeId: '202600000003',
-    employeeName: 'Ananya Sharma',
-    date: '2026-10-12',
-    checkIn: '-',
-    checkOut: '-',
-    status: 'Absent',
-    absenceReason: 'No Intimation Provided',
-    absenceNotes: 'Awaiting check-in intimation. Direct outreach pending from HR Lead.',
-    notifiedVia: ['WhatsApp'],
-    recordedBy: 'Rohit Pawar (Managing Director)',
-    recordedAt: '2026-10-12T10:15:00.000Z'
-  }
-];
+export const INITIAL_ATTENDANCE: AttendanceRecord[] = [];
 
-export const INITIAL_LEAVES: LeaveRequest[] = [
-  {
-    id: 'lv-1',
-    employeeName: 'Rohit Pawar',
-    type: 'Casual Leave',
-    startDate: '2026-10-15',
-    endDate: '2026-10-16',
-    reason: 'Client technical architecture review & summit',
-    status: 'Pending'
-  },
-  {
-    id: 'lv-2',
-    employeeName: 'HR Administrator',
-    type: 'Casual Leave',
-    startDate: '2026-10-20',
-    endDate: '2026-10-21',
-    reason: 'Personal family engagement & festival',
-    status: 'Pending'
-  }
-];
+export const INITIAL_LEAVES: LeaveRequest[] = [];
 
-export const INITIAL_TASKS: Task[] = [
-  {
-    id: 'tsk-101',
-    taskId: 'TSK-2026-001',
-    title: 'Live Task Stopwatch & Time Tracker',
-    description: 'Implement real-time start/pause/stop stopwatch controls on active task cards with automatic session logging and telemetry.',
-    projectId: 'proj-enx-money',
-    projectName: 'ENX Money',
-    module: 'Core Engine & Telemetry',
-    assignedBy: 'Rohit Pawar (Technical Director)',
-    assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit Pawar',
-    priority: 'High',
-    status: 'In Progress',
-    startDate: '2026-10-11',
-    dueDate: '2026-10-18',
-    loggedHours: 6.5,
-    estimatedHours: 10,
-    dependencies: 'None - Root Sprint Epic',
-    attachments: [
-      { id: 'att-1', name: 'EWMS_Stopwatch_Architecture.pdf', size: '1.8 MB', type: 'PDF' }
-    ],
-    acceptanceCriteria: [
-      { id: 'ac-1', text: 'Real-time elapsed seconds counter with persistence in localStorage', met: true },
-      { id: 'ac-2', text: 'Auto-logging into cumulative task hours with confirmation toast', met: true },
-      { id: 'ac-3', text: 'Stopwatch active indicator visible across dashboard and drawers', met: true }
-    ],
-    tags: ['Timer', 'Stopwatch', 'EWMS'],
-    createdAt: '2026-10-11',
-    subtasks: [
-      { id: 'st-1', title: 'Start/Pause state machine with localStorage persistence', completed: true },
-      { id: 'st-2', title: 'Real-time elapsed seconds counter & display', completed: true },
-      { id: 'st-3', title: 'Auto-logging into cumulative task hours', completed: false }
-    ],
-    comments: [
-      { id: 'tc-1', author: 'Rohit Pawar', authorAvatar: '', text: 'Ensure the timer interface stays clean and minimalist without distracting the developer.', createdAt: 'Yesterday' }
-    ]
-  },
-  {
-    id: 'tsk-102',
-    taskId: 'TSK-2026-002',
-    title: 'Workload & Capacity Redistribution Engine',
-    description: 'Calculate weekly capacity 40h vs assigned tasks. Display Available (<70%), Healthy (70-100%), and Overloaded (>100%) badges.',
-    projectId: 'proj-enx-money',
-    projectName: 'ENX Money',
-    module: 'Workforce & Capacity Ops',
-    assignedBy: 'Rohit Pawar (Technical Director)',
-    assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit Pawar',
-    priority: 'Urgent',
-    status: 'Assigned',
-    startDate: '2026-10-12',
-    dueDate: '2026-10-19',
-    loggedHours: 2.0,
-    estimatedHours: 8,
-    dependencies: 'TSK-2026-001',
-    attachments: [
-      { id: 'att-2', name: 'Capacity_Allocation_Matrix.xlsx', size: '540 KB', type: 'Excel' }
-    ],
-    acceptanceCriteria: [
-      { id: 'ac-4', text: 'Compute real-time weekly workload allocation per engineer', met: true },
-      { id: 'ac-5', text: 'Warning alert trigger when assigned task hours exceed 40 hrs/week', met: false }
-    ],
-    tags: ['Capacity', 'Planning', 'Workload'],
-    createdAt: '2026-10-11',
-    subtasks: [
-      { id: 'st-4', title: 'Calculate employee capacity percentage', completed: true },
-      { id: 'st-5', title: 'Visual capacity meter on Directory & Task modal', completed: false }
-    ],
-    comments: []
-  },
-  {
-    id: 'tsk-103',
-    taskId: 'TSK-2026-003',
-    title: 'IT Skill Matrix & Manager Verification Flow',
-    description: 'Add skill matrix table comparing team competencies across stacks with Beginner to Expert badges and Manager ratings.',
-    projectId: 'proj-granthsetu',
-    projectName: 'GranthSetu – Abhyasika Management System',
-    module: 'Competency & Verification',
-    assignedBy: 'Rohit Pawar (Technical Director)',
-    assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit Pawar',
-    priority: 'Medium',
-    status: 'In Review',
-    startDate: '2026-10-10',
-    dueDate: '2026-10-16',
-    loggedHours: 12.0,
-    estimatedHours: 12,
-    dependencies: 'None',
-    attachments: [
-      { id: 'att-3', name: 'Competency_Skill_Rubric_v2.pdf', size: '2.1 MB', type: 'PDF' }
-    ],
-    acceptanceCriteria: [
-      { id: 'ac-6', text: 'Multi-stack competency matrix with Beginner to Expert ratings', met: true },
-      { id: 'ac-7', text: 'Director / Manager signature verification stage gate', met: true }
-    ],
-    tags: ['Skills', 'Matrix', 'Verification'],
-    createdAt: '2026-10-10',
-    subtasks: [
-      { id: 'st-6', title: 'Interactive skills grid with self-rating', completed: true },
-      { id: 'st-7', title: 'Manager verification badge and score', completed: true }
-    ],
-    comments: [
-      { id: 'tc-2', author: 'POLAMREDDY REVANTH REDDY', authorAvatar: '', text: 'Submitted for Lead review approval.', createdAt: 'Just now' }
-    ]
-  },
-  {
-    id: 'tsk-104',
-    taskId: 'TSK-2026-004',
-    title: 'Role-Specific Weighted KPI & OKR Engine',
-    description: 'Implement weighted KPI formula (On-Time Delivery 25%, Quality 25%, Bug Rate 15%, Documentation 10%, etc.) out of 100.',
-    projectId: 'proj-enx-money',
-    projectName: 'ENX Money',
-    module: 'KPI & Performance Engine',
-    assignedBy: 'Rohit Pawar (Technical Director)',
-    assignedTo: 'Rohit Pawar',
-    reviewer: 'Rohit Pawar',
-    priority: 'High',
-    status: 'Completed',
-    startDate: '2026-10-05',
-    dueDate: '2026-10-12',
-    loggedHours: 14.0,
-    estimatedHours: 14,
-    dependencies: 'None',
-    attachments: [
-      { id: 'att-4', name: 'EWMS_KPI_Scoring_Formulas.pdf', size: '3.4 MB', type: 'PDF' }
-    ],
-    acceptanceCriteria: [
-      { id: 'ac-8', text: 'Mathematical weighted formula calculation verified', met: true },
-      { id: 'ac-9', text: 'Individual employee scorecard generation with grade bands', met: true }
-    ],
-    tags: ['KPI', 'OKR', 'Analytics'],
-    createdAt: '2026-10-09',
-    subtasks: [
-      { id: 'st-8', title: 'Weighted formula computation', completed: true },
-      { id: 'st-9', title: 'Objective key results tracking bars', completed: true }
-    ],
-    comments: [
-      { id: 'tc-3', author: 'Rohit Pawar', authorAvatar: '', text: 'Architecture approved. Meets Section 15-17 EWMS blueprint.', createdAt: '2 days ago' }
-    ]
-  },
-  {
-    id: 'tsk-105',
-    taskId: 'TSK-2026-005',
-    title: 'Enterprise API Gateway & Security Policy Audit',
-    description: 'Audit RBAC middleware and configure CORS & rate limiting rules for production API endpoints.',
-    projectId: 'proj-granthsetu',
-    projectName: 'GranthSetu – Abhyasika Management System',
-    module: 'Security & RBAC Infrastructure',
-    assignedBy: 'Rohit Pawar (Technical Director)',
-    assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit Pawar',
-    priority: 'Medium',
-    status: 'Backlog',
-    startDate: '2026-10-19',
-    dueDate: '2026-10-25',
-    loggedHours: 0,
-    estimatedHours: 6,
-    dependencies: 'TSK-2026-003',
-    attachments: [],
-    acceptanceCriteria: [
-      { id: 'ac-10', text: 'Verify statutory identity token validation with claims check', met: false },
-      { id: 'ac-11', text: 'Test rate limiter on public auth endpoints (100 req/min)', met: false }
-    ],
-    tags: ['Security', 'API', 'Audit'],
-    createdAt: '2026-10-14',
-    subtasks: [
-      { id: 'st-10', title: 'Verify statutory identity token validation', completed: false },
-      { id: 'st-11', title: 'Test rate limiter on public auth endpoints', completed: false }
-    ],
-    comments: []
-  },
-  {
-    id: 'tsk-106',
-    taskId: 'TSK-2026-006',
-    title: 'Client Billing Invoice Webhook Integration',
-    description: 'Integrate automated webhook dispatching when tax invoices transition to Paid status.',
-    projectId: 'proj-enx-money',
-    projectName: 'ENX Money',
-    module: 'Billing & Financial Operations',
-    assignedBy: 'Rohit Pawar (Technical Director)',
-    assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit Pawar',
-    priority: 'High',
-    status: 'Changes Required',
-    startDate: '2026-10-12',
-    dueDate: '2026-10-18',
-    loggedHours: 7.5,
-    estimatedHours: 8,
-    dependencies: 'TSK-2026-001',
-    reviewNotes: 'Add signature validation and retry mechanism with exponential backoff for failed webhook deliveries.',
-    attachments: [],
-    acceptanceCriteria: [
-      { id: 'ac-12', text: 'HMAC-SHA256 signature header on outgoing payload', met: false },
-      { id: 'ac-13', text: 'Exponential retry policy with 3 attempts on HTTP 5xx', met: false }
-    ],
-    tags: ['Billing', 'Webhooks', 'Finance'],
-    createdAt: '2026-10-12',
-    subtasks: [
-      { id: 'st-12', title: 'Payload generation and signature encryption', completed: true },
-      { id: 'st-13', title: 'Dead-letter retry queue implementation', completed: false }
-    ],
-    comments: [
-      { id: 'tc-4', author: 'Rohit Pawar', authorAvatar: '', text: 'Please address review note regarding HMAC security signature.', createdAt: 'Yesterday' }
-    ]
-  },
-  {
-    id: 'tsk-107',
-    taskId: 'TSK-2026-007',
-    title: 'Production SSL Certificate & IP Restriction Sync',
-    description: 'Verify statutory office IP whitelist rules and enforce TLS 1.3 encryption across enterprise staging server.',
-    projectId: 'proj-granthsetu',
-    projectName: 'GranthSetu – Abhyasika Management System',
-    module: 'DevOps & Cloud Infrastructure',
-    assignedBy: 'Rohit Pawar (Technical Director)',
-    assignedTo: 'POLAMREDDY REVANTH REDDY',
-    reviewer: 'Rohit Pawar',
-    priority: 'Urgent',
-    status: 'Blocked',
-    startDate: '2026-10-14',
-    dueDate: '2026-10-20',
-    loggedHours: 1.5,
-    estimatedHours: 4,
-    dependencies: 'Domain DNS Registrar propagation',
-    attachments: [],
-    acceptanceCriteria: [
-      { id: 'ac-14', text: 'TLS 1.3 cipher suite enforced without TLS 1.0/1.1 fallbacks', met: true },
-      { id: 'ac-15', text: 'Office IP CIDR blocks verified in NGINX configuration', met: false }
-    ],
-    tags: ['DevOps', 'Security', 'Blocked'],
-    createdAt: '2026-10-14',
-    subtasks: [
-      { id: 'st-14', title: 'Inspect SSL rating via Qualys SSL Labs', completed: true },
-      { id: 'st-15', title: 'Resolve DNS propagation delay with hosting provider', completed: false }
-    ],
-    comments: [
-      { id: 'tc-5', author: 'POLAMREDDY REVANTH REDDY', authorAvatar: '', text: 'Blocked awaiting DNS propagation response from cloud registry.', createdAt: '3 hours ago' }
-    ]
-  }
-];
+export const INITIAL_TASKS: Task[] = [];
 
-export const INITIAL_KPIS: EmployeeKpiScorecard[] = [
-  {
-    employeeId: '202600000002',
-    employeeName: 'POLAMREDDY REVANTH REDDY',
-    roleTemplate: 'Software Developer',
-    period: 'October 2026',
-    updatedAt: '2026-10-12',
-    finalKpiScore: 91.5,
-    metrics: [
-      { id: 'kpi-1', name: 'On-time Task Delivery', weight: 25, target: '90%', actual: '94%', score: 94 },
-      { id: 'kpi-2', name: 'Code Quality & Architecture', weight: 25, target: '85%', actual: '92%', score: 92 },
-      { id: 'kpi-3', name: 'Low Defect / Bug Escape Rate', weight: 15, target: '<5%', actual: '3.2%', score: 90 },
-      { id: 'kpi-4', name: 'Technical Contribution & Design', weight: 15, target: '80%', actual: '88%', score: 88 },
-      { id: 'kpi-5', name: 'Technical Documentation & SOPs', weight: 10, target: '85%', actual: '86%', score: 86 },
-      { id: 'kpi-6', name: 'Team Collaboration & Reviews', weight: 10, target: '90%', actual: '95%', score: 95 }
-    ]
-  },
-  {
-    employeeId: '202600000001',
-    employeeName: 'Rohit Pawar',
-    roleTemplate: 'Software Developer',
-    period: 'October 2026',
-    updatedAt: '2026-10-12',
-    finalKpiScore: 96.0,
-    metrics: [
-      { id: 'kpi-1', name: 'On-time Task Delivery', weight: 25, target: '95%', actual: '98%', score: 98 },
-      { id: 'kpi-2', name: 'Code Quality & Architecture', weight: 25, target: '90%', actual: '96%', score: 96 },
-      { id: 'kpi-3', name: 'Low Defect / Bug Escape Rate', weight: 15, target: '<3%', actual: '1.5%', score: 96 },
-      { id: 'kpi-4', name: 'Technical Contribution & Design', weight: 15, target: '90%', actual: '95%', score: 95 },
-      { id: 'kpi-5', name: 'Technical Documentation & SOPs', weight: 10, target: '90%', actual: '92%', score: 92 },
-      { id: 'kpi-6', name: 'Team Collaboration & Reviews', weight: 10, target: '95%', actual: '98%', score: 98 }
-    ]
-  }
-];
+export const INITIAL_KPIS: EmployeeKpiScorecard[] = [];
 
-export const INITIAL_OKRS: ObjectiveKeyResult[] = [
-  {
-    id: 'okr-1',
-    objectiveTitle: 'Deliver Enterprise EWMS Operations Platform (Q4 2026)',
-    department: 'Engineering & Operations',
-    ownerName: 'POLAMREDDY REVANTH REDDY',
-    period: 'Q4 2026',
-    progressPercent: 88,
-    keyResults: [
-      { id: 'kr-1', title: 'Deploy Live Task Stopwatch & Real-Time Session Tracker', target: '100%', current: '100%', progressPercent: 100 },
-      { id: 'kr-2', title: 'Implement Workload Capacity Engine (Healthy vs Overloaded)', target: '100%', current: '85%', progressPercent: 85 },
-      { id: 'kr-3', title: 'Roll out IT Skill Matrix & Role-Based Weighted KPI Engine', target: '100%', current: '80%', progressPercent: 80 }
-    ]
-  },
-  {
-    id: 'okr-2',
-    objectiveTitle: 'Scale Enterprise Cloud Infrastructure & 99.9% High Availability',
-    department: 'DevOps & Architecture',
-    ownerName: 'Rohit Pawar',
-    period: 'Q4 2026',
-    progressPercent: 92,
-    keyResults: [
-      { id: 'kr-4', title: 'Sub-second API response time (<200ms latency)', target: '200ms', current: '145ms', progressPercent: 95 },
-      { id: 'kr-5', title: 'Enforce Zero-Trust IP Whitelisting & RBAC across modules', target: '100%', current: '90%', progressPercent: 90 }
-    ]
-  }
-];
+export const INITIAL_OKRS: ObjectiveKeyResult[] = [];
 
 export const INITIAL_TICKETS: SupportTicket[] = [];
 
-export const INITIAL_DOCUMENTS: VaultDocument[] = [
-  {
-    id: 'vdoc-1',
-    title: 'Enterprenex Standard Master Services Agreement (MSA) 2026',
-    category: 'Contracts',
-    version: 'v1.0',
-    fileFormat: 'PDF',
-    fileSize: '1.8 MB',
-    uploadedBy: 'Admin',
-    uploadDate: '2026-01-01',
-    accessPermission: 'Admin Only',
-    tags: ['Legal', 'MSA', 'Template'],
-    url: '#'
-  },
-  {
-    id: 'vdoc-2',
-    title: 'Mutual Non-Disclosure Agreement (NDA) Template',
-    category: 'NDA',
-    version: 'v1.0',
-    fileFormat: 'DOCX',
-    fileSize: '420 KB',
-    uploadedBy: 'Admin',
-    uploadDate: '2026-01-01',
-    accessPermission: 'Internal',
-    tags: ['Legal', 'NDA'],
-    url: '#'
-  }
-];
+export const INITIAL_DOCUMENTS: VaultDocument[] = [];
 
-export const INITIAL_MEETINGS: CalendarMeeting[] = [
-  {
-    id: 'meet-1',
-    title: 'Weekly All-Hands & Sprint Kickoff',
-    type: 'Sprint Planning',
-    date: '2026-10-16',
-    time: '11:00 AM - 12:00 PM',
-    attendees: ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY', 'Jyothi Anbhule', 'Sneha Patil'],
-    location: 'Google Meet',
-    meetUrl: 'https://meet.google.com/enx-sprint-sync',
-    description: 'Sprint planning, deliverables review for Apex Global & EWMS feature milestones.'
-  },
-  {
-    id: 'meet-2',
-    title: 'Client Demo: FinTech Payment Gateway Architecture',
-    type: 'Client Presentation',
-    date: '2026-10-17',
-    time: '03:30 PM - 04:30 PM',
-    attendees: ['Anita Shenoy (Apex Global)', 'Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
-    location: 'Google Meet (Enterprise)',
-    meetUrl: 'https://meet.google.com/enx-apex-demo',
-    description: 'Architecture review & live demo of sub-millisecond telemetry ingestion engine.'
-  },
-  {
-    id: 'meet-3',
-    title: 'Director Sync: Q4 Project Milestones & Performance Reviews',
-    type: 'Internal Sync',
-    date: '2026-10-19',
-    time: '02:00 PM - 02:45 PM',
-    attendees: ['Rohit Pawar', 'Jyothi Anbhule', 'Executive Team'],
-    location: 'Enterprenex Executive Boardroom / Hybrid',
-    meetUrl: 'https://meet.google.com/enx-exec-sync',
-    description: 'Review quarterly deliverables, client satisfaction scores, and talent promotions.'
-  }
-];
+export const INITIAL_MEETINGS: CalendarMeeting[] = [];
 
-export const INITIAL_ANNOUNCEMENTS: CommunityAnnouncement[] = [
-  {
-    id: 'ann-1',
-    title: 'Welcome to Enterprenex Work Management System (EWMS) V2.4',
-    content: 'Dear Enterprenex Family, we are proud to introduce our unified enterprise portal covering Daily Attendance Geo-Check, Automated Monthly Payroll, Direct WhatsApp Meeting Dispatch, and our new Company Community. All employees are requested to review project milestones and mark daily punch-in on time.',
-    authorName: 'Rohit Pawar',
-    authorRole: 'Managing Director & Lead Architect',
-    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    isDirectorPost: true,
-    priority: 'Urgent',
-    postedAt: 'Today at 09:30 AM',
-    likes: 16,
-    likedBy: ['202600000002'],
-    tags: ['Director Notice', 'EWMS Launch', 'Enterprise Update'],
-    meetingLink: 'https://meet.google.com/enx-sprint-sync'
-  },
-  {
-    id: 'ann-2',
-    title: 'Google Meet Calendar Sync & WhatsApp Instant Invitations',
-    content: 'All sprint planning meetings will now broadcast calendar links directly to team WhatsApp groups. When scheduling any meeting from the Calendar, choose "Schedule & Share on WhatsApp" to notify all attendees automatically with time, agenda, and Google Meet link.',
-    authorName: 'Jyothi Anbhule',
-    authorRole: 'Lead Project Manager & Mentor',
-    authorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    isDirectorPost: false,
-    priority: 'General',
-    postedAt: 'Yesterday at 04:15 PM',
-    likes: 12,
-    likedBy: ['202600000001', '202600000002'],
-    tags: ['Operations', 'WhatsApp Integration', 'Agile']
-  },
-  {
-    id: 'ann-3',
-    title: 'Team Appreciation & Upcoming Company Town Hall',
-    content: 'Big congratulations to the Engineering Team for delivering the statutory Payroll Engine with 50-30-20 tax breakdown and the Official Certificate Verification Portal ahead of schedule! Refreshments will be hosted at HQ this Friday.',
-    authorName: 'Rohit Pawar',
-    authorRole: 'Managing Director & Lead Architect',
-    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    isDirectorPost: true,
-    priority: 'Celebration',
-    postedAt: 'Oct 14, 2026',
-    likes: 24,
-    likedBy: ['202600000002', '202600000003', '202600000004'],
-    tags: ['Celebration', 'Town Hall', 'Kudos']
-  }
-];
+export const INITIAL_ANNOUNCEMENTS: CommunityAnnouncement[] = [];
 
-export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
-  {
-    id: 'msg-1',
-    senderId: '202600000001',
-    senderName: 'Rohit Pawar',
-    senderRole: 'Managing Director',
-    senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    channelId: 'general',
-    message: 'Good morning everyone! Welcome to the new Enterprenex Community channel. Feel free to collaborate and post updates here.',
-    timestamp: '09:00 AM',
-    isDirector: true
-  },
-  {
-    id: 'msg-2',
-    senderId: '202600000003',
-    senderName: 'Jyothi Anbhule',
-    senderRole: 'Lead PM',
-    senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    channelId: 'general',
-    message: 'Good morning Rohit Sir! Sprint backlog for Apex Global and Vertex IoT is finalized and ready for the 11 AM sync.',
-    timestamp: '09:12 AM',
-    isDirector: false
-  },
-  {
-    id: 'msg-3',
-    senderId: '202600000002',
-    senderName: 'POLAMREDDY REVANTH REDDY',
-    senderRole: 'Full Stack Developer',
-    senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    channelId: 'general',
-    message: 'Good morning Sir! Working on the direct WhatsApp dispatch button and Community announcement board.',
-    timestamp: '09:20 AM',
-    isDirector: false
-  },
-  {
-    id: 'msg-4',
-    senderId: '202600000004',
-    senderName: 'Sneha Patil',
-    senderRole: 'UI/UX Designer',
-    senderAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    channelId: 'general',
-    message: 'The 3-color minimalist palette and generous 1.4rem card spacing tokens look extremely sharp on both light and dark modes!',
-    timestamp: '09:28 AM',
-    isDirector: false
-  },
-  {
-    id: 'msg-5',
-    senderId: '202600000001',
-    senderName: 'Rohit Pawar',
-    senderRole: 'Managing Director',
-    senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    channelId: 'general',
-    message: 'Terrific effort team. Let us deliver another flawless release today!',
-    timestamp: '09:35 AM',
-    isDirector: true
-  },
-  // 1-on-1 direct messages between Jyothi Anbhule & POLAMREDDY REVANTH REDDY
-  {
-    id: 'msg-dm-1',
-    senderId: '202600000003',
-    senderName: 'Jyothi Anbhule',
-    senderRole: 'Lead PM',
-    senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    channelId: '202600000002',
-    recipientId: '202600000002',
-    recipientName: 'POLAMREDDY REVANTH REDDY',
-    message: 'Hi Revanth, please ensure the WhatsApp meeting invite formats the Google Meet URL clearly so clients and team can join with 1 tap.',
-    timestamp: '10:05 AM',
-    isDirector: false
-  },
-  {
-    id: 'msg-dm-2',
-    senderId: '202600000002',
-    senderName: 'POLAMREDDY REVANTH REDDY',
-    senderRole: 'Full Stack Developer',
-    senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    channelId: '202600000003',
-    recipientId: '202600000003',
-    recipientName: 'Jyothi Anbhule',
-    message: 'Yes Jyothi Ma\'am! Added the automatic WhatsApp format generator with bold headings, date, time window, agenda, and direct link.',
-    timestamp: '10:14 AM',
-    isDirector: false
-  }
-];
-
+export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [];
 
 export const INITIAL_CMS: WebsiteCmsData = {
   hero: {
     badge: 'Enterprise Software & AI Excellence',
-    heading: 'Engineering Scalable Software & AI Solutions for Tomorrow’s Leaders',
-    subheading: 'We design, engineer, and deploy high-performance web platforms, mobile apps, SaaS ecosystems, and custom AI systems that accelerate enterprise growth.',
-    ctaPrimary: 'Explore Our Services',
-    ctaSecondary: 'Schedule a Consultation'
+    title: 'Transforming Business Through Autonomous Digital Engineering',
+    subtitle: 'Enterprenex Solutions engineers enterprise cloud infrastructures, bespoke full-stack applications, and autonomous AI pipelines.',
+    primaryCtaText: 'Explore Enterprise Suite',
+    primaryCtaLink: '/services',
+    secondaryCtaText: 'Schedule Consultation',
+    secondaryCtaLink: '/contact'
   },
-  testimonials: [],
-  portfolioItems: [],
-  blogPosts: [
-    {
-      id: 'blg-1',
-      title: 'Building Zero-Downtime Microservices on Kubernetes for Fintech',
-      slug: 'zero-downtime-fintech-kubernetes',
-      category: 'Engineering',
-      author: 'Enterprenex Engineering',
-      date: 'Feb 15, 2026',
-      readTime: '6 min read',
-      status: 'Published',
-      excerpt: 'How we engineered a blue-green deployment pipeline with automated rollback guarantees for high-volume financial transaction gateways.'
-    }
+  metrics: [
+    { label: 'Uptime SLA', value: '99.99%', description: 'Guaranteed enterprise platform availability' },
+    { label: 'Enterprise Security', value: 'ISO 27001', description: 'Certified statutory compliance' },
+    { label: 'Code Review Rigor', value: '100%', description: 'Automated static analysis & manual audit' },
+    { label: 'Customer Trust', value: 'Tier-1', description: 'Selected by high-growth startups' }
   ],
-  faqs: [
-    {
-      id: 'faq-1',
-      question: 'What is Enterprenex Solutions’ typical project engagement model?',
-      answer: 'We offer flexible engagement models tailored to client needs: Fixed-Scope Delivery with milestone-based signoffs, Dedicated Engineering Squads, and Monthly Retainer Support.',
-      category: 'General'
-    },
-    {
-      id: 'faq-2',
-      question: 'How do you guarantee IP protection and code security?',
-      answer: 'All projects begin with comprehensive mutual NDAs and clear IP assignment clauses. Code repositories are isolated on private enterprise instances with strict zero-trust access controls.',
-      category: 'Security'
-    }
-  ],
-  contactEnquiries: [],
-  seo: {
-    metaTitle: 'Enterprenex Solutions Pvt Ltd | Enterprise Software & AI Engineering',
-    metaDescription: 'Empowering global enterprises with bespoke web development, mobile applications, SaaS architectures, and cutting-edge AI & IoT solutions.',
-    keywords: 'Software Development India, AI Solutions, SaaS Development, Mobile Apps, Cloud Engineering, Enterprenex Solutions',
-    ogImage: '/images/hero.png'
+  companyInfo: {
+    registeredName: 'Enterprenex Solutions Pvt Ltd',
+    cin: 'U72900MH2024PTC412345',
+    gstin: '27AABCE1234F1Z5',
+    registeredOffice: 'Plot No. 148, Shrinand Plaza, CIDCO Waluj Mahanagar 1, Aurangabad, MH 431136 IN',
+    directorName: 'Rohit Pawar',
+    leadDeveloperName: 'Polamreddy Revanth Reddy',
+    directorEmail: 'director@enterprenex.solutions',
+    hrEmail: 'hr@enterprenex.solutions',
+    contactEmail: 'contact@enterprenex.solutions',
+    phone: '+91-9226860060'
   }
 };
 
-export const INITIAL_AUDIT_LOGS: AuditLog[] = [
-  {
-    id: 'log-1',
-    userId: 'usr-1',
-    userName: 'Rohit Pawar (Director)',
-    userRole: 'Super Admin',
-    action: 'Platform Active',
-    module: 'Admin & Security',
-    ipAddress: '10.228.245.155',
-    timestamp: 'Just now',
-    details: 'Zero-trust enterprise governance active for director@enterprenex.solutions'
-  }
-];
+export const INITIAL_AUDIT_LOGS: AuditLog[] = [];
 
-export const INITIAL_API_KEYS: ApiKeyItem[] = [
-  {
-    id: 'key-1',
-    name: 'OpenAI Enterprise Production',
-    service: 'OpenAI API',
-    keyMasked: 'sk-proj-99a**********************81Fz',
-    createdAt: '2026-01-01',
-    lastUsed: 'Just now',
-    status: 'Active'
-  }
-];
+export const INITIAL_API_KEYS: ApiKeyItem[] = [];
 
-export const INITIAL_SESSIONS: UserSession[] = [
-  {
-    id: 'sess-1',
-    userName: 'Rohit Pawar (Director)',
-    device: 'Authorized Executive Workstation',
-    ipAddress: '10.228.245.155',
-    location: 'India',
-    loginTime: 'Just now',
-    isCurrent: true
-  }
-];
+export const INITIAL_SESSIONS: UserSession[] = [];
 
-export const INITIAL_OFFER_LETTERS: OfferLetter[] = [
-  {
-    id: 'off-101',
-    offerLetterNo: 'ENX-OFF-2026-0001',
-    employeeId: '202600000002',
-    employeeName: 'POLAMREDDY REVANTH REDDY',
-    employeeEmail: 'revanth@enterprenex.solutions',
-    department: 'Engineering',
-    designation: 'Full Stack Engineer & AI Specialist',
-    joiningDate: '2026-02-01',
-    employmentType: 'Full-time',
-    salaryMonthly: 0,
-    ctcAnnual: 0,
-    probationPeriod: '3 Months',
-    termsAndConditions: '1. Appointment & Scope of Employment: Appointed as Full Stack Engineer & AI Specialist at Enterprenex Solutions Pvt Ltd.\n2. Probation Period: 3 Months with evaluation prior to confirmation.\n3. Working Hours: 09:30 AM to 06:30 PM IST (Hybrid Operations).\n5. Confidentiality & IP: Perpetual non-disclosure of enterprise algorithms, client data, and proprietary code.',
-    status: 'Accepted',
-    directorRemarks: 'Approved unconditionally by Managing Director.',
-    directorApprovedBy: 'Rohit Pawar (Managing Director)',
-    directorApprovedAt: '2026-01-20T10:00:00.000Z',
-    sentAt: '2026-01-20T11:00:00.000Z',
-    respondedAt: '2026-01-21T14:30:00.000Z',
-    candidateResponseRemarks: 'I am honored to accept this appointment offer and look forward to contributing to Enterprenex.',
-    createdAt: '2026-01-19T09:00:00.000Z'
-  },
-  {
-    id: 'off-102',
-    offerLetterNo: 'ENX-OFF-2026-0002',
-    employeeId: '202600000003',
-    employeeName: 'Ananya Sharma',
-    employeeEmail: 'ananya.sharma@enterprenex.solutions',
-    department: 'Engineering',
-    designation: 'Senior Frontend Developer',
-    joiningDate: '2026-03-01',
-    employmentType: 'Full-time',
-    salaryMonthly: 0,
-    ctcAnnual: 0,
-    probationPeriod: '3 Months',
-    termsAndConditions: '1. Standard Enterprenex appointment terms.\n2. Working hours: 09:30 AM to 06:30 PM IST.\n3. 3-month probation period.',
-    status: 'Sent',
-    directorRemarks: 'Approved for rollout.',
-    directorApprovedBy: 'Rohit Pawar',
-    directorApprovedAt: '2026-02-15T12:00:00.000Z',
-    sentAt: '2026-02-15T15:00:00.000Z',
-    createdAt: '2026-02-14T11:00:00.000Z'
-  },
-  {
-    id: 'off-103',
-    offerLetterNo: 'ENX-OFF-2026-0003',
-    employeeId: '202600000004',
-    employeeName: 'Vikramaditya Patil',
-    employeeEmail: 'vikram.patil@enterprenex.solutions',
-    department: 'Engineering',
-    designation: 'DevOps & SRE Engineer',
-    joiningDate: '2026-04-01',
-    employmentType: 'Full-time',
-    salaryMonthly: 0,
-    ctcAnnual: 0,
-    probationPeriod: '3 Months',
-    termsAndConditions: '1. Standard Enterprenex SRE appointment terms.\n2. 24x7 rotation on-call allowance applicable.',
-    status: 'Pending Approval',
-    createdAt: '2026-03-01T10:00:00.000Z'
-  }
-];
+export const INITIAL_OFFER_LETTERS: OfferLetter[] = [];
 
-export const INITIAL_NOTIFICATIONS: EwmsNotification[] = [
-  {
-    id: 'notif-1',
-    type: 'OFFER_PENDING_APPROVAL',
-    title: 'Offer Letter Pending Review',
-    message: 'Offer Letter ENX-OFF-2026-0003 for Vikramaditya Patil is awaiting Director review and approval.',
-    recipientRole: 'Super Admin',
-    actionUrl: '/admin/offer-letters',
-    read: false,
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'notif-2',
-    type: 'TASK_ASSIGNED',
-    title: 'New Sprint Task Assigned',
-    message: 'You have been assigned task "Live Task Stopwatch & Time Tracker" by Rohit Pawar.',
-    recipientRole: 'Developer',
-    recipientEmail: 'revanth@enterprenex.solutions',
-    recipientEmployeeId: '202600000002',
-    actionUrl: '/admin/tasks',
-    read: false,
-    createdAt: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: 'notif-3',
-    type: 'OFFER_ACCEPTED',
-    title: 'Offer Accepted by Candidate',
-    message: 'POLAMREDDY REVANTH REDDY has accepted offer ENX-OFF-2026-0001. Account ready for activation.',
-    recipientRole: 'Project Manager',
-    actionUrl: '/admin/offer-letters',
-    read: true,
-    createdAt: new Date(Date.now() - 86400000).toISOString()
-  }
-];
+export const INITIAL_NOTIFICATIONS: EwmsNotification[] = [];
