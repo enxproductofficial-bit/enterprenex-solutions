@@ -299,7 +299,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { section: t('sec.humanCapital', 'Individual Workspace') },
         { to: '/admin/my-hub', label: '⚡ My Self Service Hub', icon: LayoutDashboard, exact: true },
         { to: '/admin/offer-letters', label: 'My Offer Letter & Contract', icon: FileCheck, badge: candidateOfferPendingCount > 0 ? '1 Action' : undefined },
-        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: (unreadEmailsCount && unreadEmailsCount > 0) ? `${unreadEmailsCount}` : 3 },
+        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: (unreadEmailsCount && unreadEmailsCount > 0) ? `${unreadEmailsCount}` : undefined },
         { to: '/admin/tasks', label: t('nav.tasks', 'My Assigned Tasks'), icon: CheckSquare, badge: assignedTasksCount > 0 ? `${assignedTasksCount}` : undefined },
         { to: '/admin/team', label: t('nav.team', 'Colleagues Directory & Attendance'), icon: UserCheck },
         { to: '/admin/calendar', label: t('nav.calendar', 'Scheduled Meetings & Calendar'), icon: Calendar },
@@ -316,7 +316,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { to: '/admin/clients', label: t('nav.clients', 'Client Accounts Directory'), icon: Users, badge: safeClients.length },
         { to: '/admin/projects', label: t('nav.projects', 'Project Portfolio & Milestones'), icon: Briefcase, badge: activeProjectsCount },
         { to: '/admin/tasks', label: t('nav.tasks', 'Sprint Backlog & Kanban'), icon: CheckSquare, badge: actionableTasksCount > 0 ? `${actionableTasksCount} Active` : undefined },
-        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: (unreadEmailsCount && unreadEmailsCount > 0) ? `${unreadEmailsCount}` : 3 },
+        { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: (unreadEmailsCount && unreadEmailsCount > 0) ? `${unreadEmailsCount}` : undefined },
 
         { section: t('sec.commercial', 'Commercial Governance') },
         { to: '/admin/crm', label: t('nav.crm', 'Enterprise CRM & Sales Pipeline'), icon: Target, badge: newLeadsCount > 0 ? `${newLeadsCount} New` : undefined },
@@ -343,7 +343,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       { to: '/admin/clients', label: 'Client Accounts Directory', icon: Users, badge: safeClients.length },
       { to: '/admin/projects', label: 'Project Portfolio & Milestones', icon: Briefcase, badge: activeProjectsCount },
       { to: '/admin/tasks', label: 'Sprint Backlog & Kanban', icon: CheckSquare, badge: actionableTasksCount > 0 ? `${actionableTasksCount} Active` : undefined },
-      { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: (unreadEmailsCount && unreadEmailsCount > 0) ? `${unreadEmailsCount}` : 3 },
+      { to: '/admin/emails', label: 'Overall Emails & Communications', icon: Mail, badge: (unreadEmailsCount && unreadEmailsCount > 0) ? `${unreadEmailsCount}` : undefined },
 
       { section: 'Finance & Commerce' },
       { to: '/admin/finance', label: 'Finance Dashboard & P&L', icon: CreditCard, badge: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} Due` : undefined },

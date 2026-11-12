@@ -273,13 +273,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [notifications, setNotifications] = useState<EwmsNotification[]>(INITIAL_NOTIFICATIONS);
   const [unreadEmailsCount, setUnreadEmailsCount] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem('ewms_enterprise_emails');
+      const saved = localStorage.getItem('ewms_enterprise_emails_v3');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed.filter((e: any) => e.isUnread).length;
       }
     } catch (e) {}
-    return 3;
+    return 0;
   });
 
   useEffect(() => {
