@@ -22,7 +22,8 @@ import {
   Layers,
   Lock,
   Edit3,
-  Save
+  Save,
+  Plus
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 import type { Employee, Task } from '../types';
@@ -50,7 +51,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
   onOffboard,
   tasks = []
 }) => {
-  const { currentUser, updateMyContactInfo, showToast } = useAdmin();
+  const { currentUser, updateMyContactInfo, showToast, projects = [], addTask } = useAdmin();
   const [showFullAadhaar, setShowFullAadhaar] = useState(false);
 
   // RBAC checks
@@ -68,6 +69,56 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
   );
 
   const canViewPersonalContact = isDirector || isHr || isSelf;
+  const canAssignTask = isDirector || isHr || canManageTeam;
+
+  // Direct Task Assignment State
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDesc, setTaskDesc] = useState('');
+  const [taskProjectId, setTaskProjectId] = useState('');
+  const [taskPriority, setTaskPriority] = useState<Task['priority']>('Medium');
+  const [taskDueDate, setTaskDueDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().split('T')[0];
+  });
+  const [taskHours, setTaskHours] = useState(8);
+  const [taskAssignedBy, setTaskAssignedBy] = useState(() => {
+    if (isDirector) return 'Rohit Pawar (Managing Director)';
+    if (isHr) return 'HR Administrator (Operations & HR)';
+    return currentUser?.name || 'Rohit Pawar (Managing Director)';
+  });
+
+  const handleAssignTaskSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!taskTitle.trim()) return;
+
+    const selectedProj = projects.find(p => p.id === taskProjectId);
+    addTask({
+      title: taskTitle.trim(),
+      description: taskDesc.trim(),
+      projectId: selectedProj?.id || (projects[0]?.id || 'prj-gen'),
+      projectName: selectedProj?.title || (projects[0]?.title || 'General Engineering'),
+      module: 'Sprint Backlog',
+      assignedBy: taskAssignedBy,
+      assignedTo: employee.name,
+      department: employee.department || 'Engineering',
+      reviewer: taskAssignedBy.includes('Rohit') ? 'Rohit Pawar' : 'HR Administrator',
+      priority: taskPriority,
+      status: 'Assigned',
+      startDate: new Date().toISOString().split('T')[0],
+      dueDate: taskDueDate,
+      estimatedHours: Number(taskHours) || 8,
+      dependencies: 'None',
+      subtasks: [],
+      tags: ['Direct Assignment']
+    });
+
+    showToast('Task Assigned', `Assigned "${taskTitle}" to ${employee.name}.`, 'success');
+    setShowAssignModal(false);
+    setTaskTitle('');
+    setTaskDesc('');
+  };
 
   // Personal Contact editing state
   const [editingPersonalContact, setEditingPersonalContact] = useState(false);
@@ -639,9 +690,22 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                 <CheckSquare size={16} color="var(--adm-primary)" />
                 <span>Active Assigned Sprint Tasks ({assignedTasks.length})</span>
               </h4>
-              <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>
-                Section 10 Telemetry
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>
+                  Section 10 Telemetry
+                </span>
+                {canAssignTask && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAssignModal(true)}
+                    className="adm-btn adm-btn-primary adm-btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', padding: '0.25rem 0.65rem' }}
+                  >
+                    <Plus size={13} />
+                    <span>Assign Task</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {assignedTasks.length > 0 ? (
@@ -684,8 +748,19 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontStyle: 'italic' }}>
-                No active sprint tasks currently assigned. Tasks can be delegated from Sprint Backlog & Kanban.
+              <div style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontStyle: 'italic', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
+                <span>No active sprint tasks currently assigned. Tasks can be delegated directly here or from Sprint Backlog & Kanban.</span>
+                {canAssignTask && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAssignModal(true)}
+                    className="adm-btn adm-btn-secondary adm-btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', marginTop: '2px' }}
+                  >
+                    <Plus size={13} color="var(--adm-primary)" />
+                    <span>+ Assign First Task to {employee.name}</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -830,6 +905,157 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* ── Direct Task Assignment Modal ── */}
+      {showAssignModal && (
+        <div
+          className="adm-modal-overlay"
+          onClick={() => setShowAssignModal(false)}
+          style={{ zIndex: 1100 }}
+        >
+          <div
+            className="adm-modal"
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '560px', width: '92%' }}
+          >
+            <div className="adm-modal-header" style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--adm-border)', margin: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ padding: '6px', background: 'var(--adm-primary-soft)', borderRadius: '6px' }}>
+                  <CheckSquare size={16} color="var(--adm-primary)" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800 }}>Assign Sprint Task</h3>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                    Assigning sprint work directly to <strong>{employee.name}</strong> ({employee.employeeId})
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="adm-modal-close"
+                onClick={() => setShowAssignModal(false)}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAssignTaskSubmit} style={{ padding: '1.25rem' }}>
+              <div className="adm-form-group" style={{ marginBottom: '0.85rem' }}>
+                <label className="adm-form-label">Task Title *</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  placeholder="e.g. Implement API Endpoint or UI Feature"
+                  value={taskTitle}
+                  onChange={e => setTaskTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.85rem' }}>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Project</label>
+                  <select
+                    className="adm-select"
+                    value={taskProjectId}
+                    onChange={e => setTaskProjectId(e.target.value)}
+                  >
+                    {projects.map(p => (
+                      <option key={p.id} value={p.id}>{p.title}</option>
+                    ))}
+                    <option value="prj-general">General Engineering & Operations</option>
+                  </select>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Assigned By *</label>
+                  <select
+                    className="adm-select"
+                    value={taskAssignedBy}
+                    onChange={e => setTaskAssignedBy(e.target.value)}
+                    required
+                  >
+                    <option value="Rohit Pawar (Managing Director)">Rohit Pawar (Managing Director)</option>
+                    <option value="HR Administrator (Operations & HR)">HR Administrator (Operations & HR)</option>
+                    {currentUser?.name && currentUser.name !== 'Rohit Pawar' && currentUser.name !== 'HR Administrator' && (
+                      <option value={currentUser.name}>{currentUser.name}</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '0.85rem' }}>
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Priority</label>
+                  <select
+                    className="adm-select"
+                    value={taskPriority}
+                    onChange={e => setTaskPriority(e.target.value as any)}
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Urgent">Urgent</option>
+                  </select>
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Est. Hours</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="adm-input"
+                    value={taskHours}
+                    onChange={e => setTaskHours(Number(e.target.value))}
+                    required
+                  />
+                </div>
+
+                <div className="adm-form-group">
+                  <label className="adm-form-label">Due Date *</label>
+                  <input
+                    type="date"
+                    className="adm-input"
+                    value={taskDueDate}
+                    onChange={e => setTaskDueDate(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="adm-form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="adm-form-label">Task Brief & Requirements</label>
+                <textarea
+                  className="adm-input"
+                  rows={3}
+                  placeholder="Provide technical specifications, scope, and deliverables..."
+                  value={taskDesc}
+                  onChange={e => setTaskDesc(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-secondary"
+                  onClick={() => setShowAssignModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="adm-btn adm-btn-primary"
+                  disabled={!taskTitle.trim()}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <CheckSquare size={14} />
+                  <span>Assign Task to {employee.name}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

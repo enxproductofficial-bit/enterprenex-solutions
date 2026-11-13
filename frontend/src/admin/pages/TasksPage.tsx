@@ -304,7 +304,12 @@ export const TasksPage: React.FC = () => {
   const [completionModalTask, setCompletionModalTask] = useState<Task | null>(null);
   const [completionRemarks, setCompletionRemarks] = useState('');
   const [completionDoc, setCompletionDoc] = useState('');
-  const [fAssignedBy, setFAssignedBy] = useState('Rohit Pawar (Technical Director)');
+  const [fAssignedBy, setFAssignedBy] = useState(() => {
+    if (currentUser?.email?.includes('hr') || currentUser?.role?.includes('HR') || currentUser?.role === 'Project Manager') {
+      return 'HR Administrator (Operations & HR)';
+    }
+    return 'Rohit Pawar (Managing Director)';
+  });
   const [fAssignedTo, setFAssignedTo] = useState(employees[0]?.name || currentUser?.name || 'Assigned Engineer');
   const [fReviewer, setFReviewer] = useState('Rohit Pawar');
   const [fPriority, setFPriority] = useState<TaskPriority>('Medium');
@@ -1677,22 +1682,33 @@ export const TasksPage: React.FC = () => {
 
                 <div className="adm-form-group">
                   <label className="adm-form-label">6. Assigned By (Field 6) *</label>
-                  <input
-                    className="adm-input"
+                  <select
+                    className="adm-select"
                     value={fAssignedBy}
                     onChange={e => setFAssignedBy(e.target.value)}
-                    placeholder="e.g. Rohit Pawar (Technical Director)"
-                  />
+                    required
+                  >
+                    <option value="Rohit Pawar (Managing Director)">Rohit Pawar (Managing Director)</option>
+                    <option value="HR Administrator (Operations & HR)">HR Administrator (Operations & HR)</option>
+                    {currentUser?.name && currentUser.name !== 'Rohit Pawar' && currentUser.name !== 'HR Administrator' && (
+                      <option value={currentUser.name}>{currentUser.name}</option>
+                    )}
+                  </select>
                 </div>
 
                 <div className="adm-form-group">
                   <label className="adm-form-label">8. Set Reviewer (Field 8) *</label>
-                  <input
-                    className="adm-input"
+                  <select
+                    className="adm-select"
                     value={fReviewer}
                     onChange={e => setFReviewer(e.target.value)}
-                    placeholder="e.g. Rohit Pawar"
-                  />
+                    required
+                  >
+                    <option value="Rohit Pawar">Rohit Pawar (Managing Director)</option>
+                    <option value="HR Administrator">HR Administrator</option>
+                    <option value="Jyothi Anbhule">Jyothi Anbhule (Lead Project Manager)</option>
+                    <option value="POLAMREDDY REVANTH REDDY">POLAMREDDY REVANTH REDDY (Lead Developer)</option>
+                  </select>
                 </div>
               </div>
 
