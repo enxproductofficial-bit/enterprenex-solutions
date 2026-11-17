@@ -8,6 +8,36 @@ import bcrypt from 'bcryptjs';
 
 const router = Router();
 
+// Helper to sanitize employee records before returning via API (zero credential leakage)
+const sanitizeEmployee = (e: any, isDirectorOrManager: boolean, canViewAllPersonalContacts: boolean, isDirector: boolean, isSelf: boolean) => {
+  const { password: _p, temporaryPassword: _tp, ...safeEmployee } = e;
+
+  return {
+    ...safeEmployee,
+    name: (e.employeeId === '202600000001' || e.name === 'Rohit P.' || e.name === 'Rohit P' || e.name?.includes('Rohit P')) ? 'Rohit Pawar' : e.name,
+    personalEmail: (canViewAllPersonalContacts || isSelf) ? e.personalEmail : undefined,
+    personalPhone: (canViewAllPersonalContacts || isSelf) ? e.personalPhone : undefined,
+    address: (canViewAllPersonalContacts || isSelf) ? e.address : undefined,
+    salaryMonthly: (isDirectorOrManager || isSelf) ? e.salaryMonthly : undefined,
+    ctcAnnual: (isDirectorOrManager || isSelf) ? e.ctcAnnual : undefined,
+    panNumber: (isDirectorOrManager || isSelf) ? (isDirector ? e.panNumber : (e.panNumber ? 'XXXX-XXXX-XXXX' : undefined)) : undefined,
+    panDocUrl: isDirector ? e.panDocUrl : undefined,
+    aadhaarNumber: (isDirectorOrManager || isSelf) ? (isDirector ? e.aadhaarNumber : (e.aadhaarNumber ? `XXXX-XXXX-${String(e.aadhaarNumber).slice(-4)}` : undefined)) : undefined,
+    aadhaarDocUrl: isDirector ? e.aadhaarDocUrl : undefined,
+    resumeUrl: (isDirectorOrManager || isSelf) ? e.resumeUrl : undefined,
+    documents: e.documentsJson ? (typeof e.documentsJson === 'string' ? JSON.parse(e.documentsJson) : e.documentsJson) : [],
+    skillsMatrix: e.skillsMatrixJson ? (typeof e.skillsMatrixJson === 'string' ? JSON.parse(e.skillsMatrixJson) : e.skillsMatrixJson) : [],
+    education: e.educationJson ? (typeof e.educationJson === 'string' ? JSON.parse(e.educationJson) : e.educationJson) : []
+  };
+};
+
+// Helper for single employee response sanitation
+const sanitizeSingleEmployee = (e: any) => {
+  if (!e) return e;
+  const { password: _p, temporaryPassword: _tp, ...safeEmployee } = e;
+  return safeEmployee;
+};
+
 // POST /api/employees/generate-id (Generate Unique Sequential Collision-Free Employee ID Server-Side)
 router.post('/generate-id', authenticateToken, requireRole(['Super Admin', 'Project Manager', 'HR Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -22,20 +52,22 @@ router.post('/generate-id', authenticateToken, requireRole(['Super Admin', 'Proj
 // GET /api/employees (List all team members - with privacy sanitization for employees)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const isDirector =
+    const isDirector = Boolean(
       req.user?.role === 'Super Admin' ||
       req.user?.role?.includes('Director') ||
-      req.user?.email?.includes('director');
+      req.user?.email?.includes('director')
+    );
 
-    const isHr =
+    const isHr = Boolean(
       req.user?.role === 'HR' ||
       req.user?.role === 'HR Manager' ||
       req.user?.department === 'Human Resources' ||
       req.user?.department === 'HR' ||
       req.user?.role?.includes('HR') ||
-      req.user?.email?.includes('hr');
+      req.user?.email?.includes('hr')
+    );
 
-    const isManager = req.user?.role === 'Project Manager';
+    const isManager = Boolean(req.user?.role === 'Project Manager');
     const isDirectorOrManager = isDirector || isManager || isHr;
     const canViewAllPersonalContacts = isDirector || isHr;
 
@@ -45,27 +77,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 
     const formatted = employees.map(e => {
       const isSelf = req.user?.email === e.email || req.user?.employeeId === e.employeeId || req.user?.id === e.id;
-      const canViewSensitiveHr = isDirectorOrManager || isSelf;
-      const canViewPersonalContact = canViewAllPersonalContacts || isSelf;
-
-      return {
-        ...e,
-        name: (e.employeeId === '202600000001' || e.name === 'Rohit P.' || e.name === 'Rohit P' || e.name?.includes('Rohit P')) ? 'Rohit Pawar' : e.name,
-        // Zero-Trust Data Privacy: Personal email & personal phone are STRICTLY private (HR & Director only, or Self)
-        personalEmail: canViewPersonalContact ? e.personalEmail : undefined,
-        personalPhone: canViewPersonalContact ? e.personalPhone : undefined,
-        address: canViewPersonalContact ? e.address : undefined,
-        salaryMonthly: canViewSensitiveHr ? e.salaryMonthly : undefined,
-        ctcAnnual: canViewSensitiveHr ? e.ctcAnnual : undefined,
-        panNumber: canViewSensitiveHr ? e.panNumber : undefined,
-        panDocUrl: canViewSensitiveHr ? e.panDocUrl : undefined,
-        aadhaarNumber: canViewSensitiveHr ? e.aadhaarNumber : undefined,
-        aadhaarDocUrl: canViewSensitiveHr ? e.aadhaarDocUrl : undefined,
-        resumeUrl: canViewSensitiveHr ? e.resumeUrl : undefined,
-        documents: e.documentsJson ? JSON.parse(e.documentsJson) : [],
-        skillsMatrix: e.skillsMatrixJson ? JSON.parse(e.skillsMatrixJson) : [],
-        education: e.educationJson ? JSON.parse(e.educationJson) : []
-      };
+      return sanitizeEmployee(e, isDirectorOrManager, canViewAllPersonalContacts, isDirector, isSelf);
     });
 
     res.json({ employees: formatted });
@@ -98,8 +110,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
     // Default status: Approved so created employees can immediately access workspace
     const initialApprovalStatus = data.approvalStatus || 'Approved';
 
-    // Password setup: use provided password or default company master password 'Enx_sol_121006'
-    const rawPassword = data.password || 'Enx_sol_121006';
+    // Password setup: use provided password or generate secure temporary password
+    const rawPassword = data.password || generateSecureTemporaryPassword();
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
     const monthlySalary = Number(data.salaryMonthly || 50000);
@@ -135,7 +147,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
         employmentType: data.employmentType || 'Full-time',
         workMode: data.workMode || 'Hybrid',
         mustChangePassword: true,
-        temporaryPassword: rawPassword,
+        temporaryPassword: hashedPassword,
         isAccountActivated: true,
         skillsMatrixJson: JSON.stringify(data.skillsMatrix || []),
         educationJson: JSON.stringify(data.education || []),
@@ -195,7 +207,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       message: initialApprovalStatus === 'Pending Approval'
         ? `Employee ${data.name} (${assignedEmployeeId}) registered successfully with status 'Pending Approval'. Awaiting Director authorization.`
         : `Employee ${data.name} (${assignedEmployeeId}) created and activated.`,
-      employee: newEmp,
+      employee: sanitizeSingleEmployee(newEmp),
       temporaryPassword: rawPassword
     });
   } catch (error: any) {
@@ -253,7 +265,7 @@ router.put('/:id/approval', authenticateToken, async (req: AuthRequest, res: Res
 
     res.json({
       message: `Employee onboarding ${isApprove ? 'Approved' : 'Rejected'}.`,
-      employee: updated
+      employee: sanitizeSingleEmployee(updated)
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -284,8 +296,8 @@ router.post('/:id/activate', authenticateToken, async (req: AuthRequest, res: Re
       return;
     }
 
-    // Use existing password, provided password, or company standard default
-    const temporaryPassword = req.body.password || emp.temporaryPassword || 'Enx_sol_121006';
+    // Generate secure temporary password
+    const temporaryPassword = req.body.password || generateSecureTemporaryPassword();
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
 
     // Determine target User role
@@ -297,46 +309,46 @@ router.post('/:id/activate', authenticateToken, async (req: AuthRequest, res: Re
       'Team Member'
     );
 
-    // Update Employee record
-    const updatedEmp = await prisma.employee.update({
-      where: { id: emp.id },
-      data: {
-        approvalStatus: 'Approved',
-        password: hashedPassword,
-        temporaryPassword,
-        mustChangePassword: true,
-        isAccountActivated: true,
-        accountActivatedAt: new Date(),
-        accountActivatedBy: user?.name || 'HR',
-        status: 'Active'
-      }
-    });
-
-    // Create or activate User login account
-    await prisma.user.upsert({
-      where: { email: emp.email },
-      update: {
-        name: emp.name,
-        employeeId: emp.employeeId,
-        password: hashedPassword,
-        mustChangePassword: true,
-        role: finalRole,
-        department: emp.department,
-        status: 'Active',
-        avatar: emp.avatar
-      },
-      create: {
-        email: emp.email,
-        password: hashedPassword,
-        name: emp.name,
-        employeeId: emp.employeeId,
-        mustChangePassword: true,
-        role: finalRole,
-        department: emp.department,
-        avatar: emp.avatar,
-        status: 'Active'
-      }
-    });
+    // Update Employee and User records in an atomic transaction
+    const [updatedEmp] = await prisma.$transaction([
+      prisma.employee.update({
+        where: { id: emp.id },
+        data: {
+          approvalStatus: 'Approved',
+          password: hashedPassword,
+          temporaryPassword: hashedPassword,
+          mustChangePassword: true,
+          isAccountActivated: true,
+          accountActivatedAt: new Date(),
+          accountActivatedBy: user?.name || 'HR',
+          status: 'Active'
+        }
+      }),
+      prisma.user.upsert({
+        where: { email: emp.email },
+        update: {
+          name: emp.name,
+          employeeId: emp.employeeId,
+          password: hashedPassword,
+          mustChangePassword: true,
+          role: finalRole,
+          department: emp.department,
+          status: 'Active',
+          avatar: emp.avatar
+        },
+        create: {
+          email: emp.email,
+          password: hashedPassword,
+          name: emp.name,
+          employeeId: emp.employeeId,
+          mustChangePassword: true,
+          role: finalRole,
+          department: emp.department,
+          avatar: emp.avatar,
+          status: 'Active'
+        }
+      })
+    ]);
 
     await notifyAccountActivated(emp.name, emp.email, finalRole);
 
@@ -412,7 +424,7 @@ router.put('/:id/skills/verify', authenticateToken, requireRole(['Super Admin', 
       return;
     }
 
-    const currentSkills: any[] = emp.skillsMatrixJson ? JSON.parse(emp.skillsMatrixJson) : [];
+    const currentSkills: any[] = emp.skillsMatrixJson ? (typeof emp.skillsMatrixJson === 'string' ? JSON.parse(emp.skillsMatrixJson) : emp.skillsMatrixJson) : [];
     const updatedSkills = currentSkills.map(s => {
       if (s.name.toLowerCase() === skillName.toLowerCase()) {
         return {
@@ -431,7 +443,7 @@ router.put('/:id/skills/verify', authenticateToken, requireRole(['Super Admin', 
       data: { skillsMatrixJson: JSON.stringify(updatedSkills) }
     });
 
-    res.json({ message: `Skill ${skillName} verified at Level ${verifiedRating}/5.`, employee: updated });
+    res.json({ message: `Skill ${skillName} verified at Level ${verifiedRating}/5.`, employee: sanitizeSingleEmployee(updated) });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -472,7 +484,7 @@ router.put('/me/contact', authenticateToken, async (req: AuthRequest, res: Respo
       }
     });
 
-    res.json({ message: 'Personal contact details successfully updated.', employee: updated });
+    res.json({ message: 'Personal contact details successfully updated.', employee: sanitizeSingleEmployee(updated) });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -525,7 +537,7 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
         role: isDirector ? updates.role : undefined,
         department: isDirector || isManager || isHr ? updates.department : undefined,
         password: newHash,
-        temporaryPassword: (canUpdatePassword && updates.password) ? updates.password.trim() : undefined,
+        temporaryPassword: newHash ? null : undefined,
         mustChangePassword: updates.password ? false : undefined,
         phone: canUpdateContact && updates.phone !== undefined ? updates.phone : emp.phone,
         personalEmail: canUpdateContact && updates.personalEmail !== undefined ? updates.personalEmail : emp.personalEmail,
@@ -547,7 +559,7 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       }
     });
 
-    // Synchronize password and status with User authentication table
+    // Synchronize password and status with User authentication table atomically
     if (newHash || updates.status || updates.role) {
       await prisma.user.updateMany({
         where: {
@@ -563,7 +575,7 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       }).catch(err => console.warn('User update sync fallback:', err));
     }
 
-    res.json({ message: 'Employee record successfully updated.', employee: updated });
+    res.json({ message: 'Employee record successfully updated.', employee: sanitizeSingleEmployee(updated) });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

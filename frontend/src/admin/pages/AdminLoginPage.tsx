@@ -15,88 +15,51 @@ export const AdminLoginPage: React.FC = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleFormLogin = (e: React.FormEvent) => {
+  const handleFormLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    const inputEmail = email.trim().toLowerCase();
+    const inputEmail = email.trim();
     const inputPassword = password.trim();
 
-    const isPasswordValid = inputPassword === 'Enx_sol_121006';
-    const isDirector = (
-      inputEmail === 'director@enterprenex.solutions' ||
-      inputEmail === 'rohit@enterprenex.solutions' ||
-      inputEmail === 'director@enterprenexsolution.com' ||
-      inputEmail === 'rohit@enterprenexsolution.com'
-    ) && isPasswordValid;
-    const isHr = (inputEmail === 'hr@enterprenex.solutions' || inputEmail === 'hr@enterprenexsolution.com') && isPasswordValid;
-    const isManager = (inputEmail === 'manager@enterprenex.solutions' || inputEmail === 'manager@enterprenexsolution.com') && isPasswordValid;
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: inputEmail, password: inputPassword })
+      });
 
-    // Check Employee match by Employee ID or Email
-    const matchedEmp = employees.find(
-      (emp) =>
-        (emp.employeeId && emp.employeeId.toLowerCase() === inputEmail) ||
-        (emp.email && emp.email.toLowerCase() === inputEmail) ||
-        emp.id.toLowerCase() === inputEmail
-    );
-    const validEmpPassword = matchedEmp?.password || 'Enx_sol_121006';
-    const isEmployee = matchedEmp && (inputPassword === validEmpPassword || isPasswordValid);
-
-    if (isDirector || isHr || isManager) {
-      const authenticatedUser: AdminUser = {
-        id: isDirector ? 'usr-dir' : isHr ? 'usr-hr' : 'usr-mgr',
-        name: isDirector ? 'Rohit Pawar (Managing Director)' : isHr ? 'HR Administrator' : 'Operations Manager',
-        email: inputEmail,
-        role: isDirector ? 'Super Admin' : 'Project Manager',
-        avatar: isDirector
-          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
-          : isHr
-          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150'
-          : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        department: isDirector ? 'Executive Management' : isHr ? 'Human Resources' : 'Project Management',
-        status: 'Active',
-        lastLogin: 'Just now',
-        phone: '+91-9226860060'
-      };
-
-      setTimeout(() => {
+      if (res.ok) {
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem('ewms_token', data.token);
+        }
+        const userObj = data.user;
+        const authenticatedUser: AdminUser = {
+          id: userObj.id,
+          name: userObj.name,
+          email: userObj.email,
+          role: userObj.role || 'Team Member',
+          avatar: userObj.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          department: userObj.department || 'General',
+          status: 'Active',
+          lastLogin: 'Just now',
+          phone: '+91-9226860060',
+          employeeId: userObj.employeeId
+        };
         login(authenticatedUser);
         setIsLoading(false);
         navigate('/admin');
-      }, 400);
-    } else if (isEmployee && matchedEmp) {
-      if (matchedEmp.approvalStatus === 'Rejected') {
-        setTimeout(() => {
-          setIsLoading(false);
-          setError(`Access Denied: This staff account has been disabled by the Managing Director.`);
-        }, 400);
         return;
       }
 
-      const empUser: AdminUser = {
-        id: matchedEmp.id,
-        name: matchedEmp.name,
-        email: matchedEmp.email,
-        role: 'Team Member',
-        avatar: matchedEmp.avatar,
-        department: matchedEmp.department,
-        status: 'Active',
-        lastLogin: 'Just now',
-        phone: matchedEmp.phone || '+91-9226860060',
-        employeeId: matchedEmp.employeeId
-      };
-
-      setTimeout(() => {
-        login(empUser);
-        setIsLoading(false);
-        navigate('/admin');
-      }, 400);
-    } else {
-      setTimeout(() => {
-        setIsLoading(false);
-        setError('Authentication failed. Invalid Employee ID/email or password.');
-      }, 400);
+      const errData = await res.json().catch(() => ({}));
+      setIsLoading(false);
+      setError(errData.error || 'Authentication failed. Invalid Employee ID/email or password.');
+    } catch {
+      setIsLoading(false);
+      setError('Connection to authentication server failed. Please check server status.');
     }
   };
 

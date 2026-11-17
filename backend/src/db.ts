@@ -1,7 +1,10 @@
 import { PrismaClient } from '@prisma/client';
+import dotenv from 'dotenv';
 
-if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('file:')) {
-  process.env.DATABASE_URL = 'postgresql://neondb_owner:npg_QhISxl3XZ1Go@ep-gentle-salad-bdn7t3j3-pooler.c-8.us-east-2.aws.neon.tech/neondb?sslmode=require&connect_timeout=30';
+dotenv.config();
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('CRITICAL CONFIGURATION ERROR: DATABASE_URL environment variable is missing.');
 }
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };

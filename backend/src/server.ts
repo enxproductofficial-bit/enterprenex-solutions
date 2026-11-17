@@ -5,8 +5,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('file:')) {
-  process.env.DATABASE_URL = 'postgresql://neondb_owner:npg_QhISxl3XZ1Go@ep-gentle-salad-bdn7t3j3-pooler.c-8.us-east-2.aws.neon.tech/neondb?sslmode=require&connect_timeout=30';
+if (!process.env.DATABASE_URL) {
+  console.error('[CRITICAL SECURITY ERROR]: DATABASE_URL is not set in environment.');
 }
 
 import authRoutes from './routes/auth.routes';

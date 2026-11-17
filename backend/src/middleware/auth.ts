@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'enterprenex_enterprise_jwt_secret_2026_super_secure';
 
@@ -27,20 +30,8 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     token = undefined;
   }
 
-  // In local development, allow direct requests without manual bearer token
+  // Strict Token Authentication: All protected endpoints require a valid token
   if (!token) {
-    if (process.env.NODE_ENV !== 'production') {
-      req.user = {
-        id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
-        email: 'director@enterprenex.solutions',
-        role: 'Super Admin',
-        name: 'Rohit Pawar',
-        employeeId: '202600000001'
-      };
-      next();
-      return;
-    }
-
     res.status(401).json({ error: 'Access denied. Missing bearer authorization token.' });
     return;
   }
@@ -50,17 +41,6 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     req.user = verified;
     next();
   } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      req.user = {
-        id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
-        email: 'director@enterprenex.solutions',
-        role: 'Super Admin',
-        name: 'Rohit Pawar',
-        employeeId: '202600000001'
-      };
-      next();
-      return;
-    }
     res.status(403).json({ error: 'Invalid or expired authentication session token.' });
     return;
   }
@@ -85,16 +65,6 @@ export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction
     } catch {
       // Invalidate bad token quietly for optional auth
     }
-  }
-
-  if (!req.user && process.env.NODE_ENV !== 'production') {
-    req.user = {
-      id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
-      email: 'director@enterprenex.solutions',
-      role: 'Super Admin',
-      name: 'Rohit Pawar',
-      employeeId: '202600000001'
-    };
   }
 
   next();

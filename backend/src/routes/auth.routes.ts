@@ -47,7 +47,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       ].includes(loginId.toLowerCase()) || loginId.toLowerCase().startsWith('hr@') || loginId.toLowerCase().startsWith('manager@');
 
       if (isDirector || isHr) {
-        const defaultHash = await bcrypt.hash('Enx_sol_121006', 10);
+        const seedPassword = process.env.INITIAL_ADMIN_SEED_PASS || 'Enterprenex@Director2026';
+        const defaultHash = await bcrypt.hash(seedPassword, 10);
         user = await prisma.user.create({
           data: {
             email: loginId.toLowerCase(),
@@ -80,10 +81,11 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
       if (emp) {
         const rawPassword = password.trim();
-        const validEmpPassword =
-          (emp.password && (await bcrypt.compare(rawPassword, emp.password).catch(() => false) || rawPassword === emp.password)) ||
-          (emp.temporaryPassword && rawPassword === emp.temporaryPassword) ||
-          rawPassword === 'Enx_sol_121006';
+        const isBcryptMatch = emp.password ? await bcrypt.compare(rawPassword, emp.password).catch(() => false) : false;
+        const isTempBcryptMatch = emp.temporaryPassword ? await bcrypt.compare(rawPassword, emp.temporaryPassword).catch(() => false) : false;
+        const isTempPlainMatch = emp.temporaryPassword ? rawPassword === emp.temporaryPassword : false;
+
+        const validEmpPassword = isBcryptMatch || isTempBcryptMatch || isTempPlainMatch;
 
         if (!validEmpPassword) {
           res.status(401).json({ error: 'Invalid password. Please check your credentials.' });
@@ -131,11 +133,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Verify password (supports bcrypt hash, direct text, employee roster sync, or master fallback)
-    let validPassword =
-      (await bcrypt.compare(password, user.password).catch(() => false)) ||
-      password === user.password ||
-      password === 'Enx_sol_121006';
+    // Verify password strictly using bcrypt hash
+    let validPassword = await bcrypt.compare(password, user.password).catch(() => false);
 
     if (!validPassword && (user.employeeId || user.email)) {
       const emp = await prisma.employee.findFirst({
@@ -148,10 +147,11 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         }
       });
       if (emp) {
-        validPassword = Boolean(
-          (emp.password && (await bcrypt.compare(password, emp.password).catch(() => false) || password === emp.password)) ||
-          (emp.temporaryPassword && password === emp.temporaryPassword)
-        );
+        const isEmpBcrypt = emp.password ? await bcrypt.compare(password, emp.password).catch(() => false) : false;
+        const isEmpTempBcrypt = emp.temporaryPassword ? await bcrypt.compare(password, emp.temporaryPassword).catch(() => false) : false;
+        const isEmpTempPlain = emp.temporaryPassword ? password === emp.temporaryPassword : false;
+
+        validPassword = Boolean(isEmpBcrypt || isEmpTempBcrypt || isEmpTempPlain);
 
         if (validPassword && emp.password) {
           // Sync User password with Employee table
@@ -327,13 +327,23 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
     // Verify previous password matches current password or temporary password
     let prevValid = false;
     if (user.password) {
-      prevValid = await bcrypt.compare(prevPass, user.password);
+      prevValid = await bcrypt.compare(prevPass, user.password).catch(() => false);
     }
-    if (!prevValid && (user as any).temporaryPassword) {
-      prevValid = prevPass === (user as any).temporaryPassword;
-    }
-    if (!prevValid && prevPass === 'Enx_sol_121006') {
-      prevValid = true;
+    if (!prevValid) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { employeeId: user.employeeId || '' },
+            { email: user.email }
+          ]
+        }
+      });
+      if (emp) {
+        const isEmpPass = emp.password ? await bcrypt.compare(prevPass, emp.password).catch(() => false) : false;
+        const isEmpTempBcrypt = emp.temporaryPassword ? await bcrypt.compare(prevPass, emp.temporaryPassword).catch(() => false) : false;
+        const isEmpTempPlain = emp.temporaryPassword ? prevPass === emp.temporaryPassword : false;
+        prevValid = isEmpPass || isEmpTempBcrypt || isEmpTempPlain;
+      }
     }
 
     if (!prevValid) {
@@ -344,22 +354,24 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
     // Hash new password with bcrypt
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update User: set new password and mark mustChangePassword = false
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        password: hashedPassword,
-        mustChangePassword: false
-      }
-    });
+    // Atomically synchronize User and Employee tables using Prisma transaction
+    const targetUserId = user.id;
+    const targetEmployeeId = user.employeeId || '';
+    const targetEmail = user.email;
 
-    // Invalidate temporary password on Employee record
-    if (user.employeeId || user.email) {
-      await prisma.employee.updateMany({
+    const [updatedUser] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id: targetUserId },
+        data: {
+          password: hashedPassword,
+          mustChangePassword: false
+        }
+      }),
+      prisma.employee.updateMany({
         where: {
           OR: [
-            { employeeId: user.employeeId || '' },
-            { email: user.email }
+            { employeeId: targetEmployeeId },
+            { email: targetEmail }
           ]
         },
         data: {
@@ -367,8 +379,8 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
           mustChangePassword: false,
           temporaryPassword: null // Immediately invalidate temporary credentials
         }
-      });
-    }
+      })
+    ]);
 
     // Record Audit Log
     try {
@@ -494,11 +506,23 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Validate temporary password (supports hash, plain text, or master password 'Enx_sol_121006')
-    const isTempValid =
-      (await bcrypt.compare(temporaryPassword, user.password).catch(() => false)) ||
-      temporaryPassword === user.password ||
-      temporaryPassword === 'Enx_sol_121006';
+    // Validate temporary password (supports hash or plaintext comparison against issued credentials)
+    let isTempValid = await bcrypt.compare(temporaryPassword, user.password).catch(() => false);
+    if (!isTempValid) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { employeeId: user.employeeId || '' },
+            { email: user.email }
+          ]
+        }
+      });
+      if (emp) {
+        const isEmpTempBcrypt = emp.temporaryPassword ? await bcrypt.compare(temporaryPassword, emp.temporaryPassword).catch(() => false) : false;
+        const isEmpTempPlain = emp.temporaryPassword ? temporaryPassword === emp.temporaryPassword : false;
+        isTempValid = isEmpTempBcrypt || isEmpTempPlain;
+      }
+    }
 
     if (!isTempValid) {
       res.status(401).json({ error: 'Invalid temporary password provided by company.' });
@@ -508,29 +532,33 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
     // Hash new permanent password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update User
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        password: hashedPassword,
-        mustChangePassword: false
-      }
-    });
+    // Atomically synchronize User and Employee tables using Prisma transaction
+    const targetUserId = user.id;
+    const targetEmployeeId = user.employeeId || '';
+    const targetEmail = user.email;
 
-    // Invalidate temporary password on Employee
-    await prisma.employee.updateMany({
-      where: {
-        OR: [
-          { employeeId: user.employeeId || '' },
-          { email: user.email }
-        ]
-      },
-      data: {
-        password: hashedPassword,
-        mustChangePassword: false,
-        temporaryPassword: null
-      }
-    });
+    const [updatedUser] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id: targetUserId },
+        data: {
+          password: hashedPassword,
+          mustChangePassword: false
+        }
+      }),
+      prisma.employee.updateMany({
+        where: {
+          OR: [
+            { employeeId: targetEmployeeId },
+            { email: targetEmail }
+          ]
+        },
+        data: {
+          password: hashedPassword,
+          mustChangePassword: false,
+          temporaryPassword: null
+        }
+      })
+    ]);
 
     const token = jwt.sign(
       {

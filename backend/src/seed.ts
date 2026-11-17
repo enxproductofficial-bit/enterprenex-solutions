@@ -52,8 +52,9 @@ async function seed() {
     }
   }).catch(() => {});
 
-  // 4. Ensure official permanent founding users exist with master password Enx_sol_121006
-  const defaultPasswordHash = await bcrypt.hash('Enx_sol_121006', 10);
+  // 4. Ensure official permanent founding users exist with initial seed credentials
+  const seedPass = process.env.INITIAL_ADMIN_SEED_PASS || 'Enterprenex@Director2026';
+  const defaultPasswordHash = await bcrypt.hash(seedPass, 10);
 
   // Director / Super Admin
   await prisma.user.upsert({

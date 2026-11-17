@@ -5197,7 +5197,7 @@ export const TeamPage: React.FC = () => {
                   <span style={{ fontSize: '0.78rem', color: 'var(--adm-text-dim)', fontWeight: 600 }}>ACTIVE PASSWORD</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#f59e0b', fontSize: '0.9rem' }}>
-                      {showActivePassword ? (credentialEmp.password || 'Enx_sol_121006') : '••••••••••••'}
+                      {showActivePassword ? (credentialEmp.temporaryPassword || '[Encrypted Bcrypt Hash]') : '••••••••••••'}
                     </span>
                     <button
                       className="adm-btn adm-btn-secondary"
@@ -5210,7 +5210,7 @@ export const TeamPage: React.FC = () => {
                     <button
                       className="adm-btn adm-btn-secondary"
                       style={{ padding: '0.2rem 0.5rem', fontSize: '0.72rem' }}
-                      onClick={() => copyToClipboard(credentialEmp.password || 'Enx_sol_121006', 'pass')}
+                      onClick={() => copyToClipboard(credentialEmp.temporaryPassword || '[Secured Credentials]', 'pass')}
                     >
                       {copiedKey === 'pass' ? <Check size={12} color="#10b981" /> : <Copy size={12} />}
                       <span>{copiedKey === 'pass' ? 'Copied' : 'Copy'}</span>
@@ -5298,7 +5298,7 @@ export const TeamPage: React.FC = () => {
                 style={{ width: '100%', justifyContent: 'center', padding: '0.65rem' }}
                 onClick={() => {
                   const empIdVal = credentialEmp.employeeId || credentialEmp.id;
-                  const passVal = credentialEmp.password || 'Enx_sol_121006';
+                  const passVal = credentialEmp.temporaryPassword || '[Sent to Employee Email / Securely Provisioned]';
                   const approvalInfo =
                     credentialEmp.approvalStatus === 'Pending Director Approval'
                       ? '⚠️ Status: Pending Director Approval'

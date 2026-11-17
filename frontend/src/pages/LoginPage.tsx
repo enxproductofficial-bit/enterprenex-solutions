@@ -51,7 +51,6 @@ export const LoginPage: React.FC = () => {
     const inputEmail = rawInput.toLowerCase();
     const inputPassword = password.trim();
 
-    const REQUIRED_PASSWORD = 'Enx_sol_121006';
     const DIRECTOR_EMAILS = [
       'director@enterprenex.solutions',
       'rohit@enterprenex.solutions',
@@ -118,7 +117,6 @@ export const LoginPage: React.FC = () => {
 
           if (matchedEmp) {
             const isEmpPasswordValid =
-              inputPassword === REQUIRED_PASSWORD ||
               (matchedEmp.password && !matchedEmp.password.startsWith('$2a$') && inputPassword === matchedEmp.password) ||
               (matchedEmp.temporaryPassword && inputPassword === matchedEmp.temporaryPassword);
 
@@ -348,8 +346,7 @@ export const LoginPage: React.FC = () => {
     const tempPass = (matchedEmp.temporaryPassword || '').trim();
     const isPrevValid =
       cleanPrevPass === empPass ||
-      (tempPass && cleanPrevPass === tempPass) ||
-      cleanPrevPass === 'Enx_sol_121006';
+      (tempPass && cleanPrevPass === tempPass);
 
     if (!isPrevValid) {
       setIsActivating(false);
