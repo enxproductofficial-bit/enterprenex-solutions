@@ -6,17 +6,30 @@ import { emitNotification } from '../services/notification.service';
 
 const router = Router();
 
-// GET /api/v1/payroll (List payroll records)
+// GET /api/v1/payroll (List payroll records with strict role separation)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const isDirectorOrCfo = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.role === 'CFO' || req.user?.email?.includes('director');
+    const userRole = req.user?.role || '';
+    const userEmail = (req.user?.email || '').toLowerCase();
+    const userEmpId = req.user?.employeeId;
+
+    const isDirectorOrCfo =
+      userRole === 'Super Admin' ||
+      userRole.includes('Director') ||
+      userRole === 'CFO' ||
+      userRole === 'HR Manager' ||
+      userEmail.includes('director') ||
+      userEmail.includes('cfo');
+
     const { month, year, employeeId } = req.query as Record<string, string>;
 
     const where: any = {};
     if (!isDirectorOrCfo) {
+      // Regular employees are strictly restricted to their own payslips
       where.OR = [
-        { employeeId: req.user?.id },
-        { employeeEmail: req.user?.email }
+        ...(userEmpId ? [{ employeeId: userEmpId }] : []),
+        ...(req.user?.email ? [{ employeeEmail: { equals: req.user.email, mode: 'insensitive' } }] : []),
+        ...(req.user?.id ? [{ employeeId: req.user.id }] : [])
       ];
     } else {
       if (employeeId) where.employeeId = employeeId;
@@ -145,11 +158,24 @@ router.patch('/:id/approve', authenticateToken, requireRole(['Super Admin', 'Pro
   }
 });
 
-// PATCH /api/v1/payroll/:id/pay (Mark as paid and record disbursement reference)
-router.patch('/:id/pay', authenticateToken, requireRole(['Super Admin', 'Project Manager', 'CFO']), async (req: AuthRequest, res: Response): Promise<void> => {
+// PATCH /api/v1/payroll/:id/pay (Mark as paid - strictly requires prior executive approval)
+router.patch('/:id/pay', authenticateToken, requireRole(['Super Admin', 'CFO']), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { paymentMethod = 'NEFT/RTGS', paymentReference } = req.body;
+
+    const existing = await prisma.payrollRecord.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: 'Payroll record not found.' });
+      return;
+    }
+
+    if (existing.status !== 'Approved') {
+      res.status(400).json({
+        error: `Disbursement Blocked: Payroll record status is '${existing.status}'. Prior executive approval is mandatory before releasing payment.`
+      });
+      return;
+    }
 
     const ref = paymentReference || `UTR-${Date.now()}`;
 
@@ -182,7 +208,7 @@ router.patch('/:id/pay', authenticateToken, requireRole(['Super Admin', 'Project
   }
 });
 
-// GET /api/v1/payroll/:id/payslip (Puppeteer PDF download)
+// GET /api/v1/payroll/:id/payslip (Puppeteer PDF download with strict employee ID & email validation)
 router.get('/:id/payslip', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const record = await prisma.payrollRecord.findUnique({
@@ -195,9 +221,25 @@ router.get('/:id/payslip', authenticateToken, async (req: AuthRequest, res: Resp
     }
 
     // Role check: Employee can only download their own payslip
-    const isDirectorOrCfo = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.role === 'CFO' || req.user?.email?.includes('director');
-    if (!isDirectorOrCfo && req.user?.email !== record.employeeEmail && req.user?.id !== record.employeeId) {
-      res.status(403).json({ error: 'Unauthorized to download this payslip.' });
+    const userRole = req.user?.role || '';
+    const userEmail = (req.user?.email || '').toLowerCase();
+    const userEmpId = req.user?.employeeId;
+
+    const isDirectorOrCfo =
+      userRole === 'Super Admin' ||
+      userRole.includes('Director') ||
+      userRole === 'CFO' ||
+      userRole === 'HR Manager' ||
+      userEmail.includes('director') ||
+      userEmail.includes('cfo');
+
+    const isOwner =
+      (userEmail && userEmail === (record.employeeEmail || '').toLowerCase()) ||
+      (userEmpId && userEmpId === record.employeeId) ||
+      (req.user?.id === record.employeeId);
+
+    if (!isDirectorOrCfo && !isOwner) {
+      res.status(403).json({ error: 'Unauthorized to download this confidential payslip.' });
       return;
     }
 

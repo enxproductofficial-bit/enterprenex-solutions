@@ -6,25 +6,51 @@ import crypto from 'crypto';
 
 const router = Router();
 
-// GET /api/v1/documents (List vault documents)
+// GET /api/v1/documents (List vault documents with strict access partitioning)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { category, employeeId, accessPermission } = req.query as Record<string, string>;
-    const isDirectorOrAdmin =
-      req.user?.role === 'Super Admin' ||
-      req.user?.role === 'Project Manager' ||
-      req.user?.email?.includes('director');
+    const userRole = req.user?.role || '';
+    const userEmail = (req.user?.email || '').toLowerCase();
+    const userEmpId = req.user?.employeeId;
+
+    const isDirector =
+      userRole === 'Super Admin' ||
+      userRole.includes('Director') ||
+      userEmail.includes('director');
+
+    const isHR =
+      isDirector ||
+      userRole === 'HR Manager' ||
+      userRole.includes('HR') ||
+      req.user?.department === 'Human Resources' ||
+      userEmail.includes('hr');
+
+    const isManager = isDirector || userRole === 'Project Manager';
 
     const where: any = {};
     if (category) where.category = category;
-    if (employeeId) where.employeeId = employeeId;
-    if (accessPermission) where.accessPermission = accessPermission;
 
-    // Strict access control: regular employees cannot see 'Admin Only' or 'Executive' documents
-    if (!isDirectorOrAdmin) {
-      where.accessPermission = {
-        in: ['Public', 'Internal', 'Confidential']
-      };
+    if (isDirector || isHR) {
+      // HR and Executive Director have compliance vault visibility
+      if (employeeId) where.employeeId = employeeId;
+      if (accessPermission) where.accessPermission = accessPermission;
+    } else if (isManager) {
+      // Project Managers can access company technical/internal documents and department docs
+      where.accessPermission = { in: ['Public', 'Internal', 'Confidential'] };
+      if (employeeId) where.employeeId = employeeId;
+    } else {
+      // Regular employees can strictly ONLY view:
+      // 1. Company-wide Public / Internal documents (where employeeId is null)
+      // 2. Their OWN confidential records matching their Employee ID
+      where.OR = [
+        {
+          employeeId: null,
+          accessPermission: { in: ['Public', 'Internal'] }
+        },
+        ...(userEmpId ? [{ employeeId: userEmpId }] : []),
+        ...(req.user?.id ? [{ employeeId: req.user.id }] : [])
+      ];
     }
 
     const documents = await prisma.vaultDocument.findMany({
@@ -43,7 +69,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-// GET /api/v1/documents/:id (Get single document)
+// GET /api/v1/documents/:id (Get single document with permission check)
 router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const doc = await prisma.vaultDocument.findUnique({
@@ -53,6 +79,32 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
     if (!doc) {
       res.status(404).json({ error: 'Document not found.' });
       return;
+    }
+
+    const userRole = req.user?.role || '';
+    const userEmail = (req.user?.email || '').toLowerCase();
+    const userEmpId = req.user?.employeeId;
+
+    const isDirector =
+      userRole === 'Super Admin' ||
+      userRole.includes('Director') ||
+      userEmail.includes('director');
+
+    const isHR =
+      isDirector ||
+      userRole === 'HR Manager' ||
+      userRole.includes('HR') ||
+      req.user?.department === 'Human Resources' ||
+      userEmail.includes('hr');
+
+    if (!isDirector && !isHR) {
+      const isOwner = (userEmpId && doc.employeeId === userEmpId) || (doc.employeeId === req.user?.id);
+      const isPublicOrInternal = !doc.employeeId && (doc.accessPermission === 'Public' || doc.accessPermission === 'Internal');
+
+      if (!isOwner && !isPublicOrInternal) {
+        res.status(403).json({ error: 'Access Denied: You do not have permission to view or download this confidential document.' });
+        return;
+      }
     }
 
     res.json({
@@ -128,8 +180,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
   }
 });
 
-// PATCH /api/v1/documents/:id (Update document metadata or verification status)
-router.patch('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// PATCH /api/v1/documents/:id (Update document metadata or verification status - authorized staff only)
+router.patch('/:id', authenticateToken, requireRole(['Super Admin', 'Project Manager', 'HR Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const {

@@ -24,11 +24,12 @@ export function getNotificationModule(type: string, actionUrl?: string | null): 
   return 'System Alerts';
 }
 
-// Build query conditions based on role & identity
+// Build query conditions based on role & identity with strict access boundaries
 function buildNotificationFilter(user: any) {
   const role = (user?.role || '').toLowerCase();
   const email = (user?.email || '').toLowerCase();
   const dept = (user?.department || '').toLowerCase();
+  const employeeId = user?.employeeId;
 
   const isDirector =
     role.includes('admin') ||
@@ -51,44 +52,46 @@ function buildNotificationFilter(user: any) {
 
   const orConditions: any[] = [];
 
-  // Direct recipient matches
+  // 1. Direct recipient matches (highest precedence - confidential to this user)
   if (user?.email) {
-    orConditions.push({ recipientEmail: user.email });
-    orConditions.push({ recipientEmail: user.email.toLowerCase() });
+    orConditions.push({ recipientEmail: { equals: user.email, mode: 'insensitive' } });
   }
-  if (user?.employeeId) {
-    orConditions.push({ recipientEmployeeId: user.employeeId });
+  if (employeeId) {
+    orConditions.push({ recipientEmployeeId: employeeId });
   }
 
-  // Universal broadcasts
-  orConditions.push({ recipientRole: null });
-  orConditions.push({ recipientRole: 'ALL' });
-  orConditions.push({ recipientRole: 'All' });
+  // 2. Universal broadcasts (strictly unaddressed broadcast messages)
+  orConditions.push({
+    recipientRole: { in: ['ALL', 'All', 'EVERYONE', 'Everyone'] },
+    recipientEmail: null,
+    recipientEmployeeId: null
+  });
 
-  // Role-targeted alerts
+  // 3. Role-targeted alerts (only when NOT targeted to a specific individual)
+  const allowedRoles: string[] = [];
+
   if (isDirector) {
-    orConditions.push({ recipientRole: 'Super Admin' });
-    orConditions.push({ recipientRole: 'Director / CEO' });
-    orConditions.push({ recipientRole: 'Director' });
-    orConditions.push({ recipientRole: 'Leadership' });
+    allowedRoles.push('Super Admin', 'Director / CEO', 'Director', 'Leadership');
   }
 
   if (isManager) {
-    orConditions.push({ recipientRole: 'Project Manager' });
-    orConditions.push({ recipientRole: 'Manager' });
-    orConditions.push({ recipientRole: 'Management' });
+    allowedRoles.push('Project Manager', 'Manager', 'Management');
   }
 
   if (isHr) {
-    orConditions.push({ recipientRole: 'HR Manager' });
-    orConditions.push({ recipientRole: 'HR' });
-    orConditions.push({ recipientRole: 'Human Resources' });
+    allowedRoles.push('HR Manager', 'HR', 'Human Resources');
   }
 
   // Standard employee alerts
-  orConditions.push({ recipientRole: 'Employee' });
-  orConditions.push({ recipientRole: 'Team Member' });
-  orConditions.push({ recipientRole: 'Developer' });
+  allowedRoles.push('Employee', 'Team Member', 'Developer', 'Staff');
+
+  if (allowedRoles.length > 0) {
+    orConditions.push({
+      recipientRole: { in: allowedRoles },
+      recipientEmail: null,
+      recipientEmployeeId: null
+    });
+  }
 
   return { orConditions, isDirector, isManager, isHr };
 }
@@ -224,14 +227,40 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-// POST /api/notifications (Create / broadcast a new notification)
+// POST /api/notifications (Create / broadcast a new notification with role-based authorization)
 router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: 'Unauthorized.' });
+      return;
+    }
+
     const { type, title, message, recipientRole, recipientEmail, recipientEmployeeId, actionUrl } = req.body;
 
     if (!type || !title || !message) {
       res.status(400).json({ error: 'Type, title, and message are required.' });
       return;
+    }
+
+    const isDirectorOrManager =
+      user.role === 'Super Admin' ||
+      user.role === 'Project Manager' ||
+      user.role === 'HR Manager' ||
+      user.role?.includes('Director') ||
+      user.email?.includes('director');
+
+    // Broadcast or arbitrary targeting is restricted to leadership / management
+    if (!isDirectorOrManager) {
+      const isTargetingAdmin =
+        recipientRole === 'Super Admin' ||
+        recipientRole === 'Project Manager' ||
+        recipientRole === 'HR Manager';
+
+      if (!isTargetingAdmin && (recipientEmail || recipientEmployeeId || recipientRole === 'ALL')) {
+        res.status(403).json({ error: 'Access Denied: Regular employees can only submit requests/alerts directed to management.' });
+        return;
+      }
     }
 
     const notif = await createNotification({
@@ -250,10 +279,42 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
   }
 });
 
-// PUT /api/notifications/:id/read (Mark a single notification as read)
+// PUT /api/notifications/:id/read (Mark a single notification as read - with strict ownership verification)
 router.put('/:id/read', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: 'Unauthorized.' });
+      return;
+    }
+
     const { id } = req.params;
+    const existing = await prisma.ewmsNotification.findUnique({ where: { id } });
+
+    if (!existing) {
+      res.status(404).json({ error: 'Notification not found.' });
+      return;
+    }
+
+    const isDirector =
+      user.role === 'Super Admin' ||
+      user.role?.includes('Director') ||
+      user.email?.includes('director');
+
+    const isDirectRecipient =
+      (existing.recipientEmail && existing.recipientEmail.toLowerCase() === user.email?.toLowerCase()) ||
+      (existing.recipientEmployeeId && existing.recipientEmployeeId === user.employeeId);
+
+    const isBroadcastToRole =
+      !existing.recipientEmail &&
+      !existing.recipientEmployeeId &&
+      (existing.recipientRole === 'ALL' || existing.recipientRole === 'All' || existing.recipientRole === user.role);
+
+    if (!isDirector && !isDirectRecipient && !isBroadcastToRole) {
+      res.status(403).json({ error: 'Access forbidden: You cannot modify notifications belonging to another user.' });
+      return;
+    }
+
     const updated = await prisma.ewmsNotification.update({
       where: { id },
       data: { read: true }
@@ -262,7 +323,7 @@ router.put('/:id/read', authenticateToken, async (req: AuthRequest, res: Respons
     // Notify any active socket sessions that this notification was read
     try {
       emitRealtimeNotification({ ...updated, read: true });
-    } catch (e) {
+    } catch {
       // non-blocking
     }
 
