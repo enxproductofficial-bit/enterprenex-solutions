@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'enterprenex_enterprise_jwt_secret_2026_super_secure';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export interface AuthRequest extends Request {
   user?: {
@@ -13,92 +13,102 @@ export interface AuthRequest extends Request {
     department?: string;
   };
 }
+// AUTHENTICATE TOKEN
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
+export const authenticateToken = ( req: AuthRequest, res: Response,next: NextFunction): void => {
   const authHeader = req.headers['authorization'];
-  let token = authHeader && authHeader.split(' ')[1];
 
-  // Also support ?token= in query parameter
-  if (!token && req.query.token) {
-    token = String(req.query.token);
+  // Require a Bearer token
+  if (!authHeader || !authHeader.startsWith('Bearer ')) { res.status(401).json({
+      error: 'Access denied. Missing bearer authorization token.'
+    });
+    return;
   }
 
-  if (token === 'undefined' || token === 'null' || token === '') {
-    token = undefined;
+  const token = authHeader.slice(7).trim();
+
+  if (!token) { res.status(401).json({
+      error: 'Access denied. Missing bearer authorization token.'
+    });
+    return;
   }
 
-  // In local development, allow direct requests without manual bearer token
-  if (!token) {
-    if (process.env.NODE_ENV !== 'production') {
-      req.user = {
-        id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
-        email: 'director@enterprenex.solutions',
-        role: 'Super Admin',
-        name: 'Rohit Pawar',
-        employeeId: '202600000001'
-      };
-      next();
-      return;
-    }
-
-    res.status(401).json({ error: 'Access denied. Missing bearer authorization token.' });
+  // Require JWT secret configuration
+  if (!JWT_SECRET) { res.status(500).json({
+      error: 'Authentication service is not configured.'
+    });
     return;
   }
 
   try {
-    const verified = jwt.verify(token, JWT_SECRET) as any;
-    req.user = verified;
-    next();
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      req.user = {
-        id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
-        email: 'director@enterprenex.solutions',
-        role: 'Super Admin',
-        name: 'Rohit Pawar',
-        employeeId: '202600000001'
-      };
-      next();
+    const verified = jwt.verify(token, JWT_SECRET) as AuthRequest['user'];
+
+    // Validate required user information
+    if (!verified || !verified.id || !verified.role) { res.status(401).json({
+        error: 'Invalid authentication token.'
+      });
       return;
     }
-    res.status(403).json({ error: 'Invalid or expired authentication session token.' });
+
+    req.user = verified;
+    next();
+
+  } catch { res.status(401).json({
+      error: 'Invalid or expired authentication token.'
+    });
+  }
+};
+
+// OPTIONAL AUTHENTICATION
+export const optionalAuth = ( req: AuthRequest, res: Response, next: NextFunction ): void => {
+  const authHeader = req.headers['authorization'];
+// No token is acceptable for optional authentication
+  if (!authHeader) { next();
     return;
   }
-};
-
-export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers['authorization'];
-  let token = authHeader && authHeader.split(' ')[1];
-
-  if (!token && req.query.token) {
-    token = String(req.query.token);
+// Reject malformed authorization headers
+  if (!authHeader.startsWith('Bearer ')) { res.status(401).json({
+      error: 'Invalid authorization header.'
+    });
+    return;
   }
 
-  if (token === 'undefined' || token === 'null' || token === '') {
-    token = undefined;
+  const token = authHeader.slice(7).trim();
+  if (!token) {
+    res.status(401).json({
+      error: 'Missing bearer token.'
+    });
+    return;
   }
 
-  if (token) {
-    try {
-      const verified = jwt.verify(token, JWT_SECRET) as any;
-      req.user = verified;
-    } catch {
-      // Invalidate bad token quietly for optional auth
+  // Require JWT secret configuration
+  if (!JWT_SECRET) {
+    res.status(500).json({
+      error: 'Authentication service is not configured.'
+    });
+    return;
+  }
+
+  try {
+    const verified = jwt.verify(token, JWT_SECRET) as AuthRequest['user'];
+
+    if (!verified || !verified.id || !verified.role) { res.status(401).json({
+        error: 'Invalid authentication token.'
+      });
+      return;
     }
-  }
 
-  if (!req.user && process.env.NODE_ENV !== 'production') {
-    req.user = {
-      id: 'b4e4de9d-b85a-4f08-aad1-034058758b7a',
-      email: 'director@enterprenex.solutions',
-      role: 'Super Admin',
-      name: 'Rohit Pawar',
-      employeeId: '202600000001'
-    };
-  }
+    req.user = verified;
+    next();
 
-  next();
+  } catch {
+    res.status(401).json({
+      error: 'Invalid or expired authentication token.'
+    });
+  }
 };
+
+// ROLE-BASED AUTHORIZATION
 
 export const requireRole = (allowedRoles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
