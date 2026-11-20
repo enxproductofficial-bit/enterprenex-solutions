@@ -1,12 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { useAdmin } from '../context/AdminContext';
-import { X, Briefcase, Users, Target, FileText, CheckSquare, LifeBuoy, UploadCloud, FileCheck } from 'lucide-react';
+import { 
+  X, Briefcase, Users, Target, FileText, CheckSquare, LifeBuoy, 
+  UploadCloud, FileCheck, Maximize2, Minimize2, Plus, Trash2, 
+  Calculator, Building, Calendar, Sparkles, RefreshCw, Layers, ShieldCheck
+} from 'lucide-react';
 import type { ProjectStatus, TaskPriority, TaskColumn, VaultDocument } from '../types';
+import { INITIAL_CLIENTS, INITIAL_PROJECTS } from '../data/initialData';
 
 interface QuickCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultTab?: 'project' | 'client' | 'lead' | 'invoice' | 'task' | 'ticket' | 'document';
+}
+
+interface LineItemRow {
+  id: string;
+  description: string;
+  sacCode: string;
+  quantity: number;
+  rate: number;
+  taxPercent: number;
 }
 
 export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onClose, defaultTab = 'project' }) => {
@@ -24,11 +38,12 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
   const activeServiceList = safeServices.length > 0 ? safeServices : fallbackServices;
   const isEmployee = currentUser?.role === 'Team Member' || currentUser?.role === 'Developer';
   const [activeTab, setActiveTab] = useState<'project' | 'client' | 'lead' | 'invoice' | 'task' | 'ticket' | 'document'>(isEmployee ? 'ticket' : defaultTab);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   // Form states
   // 1. Project form
   const [pTitle, setPTitle] = useState('');
-  const [pClientId, setPClientId] = useState(clients[0]?.id || '');
+  const [pClientId, setPClientId] = useState(safeClients[0]?.id || '');
   const [pBudget, setPBudget] = useState(1000000);
   const [pCategory, setPCategory] = useState('Web Development');
   const [pStatus, setPStatus] = useState<ProjectStatus>('Planning');
@@ -56,23 +71,117 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
 
   // 4. Task form
   const [tTitle, setTTitle] = useState('');
-  const [tProjectId, setTProjectId] = useState(projects[0]?.id || '');
+  const [tProjectId, setTProjectId] = useState(safeProjects[0]?.id || '');
   const [tAssignedTo, setTAssignedTo] = useState(employees[0]?.name || 'Assigned Engineer');
   const [tPriority, setTPriority] = useState<TaskPriority>('Medium');
   const [tStatus] = useState<TaskColumn>('To Do');
   const [tDue, setTDue] = useState('2026-03-01');
   const [tDesc, setTDesc] = useState('');
 
-  // 5. Invoice form
-  const [iClientId, setIClientId] = useState(clients[0]?.id || '');
-  const [iAmount, setIAmount] = useState(500000);
-  const [iDesc, setIDesc] = useState('Milestone Delivery & Service Retainer');
-  const [iDue, setIDue] = useState('2026-03-15');
+  // 5. Executive Invoice & Quotation Workspace States
+  const [docType, setDocType] = useState<'Tax Invoice' | 'Quotation' | 'Proforma'>('Tax Invoice');
+  const [docNumber, setDocNumber] = useState('INV-2026-' + Math.floor(1000 + Math.random() * 9000));
+  const [iClientId, setIClientId] = useState(safeClients[0]?.id || '');
+  const [iProjectId, setIProjectId] = useState(safeProjects[0]?.id || '');
+  const [iIssueDate, setIIssueDate] = useState(new Date().toISOString().split('T')[0]);
+  const [iDue, setIDue] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return d.toISOString().split('T')[0];
+  });
+  const [gstType, setGstType] = useState<'intra' | 'inter' | 'zero'>('intra');
+  const [discountType, setDiscountType] = useState<'percent' | 'flat'>('percent');
+  const [discountVal, setDiscountVal] = useState<number>(0);
+  const [paymentTerms, setPaymentTerms] = useState('50% mobilization advance against PO, 50% upon milestone deliverables sign-off.');
+  const [quotationValidity, setQuotationValidity] = useState('Quotation valid for 30 calendar days from issue date.');
+  const [clientPoRef, setClientPoRef] = useState('');
+
+  const [lineItems, setLineItems] = useState<LineItemRow[]>([
+    {
+      id: 'it-1',
+      description: 'Enterprise Cloud Architecture & Distributed Microservices Engineering',
+      sacCode: '998314',
+      quantity: 1,
+      rate: 250000,
+      taxPercent: 18
+    },
+    {
+      id: 'it-2',
+      description: 'API Gateway Integration, Security Auditing & CI/CD Pipeline Setup',
+      sacCode: '998313',
+      quantity: 1,
+      rate: 150000,
+      taxPercent: 18
+    }
+  ]);
+
+  const handleAddLineItem = () => {
+    setLineItems(prev => [
+      ...prev,
+      {
+        id: 'it-' + Date.now(),
+        description: '',
+        sacCode: '998314',
+        quantity: 1,
+        rate: 50000,
+        taxPercent: 18
+      }
+    ]);
+  };
+
+  const handleRemoveLineItem = (id: string) => {
+    if (lineItems.length <= 1) return;
+    setLineItems(prev => prev.filter(it => it.id !== id));
+  };
+
+  const handleUpdateLineItem = (id: string, field: keyof LineItemRow, val: any) => {
+    setLineItems(prev => prev.map(it => it.id === id ? { ...it, [field]: val } : it));
+  };
+
+  const handleDocTypeChange = (newType: 'Tax Invoice' | 'Quotation' | 'Proforma') => {
+    setDocType(newType);
+    const prefix = newType === 'Quotation' ? 'QT-2026-' : newType === 'Proforma' ? 'PI-2026-' : 'INV-2026-';
+    setDocNumber(prefix + Math.floor(1000 + Math.random() * 9000));
+  };
+
+  const handleApplyPresetDays = (days: number) => {
+    const d = new Date(iIssueDate || Date.now());
+    d.setDate(d.getDate() + days);
+    setIDue(d.toISOString().split('T')[0]);
+  };
+
+  const handleApplyGlobalTax = (taxRate: number) => {
+    setLineItems(prev => prev.map(it => ({ ...it, taxPercent: taxRate })));
+  };
+
+  // Live Financial Calculations
+  const subtotal = lineItems.reduce((acc, it) => acc + ((Number(it.quantity) || 0) * (Number(it.rate) || 0)), 0);
+  const computedDiscount = discountType === 'percent'
+    ? Math.round((subtotal * (Number(discountVal) || 0)) / 100)
+    : Math.min(subtotal, Number(discountVal) || 0);
+  const taxableAmount = Math.max(0, subtotal - computedDiscount);
+
+  let totalTax = 0;
+  if (gstType !== 'zero') {
+    lineItems.forEach(it => {
+      const lineTotal = (Number(it.quantity) || 0) * (Number(it.rate) || 0);
+      const lineRatio = subtotal > 0 ? lineTotal / subtotal : 0;
+      const lineTaxable = taxableAmount * lineRatio;
+      const lineTax = Math.round((lineTaxable * (Number(it.taxPercent) || 0)) / 100);
+      totalTax += lineTax;
+    });
+  }
+  const cgst = gstType === 'intra' ? Math.round(totalTax / 2) : 0;
+  const sgst = gstType === 'intra' ? (totalTax - cgst) : 0;
+  const igst = gstType === 'inter' ? totalTax : 0;
+  const grandTotal = taxableAmount + totalTax;
+
+  const currentSelectedClient = safeClients.find(c => c.id === iClientId) || safeClients[0];
 
   // 6. Ticket form
   const [tkSubject, setTkSubject] = useState('');
-  const [tkClientName, setTkClientName] = useState(clients[0]?.companyName || '');
-  const [tkClientEmail, setTkClientEmail] = useState(clients[0]?.primaryContact?.email || currentUser?.email || '');
+  const [tkClientName, setTkClientName] = useState(safeClients[0]?.companyName || '');
+  const [tkClientEmail, setTkClientEmail] = useState(safeClients[0]?.primaryContact?.email || currentUser?.email || '');
   const [tkPriority, setTkPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
   const [tkCategory, setTkCategory] = useState<string>('Bug Fix');
   const [tkAssignedTo, setTkAssignedTo] = useState(employees[0]?.name || 'Support Specialist');
@@ -179,24 +288,26 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
     const selClient = safeClients.find(c => c.id === iClientId) || safeClients[0];
-    const subtotal = Number(iAmount);
-    const tax = Math.round(subtotal * 0.18);
-    const total = subtotal + tax;
 
     addInvoice({
-      invoiceNumber: 'INV-2026-' + Date.now().toString().slice(-4),
+      invoiceNumber: docNumber || ((docType === 'Quotation' ? 'QT-2026-' : 'INV-2026-') + Date.now().toString().slice(-4)),
       clientName: selClient ? selClient.companyName : 'Enterprise Client',
-      clientId: iClientId,
-      issueDate: new Date().toISOString().split('T')[0],
+      clientId: selClient?.id || iClientId,
+      projectId: iProjectId || undefined,
+      issueDate: iIssueDate,
       dueDate: iDue,
-      items: [
-        { description: iDesc, quantity: 1, rate: subtotal, taxPercent: 18, amount: subtotal }
-      ],
+      items: lineItems.map(it => ({
+        description: it.description || 'Enterprise Technology Deliverable Scope',
+        quantity: Number(it.quantity) || 1,
+        rate: Number(it.rate) || 0,
+        taxPercent: Number(it.taxPercent) || 18,
+        amount: (Number(it.quantity) || 1) * (Number(it.rate) || 0)
+      })),
       subtotal,
-      taxAmount: tax,
-      totalAmount: total,
-      status: 'Pending',
-      type: 'Tax Invoice'
+      taxAmount: totalTax,
+      totalAmount: grandTotal,
+      status: docType === 'Quotation' ? 'Draft' : 'Pending',
+      type: docType
     });
     onClose();
   };
@@ -261,15 +372,51 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
 
   return (
     <div className="adm-modal-overlay" onClick={onClose}>
-      <div className="adm-modal-content adm-modal-lg" onClick={e => e.stopPropagation()}>
-        <div className="adm-modal-header">
+      <div 
+        className={`adm-modal-content ${activeTab === 'invoice' ? 'adm-modal-xl' : 'adm-modal-lg'}`}
+        style={activeTab === 'invoice' ? {
+          maxWidth: isFullScreen ? '98vw' : '1160px',
+          width: '96vw',
+          maxHeight: isFullScreen ? '96vh' : '92vh',
+          height: isFullScreen ? '96vh' : 'auto',
+          overflowY: 'auto',
+          transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+        } : {}}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="adm-modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Quick Create Action</h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>Instantly record items across Enterprenex enterprise operations</p>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {activeTab === 'invoice' ? 'Executive Quotation & Invoice Suite' : 'Quick Create Action'}
+              {activeTab === 'invoice' && (
+                <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+                  GST Compliant
+                </span>
+              )}
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
+              {activeTab === 'invoice' 
+                ? 'Issue GST-compliant commercial quotations, proforma estimates, and tax invoices'
+                : 'Instantly record items across Enterprenex enterprise operations'}
+            </p>
           </div>
-          <button className="adm-modal-close" onClick={onClose}>
-            <X size={18} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {activeTab === 'invoice' && (
+              <button
+                type="button"
+                className="adm-btn adm-btn-secondary"
+                style={{ padding: '5px 10px', fontSize: '0.76rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                title={isFullScreen ? 'Exit Fullscreen' : 'Expand Fullscreen Workspace'}
+              >
+                {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                <span>{isFullScreen ? 'Contract View' : 'Full Screen'}</span>
+              </button>
+            )}
+            <button className="adm-modal-close" onClick={onClose}>
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Tab Buttons - Scoped by RBAC (Zero direct CRUD for general workforce) */}
@@ -289,7 +436,7 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
                 <CheckSquare size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Task
               </button>
               <button className={`adm-tab-btn ${activeTab === 'invoice' ? 'active' : ''}`} onClick={() => setActiveTab('invoice')}>
-                <FileText size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Invoice
+                <FileText size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Quotation / Invoice
               </button>
               <button className={`adm-tab-btn ${activeTab === 'ticket' ? 'active' : ''}`} onClick={() => setActiveTab('ticket')}>
                 <LifeBuoy size={15} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} /> Ticket
@@ -314,9 +461,16 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
                 <input className="adm-input" required value={pTitle} onChange={e => setPTitle(e.target.value)} placeholder="e.g. HealthCare AI Scanner" />
               </div>
               <div className="adm-form-group">
-                <label className="adm-form-label">Client *</label>
+                <label className="adm-form-label">Client Account *</label>
                 <select className="adm-select" value={pClientId} onChange={e => setPClientId(e.target.value)}>
-                  {safeClients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
+                  {safeClients.length === 0 ? (
+                    <option value="">-- No Corporate Clients Registered (Add Client First) --</option>
+                  ) : (
+                    <>
+                      <option value="">-- Choose Corporate Client Account --</option>
+                      {safeClients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
+                    </>
+                  )}
                 </select>
               </div>
             </div>
@@ -506,48 +660,420 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
           </form>
         )}
 
-        {/* 5. INVOICE FORM */}
+        {/* 5. EXECUTIVE INVOICE & QUOTATION WORKSPACE */}
         {activeTab === 'invoice' && (
-          <form onSubmit={handleCreateInvoice}>
-            <div className="adm-grid-2">
-              <div className="adm-form-group">
-                <label className="adm-form-label">Select Client *</label>
-                <select className="adm-select" value={iClientId} onChange={e => setIClientId(e.target.value)}>
-                  {safeClients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
+          <form onSubmit={handleCreateInvoice} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Document Type Switcher */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--adm-border)', borderRadius: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text-muted)' }}>Document Mode:</span>
+                <div style={{ display: 'flex', gap: '4px', background: 'var(--adm-bg, #0f141c)', padding: '3px', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleDocTypeChange('Tax Invoice')}
+                    style={{
+                      padding: '5px 12px',
+                      fontSize: '0.8rem',
+                      fontWeight: docType === 'Tax Invoice' ? 700 : 500,
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: docType === 'Tax Invoice' ? 'var(--adm-primary, #6366f1)' : 'transparent',
+                      color: docType === 'Tax Invoice' ? '#fff' : 'var(--adm-text-muted)'
+                    }}
+                  >
+                    Tax Invoice
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDocTypeChange('Quotation')}
+                    style={{
+                      padding: '5px 12px',
+                      fontSize: '0.8rem',
+                      fontWeight: docType === 'Quotation' ? 700 : 500,
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: docType === 'Quotation' ? '#10b981' : 'transparent',
+                      color: docType === 'Quotation' ? '#fff' : 'var(--adm-text-muted)'
+                    }}
+                  >
+                    Commercial Quotation
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDocTypeChange('Proforma')}
+                    style={{
+                      padding: '5px 12px',
+                      fontSize: '0.8rem',
+                      fontWeight: docType === 'Proforma' ? 700 : 500,
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: docType === 'Proforma' ? '#f59e0b' : 'transparent',
+                      color: docType === 'Proforma' ? '#fff' : 'var(--adm-text-muted)'
+                    }}
+                  >
+                    Proforma Invoice
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--adm-text-muted)' }}>
+                <ShieldCheck size={14} style={{ color: '#10b981' }} />
+                <span>GST Act 2017 & HSN/SAC Billing Engine</span>
+              </div>
+            </div>
+
+            {/* Document Header Metadata Grid */}
+            <div className="adm-grid-4" style={{ gap: '0.85rem' }}>
+              <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                <label className="adm-form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>{docType === 'Quotation' ? 'Quotation Ref #' : 'Invoice Ref #'} *</span>
+                  <button type="button" onClick={handleRegenerateDocNumber} title="Generate new sequence" style={{ background: 'transparent', border: 'none', color: 'var(--adm-primary)', cursor: 'pointer', padding: 0 }}>
+                    <RefreshCw size={12} />
+                  </button>
+                </label>
+                <input className="adm-input" required value={docNumber} onChange={e => setDocNumber(e.target.value)} />
+              </div>
+              <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                <label className="adm-form-label">Issue Date *</label>
+                <input className="adm-input" type="date" required value={iIssueDate} onChange={e => setIIssueDate(e.target.value)} />
+              </div>
+              <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                <label className="adm-form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{docType === 'Quotation' ? 'Validity Date *' : 'Payment Due Date *'}</span>
+                  <span style={{ fontSize: '0.72rem', display: 'flex', gap: '4px' }}>
+                    <button type="button" onClick={() => handleApplyPresetDays(15)} style={{ background: 'none', border: 'none', color: 'var(--adm-primary)', cursor: 'pointer', padding: 0 }}>+15d</button>
+                    <button type="button" onClick={() => handleApplyPresetDays(30)} style={{ background: 'none', border: 'none', color: 'var(--adm-primary)', cursor: 'pointer', padding: 0 }}>+30d</button>
+                  </span>
+                </label>
+                <input className="adm-input" type="date" required value={iDue} onChange={e => setIDue(e.target.value)} />
+              </div>
+              <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                <label className="adm-form-label">Associated Project</label>
+                <select className="adm-select" value={iProjectId} onChange={e => setIProjectId(e.target.value)}>
+                  <option value="">-- General Enterprise Account --</option>
+                  {safeProjects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
                 </select>
               </div>
-              <div className="adm-form-group">
-                <label className="adm-form-label">Subtotal Amount (₹ Excl. GST) *</label>
-                <input className="adm-input" type="number" required value={iAmount} onChange={e => setIAmount(Number(e.target.value))} />
+            </div>
+
+            {/* Client Account Selector & Live Details Card */}
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--adm-border)', borderRadius: '10px', padding: '1rem' }}>
+              <div className="adm-form-group" style={{ marginBottom: currentSelectedClient ? '0.75rem' : 0 }}>
+                <label className="adm-form-label">Select Client *</label>
+                <select className="adm-select" value={iClientId} onChange={e => setIClientId(e.target.value)}>
+                  {safeClients.length === 0 ? (
+                    <option value="">-- No Corporate Clients Registered (Add Client First) --</option>
+                  ) : (
+                    <>
+                      <option value="">-- Choose Corporate Client Account --</option>
+                      {safeClients.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.companyName} {c.industry ? `(${c.industry})` : ''}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {currentSelectedClient && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', background: 'var(--adm-bg, #0f141c)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)', fontSize: '0.8rem' }}>
+                  <div>
+                    <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>Corporate Entity</div>
+                    <div style={{ fontWeight: 600, color: '#fff' }}>{currentSelectedClient.companyName}</div>
+                    <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.75rem' }}>{currentSelectedClient.industry}</div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>GSTIN & Tax Registration</div>
+                    <div style={{ fontWeight: 600, color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <ShieldCheck size={13} /> {currentSelectedClient.gstin || '27AABCA1234F1Z5'}
+                    </div>
+                    <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.75rem' }}>Active State Tax Filing</div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>Primary Commercial Contact</div>
+                    <div style={{ fontWeight: 600, color: '#fff' }}>{currentSelectedClient.primaryContact?.name || 'Authorized Signatory'}</div>
+                    <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.75rem' }}>{currentSelectedClient.primaryContact?.email || 'accounts@client.com'}</div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>Billing Location</div>
+                    <div style={{ color: '#fff', fontSize: '0.78rem' }}>{currentSelectedClient.city || 'Mumbai'}, India</div>
+                    <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem' }}>State Place of Supply: 27 (MH)</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* GST & Tax Controls Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', padding: '0.65rem 0.85rem', background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff' }}>Tax Application:</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                  <input type="radio" name="gstType" checked={gstType === 'intra'} onChange={() => setGstType('intra')} />
+                  <span>Intra-State (CGST 9% + SGST 9%)</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                  <input type="radio" name="gstType" checked={gstType === 'inter'} onChange={() => setGstType('inter')} />
+                  <span>Inter-State (IGST 18%)</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                  <input type="radio" name="gstType" checked={gstType === 'zero'} onChange={() => setGstType('zero')} />
+                  <span>Zero-Rated / Export (0%)</span>
+                </label>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Quick Tax:</span>
+                <button type="button" onClick={() => handleApplyGlobalTax(18)} className="adm-btn adm-btn-secondary" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>18%</button>
+                <button type="button" onClick={() => handleApplyGlobalTax(12)} className="adm-btn adm-btn-secondary" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>12%</button>
+                <button type="button" onClick={() => handleApplyGlobalTax(5)} className="adm-btn adm-btn-secondary" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>5%</button>
+                <button type="button" onClick={() => handleApplyGlobalTax(0)} className="adm-btn adm-btn-secondary" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>0%</button>
               </div>
             </div>
-            <div className="adm-grid-2">
-              <div className="adm-form-group">
-                <label className="adm-form-label">Line Item Description</label>
-                <input className="adm-input" value={iDesc} onChange={e => setIDesc(e.target.value)} />
+
+            {/* Deliverables / Line Items Table */}
+            <div style={{ background: 'var(--adm-card-bg, #161d27)', border: '1px solid var(--adm-border)', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>Deliverables & Scope Breakdown</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{lineItems.length} Deliverable Item(s)</span>
               </div>
-              <div className="adm-form-group">
-                <label className="adm-form-label">Payment Due Date</label>
-                <input className="adm-input" type="date" value={iDue} onChange={e => setIDue(e.target.value)} />
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--adm-border)', color: 'var(--adm-text-muted)' }}>
+                      <th style={{ padding: '8px 12px', width: '36px' }}>#</th>
+                      <th style={{ padding: '8px 12px', minWidth: '260px' }}>Scope & Milestone Description *</th>
+                      <th style={{ padding: '8px 12px', width: '100px' }}>SAC/HSN</th>
+                      <th style={{ padding: '8px 12px', width: '80px' }}>Qty</th>
+                      <th style={{ padding: '8px 12px', width: '130px' }}>Unit Rate (₹)</th>
+                      <th style={{ padding: '8px 12px', width: '90px' }}>GST %</th>
+                      <th style={{ padding: '8px 12px', width: '130px', textAlign: 'right' }}>Total (₹)</th>
+                      <th style={{ padding: '8px 12px', width: '40px', textAlign: 'center' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lineItems.map((item, idx) => {
+                      const itemTotal = (Number(item.quantity) || 0) * (Number(item.rate) || 0);
+                      return (
+                        <tr key={item.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <td style={{ padding: '8px 12px', color: 'var(--adm-text-muted)', fontWeight: 600 }}>{idx + 1}</td>
+                          <td style={{ padding: '8px 12px' }}>
+                            <input
+                              className="adm-input"
+                              style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                              value={item.description}
+                              onChange={e => handleUpdateLineItem(item.id, 'description', e.target.value)}
+                              placeholder="e.g. Milestone 1: Distributed Architecture & Cloud Deployment"
+                              required
+                            />
+                          </td>
+                          <td style={{ padding: '8px 12px' }}>
+                            <input
+                              className="adm-input"
+                              style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                              value={item.sacCode}
+                              onChange={e => handleUpdateLineItem(item.id, 'sacCode', e.target.value)}
+                              placeholder="998314"
+                            />
+                          </td>
+                          <td style={{ padding: '8px 12px' }}>
+                            <input
+                              className="adm-input"
+                              type="number"
+                              min="1"
+                              style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                              value={item.quantity}
+                              onChange={e => handleUpdateLineItem(item.id, 'quantity', Number(e.target.value))}
+                              required
+                            />
+                          </td>
+                          <td style={{ padding: '8px 12px' }}>
+                            <input
+                              className="adm-input"
+                              type="number"
+                              min="0"
+                              style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                              value={item.rate}
+                              onChange={e => handleUpdateLineItem(item.id, 'rate', Number(e.target.value))}
+                              required
+                            />
+                          </td>
+                          <td style={{ padding: '8px 12px' }}>
+                            <select
+                              className="adm-select"
+                              style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                              value={item.taxPercent}
+                              onChange={e => handleUpdateLineItem(item.id, 'taxPercent', Number(e.target.value))}
+                            >
+                              <option value="18">18%</option>
+                              <option value="12">12%</option>
+                              <option value="5">5%</option>
+                              <option value="0">0%</option>
+                            </select>
+                          </td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600, color: '#fff' }}>
+                            ₹{itemTotal.toLocaleString('en-IN')}
+                          </td>
+                          <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveLineItem(item.id)}
+                              disabled={lineItems.length <= 1}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: lineItems.length <= 1 ? 'rgba(255,255,255,0.1)' : '#ef4444',
+                                cursor: lineItems.length <= 1 ? 'not-allowed' : 'pointer',
+                                padding: '4px'
+                              }}
+                              title="Delete Item"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid var(--adm-border)' }}>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-secondary"
+                  onClick={handleAddLineItem}
+                  style={{ fontSize: '0.8rem', padding: '5px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Plus size={14} /> Add Deliverable Item
+                </button>
               </div>
             </div>
-            <div style={{ padding: '0.85rem 1rem', background: 'var(--adm-bg)', borderRadius: 'var(--adm-radius)', marginBottom: '1.25rem', fontSize: '0.85rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span style={{ color: 'var(--adm-text-muted)' }}>Subtotal:</span>
-                <span>₹{iAmount.toLocaleString('en-IN')}</span>
+
+            {/* Commercial Adjustments & Financial Summary Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+              {/* Left Column: Commercial Terms & Notes */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                  <label className="adm-form-label">Commercial Terms & Payment Milestones</label>
+                  <textarea
+                    className="adm-textarea"
+                    rows={3}
+                    value={paymentTerms}
+                    onChange={e => setPaymentTerms(e.target.value)}
+                    placeholder="e.g. 50% mobilization advance, balance upon final acceptance testing sign-off."
+                  />
+                </div>
+                <div className="adm-grid-2" style={{ gap: '0.75rem' }}>
+                  <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                    <label className="adm-form-label">Client PO / Contract Ref</label>
+                    <input
+                      className="adm-input"
+                      value={clientPoRef}
+                      onChange={e => setClientPoRef(e.target.value)}
+                      placeholder="PO-2026-ENX-001"
+                    />
+                  </div>
+                  <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                    <label className="adm-form-label">Quotation Validity</label>
+                    <input
+                      className="adm-input"
+                      value={quotationValidity}
+                      onChange={e => setQuotationValidity(e.target.value)}
+                      placeholder="30 Calendar Days"
+                    />
+                  </div>
+                </div>
+                <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--adm-border)', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+                  <strong style={{ color: '#fff' }}>Settlement Account:</strong> HDFC Bank Current A/C 50200088991122 (IFSC: HDFC0001234) • ENTERPRENEX SOLUTIONS PVT. LTD.
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span style={{ color: 'var(--adm-text-muted)' }}>GST (18%):</span>
-                <span>₹{Math.round(iAmount * 0.18).toLocaleString('en-IN')}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, color: 'var(--adm-primary)' }}>
-                <span>Total Payable:</span>
-                <span>₹{Math.round(iAmount * 1.18).toLocaleString('en-IN')}</span>
+
+              {/* Right Column: Live Computation Card */}
+              <div style={{ background: 'var(--adm-bg, #0f141c)', border: '1px solid var(--adm-border)', borderRadius: '10px', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                  <span style={{ color: 'var(--adm-text-muted)' }}>Deliverable Subtotal:</span>
+                  <span style={{ fontWeight: 600, color: '#fff' }}>₹{subtotal.toLocaleString('en-IN')}</span>
+                </div>
+
+                {/* Discount Row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', padding: '6px 0', borderTop: '1px dashed var(--adm-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--adm-text-muted)' }}>Commercial Discount:</span>
+                    <select
+                      value={discountType}
+                      onChange={e => setDiscountType(e.target.value as any)}
+                      style={{ background: 'transparent', border: '1px solid var(--adm-border)', borderRadius: '4px', color: '#fff', fontSize: '0.72rem', padding: '2px 4px' }}
+                    >
+                      <option value="percent">% Discount</option>
+                      <option value="flat">₹ Flat</option>
+                    </select>
+                    <input
+                      type="number"
+                      min="0"
+                      value={discountVal}
+                      onChange={e => setDiscountVal(Number(e.target.value))}
+                      style={{ width: '60px', background: 'transparent', border: '1px solid var(--adm-border)', borderRadius: '4px', color: '#fff', fontSize: '0.75rem', padding: '2px 4px' }}
+                    />
+                  </div>
+                  <span style={{ color: '#10b981', fontWeight: 600 }}>- ₹{computedDiscount.toLocaleString('en-IN')}</span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '6px 0', borderTop: '1px solid var(--adm-border)' }}>
+                  <span style={{ color: 'var(--adm-text-muted)' }}>Taxable Value:</span>
+                  <span style={{ fontWeight: 600, color: '#fff' }}>₹{taxableAmount.toLocaleString('en-IN')}</span>
+                </div>
+
+                {/* GST Breakdown */}
+                {gstType === 'intra' && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                      <span style={{ color: 'var(--adm-text-muted)' }}>Central GST (CGST 9%):</span>
+                      <span style={{ color: '#fff' }}>₹{cgst.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                      <span style={{ color: 'var(--adm-text-muted)' }}>State GST (SGST 9%):</span>
+                      <span style={{ color: '#fff' }}>₹{sgst.toLocaleString('en-IN')}</span>
+                    </div>
+                  </>
+                )}
+
+                {gstType === 'inter' && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                    <span style={{ color: 'var(--adm-text-muted)' }}>Integrated GST (IGST 18%):</span>
+                    <span style={{ color: '#fff' }}>₹{igst.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+
+                {gstType === 'zero' && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#10b981' }}>
+                    <span>Zero-Rated (Export / SEZ Supply):</span>
+                    <span>₹0 (0% GST)</span>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', paddingTop: '0.85rem', borderTop: '2px solid var(--adm-border)' }}>
+                  <div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>
+                      {docType === 'Quotation' ? 'Total Quotation Estimate:' : 'Total Payable (Incl. GST):'}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>Indian Rupees (INR)</div>
+                  </div>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#10b981' }}>
+                    ₹{grandTotal.toLocaleString('en-IN')}
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button type="button" className="adm-btn adm-btn-secondary" onClick={onClose}>Cancel</button>
-              <button type="submit" className="adm-btn adm-btn-primary">Generate Invoice</button>
+
+            {/* Modal Actions */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--adm-border)' }}>
+              <button type="button" className="adm-btn adm-btn-secondary" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className="adm-btn adm-btn-primary" style={{ padding: '8px 24px', fontWeight: 700 }}>
+                {docType === 'Quotation' ? 'Generate Commercial Quotation' : docType === 'Proforma' ? 'Generate Proforma Invoice' : 'Issue Official Tax Invoice'}
+              </button>
             </div>
           </form>
         )}

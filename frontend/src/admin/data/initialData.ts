@@ -28,7 +28,7 @@ import type {
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-1',
-    name: 'Rohit Pawar',
+    name: 'Managing Director',
     email: 'director@enterprenex.solutions',
     role: 'Super Admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
@@ -48,18 +48,6 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     status: 'Active',
     lastLogin: 'Just now',
     phone: '+91-9226860060'
-  },
-  {
-    id: 'usr-3',
-    name: 'POLAMREDDY REVANTH REDDY',
-    email: 'revanth@enterprenex.solutions',
-    role: 'Developer',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    department: 'Engineering',
-    status: 'Active',
-    lastLogin: 'Just now',
-    phone: '+919440829762',
-    employeeId: 'ZCX-EMP-0001'
   }
 ];
 
@@ -201,62 +189,7 @@ export const INITIAL_INVOICES: Invoice[] = [];
 
 export const INITIAL_EXPENSES: ExpenseRecord[] = [];
 
-export const INITIAL_EMPLOYEES: Employee[] = [
-  {
-    id: 'emp-1',
-    employeeId: '202600000001',
-    name: 'Rohit Pawar',
-    role: 'Managing Director & Lead Architect',
-    department: 'Engineering',
-    email: 'director@enterprenex.solutions',
-    phone: '+91-9226860060',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    salaryMonthly: 150000,
-    workloadPercentage: 0,
-    performanceRating: 5.0,
-    status: 'Active',
-    approvalStatus: 'Approved',
-    isAccountActivated: true,
-    panNumber: 'AAXPE1206M',
-    aadhaarNumber: '782390124567',
-    kycStatus: 'Verified',
-    employmentType: 'Full Time',
-    workMode: 'Hybrid',
-    kpiScore: 96.0,
-    okrScore: 95.0,
-    skills: ['System Architecture', 'Cloud Infrastructure', 'React/Next.js', 'AI/ML'],
-    currentProjects: [],
-    joinDate: '2026-01-01'
-  },
-  {
-    id: 'emp-2',
-    employeeId: 'ZCX-EMP-0001',
-    name: 'POLAMREDDY REVANTH REDDY',
-    role: 'Full Stack Developer (Employee)',
-    department: 'Engineering',
-    email: 'revanth@enterprenex.solutions',
-    personalEmail: 'polamreddyrevanth.82@gmail.com',
-    phone: '+919440829762',
-    personalPhone: '+919440829762',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    salaryMonthly: 85000,
-    workloadPercentage: 0,
-    performanceRating: 5.0,
-    status: 'Active',
-    approvalStatus: 'Approved',
-    isAccountActivated: true,
-    panNumber: 'BBYPR4591K',
-    aadhaarNumber: '918234567812',
-    kycStatus: 'Verified',
-    employmentType: 'Full Time',
-    workMode: 'Hybrid',
-    kpiScore: 94.2,
-    okrScore: 92.0,
-    skills: ['Full Stack Architecture', 'React 19', 'TypeScript', 'Node.js', 'PostgreSQL', 'Tailwind CSS'],
-    currentProjects: [],
-    joinDate: '2026-11-10'
-  }
-];
+export const INITIAL_EMPLOYEES: Employee[] = [];
 
 export const INITIAL_ATTENDANCE: AttendanceRecord[] = [];
 

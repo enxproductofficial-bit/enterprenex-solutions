@@ -6,6 +6,7 @@ const EmployeePreviewDrawer = lazy(() =>
   import('../components/EmployeePreviewDrawer').then(m => ({ default: m.EmployeePreviewDrawer }))
 );
 import {
+  Users,
   Plus,
   CheckCircle2,
   Phone,
@@ -167,12 +168,14 @@ export const TeamPage: React.FC = () => {
       n === 'Rohit P' ||
       n.startsWith('Rohit P.') ||
       n.startsWith('Rohit P ') ||
+      n.toLowerCase().includes('rohit') ||
+      n.includes('Rohit Pawar') ||
       emp.employeeId === '202600000001' ||
       emp.email === 'director@enterprenex.solutions'
     ) {
-      return 'Rohit Pawar';
+      return 'Managing Director';
     }
-    return n.replace(/\bRohit\s+P(\.|\b)/gi, 'Rohit Pawar');
+    return n.replace(/\bRohit\s+Pawar(\s*\(Managing Director\))?/gi, 'Managing Director').replace(/\bRohit\s+P(\.|\b)/gi, 'Managing Director').replace(/\bRohit\b/gi, 'Managing Director');
   };
 
   const [tab, setTab] = useState<'roster' | 'attendance' | 'leaves' | 'payroll' | 'policies' | 'workload' | 'skills' | 'kpis'>(isRegularEmployee ? 'attendance' : 'roster');
@@ -421,7 +424,7 @@ export const TeamPage: React.FC = () => {
             <div class="footer-sig">
               <div>
                 <div>This is a computer-generated official payslip issued under corporate seal.</div>
-                <div>Authorized by: <strong>Rohit Pawar (Managing Director)</strong></div>
+                <div>Authorized by: <strong>Managing Director</strong></div>
               </div>
               <div style="text-align: right;">
                 <div>Enterprenex Enterprise Work Management Suite</div>
@@ -493,7 +496,7 @@ export const TeamPage: React.FC = () => {
               </div>
               <div style="text-align: right;">
                 <div>For <strong>ENTERPRENEX SOLUTIONS PRIVATE LIMITED</strong></div>
-                <div style="margin-top: 24px; font-weight: 700;">Rohit Pawar (Managing Director)</div>
+                <div style="margin-top: 24px; font-weight: 700;">Managing Director</div>
                 <div style="color: #64748b;">Authorized Signatory</div>
               </div>
             </div>
@@ -516,7 +519,7 @@ export const TeamPage: React.FC = () => {
   const [role, setRole] = useState('');
   const [designation, setDesignation] = useState('');
   const [department, setDepartment] = useState<Employee['department']>('Engineering');
-  const [reportingManager, setReportingManager] = useState('Rohit Pawar (Managing Director)');
+  const [reportingManager, setReportingManager] = useState('Managing Director');
   const [employmentType, setEmploymentType] = useState<'Full Time' | 'Part Time' | 'Intern' | 'Contract' | 'Freelancer'>('Full Time');
   const [joinDate, setJoinDate] = useState(new Date().toISOString().split('T')[0]);
   const [accountStatus, setAccountStatus] = useState<Employee['status']>('Active');
@@ -770,7 +773,7 @@ export const TeamPage: React.FC = () => {
       startDate: certStartDate,
       completionDate: certEndDate,
       grade: certGrade,
-      mentor: 'Rohit Pawar (Managing Director)',
+      mentor: 'Managing Director',
       issuedBy: currentUser?.name || 'Managing Director',
       issuedAt: new Date().toISOString(),
     };
@@ -795,7 +798,7 @@ export const TeamPage: React.FC = () => {
       url: '#',
       employeeId: certRecipientEmpId.trim() || undefined,
       verificationStatus: 'Verified',
-      verifiedBy: 'Rohit Pawar (Managing Director)',
+      verifiedBy: 'Managing Director',
       verifiedAt: new Date().toISOString()
     });
 
@@ -887,7 +890,7 @@ export const TeamPage: React.FC = () => {
           <div class="footer-section">
             <!-- Managing Director Signature Block -->
             <div class="sig-block">
-              <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px;"><img src="${ROHIT_SIGNATURE_BASE64}" alt="Rohit Pawar Signature" style="height: 48px; max-width: 140px; object-fit: contain; filter: contrast(1.15);" /></div>
+              <div style="height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: 2px;"><img src="${ROHIT_SIGNATURE_BASE64}" alt="Authorized Signature" style="height: 48px; max-width: 140px; object-fit: contain; filter: contrast(1.15);" /></div>
               <div style="font-size: 8px; color: #0284c7; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px;">✓ Digitally Certified</div>
               <div class="sig-line">MANAGING DIRECTOR</div>
               <div class="sig-role">Enterprenex Solutions Pvt Ltd</div>
@@ -1133,7 +1136,7 @@ export const TeamPage: React.FC = () => {
     setDesignation('');
     setGovernanceRole('Employee');
     setDepartment('Engineering');
-    setReportingManager('Rohit Pawar (Managing Director)');
+    setReportingManager('Managing Director');
     setEmploymentType('Full Time');
     setJoinDate(new Date().toISOString().split('T')[0]);
     setAccountStatus('Active');
@@ -1206,7 +1209,7 @@ export const TeamPage: React.FC = () => {
       role: role ? `${role} (${governanceRole})` : `${governanceRole}`,
       designation: designation || role || 'Software Engineer',
       department,
-      reportingManager: reportingManager || 'Rohit Pawar (Managing Director)',
+      reportingManager: reportingManager || 'Managing Director',
       address: address.trim() || undefined,
       probationPeriod: probationPeriod || '3 Months',
       resumeUrl: resumeUrl || undefined,
@@ -1226,7 +1229,7 @@ export const TeamPage: React.FC = () => {
       performanceRating: 5.0,
       status: accountStatus || 'Active',
       approvalStatus: initialApprovalStatus,
-      approvedBy: initialApprovalStatus === 'Approved' ? (currentUser?.name || 'Rohit Pawar (Managing Director)') : undefined,
+      approvedBy: initialApprovalStatus === 'Approved' ? (currentUser?.name || 'Managing Director') : undefined,
       approvedAt: initialApprovalStatus === 'Approved' ? new Date().toISOString() : undefined,
       panNumber: finalPan || undefined,
       panDocUrl: panDocUrl || undefined,
@@ -1548,7 +1551,7 @@ export const TeamPage: React.FC = () => {
                     <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '2px' }}>
                       {isDirector
                         ? 'Employees cannot log into the workspace portal until you approve their 12-digit Employee ID and credentials.'
-                        : 'Credentials registered by HR are awaiting approval from Managing Director (Rohit Pawar - director@enterprenex.solutions).'}
+                        : 'Credentials registered by HR are awaiting approval from Managing Director (director@enterprenex.solutions).'}
                     </div>
                   </div>
                 </div>
@@ -1562,7 +1565,7 @@ export const TeamPage: React.FC = () => {
                         pendingEmployees.forEach(emp => {
                           updateEmployee(emp.id, {
                             approvalStatus: 'Approved',
-                            approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
+                            approvedBy: currentUser?.name || 'Managing Director',
                             approvedAt: new Date().toISOString()
                           });
                         });
@@ -1630,8 +1633,25 @@ export const TeamPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="adm-grid-3">
-              {displayedEmployees.map(emp => {
+            {displayedEmployees.length === 0 ? (
+              <div className="adm-card" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--adm-text-dim)' }}>
+                <Users size={42} style={{ margin: '0 auto 1rem', opacity: 0.35, color: 'var(--adm-primary)' }} />
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--adm-text)', marginBottom: '0.35rem' }}>
+                  No Personnel Registered in Directory
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', maxWidth: '440px', margin: '0 auto 1.25rem', lineHeight: 1.5 }}>
+                  The institutional workforce roster is fresh and clean. Click below to register your first corporate team member.
+                </p>
+                {canManageTeam && (
+                  <button className="adm-btn adm-btn-primary" onClick={openAddMemberModal} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Plus size={15} />
+                    <span>Onboard First Employee</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="adm-grid-3">
+                {displayedEmployees.map(emp => {
                 const displayEmpId = emp.employeeId || (emp.id.startsWith('emp-') ? `EPX-10${emp.id.replace('emp-', '')}` : emp.id);
                 const isPending = emp.approvalStatus === 'Pending Approval' || emp.approvalStatus === 'Pending Director Approval';
                 const isRejected = emp.approvalStatus === 'Rejected';
@@ -1755,7 +1775,7 @@ export const TeamPage: React.FC = () => {
                         <p style={{ margin: '0 0 8px 0', fontSize: '0.72rem', color: '#cbd5e1', lineHeight: 1.4 }}>
                           {isDirector
                             ? 'Employee was registered by HR. Click below to approve credentials and enable portal login.'
-                            : 'Waiting for Managing Director (Rohit Pawar - director@enterprenex.solutions) to approve login access.'}
+                            : 'Waiting for Managing Director (director@enterprenex.solutions) to approve login access.'}
                         </p>
 
                         {isDirector ? (
@@ -1767,7 +1787,7 @@ export const TeamPage: React.FC = () => {
                               onClick={() => {
                                 updateEmployee(emp.id, {
                                   approvalStatus: 'Approved',
-                                  approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
+                                  approvedBy: currentUser?.name || 'Managing Director',
                                   approvedAt: new Date().toISOString()
                                 });
                                 showToast('Login Approved', `Authorized portal login for ${emp.name} (${displayEmpId}).`, 'success');
@@ -1797,7 +1817,7 @@ export const TeamPage: React.FC = () => {
                             onClick={() => {
                               const text =
                                 `*ENTERPRENEX APPROVAL REQUEST*\n\n` +
-                                `Managing Director Rohit Pawar, please approve login for new employee:\n` +
+                                `Managing Director, please approve login for new employee:\n` +
                                 `*Name:* ${emp.name}\n` +
                                 `*Employee ID:* ${displayEmpId}\n` +
                                 `*Official Email:* ${emp.email}\n` +
@@ -1837,7 +1857,7 @@ export const TeamPage: React.FC = () => {
                             onClick={() => {
                               updateEmployee(emp.id, {
                                 approvalStatus: 'Approved',
-                                approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
+                                approvedBy: currentUser?.name || 'Managing Director',
                                 approvedAt: new Date().toISOString()
                               });
                               showToast('Login Approved', `Restored portal login for ${emp.name}.`, 'success');
@@ -2229,6 +2249,7 @@ export const TeamPage: React.FC = () => {
                 );
               })}
             </div>
+            )}
           </div>
         );
       })()}
@@ -2983,7 +3004,7 @@ export const TeamPage: React.FC = () => {
       {tab === 'payroll' && (() => {
         const targetEmp = employees.find(e => e.email === currentUser?.email) || employees[0] || {
           id: 'EPX-001',
-          name: currentUser?.name || 'Rohit Pawar',
+          name: currentUser?.name || 'Managing Director',
           role: 'Managing Director',
           department: 'Executive Management',
           salaryMonthly: 125000,
@@ -3598,10 +3619,10 @@ export const TeamPage: React.FC = () => {
                       rating: 5,
                       verifiedRating: 5,
                       isVerified: true,
-                      verifiedBy: 'Rohit Pawar (Managing Director)'
+                      verifiedBy: 'Managing Director'
                     }))
                   : [
-                      { name: 'Full-Stack Development', category: 'Backend', level: 'Expert' as const, rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar (Managing Director)' }
+                      { name: 'Full-Stack Development', category: 'Backend', level: 'Expert' as const, rating: 5, verifiedRating: 5, isVerified: true, verifiedBy: 'Managing Director' }
                     ];
 
                 const filteredSkills = matrix.filter(s => {
@@ -4333,7 +4354,7 @@ export const TeamPage: React.FC = () => {
                   {selectedPolicyModal.title}
                 </h3>
                 <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: 'var(--adm-text-dim)' }}>
-                  Effective Date: {selectedPolicyModal.effectiveDate} &bull; Approved by: Rohit Pawar (Managing Director)
+                  Effective Date: {selectedPolicyModal.effectiveDate} &bull; Approved by: Managing Director
                 </p>
               </div>
               <button className="adm-modal-close" onClick={() => setSelectedPolicyModal(null)}>
@@ -4713,7 +4734,7 @@ export const TeamPage: React.FC = () => {
                 <div className="adm-form-group">
                   <label className="adm-form-label">Reporting Manager *</label>
                   <select className="adm-select" value={reportingManager} onChange={e => setReportingManager(e.target.value)}>
-                    <option value="Rohit Pawar (Managing Director)">Rohit Pawar (Managing Director)</option>
+                    <option value="Managing Director">Managing Director</option>
                     {employees
                       .filter(e => e.role.toLowerCase().includes('manager') || e.role.toLowerCase().includes('lead') || e.role.toLowerCase().includes('director'))
                       .map(e => (
@@ -5104,7 +5125,7 @@ export const TeamPage: React.FC = () => {
                   </span>
                 ) : (
                   <span>
-                    ⏳ <strong>Director Approval Required:</strong> As HR, after adding this team member, login access will be pending until Managing Director (Rohit Pawar - director@enterprenex.solutions) reviews and approves the credentials.
+                    ⏳ <strong>Director Approval Required:</strong> As HR, after adding this team member, login access will be pending until Managing Director (director@enterprenex.solutions) reviews and approves the credentials.
                   </span>
                 )}
               </div>
@@ -5242,7 +5263,7 @@ export const TeamPage: React.FC = () => {
                         onClick={() => {
                           updateEmployee(credentialEmp.id, {
                             approvalStatus: 'Approved',
-                            approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
+                            approvedBy: currentUser?.name || 'Managing Director',
                             approvedAt: new Date().toISOString()
                           });
                           setCredentialEmp(prev => prev ? { ...prev, approvalStatus: 'Approved' } : null);
@@ -6267,7 +6288,7 @@ export const TeamPage: React.FC = () => {
                 </div>
 
                 <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--adm-border)', borderRadius: '8px', padding: '0.75rem', fontSize: '0.75rem', color: 'var(--adm-text-dim)', marginBottom: '1.25rem' }}>
-                  🛡️ <strong>Statutory Authority:</strong> Authorized by Managing Director (Rohit Pawar) & HR Governance. Once issued, this credential will be verifiable worldwide on the Enterprenex public portal.
+                  🛡️ <strong>Statutory Authority:</strong> Authorized by Managing Director & HR Governance. Once issued, this credential will be verifiable worldwide on the Enterprenex public portal.
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
@@ -6400,7 +6421,7 @@ export const TeamPage: React.FC = () => {
             onApproveLogin={emp => {
               updateEmployee(emp.id, {
                 approvalStatus: 'Approved',
-                approvedBy: currentUser?.name || 'Rohit Pawar (Managing Director)',
+                approvedBy: currentUser?.name || 'Managing Director',
                 approvedAt: new Date().toISOString()
               });
               setSelectedEmployee(prev => (prev && prev.id === emp.id ? { ...prev, approvalStatus: 'Approved' } : prev));

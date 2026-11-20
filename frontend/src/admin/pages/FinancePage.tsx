@@ -25,10 +25,15 @@ import {
   FileText,
   AlertTriangle,
   Layers,
-  Briefcase
+  Briefcase,
+  Maximize2,
+  Minimize2,
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 import type { Invoice, ExpenseRecord, Employee } from '../types';
 import { COMPANY_LOGO_BASE64, COMPANY_SEAL_BASE64, COMPANY_WATERMARK_BASE64 } from '../data/companyLogo';
+import { INITIAL_CLIENTS, INITIAL_PROJECTS } from '../data/initialData';
 
 const InvoicePreviewDrawer = lazy(() =>
   import('../components/InvoicePreviewDrawer').then(m => ({ default: m.InvoicePreviewDrawer }))
@@ -78,7 +83,7 @@ export const FinancePage: React.FC = () => {
       signatureStatus: 'Digitally Signed (DocuSign)',
       slaUptime: '99.95%',
       incidentSla: '1 Hour Critical SLA',
-      accountOwner: 'Rohit Pawar',
+      accountOwner: 'Managing Director',
       satisfactionRating: 4.9,
       renewalAlertActive: true
     },
@@ -112,19 +117,11 @@ export const FinancePage: React.FC = () => {
       signatureStatus: 'Under Renewal Negotiation',
       slaUptime: '99.5%',
       incidentSla: '4 Hour Standard SLA',
-      accountOwner: 'Rohit Pawar',
+      accountOwner: 'Managing Director',
       satisfactionRating: 4.7,
       renewalAlertActive: true
     }
   ]);
-
-  // Corporate Liquid Treasury Reserves
-  const bankBalances = [
-    { bank: 'HDFC Bank Ltd', accountName: 'Primary Operational Account', accountNo: 'A/C 5020008492019', balance: 4285000, type: 'Operating Current', ifsc: 'HDFC0000240' },
-    { bank: 'ICICI Bank Ltd', accountName: 'Statutory GST & Tax Reserve', accountNo: 'A/C 104928109284', balance: 1450000, type: 'Tax Reserve', ifsc: 'ICIC0000104' },
-    { bank: 'Kotak Mahindra Bank', accountName: 'Client Project Escrow Reserve', accountNo: 'A/C 82019482910', balance: 1800000, type: 'Escrow Liquidity', ifsc: 'KKBK0000921' }
-  ];
-  const totalLiquidReserves = bankBalances.reduce((sum, b) => sum + b.balance, 0);
 
   // Upcoming Payment Obligations
   const paymentObligations = [
@@ -144,16 +141,16 @@ export const FinancePage: React.FC = () => {
 
   // Approved Employee Reimbursements State
   const [reimbursements, setReimbursements] = useState([
-    { id: 'rm-1', employee: 'Rahul Sharma', title: 'Client Onsite Solution Architecture (Bangalore Hub)', amount: 14850, receiptAttached: true, status: 'Approved', approvedBy: 'Rohit Pawar', disburseDate: '2026-10-25' },
+    { id: 'rm-1', employee: 'Rahul Sharma', title: 'Client Onsite Solution Architecture (Bangalore Hub)', amount: 14850, receiptAttached: true, status: 'Approved', approvedBy: 'Managing Director', disburseDate: '2026-10-25' },
     { id: 'rm-2', employee: 'Ananya Verma', title: 'AWS Certified Solutions Architect Official Exam Fee', amount: 12500, receiptAttached: true, status: 'Approved', approvedBy: 'Jyoti (PM)', disburseDate: '2026-10-25' },
-    { id: 'rm-3', employee: 'Devendra K.', title: 'Client Dinner & Partner Engagement Hospitality', amount: 8400, receiptAttached: true, status: 'Pending Approval', approvedBy: 'Rohit Pawar', disburseDate: '2026-11-01' }
+    { id: 'rm-3', employee: 'Devendra K.', title: 'Client Dinner & Partner Engagement Hospitality', amount: 8400, receiptAttached: true, status: 'Pending Approval', approvedBy: 'Managing Director', disburseDate: '2026-11-01' }
   ]);
 
   // Purchase Orders (PO) State
   const [purchaseOrders, setPurchaseOrders] = useState([
-    { id: 'PO-2026-081', vendor: 'Amazon Web Services (AWS)', item: 'Annual Reserved Cloud Instances & Kubernetes Cluster', amount: 2520000, status: 'Executed', date: '2026-08-15', authorizedBy: 'Rohit Pawar' },
-    { id: 'PO-2026-084', vendor: 'GitHub Enterprise Inc.', item: 'Enterprise Suite Tier 2 (50 CI/CD Developer Seats)', amount: 780000, status: 'Active', date: '2026-09-01', authorizedBy: 'Rohit Pawar' },
-    { id: 'PO-2026-089', vendor: 'CyberSecurity SOC 2 Auditor', item: 'Type II Attestation & Institutional Pen Test Audit', amount: 450000, status: 'In Review', date: '2026-10-10', authorizedBy: 'Rohit Pawar' }
+    { id: 'PO-2026-081', vendor: 'Amazon Web Services (AWS)', item: 'Annual Reserved Cloud Instances & Kubernetes Cluster', amount: 2520000, status: 'Executed', date: '2026-08-15', authorizedBy: 'Managing Director' },
+    { id: 'PO-2026-084', vendor: 'GitHub Enterprise Inc.', item: 'Enterprise Suite Tier 2 (50 CI/CD Developer Seats)', amount: 780000, status: 'Active', date: '2026-09-01', authorizedBy: 'Managing Director' },
+    { id: 'PO-2026-089', vendor: 'CyberSecurity SOC 2 Auditor', item: 'Type II Attestation & Institutional Pen Test Audit', amount: 450000, status: 'In Review', date: '2026-10-10', authorizedBy: 'Managing Director' }
   ]);
 
   // New Contract Modal State
@@ -163,13 +160,107 @@ export const FinancePage: React.FC = () => {
   const [newCtrValue, setNewCtrValue] = useState(2500000);
   const [newCtrSla, setNewCtrSla] = useState('99.9% Uptime');
 
+  const safeClients = Array.isArray(clients) ? clients : [];
+  const safeProjects = Array.isArray(projects) ? projects : [];
+
   // Form states
-  const [fClientId, setFClientId] = useState(clients[0]?.id || '');
-  const [fProjectId, setFProjectId] = useState(projects[0]?.id || '');
+  const [fIsFullScreen, setFIsFullScreen] = useState(false);
+  const [fDocNumber, setFDocNumber] = useState('INV-2026-' + Math.floor(1000 + Math.random() * 9000));
+  const [fClientId, setFClientId] = useState(safeClients[0]?.id || '');
+  const [fProjectId, setFProjectId] = useState(safeProjects[0]?.id || '');
   const [fAmount, setFAmount] = useState(500000);
   const [fDesc, setFDesc] = useState('Enterprise Milestone Delivery & Software Services');
   const [fDueDate, setFDueDate] = useState('2026-03-15');
   const [fType, setFType] = useState<Invoice['type']>('Tax Invoice');
+  const [fGstType, setFGstType] = useState<'intra' | 'inter' | 'zero'>('intra');
+  const [fDiscountType, setFDiscountType] = useState<'percent' | 'flat'>('percent');
+  const [fDiscountVal, setFDiscountVal] = useState<number>(0);
+  const [fPaymentTerms, setFPaymentTerms] = useState('50% mobilization advance against PO, 50% upon milestone deliverables sign-off.');
+  const [fQuotationValidity, setFQuotationValidity] = useState('Quotation valid for 30 calendar days from issue date.');
+  const [fClientPoRef, setFClientPoRef] = useState('');
+
+  interface FLineItemRow {
+    id: string;
+    description: string;
+    sacCode: string;
+    quantity: number;
+    rate: number;
+    taxPercent: number;
+  }
+
+  const [fLineItems, setFLineItems] = useState<FLineItemRow[]>([
+    {
+      id: 'fit-1',
+      description: 'Enterprise Cloud Architecture & Distributed Microservices Engineering',
+      sacCode: '998314',
+      quantity: 1,
+      rate: 250000,
+      taxPercent: 18
+    },
+    {
+      id: 'fit-2',
+      description: 'API Gateway Integration, Security Auditing & CI/CD Pipeline Setup',
+      sacCode: '998313',
+      quantity: 1,
+      rate: 150000,
+      taxPercent: 18
+    }
+  ]);
+
+  const handleAddFLineItem = () => {
+    setFLineItems(prev => [
+      ...prev,
+      {
+        id: 'fit-' + Date.now(),
+        description: '',
+        sacCode: '998314',
+        quantity: 1,
+        rate: 50000,
+        taxPercent: 18
+      }
+    ]);
+  };
+
+  const handleRemoveFLineItem = (id: string) => {
+    if (fLineItems.length <= 1) return;
+    setFLineItems(prev => prev.filter(it => it.id !== id));
+  };
+
+  const handleUpdateFLineItem = (id: string, field: keyof FLineItemRow, val: any) => {
+    setFLineItems(prev => prev.map(it => it.id === id ? { ...it, [field]: val } : it));
+  };
+
+  const handleFDocTypeChange = (newType: Invoice['type']) => {
+    setFType(newType);
+    const prefix = newType === 'Quotation' ? 'QT-2026-' : newType === 'Proforma' ? 'PI-2026-' : 'INV-2026-';
+    setFDocNumber(prefix + Math.floor(1000 + Math.random() * 9000));
+  };
+
+  const handleApplyGlobalTaxF = (taxRate: number) => {
+    setFLineItems(prev => prev.map(it => ({ ...it, taxPercent: taxRate })));
+  };
+
+  const fSubtotal = fLineItems.reduce((acc, it) => acc + ((Number(it.quantity) || 0) * (Number(it.rate) || 0)), 0);
+  const fComputedDiscount = fDiscountType === 'percent'
+    ? Math.round((fSubtotal * (Number(fDiscountVal) || 0)) / 100)
+    : Math.min(fSubtotal, Number(fDiscountVal) || 0);
+  const fTaxableAmount = Math.max(0, fSubtotal - fComputedDiscount);
+
+  let fTotalTax = 0;
+  if (fGstType !== 'zero') {
+    fLineItems.forEach(it => {
+      const lineTotal = (Number(it.quantity) || 0) * (Number(it.rate) || 0);
+      const lineRatio = fSubtotal > 0 ? lineTotal / fSubtotal : 0;
+      const lineTaxable = fTaxableAmount * lineRatio;
+      const lineTax = Math.round((lineTaxable * (Number(it.taxPercent) || 0)) / 100);
+      fTotalTax += lineTax;
+    });
+  }
+  const fCgst = fGstType === 'intra' ? Math.round(fTotalTax / 2) : 0;
+  const fSgst = fGstType === 'intra' ? (fTotalTax - fCgst) : 0;
+  const fIgst = fGstType === 'inter' ? fTotalTax : 0;
+  const fGrandTotal = fTaxableAmount + fTotalTax;
+  const fCurrentClient = safeClients.find(c => c.id === fClientId) || safeClients[0];
 
   // Expense form state
   const [eCategory, setECategory] = useState<ExpenseRecord['category']>('Infrastructure & Cloud');
@@ -196,28 +287,29 @@ export const FinancePage: React.FC = () => {
     return matchSearch && matchStatus;
   });
 
-  const selectedClient = clients.find(c => c.id === selectedInvoice?.clientId || c.companyName === selectedInvoice?.clientName);
+  const selectedClient = safeClients.find(c => c.id === selectedInvoice?.clientId || c.companyName === selectedInvoice?.clientName);
 
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
-    const selClient = clients.find(c => c.id === fClientId);
-    const subtotal = Number(fAmount);
-    const tax = Math.round(subtotal * 0.18);
-    const total = subtotal + tax;
+    const selClient = safeClients.find(c => c.id === fClientId) || safeClients[0];
 
     addInvoice({
-      invoiceNumber: (fType === 'Tax Invoice' ? 'INV-2026-' : 'QUOT-2026-') + Math.floor(100 + Math.random() * 900),
+      invoiceNumber: fDocNumber,
       clientName: selClient ? selClient.companyName : 'Enterprise Client',
-      clientId: fClientId,
-      projectId: fProjectId,
+      clientId: selClient?.id || fClientId,
+      projectId: fProjectId || undefined,
       issueDate: new Date().toISOString().split('T')[0],
       dueDate: fDueDate,
-      items: [
-        { description: fDesc, quantity: 1, rate: subtotal, taxPercent: 18, amount: subtotal }
-      ],
-      subtotal,
-      taxAmount: tax,
-      totalAmount: total,
+      items: fLineItems.map(it => ({
+        description: it.description || 'Enterprise Technology Deliverable Scope',
+        quantity: Number(it.quantity) || 1,
+        rate: Number(it.rate) || 0,
+        taxPercent: Number(it.taxPercent) || 18,
+        amount: (Number(it.quantity) || 1) * (Number(it.rate) || 0)
+      })),
+      subtotal: fSubtotal,
+      taxAmount: fTotalTax,
+      totalAmount: fGrandTotal,
       status: fType === 'Quotation' ? 'Draft' : 'Pending',
       type: fType
     });
@@ -595,7 +687,7 @@ export const FinancePage: React.FC = () => {
                 </div>
 
                 <div class="sig-box">
-                  <div class="sig-script">Rohit Pawar</div>
+                  <div class="sig-script">Managing Director</div>
                   <div class="sig-line">MANAGING DIRECTOR</div>
                   <div style="font-size: 9px; color: #64748b;">Enterprenex Solutions Pvt. Ltd.</div>
                 </div>
@@ -690,7 +782,7 @@ export const FinancePage: React.FC = () => {
               </div>
               <img src="${COMPANY_SEAL_BASE64}" class="seal" alt="Seal" />
               <div style="text-align: right;">
-                <div class="sig-text">Rohit Pawar</div>
+                <div class="sig-text">Managing Director</div>
                 <div style="font-size: 11px; font-weight: 700;">Authorized Signatory</div>
                 <div style="font-size: 10px; color: #64748b;">Enterprenex Solutions Pvt. Ltd.</div>
               </div>
@@ -925,35 +1017,64 @@ export const FinancePage: React.FC = () => {
       {/* ── 0. EXECUTIVE FINANCE DASHBOARD & P&L ── */}
       {tab === 'dashboard' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          {/* Liquid Treasury Reserves & Bank Balances */}
+          {/* Live Inflow & Revenue Realization Overview */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
               <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--adm-text)' }}>
-                Corporate Liquid Treasury Reserves & Connected Bank Balances
+                Corporate Revenue Realization & Collections Overview
               </div>
               <span className="adm-badge adm-badge-success" style={{ fontSize: '0.75rem' }}>
-                Total Treasury Reserves: ₹{(totalLiquidReserves / 100000).toFixed(2)}L
+                Realized Revenue: ₹{(totalPaidRevenue / 100000).toFixed(2)}L
               </span>
             </div>
             <div className="adm-grid-3">
-              {bankBalances.map((b, idx) => (
-                <div key={idx} className="adm-card" style={{ padding: '1rem 1.25rem', position: 'relative' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--adm-text)' }}>{b.bank}</div>
-                      <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)' }}>{b.accountName}</div>
-                    </div>
-                    <span className="adm-badge adm-badge-neutral" style={{ fontSize: '0.68rem' }}>{b.type}</span>
+              <div className="adm-card" style={{ padding: '1rem 1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--adm-text)' }}>Realized Inflows</div>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)' }}>Verified Client Payments</div>
                   </div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--adm-success)', margin: '0.5rem 0' }}>
-                    ₹{(b.balance / 100000).toFixed(2)}L
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--adm-text-dim)', borderTop: '1px solid var(--adm-border)', paddingTop: '0.4rem' }}>
-                    <span>{b.accountNo}</span>
-                    <span>IFSC: {b.ifsc}</span>
-                  </div>
+                  <span className="adm-badge adm-badge-success" style={{ fontSize: '0.68rem' }}>Settled</span>
                 </div>
-              ))}
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--adm-success)', margin: '0.5rem 0' }}>
+                  ₹{(totalPaidRevenue / 100000).toFixed(2)}L
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', borderTop: '1px solid var(--adm-border)', paddingTop: '0.4rem' }}>
+                  {invoices.filter(i => i.status === 'Paid').length} Completed Invoices
+                </div>
+              </div>
+
+              <div className="adm-card" style={{ padding: '1rem 1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--adm-text)' }}>Accounts Receivable</div>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)' }}>Pending Milestone Invoices</div>
+                  </div>
+                  <span className="adm-badge adm-badge-warning" style={{ fontSize: '0.68rem' }}>Pipeline</span>
+                </div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f59e0b', margin: '0.5rem 0' }}>
+                  ₹{(totalOutstanding / 100000).toFixed(2)}L
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', borderTop: '1px solid var(--adm-border)', paddingTop: '0.4rem' }}>
+                  {invoices.filter(i => i.status === 'Pending' || i.status === 'Overdue').length} Pending Client Clearances
+                </div>
+              </div>
+
+              <div className="adm-card" style={{ padding: '1rem 1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--adm-text)' }}>Net Operating Surplus</div>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)' }}>Collections Minus Expenses</div>
+                  </div>
+                  <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.68rem' }}>Operational</span>
+                </div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--adm-primary)', margin: '0.5rem 0' }}>
+                  ₹{Math.max(0, (totalPaidRevenue - totalExpenses) / 100000).toFixed(2)}L
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', borderTop: '1px solid var(--adm-border)', paddingTop: '0.4rem' }}>
+                  Operating Margin: {totalPaidRevenue > 0 ? `${Math.round(((totalPaidRevenue - totalExpenses) / totalPaidRevenue) * 100)}%` : '0%'}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1963,61 +2084,466 @@ export const FinancePage: React.FC = () => {
         </Suspense>
       )}
 
-      {/* ── CREATE INVOICE MODAL ── */}
+      {/* ── CREATE INVOICE & QUOTATION FULL-SCREEN WORKSPACE ── */}
       {showAddInvoiceModal && (
         <div className="adm-modal-overlay" onClick={() => setShowAddInvoiceModal(false)}>
-          <div className="adm-modal-content" onClick={e => e.stopPropagation()}>
-            <div className="adm-modal-header">
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text, #1a1a1a)' }}>
-                Generate Tax Invoice / Quotation
-              </h3>
-              <button type="button" className="adm-modal-close" onClick={() => setShowAddInvoiceModal(false)}>
-                <X size={18} />
-              </button>
+          <div
+            className="adm-modal-content adm-modal-xl"
+            style={{
+              maxWidth: fIsFullScreen ? '98vw' : '1160px',
+              width: '96vw',
+              maxHeight: fIsFullScreen ? '96vh' : '92vh',
+              height: fIsFullScreen ? '96vh' : 'auto',
+              overflowY: 'auto',
+              transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="adm-modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Enterprise Quotation & Invoice Suite
+                  <span className="adm-badge adm-badge-primary" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+                    GST Compliant
+                  </span>
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)' }}>
+                  Issue GST-compliant commercial quotations, proforma estimates, and tax invoices
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn-secondary"
+                  style={{ padding: '5px 10px', fontSize: '0.76rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                  onClick={() => setFIsFullScreen(!fIsFullScreen)}
+                  title={fIsFullScreen ? 'Exit Fullscreen' : 'Expand Fullscreen Workspace'}
+                >
+                  {fIsFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                  <span>{fIsFullScreen ? 'Contract View' : 'Full Screen'}</span>
+                </button>
+                <button type="button" className="adm-modal-close" onClick={() => setShowAddInvoiceModal(false)}>
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
-            <form onSubmit={handleCreateInvoice}>
-              <div className="adm-grid-2">
-                <div className="adm-form-group">
-                  <label className="adm-form-label">Select Client *</label>
-                  <select className="adm-select" value={fClientId} onChange={e => setFClientId(e.target.value)}>
-                    {clients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
-                  </select>
+            <form onSubmit={handleCreateInvoice} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Document Type Switcher */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--adm-border)', borderRadius: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text-muted)' }}>Document Mode:</span>
+                  <div style={{ display: 'flex', gap: '4px', background: 'var(--adm-bg, #0f141c)', padding: '3px', borderRadius: '8px', border: '1px solid var(--adm-border)' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleFDocTypeChange('Tax Invoice')}
+                      style={{
+                        padding: '5px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: fType === 'Tax Invoice' ? 700 : 500,
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: fType === 'Tax Invoice' ? 'var(--adm-primary, #6366f1)' : 'transparent',
+                        color: fType === 'Tax Invoice' ? '#fff' : 'var(--adm-text-muted)'
+                      }}
+                    >
+                      Tax Invoice
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleFDocTypeChange('Quotation')}
+                      style={{
+                        padding: '5px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: fType === 'Quotation' ? 700 : 500,
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: fType === 'Quotation' ? '#10b981' : 'transparent',
+                        color: fType === 'Quotation' ? '#fff' : 'var(--adm-text-muted)'
+                      }}
+                    >
+                      Commercial Quotation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleFDocTypeChange('Proforma')}
+                      style={{
+                        padding: '5px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: fType === 'Proforma' ? 700 : 500,
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: fType === 'Proforma' ? '#f59e0b' : 'transparent',
+                        color: fType === 'Proforma' ? '#fff' : 'var(--adm-text-muted)'
+                      }}
+                    >
+                      Proforma Invoice
+                    </button>
+                  </div>
                 </div>
-                <div className="adm-form-group">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--adm-text-muted)' }}>
+                  <ShieldCheck size={14} style={{ color: '#10b981' }} />
+                  <span>GST Act 2017 & HSN/SAC Billing Engine</span>
+                </div>
+              </div>
+
+              {/* Document Header Metadata Grid */}
+              <div className="adm-grid-4" style={{ gap: '0.85rem' }}>
+                <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                  <label className="adm-form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{fType === 'Quotation' ? 'Quotation Ref #' : 'Invoice Ref #'} *</span>
+                    <button type="button" onClick={() => handleFDocTypeChange(fType)} title="Generate new sequence" style={{ background: 'transparent', border: 'none', color: 'var(--adm-primary)', cursor: 'pointer', padding: 0 }}>
+                      <RefreshCw size={12} />
+                    </button>
+                  </label>
+                  <input className="adm-input" required value={fDocNumber} onChange={e => setFDocNumber(e.target.value)} />
+                </div>
+                <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                  <label className="adm-form-label">Issue Date *</label>
+                  <input className="adm-input" type="date" required value={new Date().toISOString().split('T')[0]} readOnly />
+                </div>
+                <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                  <label className="adm-form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{fType === 'Quotation' ? 'Validity Date *' : 'Payment Due Date *'}</span>
+                    <span style={{ fontSize: '0.72rem', display: 'flex', gap: '4px' }}>
+                      <button type="button" onClick={() => {
+                        const d = new Date(); d.setDate(d.getDate() + 15); setFDueDate(d.toISOString().split('T')[0]);
+                      }} style={{ background: 'none', border: 'none', color: 'var(--adm-primary)', cursor: 'pointer', padding: 0 }}>+15d</button>
+                      <button type="button" onClick={() => {
+                        const d = new Date(); d.setDate(d.getDate() + 30); setFDueDate(d.toISOString().split('T')[0]);
+                      }} style={{ background: 'none', border: 'none', color: 'var(--adm-primary)', cursor: 'pointer', padding: 0 }}>+30d</button>
+                    </span>
+                  </label>
+                  <input className="adm-input" type="date" required value={fDueDate} onChange={e => setFDueDate(e.target.value)} />
+                </div>
+                <div className="adm-form-group" style={{ marginBottom: 0 }}>
                   <label className="adm-form-label">Associated Project</label>
                   <select className="adm-select" value={fProjectId} onChange={e => setFProjectId(e.target.value)}>
-                    {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                    <option value="">-- General Enterprise Account --</option>
+                    {safeProjects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
                   </select>
                 </div>
               </div>
 
-              <div className="adm-grid-3">
-                <div className="adm-form-group">
-                  <label className="adm-form-label">Document Type</label>
-                  <select className="adm-select" value={fType} onChange={e => setFType(e.target.value as any)}>
-                    <option value="Tax Invoice">Tax Invoice</option>
-                    <option value="Quotation">Quotation / Proforma</option>
+              {/* Client Account Selector & Live Details Card */}
+              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--adm-border)', borderRadius: '10px', padding: '1rem' }}>
+                <div className="adm-form-group" style={{ marginBottom: fCurrentClient ? '0.75rem' : 0 }}>
+                  <label className="adm-form-label">Select Client *</label>
+                  <select className="adm-select" value={fClientId} onChange={e => setFClientId(e.target.value)}>
+                    {safeClients.length === 0 ? (
+                      <option value="">-- No Corporate Clients Registered (Add Client First) --</option>
+                    ) : (
+                      <>
+                        <option value="">-- Choose Corporate Client Account --</option>
+                        {safeClients.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.companyName} {c.industry ? `(${c.industry})` : ''}
+                          </option>
+                        ))}
+                      </>
+                    )}
                   </select>
                 </div>
-                <div className="adm-form-group">
-                  <label className="adm-form-label">Subtotal (₹ Excl. GST) *</label>
-                  <input className="adm-input" type="number" required value={fAmount} onChange={e => setFAmount(Number(e.target.value))} />
+
+                {fCurrentClient && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', background: 'var(--adm-bg, #0f141c)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)', fontSize: '0.8rem' }}>
+                    <div>
+                      <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>Corporate Entity</div>
+                      <div style={{ fontWeight: 600, color: '#fff' }}>{fCurrentClient.companyName}</div>
+                      <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.75rem' }}>{fCurrentClient.industry}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>GSTIN & Tax Registration</div>
+                      <div style={{ fontWeight: 600, color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <ShieldCheck size={13} /> {fCurrentClient.gstin || '27AABCA1234F1Z5'}
+                      </div>
+                      <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.75rem' }}>Active State Tax Filing</div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>Primary Commercial Contact</div>
+                      <div style={{ fontWeight: 600, color: '#fff' }}>{fCurrentClient.primaryContact?.name || 'Authorized Signatory'}</div>
+                      <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.75rem' }}>{fCurrentClient.primaryContact?.email || 'accounts@client.com'}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem', textTransform: 'uppercase' }}>Billing Location</div>
+                      <div style={{ color: '#fff', fontSize: '0.78rem' }}>{fCurrentClient.city || 'Mumbai'}, India</div>
+                      <div style={{ color: 'var(--adm-text-muted)', fontSize: '0.72rem' }}>State Place of Supply: 27 (MH)</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* GST & Tax Controls Bar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', padding: '0.65rem 0.85rem', background: 'rgba(99,102,241,0.04)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff' }}>Tax Application:</span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                    <input type="radio" name="fGstType" checked={fGstType === 'intra'} onChange={() => setFGstType('intra')} />
+                    <span>Intra-State (CGST 9% + SGST 9%)</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                    <input type="radio" name="fGstType" checked={fGstType === 'inter'} onChange={() => setFGstType('inter')} />
+                    <span>Inter-State (IGST 18%)</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                    <input type="radio" name="fGstType" checked={fGstType === 'zero'} onChange={() => setFGstType('zero')} />
+                    <span>Zero-Rated / Export (0%)</span>
+                  </label>
                 </div>
-                <div className="adm-form-group">
-                  <label className="adm-form-label">Payment Due Date</label>
-                  <input className="adm-input" type="date" value={fDueDate} onChange={e => setFDueDate(e.target.value)} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Quick Tax:</span>
+                  <button type="button" onClick={() => handleApplyGlobalTaxF(18)} className="adm-btn adm-btn-secondary" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>18%</button>
+                  <button type="button" onClick={() => handleApplyGlobalTaxF(12)} className="adm-btn adm-btn-secondary" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>12%</button>
+                  <button type="button" onClick={() => handleApplyGlobalTaxF(5)} className="adm-btn adm-btn-secondary" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>5%</button>
+                  <button type="button" onClick={() => handleApplyGlobalTaxF(0)} className="adm-btn adm-btn-secondary" style={{ padding: '2px 8px', fontSize: '0.72rem' }}>0%</button>
                 </div>
               </div>
 
-              <div className="adm-form-group">
-                <label className="adm-form-label">Deliverable Line Item Description</label>
-                <input className="adm-input" value={fDesc} onChange={e => setFDesc(e.target.value)} />
+              {/* Deliverables / Line Items Table */}
+              <div style={{ background: 'var(--adm-card-bg, #161d27)', border: '1px solid var(--adm-border)', borderRadius: '10px', overflow: 'hidden' }}>
+                <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--adm-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>Deliverables & Scope Breakdown</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{fLineItems.length} Deliverable Item(s)</span>
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--adm-border)', color: 'var(--adm-text-muted)' }}>
+                        <th style={{ padding: '8px 12px', width: '36px' }}>#</th>
+                        <th style={{ padding: '8px 12px', minWidth: '260px' }}>Scope & Milestone Description *</th>
+                        <th style={{ padding: '8px 12px', width: '100px' }}>SAC/HSN</th>
+                        <th style={{ padding: '8px 12px', width: '80px' }}>Qty</th>
+                        <th style={{ padding: '8px 12px', width: '130px' }}>Unit Rate (₹)</th>
+                        <th style={{ padding: '8px 12px', width: '90px' }}>GST %</th>
+                        <th style={{ padding: '8px 12px', width: '130px', textAlign: 'right' }}>Total (₹)</th>
+                        <th style={{ padding: '8px 12px', width: '40px', textAlign: 'center' }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fLineItems.map((item, idx) => {
+                        const itemTotal = (Number(item.quantity) || 0) * (Number(item.rate) || 0);
+                        return (
+                          <tr key={item.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <td style={{ padding: '8px 12px', color: 'var(--adm-text-muted)', fontWeight: 600 }}>{idx + 1}</td>
+                            <td style={{ padding: '8px 12px' }}>
+                              <input
+                                className="adm-input"
+                                style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                                value={item.description}
+                                onChange={e => handleUpdateFLineItem(item.id, 'description', e.target.value)}
+                                placeholder="e.g. Milestone 1: Distributed Architecture & Cloud Deployment"
+                                required
+                              />
+                            </td>
+                            <td style={{ padding: '8px 12px' }}>
+                              <input
+                                className="adm-input"
+                                style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                                value={item.sacCode}
+                                onChange={e => handleUpdateFLineItem(item.id, 'sacCode', e.target.value)}
+                                placeholder="998314"
+                              />
+                            </td>
+                            <td style={{ padding: '8px 12px' }}>
+                              <input
+                                className="adm-input"
+                                type="number"
+                                min="1"
+                                style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                                value={item.quantity}
+                                onChange={e => handleUpdateFLineItem(item.id, 'quantity', Number(e.target.value))}
+                                required
+                              />
+                            </td>
+                            <td style={{ padding: '8px 12px' }}>
+                              <input
+                                className="adm-input"
+                                type="number"
+                                min="0"
+                                style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                                value={item.rate}
+                                onChange={e => handleUpdateFLineItem(item.id, 'rate', Number(e.target.value))}
+                                required
+                              />
+                            </td>
+                            <td style={{ padding: '8px 12px' }}>
+                              <select
+                                className="adm-select"
+                                style={{ width: '100%', fontSize: '0.82rem', padding: '6px 8px' }}
+                                value={item.taxPercent}
+                                onChange={e => handleUpdateFLineItem(item.id, 'taxPercent', Number(e.target.value))}
+                              >
+                                <option value="18">18%</option>
+                                <option value="12">12%</option>
+                                <option value="5">5%</option>
+                                <option value="0">0%</option>
+                              </select>
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600, color: '#fff' }}>
+                              ₹{itemTotal.toLocaleString('en-IN')}
+                            </td>
+                            <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveFLineItem(item.id)}
+                                disabled={fLineItems.length <= 1}
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: fLineItems.length <= 1 ? 'rgba(255,255,255,0.1)' : '#ef4444',
+                                  cursor: fLineItems.length <= 1 ? 'not-allowed' : 'pointer',
+                                  padding: '4px'
+                                }}
+                                title="Delete Item"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.01)', borderTop: '1px solid var(--adm-border)' }}>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-secondary"
+                    onClick={handleAddFLineItem}
+                    style={{ fontSize: '0.8rem', padding: '5px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Plus size={14} /> Add Deliverable Item
+                  </button>
+                </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowAddInvoiceModal(false)}>Cancel</button>
-                <button type="submit" className="adm-btn adm-btn-primary">Generate Document</button>
+              {/* Commercial Adjustments & Financial Summary Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                {/* Left Column: Commercial Terms & Notes */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                    <label className="adm-form-label">Commercial Terms & Payment Milestones</label>
+                    <textarea
+                      className="adm-textarea"
+                      rows={3}
+                      value={fPaymentTerms}
+                      onChange={e => setFPaymentTerms(e.target.value)}
+                      placeholder="e.g. 50% mobilization advance, balance upon final acceptance testing sign-off."
+                    />
+                  </div>
+                  <div className="adm-grid-2" style={{ gap: '0.75rem' }}>
+                    <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                      <label className="adm-form-label">Client PO / Contract Ref</label>
+                      <input
+                        className="adm-input"
+                        value={fClientPoRef}
+                        onChange={e => setFClientPoRef(e.target.value)}
+                        placeholder="PO-2026-ENX-001"
+                      />
+                    </div>
+                    <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                      <label className="adm-form-label">Quotation Validity</label>
+                      <input
+                        className="adm-input"
+                        value={fQuotationValidity}
+                        onChange={e => setFQuotationValidity(e.target.value)}
+                        placeholder="30 Calendar Days"
+                      />
+                    </div>
+                  </div>
+                  <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--adm-border)', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+                    <strong style={{ color: '#fff' }}>Settlement Account:</strong> HDFC Bank Current A/C 50200088991122 (IFSC: HDFC0001234) • ENTERPRENEX SOLUTIONS PVT. LTD.
+                  </div>
+                </div>
+
+                {/* Right Column: Live Computation Card */}
+                <div style={{ background: 'var(--adm-bg, #0f141c)', border: '1px solid var(--adm-border)', borderRadius: '10px', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                    <span style={{ color: 'var(--adm-text-muted)' }}>Deliverable Subtotal:</span>
+                    <span style={{ fontWeight: 600, color: '#fff' }}>₹{fSubtotal.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  {/* Discount Row */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', padding: '6px 0', borderTop: '1px dashed var(--adm-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ color: 'var(--adm-text-muted)' }}>Commercial Discount:</span>
+                      <select
+                        value={fDiscountType}
+                        onChange={e => setFDiscountType(e.target.value as any)}
+                        style={{ background: 'transparent', border: '1px solid var(--adm-border)', borderRadius: '4px', color: '#fff', fontSize: '0.72rem', padding: '2px 4px' }}
+                      >
+                        <option value="percent">% Discount</option>
+                        <option value="flat">₹ Flat</option>
+                      </select>
+                      <input
+                        type="number"
+                        min="0"
+                        value={fDiscountVal}
+                        onChange={e => setFDiscountVal(Number(e.target.value))}
+                        style={{ width: '60px', background: 'transparent', border: '1px solid var(--adm-border)', borderRadius: '4px', color: '#fff', fontSize: '0.75rem', padding: '2px 4px' }}
+                      />
+                    </div>
+                    <span style={{ color: '#10b981', fontWeight: 600 }}>- ₹{fComputedDiscount.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '6px 0', borderTop: '1px solid var(--adm-border)' }}>
+                    <span style={{ color: 'var(--adm-text-muted)' }}>Taxable Value:</span>
+                    <span style={{ fontWeight: 600, color: '#fff' }}>₹{fTaxableAmount.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  {/* GST Breakdown */}
+                  {fGstType === 'intra' && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                        <span style={{ color: 'var(--adm-text-muted)' }}>Central GST (CGST 9%):</span>
+                        <span style={{ color: '#fff' }}>₹{fCgst.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                        <span style={{ color: 'var(--adm-text-muted)' }}>State GST (SGST 9%):</span>
+                        <span style={{ color: '#fff' }}>₹{fSgst.toLocaleString('en-IN')}</span>
+                      </div>
+                    </>
+                  )}
+
+                  {fGstType === 'inter' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                      <span style={{ color: 'var(--adm-text-muted)' }}>Integrated GST (IGST 18%):</span>
+                      <span style={{ color: '#fff' }}>₹{fIgst.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+
+                  {fGstType === 'zero' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#10b981' }}>
+                      <span>Zero-Rated (Export / SEZ Supply):</span>
+                      <span>₹0 (0% GST)</span>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', paddingTop: '0.85rem', borderTop: '2px solid var(--adm-border)' }}>
+                    <div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>
+                        {fType === 'Quotation' ? 'Total Quotation Estimate:' : 'Total Payable (Incl. GST):'}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-muted)' }}>Indian Rupees (INR)</div>
+                    </div>
+                    <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#10b981' }}>
+                      ₹{fGrandTotal.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--adm-border)' }}>
+                <button type="button" className="adm-btn adm-btn-secondary" onClick={() => setShowAddInvoiceModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="adm-btn adm-btn-primary" style={{ padding: '8px 24px', fontWeight: 700 }}>
+                  {fType === 'Quotation' ? 'Generate Commercial Quotation' : fType === 'Proforma' ? 'Generate Proforma Invoice' : 'Issue Official Tax Invoice'}
+                </button>
               </div>
             </form>
           </div>
@@ -2316,7 +2842,7 @@ export const FinancePage: React.FC = () => {
                 signatureStatus: 'Digitally Signed (DocuSign)',
                 slaUptime: newCtrSla,
                 incidentSla: '2 Hour High SLA',
-                accountOwner: 'Rohit Pawar (Director)',
+                accountOwner: 'Managing Director',
                 satisfactionRating: 5.0,
                 renewalAlertActive: true
               };
@@ -2379,7 +2905,7 @@ export const FinancePage: React.FC = () => {
 
                 <div className="adm-form-group">
                   <label className="adm-form-label">Account Ownership</label>
-                  <input className="adm-input" readOnly value="Rohit Pawar (Managing Director)" />
+                  <input className="adm-input" readOnly value="Managing Director" />
                 </div>
               </div>
 

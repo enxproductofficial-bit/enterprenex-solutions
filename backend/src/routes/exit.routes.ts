@@ -145,18 +145,19 @@ router.patch('/:id/clearance', authenticateToken, requireRole(['Super Admin', 'P
       (data.financeClearanceCompleted ?? existing.financeClearanceCompleted) &&
       (data.hrApprovalCompleted ?? existing.hrApprovalCompleted);
 
-    if (allClear) {
-      data.status = 'Completed';
-      // Mark employee record inactive
-      await prisma.employee.updateMany({
-        where: { employeeId: existing.employeeId },
-        data: { status: 'Resigned' }
-      });
-    }
+    const updated = await prisma.$transaction(async (tx) => {
+      if (allClear) {
+        data.status = 'Completed';
+        await tx.employee.updateMany({
+          where: { employeeId: existing.employeeId },
+          data: { status: 'Resigned' }
+        });
+      }
 
-    const updated = await prisma.exitRequest.update({
-      where: { id },
-      data
+      return await tx.exitRequest.update({
+        where: { id },
+        data
+      });
     });
 
     res.json({
@@ -168,7 +169,7 @@ router.patch('/:id/clearance', authenticateToken, requireRole(['Super Admin', 'P
   }
 });
 
-// GET /api/v1/exit/:id/letter (Puppeteer PDF Relieving & Experience Letter)
+// GET /api/v1/exit/:id/letter (Puppeteer PDF Relieving & Experience Letter - Ownership & Role Guarded)
 router.get('/:id/letter', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const exit = await prisma.exitRequest.findUnique({
@@ -177,6 +178,19 @@ router.get('/:id/letter', authenticateToken, async (req: AuthRequest, res: Respo
 
     if (!exit) {
       res.status(404).json({ error: 'Exit record not found.' });
+      return;
+    }
+
+    const isDirectorOrHr = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.role === 'HR Manager' || req.user?.email?.includes('director');
+    const isOwner = exit.employeeId === req.user?.employeeId || exit.employeeId === req.user?.id || exit.employeeEmail === req.user?.email;
+
+    if (!isDirectorOrHr && !isOwner) {
+      res.status(403).json({ error: 'Access forbidden: You are not authorized to download this relieving letter.' });
+      return;
+    }
+
+    if (exit.status !== 'Approved' && exit.status !== 'Completed') {
+      res.status(400).json({ error: 'Relieving letter is only available after exit clearances are formally approved or completed.' });
       return;
     }
 

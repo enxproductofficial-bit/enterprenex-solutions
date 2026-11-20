@@ -13,8 +13,8 @@ export async function seedOfferLetters() {
       id: 'off-101',
       offerLetterNo: 'ENX-OFF-2026-0001',
       employeeId: '202600000002',
-      employeeName: 'POLAMREDDY REVANTH REDDY',
-      employeeEmail: 'revanth@enterprenex.solutions',
+      employeeName: 'Rahul Sharma',
+      employeeEmail: 'rahul.sharma@enterprenex.solutions',
       department: 'Engineering',
       designation: 'Full Stack Software Engineer',
       joiningDate: '2026-02-01',
@@ -49,7 +49,7 @@ export async function seedOfferLetters() {
       probationPeriod: '3 Months',
       termsAndConditions: '1. Working Hours & Modality: Regular work hours are 09:30 AM to 06:30 PM IST, Monday through Friday, operating under a Hybrid arrangement.\n2. Probation Period: You will undergo a 3-month probation period evaluating technical capability, cultural alignment, and KPI benchmarks.',
       status: 'Sent',
-      directorApprovedBy: 'Rohit Pawar (Managing Director)',
+      directorApprovedBy: 'Managing Director',
       directorApprovedAt: new Date(),
       sentAt: new Date()
     }

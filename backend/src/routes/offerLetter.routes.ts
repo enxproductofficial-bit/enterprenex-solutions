@@ -115,7 +115,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-// GET /api/v1/offer-letters/:id (Get single offer letter details)
+// GET /api/v1/offer-letters/:id (Get single offer letter details with strict authorization)
 router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -126,13 +126,27 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       return;
     }
 
+    const user = req.user;
+    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isHR = isDirector || user?.role === 'Project Manager' || user?.role === 'HR Manager' || user?.department === 'Human Resources';
+
+    const isOwner =
+      (user?.email && offerLetter.employeeEmail?.toLowerCase() === user.email.toLowerCase()) ||
+      (user?.employeeId && offerLetter.employeeId === user.employeeId) ||
+      (user?.id && offerLetter.employeeId === user.id);
+
+    if (!isHR && !isOwner) {
+      res.status(403).json({ error: 'Access forbidden: You can only view your own confidential offer letter.' });
+      return;
+    }
+
     res.json({ offerLetter });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/v1/offer-letters/:id/pdf (Download official PDF generated via Puppeteer)
+// GET /api/v1/offer-letters/:id/pdf (Download official PDF with strict authorization)
 router.get('/:id/pdf', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -140,6 +154,20 @@ router.get('/:id/pdf', authenticateToken, async (req: AuthRequest, res: Response
 
     if (!offer) {
       res.status(404).json({ error: 'Offer letter not found.' });
+      return;
+    }
+
+    const user = req.user;
+    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isHR = isDirector || user?.role === 'Project Manager' || user?.role === 'HR Manager' || user?.department === 'Human Resources';
+
+    const isOwner =
+      (user?.email && offer.employeeEmail?.toLowerCase() === user.email.toLowerCase()) ||
+      (user?.employeeId && offer.employeeId === user.employeeId) ||
+      (user?.id && offer.employeeId === user.id);
+
+    if (!isHR && !isOwner) {
+      res.status(403).json({ error: 'Access forbidden: You can only download your own confidential offer letter.' });
       return;
     }
 
@@ -223,8 +251,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
         workMode: workMode || 'online',
         workingHours: workingHours || '4 to 6 hours per day, as assigned by the Reporting Manager',
         workingDays: workingDays || 'Monday - saturday',
-        reportingManager: reportingManager || 'Rohit pawar',
-        signatoryName: signatoryName || (isDirector ? (user?.name || 'Rohit Pawar') : (user?.name || 'Operations Officer')),
+        reportingManager: reportingManager || 'Managing Director',
+        signatoryName: signatoryName || (isDirector ? (user?.name || 'Managing Director') : (user?.name || 'Operations Officer')),
         signatoryRole: signatoryRole || (isDirector ? 'Managing Director' : 'Operations Officer'),
         signatoryDepartment: signatoryDepartment || (isDirector ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : 'HR Team, Enterprenex Solutions Pvt Ltd')
       }
@@ -331,9 +359,9 @@ router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, r
       data: {
         status: newStatus,
         directorRemarks: remarks || (action === 'Approve' ? 'Approved for dispatch.' : 'Revision requested.'),
-        directorApprovedBy: user?.name || (isDirectorRole ? 'Rohit Pawar (Managing Director)' : 'Rohit Pawar (Operations Officer)'),
+        directorApprovedBy: user?.name || (isDirectorRole ? 'Managing Director' : 'Operations Officer'),
         directorApprovedAt: new Date(),
-        signatoryName: action === 'Approve' ? (user?.name || 'Rohit Pawar') : existing.signatoryName,
+        signatoryName: action === 'Approve' ? (user?.name || 'Managing Director') : existing.signatoryName,
         signatoryRole: action === 'Approve' ? (isDirectorRole ? 'Managing Director' : 'Operations Officer') : existing.signatoryRole,
         signatoryDepartment: action === 'Approve' ? (isDirectorRole ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : 'HR Team, Enterprenex Solutions Pvt Ltd') : existing.signatoryDepartment
       }

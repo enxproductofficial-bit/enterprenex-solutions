@@ -235,11 +235,37 @@ interface AdminContextType {
   markAllNotificationsRead: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
   unreadEmailsCount: number;
+  isLoaded: boolean;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'enterprenex_admin_v3_production';
+const STORAGE_KEY = 'enterprenex_ewms_fresh_v10';
+
+export const isExcludedWorkforceRecord = (e: any) => {
+  const name = (e?.name || '').toLowerCase();
+  const email = (e?.email || '').toLowerCase();
+  const role = (e?.role || '').toLowerCase();
+  const dept = (e?.department || '').toLowerCase();
+  const id = e?.employeeId || '';
+  return (
+    name.includes('revanth') ||
+    name.includes('polamreddy') ||
+    email.includes('revanth') ||
+    name.includes('director') ||
+    role.includes('director') ||
+    role.includes('lead architect') ||
+    role.includes('super admin') ||
+    dept.includes('executive') ||
+    name.includes('founder') ||
+    role.includes('founder') ||
+    id === 'ZCX-EMP-0001' ||
+    id === '202600000001' ||
+    id === '202600000002' ||
+    e?.id === 'emp-1' ||
+    e?.id === 'usr-1'
+  );
+};
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -345,10 +371,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
   }, []);
 
-  // Name normalization helper: enforce "Rohit Pawar" and "Jyothi Anbhule" universally
+  // Name normalization helper: enforce "Managing Director" and "Jyothi Anbhule" universally
   const normalizeRohitName = (name?: string | null): string => {
     if (!name) return '';
-    let res = name.replace(/\bRohit\s+P(\.|\b)/gi, 'Rohit Pawar');
+    let res = name.replace(/\bRohit\s+Pawar(\s*\(Managing Director\))?/gi, 'Managing Director');
+    res = res.replace(/\bRohit\s+P(\.|\b)/gi, 'Managing Director');
+    res = res.replace(/\bRohit\b/gi, 'Managing Director');
     res = res.replace(/\bAniket\s+More\b/gi, 'Jyothi Anbhule');
     res = res.replace(/\bAniket\b/gi, 'Jyothi Anbhule');
     return res;
@@ -362,13 +390,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       n === 'Rohit P' ||
       n.startsWith('Rohit P.') ||
       n.startsWith('Rohit P ') ||
+      n.toLowerCase().includes('rohit') ||
       n === 'Rohit Pawar (Managing Director)' ||
       item.employeeId === '202600000001' ||
       item.id === 'emp-1' ||
       item.email === 'director@enterprenex.solutions' ||
       item.email === 'director@enterprenexsolution.com'
     ) {
-      item.name = 'Rohit Pawar';
+      item.name = 'Managing Director';
+      item.role = 'Lead Architect';
     } else if (
       n === 'Aniket More' ||
       n.toLowerCase().includes('aniket') ||
@@ -393,7 +423,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (item.email === 'abvpcsnagar@gmail.com' || item.phone?.includes('7020443880')) {
       item = {
         ...item,
-        name: 'Rohit Pawar',
+        name: 'Managing Director',
         email: 'director@enterprenex.solutions',
         phone: '+91-9226860060'
       };
@@ -450,13 +480,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             reviewer: normalizeRohitName(t.reviewer)
           })));
         }
-        if (eRes.status === 'fulfilled' && eRes.value.employees?.length > 0) {
-          setEmployees(eRes.value.employees.map((e: any, idx: number) => sanitizeEmployeeRecord(e, idx)));
+        if (eRes.status === 'fulfilled') {
+          const rawEmps = Array.isArray(eRes.value?.employees) ? eRes.value.employees : [];
+          const validEmployees = rawEmps.filter((e: any) => !isExcludedWorkforceRecord(e));
+          setEmployees(validEmployees.map((e: any, idx: number) => sanitizeEmployeeRecord(e, idx)));
         }
         if (aRes.status === 'fulfilled' && aRes.value.attendance?.length > 0) {
           setAttendance(aRes.value.attendance.map((a: any) => ({
             ...a,
-            employeeName: a.employeeId === '202600000001' ? 'Rohit Pawar' : normalizeRohitName(a.employeeName)
+            employeeName: a.employeeId === '202600000001' ? 'Managing Director' : normalizeRohitName(a.employeeName)
           })));
         }
         if (kRes.status === 'fulfilled' && kRes.value.kpis?.length > 0) {
@@ -493,7 +525,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             expenses: typeof p.expenses === 'number' ? p.expenses : 0,
             startDate: p.startDate || new Date().toISOString().split('T')[0],
             targetEndDate: p.deadline || p.targetEndDate || '2026-12-31',
-            assignedTeam: Array.isArray(p.teamMembers) ? p.teamMembers : (p.assignedTeam || ['Rohit Pawar', 'POLAMREDDY REVANTH REDDY']),
+            assignedTeam: Array.isArray(p.teamMembers) ? p.teamMembers : (p.assignedTeam || ['Managing Director']),
             techStack: p.techStack || ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
             serviceCategory: p.serviceCategory || 'Enterprise Software',
             description: p.description || '',
@@ -509,10 +541,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             id: a.id,
             title: a.title,
             content: a.content,
-            authorName: a.author || 'Rohit Pawar',
-            authorRole: a.authorRole || 'Managing Director & Lead Architect',
+            authorName: a.author || 'Managing Director',
+            authorRole: a.authorRole || 'Managing Director',
             authorAvatar: a.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-            isDirectorPost: a.authorRole?.includes('Director') || a.author?.includes('Rohit') || true,
+            isDirectorPost: a.authorRole?.includes('Director') || true,
             priority: (a.priority as any) || 'Urgent',
             postedAt: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Today',
             likes: Array.isArray(a.readBy) ? a.readBy.length : 0,
@@ -626,12 +658,30 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     try {
-      // Clear legacy mock stores to ensure clean production slate
-      localStorage.removeItem('enterprenex_admin_v2_clean');
-      localStorage.removeItem('enterprenex_admin_data_v1');
-      localStorage.removeItem('ewms_tasks_stopwatch_state');
-      localStorage.removeItem('ewms_enterprise_emails');
-      localStorage.removeItem('ewms_enterprise_emails_v2');
+      // Clear all legacy stores to ensure clean production slate (preserving authentication & active preferences)
+      try {
+        const preservedKeys = [
+          STORAGE_KEY,
+          'ewms_token',
+          'ewms_auth_token',
+          'ewms_portal_theme',
+          'ewms_sidebar_width',
+          'ewms_enterprise_emails_v3',
+          'ewms_active_timer_task_id',
+          'ewms_active_timer_seconds',
+          'ewms_active_timer_running',
+          'ewms_active_session_id',
+          'ewms_read_notif_ids'
+        ];
+        Object.keys(localStorage).forEach(k => {
+          if (
+            (k.startsWith('enterprenex_') || k.startsWith('ewms_')) &&
+            !preservedKeys.includes(k)
+          ) {
+            localStorage.removeItem(k);
+          }
+        });
+      } catch (_) {}
 
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -642,19 +692,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setLeads(parsed.leads || []);
         setInvoices(parsed.invoices || []);
         setExpenses(parsed.expenses || []);
-        if (parsed.employees) {
-          const sanitized = parsed.employees.map((emp: any, idx: number) => sanitizeEmployeeRecord(emp, idx));
-
-          // Ensure permanent official employees exist across all devices/sessions
-          INITIAL_EMPLOYEES.forEach(initEmp => {
-            if (!sanitized.some((e: any) => e.employeeId === initEmp.employeeId || e.email === initEmp.email)) {
-              sanitized.push(initEmp);
-            }
-          });
-
+        if (parsed.employees && Array.isArray(parsed.employees)) {
+          const validEmployees = parsed.employees.filter((e: any) => !isExcludedWorkforceRecord(e));
+          const sanitized = validEmployees.map((emp: any, idx: number) => sanitizeEmployeeRecord(emp, idx));
           setEmployees(sanitized);
         } else {
-          setEmployees(INITIAL_EMPLOYEES);
+          setEmployees([]);
         }
         setAttendance(parsed.attendance || []);
         setLeaves(parsed.leaves || []);
@@ -701,11 +744,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             curName === 'Rohit P' ||
             curName.startsWith('Rohit P.') ||
             curName.startsWith('Rohit P ') ||
+            curName.toLowerCase().includes('rohit') ||
             cur.employeeId === '202600000001' ||
             cur.email === 'director@enterprenex.solutions' ||
             cur.email === 'director@enterprenexsolution.com'
           ) {
-            cur.name = 'Rohit Pawar';
+            cur.name = 'Managing Director';
           } else if (
             curName === 'Aniket More' ||
             curName.toLowerCase().includes('aniket') ||
@@ -722,7 +766,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (cur.email === 'abvpcsnagar@gmail.com' || cur.phone?.includes('7020443880')) {
             setCurrentUser({
               ...cur,
-              name: 'Rohit Pawar',
+              name: 'Managing Director',
               email: 'director@enterprenex.solutions',
               phone: '+91-9226860060'
             });
@@ -843,6 +887,12 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const login = (user: AdminUser) => {
     setCurrentUser(user);
+    try {
+      const currentSaved = localStorage.getItem(STORAGE_KEY);
+      const parsed = currentSaved ? JSON.parse(currentSaved) : {};
+      parsed.currentUser = user;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    } catch (_) {}
     logAction('User Logged In', 'Authentication', `${user.name} (${user.email}) logged in successfully.`);
     showToast('Welcome back', `Logged in as ${user.name}`, 'success');
   };
@@ -852,6 +902,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       logAction('User Logged Out', 'Authentication', `${currentUser.name} signed out.`);
     }
     setCurrentUser(null);
+    try {
+      const currentSaved = localStorage.getItem(STORAGE_KEY);
+      if (currentSaved) {
+        const parsed = JSON.parse(currentSaved);
+        delete parsed.currentUser;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      }
+      localStorage.removeItem('ewms_token');
+      localStorage.removeItem('ewms_auth_token');
+    } catch (_) {}
     showToast('Logged Out', 'You have been safely signed out.', 'info');
   };
 
@@ -1915,8 +1975,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       workMode: data.workMode || 'online',
       workingHours: data.workingHours || '4 to 6 hours per day, as assigned by the Reporting Manager',
       workingDays: data.workingDays || 'Monday - saturday',
-      reportingManager: data.reportingManager || 'Rohit pawar',
-      signatoryName: data.signatoryName || 'Rohit Pawar',
+      reportingManager: data.reportingManager || 'Managing Director',
+      signatoryName: data.signatoryName || 'Managing Director',
       signatoryRole: data.signatoryRole || 'Managing Director',
       signatoryDepartment: data.signatoryDepartment || 'Board of Directors',
       createdAt: new Date().toISOString()
@@ -1993,7 +2053,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }),
       status: newStatus,
       directorRemarks: remarks || undefined,
-      directorApprovedBy: 'Rohit Pawar (Managing Director)',
+      directorApprovedBy: 'Managing Director',
       directorApprovedAt: new Date().toISOString()
     };
 
@@ -2138,7 +2198,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...e,
       approvalStatus: decision,
       approvalRemarks: remarks || undefined,
-      approvedBy: 'Rohit Pawar (Managing Director)',
+      approvedBy: 'Managing Director',
       approvedAt: new Date().toISOString()
     } : e));
     showToast(
@@ -2320,6 +2380,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <AdminContext.Provider
       value={{
+        isLoaded,
         currentUser,
         users,
         clients,

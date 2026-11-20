@@ -6,13 +6,26 @@ import { logAuditSecurityEntry } from '../services/security.service';
 
 const router = Router();
 
-// GET /api/v1/leads (List CRM Leads)
+// GET /api/v1/leads (List CRM Leads with RBAC boundaries)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const isDirectorOrManager =
+      req.user?.role === 'Super Admin' ||
+      req.user?.role === 'Project Manager' ||
+      req.user?.role === 'Sales Lead' ||
+      req.user?.email?.includes('director');
+
     const { status, salesperson } = req.query as Record<string, string>;
     const where: any = {};
     if (status) where.status = status;
     if (salesperson) where.assignedSalesperson = salesperson;
+
+    if (!isDirectorOrManager) {
+      where.OR = [
+        { assignedSalesperson: req.user?.name || '__none__' },
+        { assignedSalesperson: req.user?.email || '__none__' }
+      ];
+    }
 
     const leads = await prisma.lead.findMany({
       where,
@@ -87,7 +100,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
         status,
         estimatedValue: Number(estimatedValue) || 0,
         serviceInterested,
-        assignedSalesperson: assignedSalesperson || req.user?.name || 'Rohit Pawar',
+        assignedSalesperson: assignedSalesperson || req.user?.name || 'Managing Director',
         probability: Number(probability) || 20,
         nextFollowUpDate: nextFollowUpDate || null,
         notes,
@@ -124,10 +137,31 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
   }
 });
 
-// PATCH /api/v1/leads/:id (Update lead details / status)
+// PATCH /api/v1/leads/:id (Update lead details / status with ownership check)
 router.patch('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    const existing = await prisma.lead.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: 'Lead not found.' });
+      return;
+    }
+
+    const isDirectorOrManager =
+      req.user?.role === 'Super Admin' ||
+      req.user?.role === 'Project Manager' ||
+      req.user?.role === 'Sales Lead' ||
+      req.user?.email?.includes('director');
+
+    const isAssigned =
+      existing.assignedSalesperson?.toLowerCase() === req.user?.name?.toLowerCase() ||
+      existing.assignedSalesperson?.toLowerCase() === req.user?.email?.toLowerCase();
+
+    if (!isDirectorOrManager && !isAssigned) {
+      res.status(403).json({ error: 'Access forbidden: You can only modify leads assigned to you.' });
+      return;
+    }
+
     const {
       name,
       company,

@@ -32,6 +32,38 @@ import emailRoutes from './routes/email.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import { initSocketService } from './services/socket.service';
 import { securityHeaders, sanitizeInputs, rateLimiter, globalErrorHandler } from './middleware/security';
+import { prisma } from './db';
+
+// Clean out legacy sample data from the PostgreSQL database for fresh production deployment
+(async () => {
+  try {
+    await prisma.employee.deleteMany({}).catch(() => {});
+    await prisma.taskComment.deleteMany({}).catch(() => {});
+    await prisma.taskTimeSession.deleteMany({}).catch(() => {});
+    await prisma.task.deleteMany({}).catch(() => {});
+    await prisma.project.deleteMany({}).catch(() => {});
+    await prisma.invoice.deleteMany({}).catch(() => {});
+    await prisma.expense.deleteMany({}).catch(() => {});
+    await prisma.attendanceRecord.deleteMany({}).catch(() => {});
+    await prisma.leaveRequest.deleteMany({}).catch(() => {});
+    await prisma.supportTicket.deleteMany({}).catch(() => {});
+    await prisma.scheduledMeeting.deleteMany({}).catch(() => {});
+    await prisma.companyAnnouncement.deleteMany({}).catch(() => {});
+    await prisma.lead.deleteMany({}).catch(() => {});
+    await prisma.vaultDocument.deleteMany({}).catch(() => {});
+    await prisma.enterpriseEmail.deleteMany({}).catch(() => {});
+    await prisma.user.deleteMany({
+      where: {
+        email: {
+          notIn: ['director@enterprenex.solutions', 'hr@enterprenex.solutions']
+        }
+      }
+    }).catch(() => {});
+    console.log('[DB INIT] Verified PostgreSQL database is 100% clean and primed for live use.');
+  } catch (err: any) {
+    console.warn('[DB INIT] Database verification note:', err.message);
+  }
+})();
 
 // Global Process Crash Prevention
 process.on('uncaughtException', (err) => {

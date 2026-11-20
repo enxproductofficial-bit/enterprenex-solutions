@@ -4,10 +4,30 @@ import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth'
 
 const router = Router();
 
-// GET /api/kpis (List all employee KPI scorecards)
+// GET /api/kpis (List employee KPI scorecards with RBAC ownership)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const scorecards = await prisma.kpiScorecard.findMany();
+    const isDirectorOrManager =
+      req.user?.role === 'Super Admin' ||
+      req.user?.role === 'Project Manager' ||
+      req.user?.role === 'HR Manager' ||
+      req.user?.email?.includes('director');
+
+    let scorecards;
+    if (isDirectorOrManager) {
+      scorecards = await prisma.kpiScorecard.findMany();
+    } else {
+      const empId = req.user?.employeeId || req.user?.id || '__none__';
+      scorecards = await prisma.kpiScorecard.findMany({
+        where: {
+          OR: [
+            { employeeId: empId },
+            { employeeName: req.user?.name }
+          ]
+        }
+      });
+    }
+
     const formatted = scorecards.map(s => ({
       ...s,
       metrics: JSON.parse(s.metricsJson)

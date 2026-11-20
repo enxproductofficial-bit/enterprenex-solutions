@@ -308,10 +308,10 @@ export const TasksPage: React.FC = () => {
     if (currentUser?.email?.includes('hr') || currentUser?.role?.includes('HR') || currentUser?.role === 'Project Manager') {
       return 'HR Administrator (Operations & HR)';
     }
-    return 'Rohit Pawar (Managing Director)';
+    return 'Managing Director';
   });
   const [fAssignedTo, setFAssignedTo] = useState(employees[0]?.name || currentUser?.name || 'Assigned Engineer');
-  const [fReviewer, setFReviewer] = useState('Rohit Pawar');
+  const [fReviewer, setFReviewer] = useState('Managing Director');
   const [fPriority, setFPriority] = useState<TaskPriority>('Medium');
   const [fStatus, setFStatus] = useState<TaskColumn>('Assigned');
   const [fStartDate, setFStartDate] = useState(new Date().toISOString().split('T')[0]);
@@ -420,9 +420,9 @@ export const TasksPage: React.FC = () => {
     setETitle(t.title);
     setEProjectId(t.projectId);
     setEModule(t.module || MODULE_OPTIONS[0]);
-    setEAssignedBy(t.assignedBy || 'Rohit Pawar (Technical Director)');
+    setEAssignedBy(t.assignedBy || 'Managing Director');
     setEAssignedTo(t.assignedTo);
-    setEReviewer(t.reviewer || 'Rohit Pawar');
+    setEReviewer(t.reviewer || 'Managing Director');
     setEPriority(t.priority);
     setEStatus(normalizeStatus(t.status));
     setEStartDate(t.startDate || t.createdAt);
@@ -478,9 +478,9 @@ export const TasksPage: React.FC = () => {
       projectName: selPrj ? selPrj.title : 'General Engineering',
       module: fModule,
       department: fDepartment,
-      assignedBy: fAssignedBy || 'Rohit Pawar (Technical Director)',
+      assignedBy: fAssignedBy || 'Managing Director',
       assignedTo: fAssignedTo,
-      reviewer: fReviewer || 'Rohit Pawar',
+      reviewer: fReviewer || 'Managing Director',
       priority: fPriority,
       status: fStatus,
       startDate: fStartDate,
@@ -1291,13 +1291,13 @@ export const TasksPage: React.FC = () => {
                       <span style={{ fontSize: '0.75rem', color: 'var(--adm-text)' }}>{t.module || 'Core'}</span>
                     </td>
                     <td>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{t.assignedBy || 'Rohit Pawar'}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>{t.assignedBy || 'Managing Director'}</span>
                     </td>
                     <td>
                       <strong style={{ fontSize: '0.8rem', color: 'var(--adm-text)' }}>{t.assignedTo}</strong>
                     </td>
                     <td>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--adm-text)' }}>{t.reviewer || 'Rohit Pawar'}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--adm-text)' }}>{t.reviewer || 'Managing Director'}</span>
                     </td>
                     <td>
                       <span
@@ -1483,7 +1483,7 @@ export const TasksPage: React.FC = () => {
                   {completionModalTask.title}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '4px' }}>
-                  Assignee: <strong>{completionModalTask.assignedTo}</strong> • Reviewer: <strong>{completionModalTask.reviewer || 'Rohit Pawar'}</strong>
+                  Assignee: <strong>{completionModalTask.assignedTo}</strong> • Reviewer: <strong>{completionModalTask.reviewer || 'Managing Director'}</strong>
                 </div>
               </div>
 
@@ -1688,9 +1688,9 @@ export const TasksPage: React.FC = () => {
                     onChange={e => setFAssignedBy(e.target.value)}
                     required
                   >
-                    <option value="Rohit Pawar (Managing Director)">Rohit Pawar (Managing Director)</option>
+                    <option value="Managing Director">Managing Director</option>
                     <option value="HR Administrator (Operations & HR)">HR Administrator (Operations & HR)</option>
-                    {currentUser?.name && currentUser.name !== 'Rohit Pawar' && currentUser.name !== 'HR Administrator' && (
+                    {currentUser?.name && !currentUser.name.includes('Director') && currentUser.name !== 'HR Administrator' && (
                       <option value={currentUser.name}>{currentUser.name}</option>
                     )}
                   </select>
@@ -1704,10 +1704,10 @@ export const TasksPage: React.FC = () => {
                     onChange={e => setFReviewer(e.target.value)}
                     required
                   >
-                    <option value="Rohit Pawar">Rohit Pawar (Managing Director)</option>
+                    <option value="Managing Director">Managing Director</option>
                     <option value="HR Administrator">HR Administrator</option>
                     <option value="Jyothi Anbhule">Jyothi Anbhule (Lead Project Manager)</option>
-                    <option value="POLAMREDDY REVANTH REDDY">POLAMREDDY REVANTH REDDY (Lead Developer)</option>
+                    <option value="Engineering Lead">Engineering Lead (Technical Lead)</option>
                   </select>
                 </div>
               </div>

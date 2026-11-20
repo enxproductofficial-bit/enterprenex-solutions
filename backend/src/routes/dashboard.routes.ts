@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
@@ -114,8 +114,8 @@ router.get('/workspace', authenticateToken, async (req: AuthRequest, res: Respon
   }
 });
 
-// GET /api/v1/dashboard/executive (Executive & C-Suite summary telemetry)
-router.get('/executive', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// GET /api/v1/dashboard/executive (Executive & C-Suite summary telemetry - Role Guarded)
+router.get('/executive', authenticateToken, requireRole(['Super Admin', 'Project Manager', 'HR Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const today = new Date().toISOString().split('T')[0];
 

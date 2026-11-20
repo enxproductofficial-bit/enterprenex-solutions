@@ -80,9 +80,9 @@ export const OfferLettersPage: React.FC = () => {
   const [formWorkMode, setFormWorkMode] = useState<string>('online');
   const [formWorkingHours, setFormWorkingHours] = useState<string>('4 to 6 hours per day, as assigned by the Reporting Manager');
   const [formWorkingDays, setFormWorkingDays] = useState<string>('Monday - saturday');
-  const [formReportingManager, setFormReportingManager] = useState<string>('Rohit pawar');
+  const [formReportingManager, setFormReportingManager] = useState<string>('Managing Director');
   const [formSignatoryType, setFormSignatoryType] = useState<'Director' | 'HR'>('HR');
-  const [formSignatoryName, setFormSignatoryName] = useState<string>('Rohit Pawar');
+  const [formSignatoryName, setFormSignatoryName] = useState<string>('Managing Director');
   const [formTerms, setFormTerms] = useState<string>(
 `1. Working Hours & Modality: Regular work hours are 09:30 AM to 06:30 PM IST, Monday through Friday, operating under a Hybrid arrangement.
 2. Probation Period: You will undergo a 3-month probation period evaluating technical capability, cultural alignment, and KPI benchmarks.
@@ -136,7 +136,7 @@ export const OfferLettersPage: React.FC = () => {
         workingHours: formWorkingHours,
         workingDays: formWorkingDays,
         reportingManager: formReportingManager,
-        signatoryName: formSignatoryType === 'Director' ? (formSignatoryName || 'Rohit Pawar') : (currentUser?.name || 'Operations Officer'),
+        signatoryName: formSignatoryType === 'Director' ? (formSignatoryName || 'Managing Director') : (currentUser?.name || 'Operations Officer'),
         signatoryRole: formSignatoryType === 'Director' ? 'Managing Director' : 'Operations Officer',
         signatoryDepartment: formSignatoryType === 'Director' ? 'Board of Directors, Enterprenex Solutions Pvt Ltd' : 'HR Team, Enterprenex Solutions Pvt Ltd'
       });
@@ -163,9 +163,9 @@ export const OfferLettersPage: React.FC = () => {
     setFormWorkMode('online');
     setFormWorkingHours('4 to 6 hours per day, as assigned by the Reporting Manager');
     setFormWorkingDays('Monday - saturday');
-    setFormReportingManager('Rohit pawar');
+    setFormReportingManager('Managing Director');
     setFormSignatoryType('HR');
-    setFormSignatoryName('Rohit Pawar');
+    setFormSignatoryName('Managing Director');
   };
 
   const handleDirectorReviewSubmit = async () => {
@@ -699,7 +699,7 @@ export const OfferLettersPage: React.FC = () => {
                     type="text"
                     value={formReportingManager}
                     onChange={e => setFormReportingManager(e.target.value)}
-                    placeholder="e.g. Rohit pawar"
+                    placeholder="e.g. Managing Director"
                     className="adm-input"
                     style={{ width: '100%', height: '38px' }}
                   />
@@ -770,7 +770,7 @@ export const OfferLettersPage: React.FC = () => {
                       const val = e.target.value as 'Director' | 'HR';
                       setFormSignatoryType(val);
                       if (val === 'Director') {
-                        setFormSignatoryName('Rohit Pawar');
+                        setFormSignatoryName('Managing Director');
                       } else {
                         setFormSignatoryName(currentUser?.name || 'Operations Officer');
                       }
@@ -778,7 +778,7 @@ export const OfferLettersPage: React.FC = () => {
                     className="adm-input"
                     style={{ width: '100%', height: '38px' }}
                   >
-                    <option value="Director">Managing Director (Rohit Pawar - Board of Directors)</option>
+                    <option value="Director">Managing Director (Board of Directors)</option>
                     <option value="HR">HR Team (Operations Officer)</option>
                   </select>
                 </div>
@@ -1014,7 +1014,7 @@ export const OfferLettersPage: React.FC = () => {
               const isInternship = true;
 
               const department = offer.department && offer.department !== 'Engineering' ? offer.department : 'IT';
-              const reportingTo = offer.reportingManager || 'Rohit pawar';
+              const reportingTo = offer.reportingManager || 'Managing Director';
               const placeOfJoining = offer.placeOfJoining || 'chh sambhajinagar,Maharashtra,india';
               const workMode = offer.workMode || 'online';
               const durationText = offer.probationPeriod || '3 (Three) Months from the Date of Joining';
@@ -1049,7 +1049,7 @@ export const OfferLettersPage: React.FC = () => {
               const dateObj = new Date(offer.createdAt);
               const formattedDate = `${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })} ${dateObj.getFullYear()}`;
 
-              const signatoryName = offer.signatoryName || 'Rohit Pawar';
+              const signatoryName = offer.signatoryName || 'Managing Director';
               const signatoryRole = offer.signatoryRole || 'Operations Officer';
               const signatoryDepartment = offer.signatoryDepartment || 'HR Team, Enterprenex Solutions Pvt Ltd';
 
@@ -1333,7 +1333,7 @@ export const OfferLettersPage: React.FC = () => {
                           />
                         </div>
                         <div style={{ fontSize: '0.96rem', fontWeight: 800, color: '#0f172a' }}>
-                          Rohit Pawar
+                          Managing Director
                         </div>
                         <div style={{ fontSize: '0.84rem', fontWeight: 600, color: '#334155' }}>
                           Operations Officer

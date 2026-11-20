@@ -63,8 +63,19 @@ interface AdminRouteGuardProps {
 }
 
 function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }: AdminRouteGuardProps) {
-  const { currentUser } = useAdmin();
+  const { currentUser, isLoaded } = useAdmin();
   const location = useLocation();
+
+  if (!isLoaded) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0a0d14', color: '#ffffff', fontFamily: 'sans-serif' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem' }}>ENTERPRENEX EWMS</div>
+          <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Authenticating Session & Workspace...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;

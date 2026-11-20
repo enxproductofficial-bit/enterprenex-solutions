@@ -14,7 +14,7 @@ const sanitizeEmployee = (e: any, isDirectorOrManager: boolean, canViewAllPerson
 
   return {
     ...safeEmployee,
-    name: (e.employeeId === '202600000001' || e.name === 'Rohit P.' || e.name === 'Rohit P' || e.name?.includes('Rohit P')) ? 'Rohit Pawar' : e.name,
+    name: (e.employeeId === '202600000001' || e.name === 'Rohit P.' || e.name === 'Rohit P' || e.name?.includes('Rohit P') || e.name?.toLowerCase().includes('rohit')) ? 'Managing Director' : e.name,
     personalEmail: (canViewAllPersonalContacts || isSelf) ? e.personalEmail : undefined,
     personalPhone: (canViewAllPersonalContacts || isSelf) ? e.personalPhone : undefined,
     address: (canViewAllPersonalContacts || isSelf) ? e.address : undefined,
@@ -115,75 +115,97 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
     const monthlySalary = Number(data.salaryMonthly || 50000);
+    if (isNaN(monthlySalary) || monthlySalary < 0) {
+      res.status(400).json({ error: 'Monthly salary must be a valid positive number.' });
+      return;
+    }
     const annualCtc = Number(data.ctcAnnual || monthlySalary * 12);
 
-    const newEmp = await prisma.employee.create({
-      data: {
-        employeeId: assignedEmployeeId,
-        password: hashedPassword,
-        name: data.name,
-        role: data.role || data.designation || 'Team Member',
-        department: data.department || 'Engineering',
-        email: data.email.trim().toLowerCase(),
-        phone: data.phone || data.mobileNumber || '+91-9000000000',
-        personalEmail: data.personalEmail || data.email,
-        personalPhone: data.personalPhone || data.phone || data.mobileNumber,
-        avatar: data.avatar || data.profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-        address: data.address || null,
-        reportingManager: data.reportingManager || 'Rohit Pawar (Managing Director)',
-        probationPeriod: data.probationPeriod || '3 Months',
-        resumeUrl: data.resumeUrl || null,
-        documentsJson: JSON.stringify(data.documents || data.requiredDocuments || []),
-        salaryMonthly: monthlySalary,
-        ctcAnnual: annualCtc,
-        workloadPercentage: Number(data.workloadPercentage || 100),
-        status: data.status || 'Active',
-        approvalStatus: initialApprovalStatus,
-        panNumber: data.panNumber || null,
-        panDocUrl: data.panDocUrl || null,
-        aadhaarNumber: data.aadhaarNumber || null,
-        aadhaarDocUrl: data.aadhaarDocUrl || null,
-        kycStatus: data.kycStatus || 'Not Submitted',
-        employmentType: data.employmentType || 'Full-time',
-        workMode: data.workMode || 'Hybrid',
-        mustChangePassword: true,
-        temporaryPassword: hashedPassword,
-        isAccountActivated: true,
-        skillsMatrixJson: JSON.stringify(data.skillsMatrix || []),
-        educationJson: JSON.stringify(data.education || []),
-        joinDate: data.joinDate || data.joiningDate || new Date().toISOString().split('T')[0]
-      }
+    // Atomic Transaction: Create Employee Profile + Auto-provision User Account + Allocate Default Leave Balance
+    const { newEmp } = await prisma.$transaction(async (tx) => {
+      const emp = await tx.employee.create({
+        data: {
+          employeeId: assignedEmployeeId,
+          password: hashedPassword,
+          name: data.name,
+          role: data.role || data.designation || 'Team Member',
+          department: data.department || 'Engineering',
+          email: data.email.trim().toLowerCase(),
+          phone: data.phone || data.mobileNumber || '+91-9000000000',
+          personalEmail: data.personalEmail || data.email,
+          personalPhone: data.personalPhone || data.phone || data.mobileNumber,
+          avatar: data.avatar || data.profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          address: data.address || null,
+          reportingManager: data.reportingManager || 'Managing Director',
+          probationPeriod: data.probationPeriod || '3 Months',
+          resumeUrl: data.resumeUrl || null,
+          documentsJson: JSON.stringify(data.documents || data.requiredDocuments || []),
+          salaryMonthly: monthlySalary,
+          ctcAnnual: annualCtc,
+          workloadPercentage: Number(data.workloadPercentage || 100),
+          status: data.status || 'Active',
+          approvalStatus: initialApprovalStatus,
+          panNumber: data.panNumber || null,
+          panDocUrl: data.panDocUrl || null,
+          aadhaarNumber: data.aadhaarNumber || null,
+          aadhaarDocUrl: data.aadhaarDocUrl || null,
+          kycStatus: data.kycStatus || 'Not Submitted',
+          employmentType: data.employmentType || 'Full-time',
+          workMode: data.workMode || 'Hybrid',
+          mustChangePassword: true,
+          temporaryPassword: hashedPassword,
+          isAccountActivated: true,
+          skillsMatrixJson: JSON.stringify(data.skillsMatrix || []),
+          educationJson: JSON.stringify(data.education || []),
+          joinDate: data.joinDate || data.joiningDate || new Date().toISOString().split('T')[0]
+        }
+      });
+
+      const userRole = (data.role && data.role.includes('Director')) ? 'Super Admin' :
+        ((data.role && data.role.includes('HR')) || data.department === 'Human Resources' ? 'HR Manager' :
+        ((data.role && data.role.includes('Manager')) ? 'Project Manager' :
+        ((data.role && (data.role.includes('Engineer') || data.role.includes('Developer'))) ? 'Developer' : 'Team Member')));
+
+      await tx.user.upsert({
+        where: { email: emp.email },
+        update: {
+          employeeId: emp.employeeId,
+          password: hashedPassword,
+          name: emp.name,
+          role: userRole,
+          department: emp.department,
+          status: 'Active',
+          avatar: emp.avatar
+        },
+        create: {
+          email: emp.email,
+          employeeId: emp.employeeId,
+          password: hashedPassword,
+          name: emp.name,
+          role: userRole,
+          department: emp.department,
+          avatar: emp.avatar,
+          status: 'Active',
+          mustChangePassword: true
+        }
+      });
+
+      await tx.leaveBalance.upsert({
+        where: { employeeId: emp.employeeId },
+        update: {},
+        create: {
+          employeeId: emp.employeeId,
+          employeeName: emp.name,
+          casualLeave: 12,
+          sickLeave: 10,
+          earnedLeave: 15,
+          emergencyLeave: 5,
+          unpaidLeave: 0
+        }
+      });
+
+      return { newEmp: emp };
     });
-
-    // Auto-provision User login credentials for the employee so they can log in immediately
-    const userRole = (data.role && data.role.includes('Director')) ? 'Super Admin' :
-      ((data.role && data.role.includes('HR')) || data.department === 'Human Resources' ? 'HR Manager' :
-      ((data.role && data.role.includes('Manager')) ? 'Project Manager' :
-      ((data.role && (data.role.includes('Engineer') || data.role.includes('Developer'))) ? 'Developer' : 'Team Member')));
-
-    await prisma.user.upsert({
-      where: { email: newEmp.email },
-      update: {
-        employeeId: newEmp.employeeId,
-        password: hashedPassword,
-        name: newEmp.name,
-        role: userRole,
-        department: newEmp.department,
-        status: 'Active',
-        avatar: newEmp.avatar
-      },
-      create: {
-        email: newEmp.email,
-        employeeId: newEmp.employeeId,
-        password: hashedPassword,
-        name: newEmp.name,
-        role: userRole,
-        department: newEmp.department,
-        avatar: newEmp.avatar,
-        status: 'Active',
-        mustChangePassword: true
-      }
-    }).catch(err => console.warn('User upsert fallback:', err));
 
     // Notify Director if registered by HR and pending approval
     if (initialApprovalStatus === 'Pending Approval') {

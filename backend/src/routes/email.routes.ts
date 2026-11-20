@@ -7,23 +7,49 @@ import { emitNotification } from '../services/notification.service';
 
 const router = Router();
 
-// GET /api/v1/emails (List enterprise emails)
+// GET /api/v1/emails (List enterprise emails with strict mailbox isolation)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { category, filterType, search } = req.query as Record<string, string>;
+    const userRole = req.user?.role || '';
+    const userEmail = (req.user?.email || '').toLowerCase();
+
+    const isDirectorOrAdmin =
+      userRole === 'Super Admin' ||
+      userRole.includes('Director') ||
+      userEmail.includes('director');
 
     const where: any = {};
     if (category && category !== 'All') where.category = category;
     if (filterType === 'unread') where.isUnread = true;
     if (filterType === 'starred') where.isStarred = true;
 
-    if (search) {
-      where.OR = [
-        { subject: { contains: search } },
-        { sender: { contains: search } },
-        { senderEmail: { contains: search } },
-        { body: { contains: search } }
+    // Strict mailbox boundary: regular staff strictly only access their own incoming/outgoing mail
+    if (!isDirectorOrAdmin) {
+      where.AND = [
+        {
+          OR: [
+            { senderEmail: { equals: req.user?.email, mode: 'insensitive' } },
+            { recipientEmail: { equals: req.user?.email, mode: 'insensitive' } }
+          ]
+        }
       ];
+    }
+
+    if (search) {
+      const searchCondition = {
+        OR: [
+          { subject: { contains: search, mode: 'insensitive' } },
+          { sender: { contains: search, mode: 'insensitive' } },
+          { senderEmail: { contains: search, mode: 'insensitive' } },
+          { body: { contains: search, mode: 'insensitive' } }
+        ]
+      };
+      if (where.AND) {
+        where.AND.push(searchCondition);
+      } else {
+        where.OR = searchCondition.OR;
+      }
     }
 
     const emails = await prisma.enterpriseEmail.findMany({
@@ -42,7 +68,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-// GET /api/v1/emails/:id (Get single email)
+// GET /api/v1/emails/:id (Get single email with strict ownership verification)
 router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const email = await prisma.enterpriseEmail.findUnique({
@@ -51,6 +77,20 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
 
     if (!email) {
       res.status(404).json({ error: 'Email not found.' });
+      return;
+    }
+
+    const isDirectorOrAdmin =
+      req.user?.role === 'Super Admin' ||
+      req.user?.role?.includes('Director') ||
+      req.user?.email?.includes('director');
+
+    const isParticipant =
+      email.senderEmail?.toLowerCase() === req.user?.email?.toLowerCase() ||
+      email.recipientEmail?.toLowerCase() === req.user?.email?.toLowerCase();
+
+    if (!isDirectorOrAdmin && !isParticipant) {
+      res.status(403).json({ error: 'Access denied: You are not authorized to view this confidential correspondence.' });
       return;
     }
 
@@ -92,7 +132,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       return;
     }
 
-    const senderName = req.user?.name || 'Rohit Pawar (Managing Director)';
+    const senderName = req.user?.name || 'Managing Director';
     const senderEmail = req.user?.email || 'director@enterprenex.solutions';
     const snippet = body.substring(0, 120).replace(/\n/g, ' ') + '...';
     const now = new Date();

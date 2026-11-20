@@ -37,8 +37,14 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
   try {
     const { title, category, amount, date, description, receiptUrl } = req.body;
 
-    if (!title || !category || !amount) {
+    if (!title || !category || amount === undefined || amount === null) {
       res.status(400).json({ error: 'Title, category, and amount are required.' });
+      return;
+    }
+
+    const numericAmount = Number(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      res.status(400).json({ error: 'Valid positive expense amount is required.' });
       return;
     }
 
@@ -50,7 +56,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       data: {
         title,
         category,
-        amount: Number(amount),
+        amount: numericAmount,
         date: date || new Date().toISOString().split('T')[0],
         description: description || null,
         receiptUrl: receiptUrl || null,
@@ -118,10 +124,23 @@ router.patch('/:id/review', authenticateToken, requireRole(['Super Admin', 'Proj
   }
 });
 
-// PATCH /api/v1/expenses/:id/reimburse (Mark as disbursed/reimbursed)
+// PATCH /api/v1/expenses/:id/reimburse (Mark as disbursed/reimbursed strictly with prior executive approval)
 router.patch('/:id/reimburse', authenticateToken, requireRole(['Super Admin', 'Project Manager', 'CFO']), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+
+    const existing = await prisma.expense.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: 'Expense record not found.' });
+      return;
+    }
+
+    if (existing.status !== 'Director Approved' && existing.status !== 'HR Approved') {
+      res.status(400).json({
+        error: `Reimbursement blocked: Expense status is '${existing.status}'. Prior executive approval is mandatory before release of funds.`
+      });
+      return;
+    }
 
     const updated = await prisma.expense.update({
       where: { id },

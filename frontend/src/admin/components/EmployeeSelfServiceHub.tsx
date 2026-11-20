@@ -716,7 +716,7 @@ export const EmployeeSelfServiceHub: React.FC = () => {
             <h4 style={{ color: '#64748b', fontSize: '0.82rem', marginBottom: '0.5rem' }}>📞 Company Contacts</h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.6rem' }}>
               {[
-                { name: 'Rohit Pawar', role: 'Managing Director', icon: '👑' },
+                { name: 'Managing Director', role: 'Managing Director', icon: '👑' },
                 { name: 'Jyoti', role: 'Project Manager / HR', icon: '📋' },
                 { name: 'HR Department', role: 'Human Resources', icon: '🏢' },
               ].map(c => (

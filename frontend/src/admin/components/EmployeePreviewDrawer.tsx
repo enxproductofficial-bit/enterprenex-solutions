@@ -84,9 +84,9 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
   });
   const [taskHours, setTaskHours] = useState(8);
   const [taskAssignedBy, setTaskAssignedBy] = useState(() => {
-    if (isDirector) return 'Rohit Pawar (Managing Director)';
+    if (isDirector) return 'Managing Director';
     if (isHr) return 'HR Administrator (Operations & HR)';
-    return currentUser?.name || 'Rohit Pawar (Managing Director)';
+    return currentUser?.name || 'Managing Director';
   });
 
   const handleAssignTaskSubmit = (e: React.FormEvent) => {
@@ -103,7 +103,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
       assignedBy: taskAssignedBy,
       assignedTo: employee.name,
       department: employee.department || 'Engineering',
-      reviewer: taskAssignedBy.includes('Rohit') ? 'Rohit Pawar' : 'HR Administrator',
+      reviewer: taskAssignedBy.includes('Director') ? 'Managing Director' : 'HR Administrator',
       priority: taskPriority,
       status: 'Assigned',
       startDate: new Date().toISOString().split('T')[0],
@@ -276,7 +276,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                   lineHeight: 1.3
                 }}
               >
-                {(employee.employeeId === '202600000001' || employee.name?.includes('Rohit P')) ? 'Rohit Pawar' : employee.name}
+                {(employee.employeeId === '202600000001' || employee.name?.toLowerCase().includes('rohit')) ? 'Managing Director' : employee.name}
               </h2>
 
               <div style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -375,7 +375,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                   } else {
                     onUpdateEmployee(employee.id, {
                       approvalStatus: 'Approved',
-                      approvedBy: 'Rohit Pawar (Managing Director)',
+                      approvedBy: 'Managing Director',
                       approvedAt: new Date().toISOString()
                     });
                   }
@@ -644,7 +644,7 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                 {employee.department}
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', marginTop: '2px' }}>
-                Manager: <strong>{employee.reportingManager || 'Rohit Pawar (Director)'}</strong>
+                Manager: <strong>{employee.reportingManager || 'Managing Director'}</strong>
               </div>
             </div>
 
@@ -975,9 +975,9 @@ export const EmployeePreviewDrawer: React.FC<EmployeePreviewDrawerProps> = ({
                     onChange={e => setTaskAssignedBy(e.target.value)}
                     required
                   >
-                    <option value="Rohit Pawar (Managing Director)">Rohit Pawar (Managing Director)</option>
+                    <option value="Managing Director">Managing Director</option>
                     <option value="HR Administrator (Operations & HR)">HR Administrator (Operations & HR)</option>
-                    {currentUser?.name && currentUser.name !== 'Rohit Pawar' && currentUser.name !== 'HR Administrator' && (
+                    {currentUser?.name && !currentUser.name.includes('Director') && currentUser.name !== 'HR Administrator' && (
                       <option value={currentUser.name}>{currentUser.name}</option>
                     )}
                   </select>

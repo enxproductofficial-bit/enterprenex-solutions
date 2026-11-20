@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAdmin } from '../context/AdminContext';
+import { useAdmin, isExcludedWorkforceRecord } from '../context/AdminContext';
 import { useLanguage } from '../i18n/LanguageContext';
 import {
   Users,
@@ -102,7 +102,7 @@ export const DashboardPage: React.FC = () => {
   const safeInvoices = invoices || [];
   const safeLeads = leads || [];
   const safeTickets = tickets || [];
-  const safeEmployees = employees || [];
+  const safeEmployees = (employees || []).filter(e => !isExcludedWorkforceRecord(e));
   const safeAuditLogs = auditLogs || [];
   const safeTasks = tasks || [];
   const safeLeaves = leaves || [];
@@ -125,13 +125,13 @@ export const DashboardPage: React.FC = () => {
     department: currentUser?.department || 'Engineering & Product',
     phone: currentUser?.phone || '+91 9226860060',
     avatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-    reportingManager: 'Rohit Pawar (Managing Director)',
+    reportingManager: 'Managing Director',
     workloadPercentage: 80,
     salaryMonthly: 75000,
     skillsMatrix: [
-      { name: 'React / Next.js', level: 'Expert', verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'TypeScript & Node.js', level: 'Advanced', verifiedRating: 5, isVerified: true, verifiedBy: 'Rohit Pawar' },
-      { name: 'Cloud Infrastructure & CI/CD', level: 'Advanced', verifiedRating: 4, isVerified: true, verifiedBy: 'Rohit Pawar' }
+      { name: 'React / Next.js', level: 'Expert', verifiedRating: 5, isVerified: true, verifiedBy: 'Managing Director' },
+      { name: 'TypeScript & Node.js', level: 'Advanced', verifiedRating: 5, isVerified: true, verifiedBy: 'Managing Director' },
+      { name: 'Cloud Infrastructure & CI/CD', level: 'Advanced', verifiedRating: 4, isVerified: true, verifiedBy: 'Managing Director' }
     ],
     joinDate: '2026-01-15',
     status: 'Active',
@@ -586,7 +586,13 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                {safeEmployees.slice(0, 5).map(emp => {
+                {safeEmployees.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--adm-text-dim)', fontSize: '0.85rem' }}>
+                    <Users size={28} style={{ margin: '0 auto 0.5rem', opacity: 0.4 }} />
+                    <div style={{ fontWeight: 600, color: 'var(--adm-text)', marginBottom: '0.2rem' }}>No Technical Personnel Registered</div>
+                    <div style={{ fontSize: '0.78rem' }}>Register personnel via Team Management to track capacity and initiate 1-on-1 direct interactions.</div>
+                  </div>
+                ) : safeEmployees.slice(0, 5).map(emp => {
                   const empTasks = safeTasks.filter(t => {
                     const assigned = (t.assignedTo || '').toLowerCase();
                     const name = (emp.name || '').toLowerCase();
@@ -873,7 +879,7 @@ export const DashboardPage: React.FC = () => {
                         className="adm-btn adm-btn-danger"
                         style={{ padding: '0.25rem 0.55rem', fontSize: '0.7rem' }}
                         onClick={() => {
-                          showToast('Escalated to Director', `Risk escalation logged for ${t.title} directly to Rohit Pawar (Managing Director).`, 'info');
+                          showToast('Escalated to Director', `Risk escalation logged for ${t.title} directly to Managing Director.`, 'info');
                         }}
                       >
                         Escalate to Director
@@ -1175,144 +1181,172 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Charts & Workload Row */}
-          <div className="adm-grid-2" style={{ marginBottom: '1.75rem', gridTemplateColumns: '2fr 1fr' }}>
-            {/* Revenue SVG Chart */}
-            <div className="adm-card">
-              <div className="adm-card-header">
-                <div className="adm-card-title">
-                  <TrendingUp size={18} color="var(--adm-primary)" />
-                  Fiscal Revenue Realization vs. Strategic Target Benchmark
+          {/* Executive Engineering Workforce Capacity & Operational Allocation (Full Width Suite) */}
+          <div style={{ marginBottom: '1.75rem' }}>
+            <div className="adm-card" style={{ padding: '1.25rem 1.5rem' }}>
+              <div className="adm-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--adm-border)', paddingBottom: '0.85rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Users size={19} color="var(--adm-primary)" />
+                  <div>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text)', margin: 0 }}>
+                      Engineering Workforce Capacity & Operational Allocation
+                    </h3>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--adm-text-dim)', margin: 0 }}>
+                      Real-time shift telemetry, workload saturation, and daily KPI compliance tracking
+                    </p>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '4px', background: 'var(--adm-bg)', padding: '2px', borderRadius: '6px', border: '1px solid var(--adm-border)' }}>
-                  {(['30D', '90D', '1Y'] as const).map(p => (
-                    <button
-                      key={p}
-                      onClick={() => setChartPeriod(p)}
-                      style={{
-                        background: chartPeriod === p ? 'var(--adm-primary)' : 'transparent',
-                        color: chartPeriod === p ? '#fff' : 'var(--adm-text-muted)',
-                        border: 'none',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {p}
-                    </button>
-                  ))}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '1.25rem', background: 'var(--adm-bg)', padding: '6px 14px', borderRadius: '8px', border: '1px solid var(--adm-border)', fontSize: '0.75rem' }}>
+                    <div>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Active Engineers: </span>
+                      <strong style={{ color: 'var(--adm-text)' }}>{safeEmployees.length}</strong>
+                    </div>
+                    <div style={{ borderLeft: '1px solid var(--adm-border)', paddingLeft: '1rem' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Avg Load: </span>
+                      <strong style={{ color: 'var(--adm-primary)' }}>
+                        {safeEmployees.length > 0 
+                          ? Math.round(safeEmployees.reduce((acc, e) => acc + (Number(e.workloadPercentage) || 0), 0) / safeEmployees.length)
+                          : 0}%
+                      </strong>
+                    </div>
+                    <div style={{ borderLeft: '1px solid var(--adm-border)', paddingLeft: '1rem' }}>
+                      <span style={{ color: 'var(--adm-text-dim)' }}>Shift Presence: </span>
+                      <strong style={{ color: safeEmployees.length > 0 ? '#10b981' : 'var(--adm-text-dim)' }}>
+                        {safeEmployees.length > 0 ? '100% On-Duty' : '0 Active'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <button className="adm-btn adm-btn-sm adm-btn-secondary" onClick={() => navigate('/admin/team')}>
+                    View Team Ledger
+                  </button>
                 </div>
               </div>
 
-              <div style={{ height: '220px', width: '100%', position: 'relative', marginTop: '1rem' }}>
-                <svg style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                  <line x1="0" y1="20" x2="100%" y2="20" stroke="var(--adm-border)" strokeDasharray="3 3" />
-                  <line x1="0" y1="80" x2="100%" y2="80" stroke="var(--adm-border)" strokeDasharray="3 3" />
-                  <line x1="0" y1="140" x2="100%" y2="140" stroke="var(--adm-border)" strokeDasharray="3 3" />
-                  <line x1="0" y1="200" x2="100%" y2="200" stroke="var(--adm-border)" />
-
-                  {revenueChartData.map((d, i) => {
-                    const totalBars = revenueChartData.length;
-                    const slotWidth = 100 / totalBars;
-                    const barX = (i * slotWidth) + (slotWidth / 2) - 3;
-                    const heightPct = maxAmount > 0 ? (d.amount / maxAmount) * 180 : 0;
-                    const targetPct = maxAmount > 0 ? (d.target / maxAmount) * 180 : 0;
+              {safeEmployees.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
+                  {safeEmployees.map(emp => {
+                    const workload = Number(emp?.workloadPercentage) || 0;
+                    const projectCount = (emp?.currentProjects || []).length;
+                    const kpiVal = emp?.kpiScore || 94.2;
 
                     return (
-                      <g key={i}>
-                        <rect
-                          x={`${barX + 2}%`}
-                          y={200 - targetPct}
-                          width="12"
-                          height={Math.max(targetPct, 2)}
-                          rx="3"
-                          fill="rgba(255, 255, 255, 0.08)"
-                        />
-                        <rect
-                          x={`${barX - 1}%`}
-                          y={200 - heightPct}
-                          width="14"
-                          height={Math.max(heightPct, 2)}
-                          rx="4"
-                          fill="url(#revGradient)"
-                        />
-                        <text
-                          x={`${barX + 2}%`}
-                          y="218"
-                          fill="var(--adm-text-dim)"
-                          fontSize="11"
-                          textAnchor="middle"
-                        >
-                          {d.month}
-                        </text>
-                      </g>
+                      <div
+                        key={emp.id}
+                        style={{
+                          background: 'var(--adm-bg, #0f141c)',
+                          border: '1px solid var(--adm-border)',
+                          borderRadius: '10px',
+                          padding: '1rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.65rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ position: 'relative' }}>
+                              <img
+                                src={emp.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'}
+                                alt={emp.name}
+                                style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid var(--adm-primary)' }}
+                              />
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  bottom: 0,
+                                  right: 0,
+                                  width: '9px',
+                                  height: '9px',
+                                  borderRadius: '50%',
+                                  background: '#10b981',
+                                  border: '2px solid var(--adm-surface)'
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--adm-text)' }}>
+                                {emp.name}
+                              </div>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
+                                {emp.role || 'Software Engineer'} • {emp.department || 'Engineering'}
+                              </div>
+                            </div>
+                          </div>
+
+                          <span
+                            style={{
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              padding: '2px 8px',
+                              borderRadius: '12px',
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              color: '#10b981',
+                              border: '1px solid rgba(16, 185, 129, 0.25)'
+                            }}
+                          >
+                            KPI {kpiVal}%
+                          </span>
+                        </div>
+
+                        {/* Shift & Telemetry Badge */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--adm-surface)', padding: '5px 8px', borderRadius: '6px', fontSize: '0.72rem', border: '1px solid var(--adm-border)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--adm-text-dim)' }}>
+                            <Clock size={11} color="var(--adm-primary)" />
+                            <span>Shift Login: <strong>09:15 AM</strong></span>
+                          </div>
+                          <span style={{ color: 'var(--adm-text-dim)' }}>
+                            Target Logout: <strong>06:15 PM</strong>
+                          </span>
+                        </div>
+
+                        {/* Workload Progress Bar */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', marginBottom: '4px' }}>
+                            <span style={{ color: 'var(--adm-text-dim)' }}>Capacity Saturation</span>
+                            <span style={{ fontWeight: 700, color: workload > 85 ? 'var(--adm-primary)' : 'var(--adm-success)' }}>
+                              {workload}% {workload > 85 ? '(Heavy Load)' : '(Optimal)'}
+                            </span>
+                          </div>
+                          <div className="adm-progress-bar" style={{ height: '6px' }}>
+                            <div
+                              className="adm-progress-fill"
+                              style={{
+                                width: `${Math.min(100, Math.max(0, workload))}%`,
+                                background: workload > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
+                              }}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--adm-text-dim)', marginTop: '4px' }}>
+                            <span>Active Workstreams: {projectCount}</span>
+                            <span style={{ color: '#10b981' }}>Shift Compliance: 98%</span>
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
-
-                  <defs>
-                    <linearGradient id="revGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#1070C8" />
-                      <stop offset="100%" stopColor="#1E6DB8" stopOpacity="0.6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginTop: '1.5rem', fontSize: '0.78rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--adm-primary)' }} />
-                  <span style={{ color: 'var(--adm-text-muted)' }}>Audited Net Realization</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--adm-surface-hover)', border: '1px solid var(--adm-border)' }} />
-                  <span style={{ color: 'var(--adm-text-muted)' }}>Strategic Target Benchmark</span>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--adm-text-dim)', fontSize: '0.85rem' }}>
+                  <Users size={32} style={{ margin: '0 auto 0.65rem', opacity: 0.35, color: 'var(--adm-primary)' }} />
+                  <div style={{ fontWeight: 700, color: 'var(--adm-text)', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                    No Technical Personnel Registered
+                  </div>
+                  <p style={{ margin: 0, maxWidth: '440px', marginInline: 'auto', fontSize: '0.8rem', color: 'var(--adm-text-dim)', lineHeight: 1.4 }}>
+                    Real-time shift telemetry, workload saturation, and daily KPI tracking will display here as soon as workforce members are registered.
+                  </p>
+                  <button
+                    className="adm-btn adm-btn-primary adm-btn-sm"
+                    style={{ marginTop: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    onClick={() => navigate('/admin/team')}
+                  >
+                    <UserCheck size={14} />
+                    <span>Register Workforce Personnel</span>
+                  </button>
                 </div>
-              </div>
-            </div>
-
-            {/* Team Workload Breakdown */}
-            <div className="adm-card">
-              <div className="adm-card-header">
-                <div className="adm-card-title">
-                  <Users size={18} color="var(--adm-primary)" />
-                  Engineering Workforce Capacity & Allocation
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {safeEmployees.map(emp => {
-                  const workload = Number(emp?.workloadPercentage) || 0;
-                  const projectCount = (emp?.currentProjects || []).length;
-                  return (
-                    <div key={emp.id}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '0.82rem' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--adm-text)' }}>{emp.name}</span>
-                        <span style={{
-                          fontWeight: 700,
-                          color: workload > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
-                        }}>
-                          {workload}%
-                        </span>
-                      </div>
-                      <div className="adm-progress-bar">
-                        <div
-                          className="adm-progress-fill"
-                          style={{
-                            width: `${Math.min(100, Math.max(0, workload))}%`,
-                            background: workload > 85 ? 'var(--adm-primary)' : 'var(--adm-success)'
-                          }}
-                        />
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
-                        <span>{emp.role || 'Staff'}</span>
-                        <span>{projectCount} Workstreams</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              )}
             </div>
           </div>
 
@@ -1520,7 +1554,7 @@ export const DashboardPage: React.FC = () => {
               <div style={{ background: 'var(--adm-bg)', padding: '0.85rem', borderRadius: '10px', border: '1px solid var(--adm-border)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>Direct Executive Relationship</div>
                 <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--adm-text)', marginTop: '2px' }}>
-                  {currentEmpProfile.reportingManager || 'Rohit Pawar (Managing Director)'}
+                  {currentEmpProfile.reportingManager || 'Managing Director'}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#10b981', marginTop: '3px' }}>
                   ● Available for Sprint Sync & Blocker Escalation
@@ -1541,7 +1575,7 @@ export const DashboardPage: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
                 <a
                   href={`https://wa.me/919226860060?text=${encodeURIComponent(
-                    `Hi Rohit Sir, requesting a 1-on-1 sync regarding: "${oneOnOneTopicInput || 'Sprint Deliverables'}" - ${currentEmpProfile.name} (${currentEmpProfile.employeeId}).`
+                    `Hi Director Sir, requesting a 1-on-1 sync regarding: "${oneOnOneTopicInput || 'Sprint Deliverables'}" - ${currentEmpProfile.name} (${currentEmpProfile.employeeId}).`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1567,7 +1601,7 @@ export const DashboardPage: React.FC = () => {
                   href={`mailto:director@enterprenex.solutions?subject=${encodeURIComponent(
                     `1-on-1 Request: ${oneOnOneTopicInput || 'General Discussion'} - ${currentEmpProfile.name}`
                   )}&body=${encodeURIComponent(
-                    `Hello Rohit Sir,\n\nI would like to schedule a 1-on-1 sync to discuss:\n${oneOnOneTopicInput || 'Sprint updates and workstream dependencies'}.\n\nBest regards,\n${currentEmpProfile.name}\n${currentEmpProfile.employeeId}`
+                    `Hello Director Sir,\n\nI would like to schedule a 1-on-1 sync to discuss:\n${oneOnOneTopicInput || 'Sprint updates and workstream dependencies'}.\n\nBest regards,\n${currentEmpProfile.name}\n${currentEmpProfile.employeeId}`
                   )}`}
                   className="adm-btn adm-btn-secondary"
                   style={{ justifyContent: 'center', padding: '0.6rem', fontSize: '0.82rem', textDecoration: 'none' }}

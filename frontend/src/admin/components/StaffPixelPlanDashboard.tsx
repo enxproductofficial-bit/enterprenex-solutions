@@ -322,12 +322,12 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--adm-bg)', padding: '6px 12px', borderRadius: '10px', border: '1px solid var(--adm-border)' }}>
           <div style={{ fontSize: '0.72rem' }}>
             <span style={{ color: 'var(--adm-text-dim)' }}>Lead: </span>
-            <strong style={{ color: 'var(--adm-text)' }}>{currentEmpProfile?.reportingManager || 'Rohit Pawar (MD)'}</strong>
+            <strong style={{ color: 'var(--adm-text)' }}>{currentEmpProfile?.reportingManager || 'Managing Director'}</strong>
           </div>
           <div style={{ display: 'flex', gap: '4px' }}>
             <a
               href={`https://wa.me/919226860060?text=${encodeURIComponent(
-                `Hi Rohit Sir, update from ${currentEmpProfile?.name || 'Staff'} (${currentEmpProfile?.employeeId || 'ZCX-EMP-0001'}).`
+                `Hi Director Sir, update from ${currentEmpProfile?.name || 'Staff'} (${currentEmpProfile?.employeeId || 'ZCX-EMP-0001'}).`
               )}`}
               target="_blank"
               rel="noreferrer"
@@ -405,7 +405,7 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
                 </div>
                 <div>
                   <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)' }}>
-                    Rohit Pawar sent a message
+                    Managing Director sent a message
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)', marginTop: '2px' }}>
                     Sprint backlog & Phase 2 architecture reviewed &bull; 25 minutes ago
@@ -497,7 +497,7 @@ export const StaffPixelPlanDashboard: React.FC<StaffPixelPlanDashboardProps> = (
                       Team All-Hands Meeting
                     </div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--adm-text-dim)' }}>
-                      Google Meet &bull; Chaired by Rohit Pawar
+                      Google Meet &bull; Chaired by Managing Director
                     </div>
                   </div>
                 </div>

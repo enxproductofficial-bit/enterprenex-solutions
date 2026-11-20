@@ -65,7 +65,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
         department: data.department || 'Engineering',
         assignedBy: data.assignedBy || assignedByName,
         assignedByRole,
-        reviewer: data.reviewer || (isDirector ? 'Rohit Pawar' : assignedByName),
+        reviewer: data.reviewer || (isDirector ? 'Managing Director' : assignedByName),
         priority: data.priority || 'Medium',
         status: data.status || 'Assigned',
         startDate: data.startDate || new Date().toISOString().split('T')[0],
@@ -300,6 +300,24 @@ router.post('/:id/stopwatch/start', authenticateToken, async (req: AuthRequest, 
       return;
     }
 
+    const user = req.user;
+    const isDirectorOrManager =
+      user?.role === 'Super Admin' ||
+      user?.role === 'Project Manager' ||
+      user?.role === 'HR Manager' ||
+      user?.email?.includes('director') ||
+      user?.email?.includes('manager');
+
+    const isAssignee =
+      (user?.employeeId && task.assignedTo.includes(user.employeeId)) ||
+      (user?.name && task.assignedTo.toLowerCase().includes(user.name.toLowerCase())) ||
+      (user?.email && task.assignedTo.toLowerCase().includes(user.email.toLowerCase()));
+
+    if (!isDirectorOrManager && !isAssignee) {
+      res.status(403).json({ error: 'Access forbidden: You can only submit deliverables for tasks assigned to you.' });
+      return;
+    }
+
     const session = await prisma.taskTimeSession.create({
       data: {
         taskId: id,
@@ -377,6 +395,24 @@ router.post('/:id/stopwatch/stop', authenticateToken, async (req: AuthRequest, r
       return;
     }
 
+    const user = req.user;
+    const isDirectorOrManager =
+      user?.role === 'Super Admin' ||
+      user?.role === 'Project Manager' ||
+      user?.role === 'HR Manager' ||
+      user?.email?.includes('director') ||
+      user?.email?.includes('manager');
+
+    const isAssignee =
+      (user?.employeeId && task.assignedTo.includes(user.employeeId)) ||
+      (user?.name && task.assignedTo.toLowerCase().includes(user.name.toLowerCase())) ||
+      (user?.email && task.assignedTo.toLowerCase().includes(user.email.toLowerCase()));
+
+    if (!isDirectorOrManager && !isAssignee) {
+      res.status(403).json({ error: 'Access forbidden: You can only submit deliverables for tasks assigned to you.' });
+      return;
+    }
+
     if (!sessionId) {
       res.status(400).json({ error: 'sessionId is required.' });
       return;
@@ -393,20 +429,22 @@ router.post('/:id/stopwatch/stop', authenticateToken, async (req: AuthRequest, r
     const verifiedActiveMins = session.verifiedActiveMinutes > 0 ? session.verifiedActiveMinutes : totalMinutes;
     const hoursEarned = Math.round((verifiedActiveMins / 60) * 100) / 100;
 
-    await prisma.taskTimeSession.update({
-      where: { id: sessionId },
-      data: {
-        endedAt,
-        durationMinutes: totalMinutes,
-        activityNote: activityNote || 'Completed sprint session'
-      }
-    });
+    const updatedTask = await prisma.$transaction(async (tx) => {
+      await tx.taskTimeSession.update({
+        where: { id: sessionId },
+        data: {
+          endedAt,
+          durationMinutes: totalMinutes,
+          activityNote: activityNote || 'Completed sprint session'
+        }
+      });
 
-    const updatedTask = await prisma.task.update({
-      where: { id },
-      data: {
-        loggedHours: Math.round((task.loggedHours + hoursEarned) * 100) / 100
-      }
+      return await tx.task.update({
+        where: { id },
+        data: {
+          loggedHours: Math.round((task.loggedHours + hoursEarned) * 100) / 100
+        }
+      });
     });
 
     res.json({
@@ -474,11 +512,23 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       return;
     }
 
+    const user = req.user;
     const isDirectorOrManager =
-      req.user?.role === 'Super Admin' ||
-      req.user?.role === 'Project Manager' ||
-      req.user?.role === 'HR Manager' ||
-      req.user?.email?.includes('director');
+      user?.role === 'Super Admin' ||
+      user?.role === 'Project Manager' ||
+      user?.role === 'HR Manager' ||
+      user?.email?.includes('director') ||
+      user?.email?.includes('manager');
+
+    const isAssignee =
+      (user?.employeeId && task.assignedTo.includes(user.employeeId)) ||
+      (user?.name && task.assignedTo.toLowerCase().includes(user.name.toLowerCase())) ||
+      (user?.email && task.assignedTo.toLowerCase().includes(user.email.toLowerCase()));
+
+    if (!isDirectorOrManager && !isAssignee) {
+      res.status(403).json({ error: 'Access forbidden: You can only submit deliverables for tasks assigned to you.' });
+      return;
+    }
 
     // Rule: General employees cannot mark tasks as Completed without review
     if (updates.status && (updates.status === 'Completed' || updates.status === 'Approved')) {

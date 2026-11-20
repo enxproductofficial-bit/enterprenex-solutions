@@ -751,7 +751,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                 <User size={12} /> Assigned By
               </div>
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '3px' }}>
-                {task.assignedBy || 'Rohit Pawar (Director)'}
+                {task.assignedBy || 'Managing Director'}
               </div>
             </div>
 
@@ -771,7 +771,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
                 <ShieldCheck size={12} /> Reviewer / Lead
               </div>
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--adm-text)', marginTop: '3px' }}>
-                {task.reviewer || 'Rohit Pawar'}
+                {task.reviewer || 'Managing Director'}
               </div>
             </div>
 
@@ -1158,7 +1158,7 @@ export const TaskPreviewDrawer: React.FC<TaskPreviewDrawerProps> = ({
         <div className="adm-drawer-footer" style={{ padding: '0.9rem 1.5rem', background: 'var(--adm-surface, #ffffff)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
           <a
             href={`https://wa.me/919226860060?text=${encodeURIComponent(
-              `*ENTERPRENEX TASK SPECIFICATION UPDATE*\n\n*Task ID:* ${task.taskId || task.id}\n*Title:* ${task.title}\n*Assignee:* ${task.assignedTo}\n*Reviewer:* ${task.reviewer || 'Rohit Pawar'}\n*Status:* ${task.status}\n*Project:* ${task.projectName}\n*Logged Time:* ${task.loggedHours}h / ${task.estimatedHours}h\n*Due Date:* ${task.dueDate}\n\n*Portal Link:* https://www.enterprenexsolution.com/admin/tasks`
+              `*ENTERPRENEX TASK SPECIFICATION UPDATE*\n\n*Task ID:* ${task.taskId || task.id}\n*Title:* ${task.title}\n*Assignee:* ${task.assignedTo}\n*Reviewer:* ${task.reviewer || 'Managing Director'}\n*Status:* ${task.status}\n*Project:* ${task.projectName}\n*Logged Time:* ${task.loggedHours}h / ${task.estimatedHours}h\n*Due Date:* ${task.dueDate}\n\n*Portal Link:* https://www.enterprenexsolution.com/admin/tasks`
             )}`}
             target="_blank"
             rel="noopener noreferrer"

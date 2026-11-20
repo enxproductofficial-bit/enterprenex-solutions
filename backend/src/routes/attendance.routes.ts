@@ -39,6 +39,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 
     if (!isDirectorOrHr) {
       where.OR = [
+        { employeeId: req.user?.employeeId || '__none__' },
         { employeeId: req.user?.id },
         { employeeName: { contains: req.user?.name || '' } }
       ];
@@ -98,7 +99,7 @@ router.post('/check-in', authenticateToken, async (req: AuthRequest, res: Respon
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-    const userId = req.user?.id || 'unknown';
+    const userId = req.user?.employeeId || req.user?.id || 'unknown';
     const userName = req.user?.name || 'Staff Member';
     const dept = req.user?.department || 'Engineering';
 
@@ -110,6 +111,7 @@ router.post('/check-in', authenticateToken, async (req: AuthRequest, res: Respon
         date: today,
         OR: [
           { employeeId: userId },
+          { employeeId: req.user?.id || '' },
           { employeeName: userName }
         ]
       }
@@ -152,7 +154,7 @@ router.post('/check-out', authenticateToken, async (req: AuthRequest, res: Respo
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-    const userId = req.user?.id || 'unknown';
+    const userId = req.user?.employeeId || req.user?.id || 'unknown';
     const userName = req.user?.name || 'Staff Member';
 
     const existing = await prisma.attendanceRecord.findFirst({
@@ -160,6 +162,7 @@ router.post('/check-out', authenticateToken, async (req: AuthRequest, res: Respo
         date: today,
         OR: [
           { employeeId: userId },
+          { employeeId: req.user?.id || '' },
           { employeeName: userName }
         ]
       }

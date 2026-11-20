@@ -458,7 +458,14 @@ export const ProjectsPage: React.FC = () => {
                 <div className="adm-form-group">
                   <label className="adm-form-label">Contracted Client Entity *</label>
                   <select className="adm-select" value={fClientId} onChange={e => setFClientId(e.target.value)}>
-                    {clients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
+                    {clients.length === 0 ? (
+                      <option value="">-- No Corporate Clients Registered (Add Client First) --</option>
+                    ) : (
+                      <>
+                        <option value="">-- Select Client Entity --</option>
+                        {clients.map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
               </div>

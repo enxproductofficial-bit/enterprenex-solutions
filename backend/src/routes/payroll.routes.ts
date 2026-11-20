@@ -58,61 +58,63 @@ router.post('/generate-batch', authenticateToken, requireRole(['Super Admin', 'P
       where: { status: 'Active' }
     });
 
-    const generated = [];
-
-    for (const emp of employees) {
-      // Check if already generated
-      const existing = await prisma.payrollRecord.findFirst({
-        where: {
-          employeeId: emp.employeeId,
-          month,
-          year: Number(year)
-        }
-      });
-
-      if (!existing) {
-        const grossSalary = emp.salaryMonthly || 50000;
-        // Indian Standard Payroll Structure:
-        // Basic: 50% of gross
-        // HRA: 40% of basic
-        // Allowances: remaining
-        // PF (Employee): 12% of basic
-        // Tax (TDS estimate): 5% of gross if > 50,000, else 0
-        const basicSalary = Math.round(grossSalary * 0.5);
-        const hra = Math.round(basicSalary * 0.4);
-        const allowances = Math.round(grossSalary - (basicSalary + hra));
-        const pfEmployee = Math.round(basicSalary * 0.12);
-        const pfEmployer = pfEmployee;
-        const taxDeduction = grossSalary > 50000 ? Math.round(grossSalary * 0.05) : 200;
-        const deductions = 0;
-        const netSalary = Math.round(grossSalary - pfEmployee - taxDeduction - deductions);
-
-        const recordNo = `PAY-${year}-${month.substring(0, 3).toUpperCase()}-${emp.employeeId.slice(-4)}`;
-
-        const record = await prisma.payrollRecord.create({
-          data: {
-            payrollNo: recordNo,
-            month,
-            year: Number(year),
+    const generated = await prisma.$transaction(async (tx) => {
+      const records = [];
+      for (const emp of employees) {
+        // Check if already generated
+        const existing = await tx.payrollRecord.findFirst({
+          where: {
             employeeId: emp.employeeId,
-            employeeName: emp.name,
-            employeeEmail: emp.email,
-            department: emp.department || 'Engineering',
-            designation: emp.designation || emp.role || 'Staff Member',
-            basicSalary,
-            hra,
-            allowances,
-            deductions,
-            pfEmployee,
-            pfEmployer,
-            taxDeduction,
-            netSalary,
-            status: 'Pending Approval'
+            month,
+            year: Number(year)
           }
         });
-        generated.push(record);
+
+        if (!existing) {
+          const grossSalary = emp.salaryMonthly || 50000;
+          // Indian Standard Payroll Structure:
+          // Basic: 50% of gross
+          // HRA: 40% of basic
+          // Allowances: remaining
+          // PF (Employee): 12% of basic
+          // Tax (TDS estimate): 5% of gross if > 50,000, else 0
+          const basicSalary = Math.round(grossSalary * 0.5);
+          const hra = Math.round(basicSalary * 0.4);
+          const allowances = Math.round(grossSalary - (basicSalary + hra));
+          const pfEmployee = Math.round(basicSalary * 0.12);
+          const pfEmployer = pfEmployee;
+          const taxDeduction = grossSalary > 50000 ? Math.round(grossSalary * 0.05) : 200;
+          const deductions = 0;
+          const netSalary = Math.round(grossSalary - pfEmployee - taxDeduction - deductions);
+
+          const recordNo = `PAY-${year}-${month.substring(0, 3).toUpperCase()}-${emp.employeeId.slice(-4)}`;
+
+          const record = await tx.payrollRecord.create({
+            data: {
+              payrollNo: recordNo,
+              month,
+              year: Number(year),
+              employeeId: emp.employeeId,
+              employeeName: emp.name,
+              employeeEmail: emp.email,
+              department: emp.department || 'Engineering',
+              designation: emp.designation || emp.role || 'Staff Member',
+              basicSalary,
+              hra,
+              allowances,
+              deductions,
+              pfEmployee,
+              pfEmployer,
+              taxDeduction,
+              netSalary,
+              status: 'Pending Approval'
+            }
+          });
+          records.push(record);
+        }
       }
-    }
+      return records;
+    });
 
     // Notify CFO & Director
     await emitNotification({

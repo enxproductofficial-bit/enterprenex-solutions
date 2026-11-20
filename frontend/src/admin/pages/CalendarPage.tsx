@@ -137,7 +137,7 @@ export const CalendarPage: React.FC = () => {
       type: fType,
       date: fDate,
       time: fTime,
-      attendees: [currentUser?.name || 'Enterprenex Team', 'Rohit Pawar', 'POLAMREDDY REVANTH REDDY'],
+      attendees: [currentUser?.name || 'Managing Director', 'Engineering Squad'],
       location: fLocation,
       meetUrl: fMeetUrl,
       description: fDesc || 'Sprint sync & client roadmap discussion.'
@@ -163,7 +163,7 @@ export const CalendarPage: React.FC = () => {
     addAnnouncement({
       title: annTitle,
       content: annContent,
-      authorName: currentUser?.name || 'Rohit Pawar',
+      authorName: currentUser?.name || 'Managing Director',
       authorRole: isDirector ? 'Managing Director & Lead Architect' : (currentUser?.role || 'Project Lead'),
       authorAvatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       isDirectorPost: isDirector,
@@ -187,10 +187,10 @@ export const CalendarPage: React.FC = () => {
     const targetEmployee = employees.find(emp => emp.employeeId === activeChatChannel || emp.id === activeChatChannel);
 
     sendChatMessage({
-      senderId: currentUser?.employeeId || currentUser?.id || '202600000002',
-      senderName: currentUser?.name || 'POLAMREDDY REVANTH REDDY',
-      senderRole: currentUser?.role || 'Full Stack Developer',
-      senderAvatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      senderId: currentUser?.employeeId || currentUser?.id || '202600000001',
+      senderName: currentUser?.name || 'Managing Director',
+      senderRole: currentUser?.role || 'Super Admin',
+      senderAvatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       channelId: isGeneral ? 'general' : activeChatChannel,
       recipientId: isGeneral ? undefined : (targetEmployee?.employeeId || activeChatChannel),
       recipientName: isGeneral ? 'General Channel' : targetEmployee?.name,
@@ -202,7 +202,7 @@ export const CalendarPage: React.FC = () => {
   };
 
   // Filtered Chat Messages for Current Selected Channel or 1-on-1
-  const currentUserId = currentUser?.employeeId || currentUser?.id || '202600000002';
+  const currentUserId = currentUser?.employeeId || currentUser?.id || '202600000001';
   const displayedMessages = chatMessages.filter(msg => {
     if (activeChatChannel === 'general') {
       return msg.channelId === 'general';

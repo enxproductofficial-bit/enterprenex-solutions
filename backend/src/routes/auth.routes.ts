@@ -53,7 +53,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
           data: {
             email: loginId.toLowerCase(),
             password: defaultHash,
-            name: isDirector ? 'Rohit Pawar (Managing Director)' : 'HR Administrator',
+            name: isDirector ? 'Managing Director' : 'HR Administrator',
             role: isDirector ? 'Super Admin' : 'Project Manager',
             department: isDirector ? 'Executive Board' : 'Human Resources',
             mustChangePassword: false,
@@ -83,9 +83,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         const rawPassword = password.trim();
         const isBcryptMatch = emp.password ? await bcrypt.compare(rawPassword, emp.password).catch(() => false) : false;
         const isTempBcryptMatch = emp.temporaryPassword ? await bcrypt.compare(rawPassword, emp.temporaryPassword).catch(() => false) : false;
-        const isTempPlainMatch = emp.temporaryPassword ? rawPassword === emp.temporaryPassword : false;
 
-        const validEmpPassword = isBcryptMatch || isTempBcryptMatch || isTempPlainMatch;
+        const validEmpPassword = isBcryptMatch || isTempBcryptMatch;
 
         if (!validEmpPassword) {
           res.status(401).json({ error: 'Invalid password. Please check your credentials.' });
@@ -149,9 +148,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       if (emp) {
         const isEmpBcrypt = emp.password ? await bcrypt.compare(password, emp.password).catch(() => false) : false;
         const isEmpTempBcrypt = emp.temporaryPassword ? await bcrypt.compare(password, emp.temporaryPassword).catch(() => false) : false;
-        const isEmpTempPlain = emp.temporaryPassword ? password === emp.temporaryPassword : false;
 
-        validPassword = Boolean(isEmpBcrypt || isEmpTempBcrypt || isEmpTempPlain);
+        validPassword = Boolean(isEmpBcrypt || isEmpTempBcrypt);
 
         if (validPassword && emp.password) {
           // Sync User password with Employee table
@@ -626,7 +624,7 @@ router.post('/activate', async (req: Request, res: Response): Promise<void> => {
     }
 
     if (emp.approvalStatus === 'Pending Director Approval') {
-      res.status(403).json({ error: `Account Pending Approval: Employee ID ${emp.employeeId || emp.name} has been registered by HR and is awaiting executive authorization from Managing Director Rohit Pawar. Portal activation will be enabled once approved.` });
+      res.status(403).json({ error: `Account Pending Approval: Employee ID ${emp.employeeId || emp.name} has been registered by HR and is awaiting executive authorization from Managing Director. Portal activation will be enabled once approved.` });
       return;
     }
 

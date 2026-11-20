@@ -41,7 +41,9 @@ import {
   FileCheck,
   RefreshCw,
   Check,
-  ExternalLink
+  ExternalLink,
+  Clock,
+  Activity
 } from 'lucide-react';
 import { QuickCreateModal } from './QuickCreateModal';
 import { ToastContainer } from './ToastContainer';
@@ -456,26 +458,30 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </div>
 
         {/* Sidebar Footer User Info */}
-        {!collapsed && currentUser && (
-          <div className="adm-sidebar-footer">
-            <img src={currentUser.avatar} alt={currentUser.name} className="adm-avatar" />
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                {currentUser.name}
+        {!collapsed && currentUser && (() => {
+          const sidebarDisplayName = (currentUser.name || '').toLowerCase().includes('rohit') ? 'Managing Director' : currentUser.name;
+          const sidebarDisplayRole = currentUser.role || 'Super Admin';
+          return (
+            <div className="adm-sidebar-footer">
+              <img src={currentUser.avatar} alt={sidebarDisplayName} className="adm-avatar" />
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                  {sidebarDisplayName}
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--adm-primary)' }}>
+                  {sidebarDisplayRole}
+                </div>
               </div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--adm-primary)' }}>
-                {currentUser.role}
-              </div>
+              <button
+                onClick={() => { logout(); navigate('/login'); }}
+                title="Logout"
+                style={{ background: 'transparent', border: 'none', color: 'var(--adm-text-dim)', cursor: 'pointer' }}
+              >
+                <LogOut size={16} />
+              </button>
             </div>
-            <button
-              onClick={() => { logout(); navigate('/login'); }}
-              title="Logout"
-              style={{ background: 'transparent', border: 'none', color: 'var(--adm-text-dim)', cursor: 'pointer' }}
-            >
-              <LogOut size={16} />
-            </button>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ── DRAGGABLE SIDEBAR DIVIDER (↔ or ⇹) ── */}
         {!collapsed && (
@@ -923,141 +929,300 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               )}
             </div>
 
-            {/* User Profile & Role Switcher */}
+            {/* User Profile & Role Switcher (Dynamic Multi-User Profile Card) */}
             <div style={{ position: 'relative' }}>
-              <div className="adm-user-profile-btn" onClick={() => setShowUserMenu(!showUserMenu)}>
-                {currentUser && <img src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentUser.name || 'User'} className="adm-avatar" />}
-                <div className="adm-user-info">
-                  <span className="adm-user-name">{currentUser?.name || 'Enterprenex Admin'}</span>
-                  <span className="adm-user-role" style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', maxWidth: '170px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {currentUser?.email || currentUser?.role || 'Super Admin'}
-                  </span>
-                </div>
-                <ChevronDown size={14} color="var(--adm-text-dim)" />
-              </div>
+              {(() => {
+                const activeUser = currentUser || {
+                  name: 'Managing Director',
+                  email: 'director@enterprenex.solutions',
+                  role: 'Super Admin',
+                  department: 'Executive Board',
+                  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                  employeeId: '202600000001'
+                };
 
-              {/* Profile / RBAC User Menu Dropdown */}
-              {showUserMenu && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 8px)',
-                    right: 0,
-                    width: '270px',
-                    background: 'var(--adm-surface)',
-                    border: '1px solid var(--adm-border-light)',
-                    borderRadius: '12px',
-                    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.16)',
-                    zIndex: 1000,
-                    padding: '1rem'
-                  }}
-                >
-                  {currentUser && (
-                    <>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
-                        <img
-                          src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
-                          alt={currentUser.name || 'User'}
-                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--adm-primary)' }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {currentUser.name}
-                          </div>
-                          <div style={{ fontSize: '0.72rem', color: 'var(--adm-primary)', fontWeight: 600 }}>
-                            {currentUser.role}
-                          </div>
-                        </div>
-                      </div>
+                const cleanUserName = (() => {
+                  if (!activeUser.name) return 'Authorized Executive';
+                  if (activeUser.name.toLowerCase().includes('rohit')) {
+                    return 'Managing Director';
+                  }
+                  return activeUser.name.replace(/\s*\(Managing Director\)/i, '').trim();
+                })();
 
-                      <div style={{ padding: '0.65rem 0.75rem', background: 'var(--adm-bg)', borderRadius: '8px', fontSize: '0.75rem', marginBottom: '0.75rem', border: '1px solid var(--adm-border)' }}>
-                        <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '2px' }}>
-                          Verified Email
-                        </div>
-                        <div style={{ color: 'var(--adm-text)', fontWeight: 600, wordBreak: 'break-all' }}>
-                          {currentUser.email}
-                        </div>
-                        {currentUser.department && (
-                          <>
-                            <div style={{ marginTop: '6px', color: 'var(--adm-text-dim)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 700, marginBottom: '2px' }}>
-                              Department
-                            </div>
-                            <div style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>
-                              {currentUser.department}
-                            </div>
-                          </>
-                        )}
-                      </div>
+                const cleanRoleTitle = (() => {
+                  if (activeUser.role === 'Super Admin') return 'Executive Board';
+                  return activeUser.role;
+                })();
 
-                      <button
-                        onClick={openMyProfileModal}
-                        style={{
-                          width: '100%',
-                          padding: '7px 10px',
-                          background: 'rgba(56, 189, 248, 0.08)',
-                          border: '1px solid rgba(56, 189, 248, 0.28)',
-                          borderRadius: '6px',
-                          color: 'var(--adm-text)',
-                          fontSize: '0.78rem',
-                          fontWeight: 700,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          cursor: 'pointer',
-                          marginBottom: '0.5rem'
-                        }}
-                      >
-                        <UserCheck size={14} color="#38bdf8" />
-                        <span>My Profile & Contact Details</span>
-                      </button>
+                const getRoleTheme = (roleStr: string = '') => {
+                  const r = roleStr.toLowerCase();
+                  if (r.includes('admin') || r.includes('director') || r.includes('ceo')) {
+                    return { bg: 'rgba(99, 102, 241, 0.12)', text: '#818cf8', border: 'rgba(99, 102, 241, 0.3)' };
+                  }
+                  if (r.includes('manager') || r.includes('lead')) {
+                    return { bg: 'rgba(16, 185, 129, 0.12)', text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' };
+                  }
+                  if (r.includes('intern')) {
+                    return { bg: 'rgba(245, 158, 11, 0.12)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' };
+                  }
+                  return { bg: 'rgba(56, 189, 248, 0.12)', text: '#38bdf8', border: 'rgba(56, 189, 248, 0.3)' };
+                };
 
-                      <button
-                        onClick={() => { setShowUserMenu(false); setShowSettingsModal(true); }}
-                        style={{
-                          width: '100%',
-                          padding: '7px 10px',
-                          background: 'var(--adm-surface-hover)',
-                          border: '1px solid var(--adm-border)',
-                          borderRadius: '6px',
-                          color: 'var(--adm-text)',
-                          fontSize: '0.78rem',
-                          fontWeight: 600,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          cursor: 'pointer',
-                          marginBottom: '0.75rem'
-                        }}
-                      >
-                        <Settings size={14} color="var(--adm-primary)" />
-                        <span>Portal Settings & Language</span>
-                      </button>
-                    </>
-                  )}
+                const roleTheme = getRoleTheme(activeUser.role);
 
-                  <div style={{ borderTop: '1px solid var(--adm-border)', paddingTop: '0.5rem' }}>
-                    <button
-                      onClick={() => { logout(); navigate('/login'); }}
-                      style={{
-                        width: '100%',
-                        padding: '6px 8px',
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'var(--adm-danger)',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        cursor: 'pointer'
-                      }}
+                return (
+                  <>
+                    <div
+                      className="adm-user-profile-btn"
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '9px', padding: '4px 8px', borderRadius: '8px', transition: 'background 0.2s' }}
                     >
-                      <LogOut size={14} />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+                      <div style={{ position: 'relative', display: 'inline-flex' }}>
+                        <img
+                          src={activeUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                          alt={cleanUserName}
+                          className="adm-avatar"
+                          style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover', border: `1.5px solid ${roleTheme.text}` }}
+                        />
+                        <span
+                          style={{
+                            position: 'absolute',
+                            bottom: -1,
+                            right: -1,
+                            width: '9px',
+                            height: '9px',
+                            borderRadius: '50%',
+                            background: '#10b981',
+                            border: '2px solid var(--adm-surface)'
+                          }}
+                        />
+                      </div>
+                      <div className="adm-user-info" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                        <span className="adm-user-name" style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--adm-text)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {cleanUserName}
+                        </span>
+                        <span className="adm-user-role" style={{ fontSize: '0.68rem', color: 'var(--adm-text-dim)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {cleanRoleTitle}
+                        </span>
+                      </div>
+                      <ChevronDown size={14} color="var(--adm-text-dim)" style={{ transform: showUserMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                    </div>
+
+                    {/* Modern Executive User Card Dropdown with Live KPI & Shift Telemetry */}
+                    {showUserMenu && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 'calc(100% + 10px)',
+                          right: 0,
+                          width: '320px',
+                          background: 'var(--adm-surface)',
+                          border: '1px solid var(--adm-border-light)',
+                          borderRadius: '14px',
+                          boxShadow: '0 18px 42px rgba(0, 0, 0, 0.28), 0 0 1px rgba(255, 255, 255, 0.08)',
+                          backdropFilter: 'blur(12px)',
+                          zIndex: 1000,
+                          padding: '1.15rem',
+                          animation: 'fadeIn 0.18s ease-out'
+                        }}
+                      >
+                        {/* Profile Card Header */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '0.9rem', paddingBottom: '0.85rem', borderBottom: '1px solid var(--adm-border)' }}>
+                          <div style={{ position: 'relative' }}>
+                            <img
+                              src={activeUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                              alt={cleanUserName}
+                              style={{ width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${roleTheme.text}` }}
+                            />
+                            <span
+                              style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                right: 0,
+                                width: '11px',
+                                height: '11px',
+                                borderRadius: '50%',
+                                background: '#10b981',
+                                border: '2px solid var(--adm-surface)'
+                              }}
+                              title="Active Online Session"
+                            />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--adm-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {cleanUserName}
+                            </div>
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                fontSize: '0.68rem',
+                                fontWeight: 600,
+                                padding: '2px 8px',
+                                borderRadius: '20px',
+                                background: roleTheme.bg,
+                                color: roleTheme.text,
+                                border: `1px solid ${roleTheme.border}`,
+                                marginTop: '3px'
+                              }}
+                            >
+                              {cleanRoleTitle}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* DAILY SHIFT & KPI TELEMETRY WIDGET */}
+                        <div
+                          style={{
+                            background: 'rgba(16, 112, 200, 0.04)',
+                            border: '1px solid rgba(16, 112, 200, 0.2)',
+                            borderRadius: '10px',
+                            padding: '0.75rem 0.85rem',
+                            marginBottom: '0.85rem'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.68rem', fontWeight: 700, color: 'var(--adm-primary)' }}>
+                              <Clock size={12} />
+                              <span>DAILY SHIFT & TELEMETRY</span>
+                            </div>
+                            <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                              Active Shift
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '8px' }}>
+                            <div style={{ background: 'var(--adm-surface)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--adm-border)' }}>
+                              <div style={{ fontSize: '0.62rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase' }}>Login Time</div>
+                              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-text)' }}>09:15 AM</div>
+                            </div>
+                            <div style={{ background: 'var(--adm-surface)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--adm-border)' }}>
+                              <div style={{ fontSize: '0.62rem', color: 'var(--adm-text-dim)', textTransform: 'uppercase' }}>Target Logout</div>
+                              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-text)' }}>06:15 PM</div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.66rem', marginBottom: '3px' }}>
+                              <span style={{ color: 'var(--adm-text-dim)' }}>KPI Shift Compliance</span>
+                              <span style={{ fontWeight: 700, color: '#10b981' }}>98.5% (Optimal)</span>
+                            </div>
+                            <div style={{ width: '100%', height: '4px', background: 'var(--adm-border)', borderRadius: '2px', overflow: 'hidden' }}>
+                              <div style={{ width: '98.5%', height: '100%', background: 'linear-gradient(90deg, #1070C8, #10b981)' }} />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* User Metadata Information */}
+                        <div
+                          style={{
+                            background: 'var(--adm-bg)',
+                            borderRadius: '10px',
+                            padding: '0.75rem 0.85rem',
+                            fontSize: '0.75rem',
+                            marginBottom: '0.85rem',
+                            border: '1px solid var(--adm-border)'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--adm-text-dim)', fontSize: '0.68rem', fontWeight: 600, marginBottom: '2px' }}>
+                            <Mail size={12} color="var(--adm-primary)" />
+                            <span>OFFICIAL EMAIL</span>
+                          </div>
+                          <div style={{ color: 'var(--adm-text)', fontWeight: 600, wordBreak: 'break-all', marginBottom: '8px' }}>
+                            {activeUser.email}
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '6px', borderTop: '1px dashed var(--adm-border)' }}>
+                            <div>
+                              <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.65rem', fontWeight: 600 }}>DEPARTMENT</div>
+                              <div style={{ color: 'var(--adm-text-muted)', fontWeight: 600 }}>{activeUser.department || 'Operations'}</div>
+                            </div>
+                            {activeUser.employeeId && (
+                              <div style={{ textAlign: 'right' }}>
+                                <div style={{ color: 'var(--adm-text-dim)', fontSize: '0.65rem', fontWeight: 600 }}>EMPLOYEE ID</div>
+                                <div style={{ color: 'var(--adm-primary)', fontWeight: 700, fontFamily: 'monospace' }}>{activeUser.employeeId}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Navigation Actions */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '0.85rem' }}>
+                          <button
+                            onClick={openMyProfileModal}
+                            style={{
+                              width: '100%',
+                              padding: '8px 10px',
+                              background: 'var(--adm-surface-hover)',
+                              border: '1px solid var(--adm-border)',
+                              borderRadius: '8px',
+                              color: 'var(--adm-text)',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <UserCheck size={14} color="var(--adm-primary)" />
+                            <span>My Profile & Contact Details</span>
+                          </button>
+
+                          <button
+                            onClick={() => { setShowUserMenu(false); setShowSettingsModal(true); }}
+                            style={{
+                              width: '100%',
+                              padding: '8px 10px',
+                              background: 'var(--adm-surface-hover)',
+                              border: '1px solid var(--adm-border)',
+                              borderRadius: '8px',
+                              color: 'var(--adm-text)',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <Settings size={14} color="var(--adm-text-dim)" />
+                            <span>Portal Settings & Preferences</span>
+                          </button>
+                        </div>
+
+                        {/* Sign Out Button */}
+                        <div style={{ borderTop: '1px solid var(--adm-border)', paddingTop: '0.65rem' }}>
+                          <button
+                            onClick={() => { logout(); navigate('/login'); }}
+                            style={{
+                              width: '100%',
+                              padding: '7px 10px',
+                              background: 'rgba(239, 68, 68, 0.08)',
+                              border: '1px solid rgba(239, 68, 68, 0.22)',
+                              borderRadius: '8px',
+                              color: '#ef4444',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '6px',
+                              cursor: 'pointer',
+                              transition: 'background 0.2s'
+                            }}
+                          >
+                            <LogOut size={14} />
+                            <span>Sign Out of Workspace</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
           </div>

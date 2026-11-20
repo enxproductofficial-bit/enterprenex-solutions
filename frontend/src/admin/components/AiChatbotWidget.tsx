@@ -206,7 +206,7 @@ export const AiChatbotWidget: React.FC = () => {
       return `🏢 **Enterprenex Solutions Private Limited (Corporate Identity):**\n\n` +
         `• **CIN:** \`U72200PN2026PTC239841\`\n` +
         `• **GSTIN:** \`27AAXPE1206M1ZV\` (Maharashtra Jurisdiction)\n` +
-        `• **Managing Director:** Rohit Pawar\n` +
+        `• **Managing Director:** Managing Director\n` +
         `• **Corporate Head Office:** Tech Park Tower B, Shivajinagar, Pune, Maharashtra 411005\n` +
         `• **Official Portal:** \`https://enterprenex.solutions\``;
     }
@@ -255,7 +255,7 @@ export const AiChatbotWidget: React.FC = () => {
       if (language === 'hi') {
         return `👥 **एंटरप्रेनेक्स सोल्यूशन्स - प्रबंधन एवं कार्यकारी नेतृत्व संपर्क विवरण:**\n\n` +
           `• **प्रबंध निदेशक एवं मुख्य वास्तुकार (Managing Director):**\n` +
-          `  👤 **Rohit Pawar (रोहित पवार)**\n` +
+          `  👤 **Managing Director (प्रबंध निदेशक)**\n` +
           `  ✉️ ईमेल: \`director@enterprenexsolution.com\` | \`director@enterprenex.solutions\`\n` +
           `  📞 फोन: \`+91-9226860060\`\n` +
           `  🏢 कार्यालय: कार्यकारी बोर्डरूम, पुणे मुख्यालय\n` +
@@ -266,16 +266,16 @@ export const AiChatbotWidget: React.FC = () => {
           `  📞 फोन: \`+91-9226860060\` (Ext: 102)\n` +
           `  💼 अधिकार: उपस्थिति नियमितीकरण, वैधानिक अवकाश, वेतन पर्ची एवं ऑनबोर्डिंग\n\n` +
           `• **फुल स्टैक इंजीनियर एवं एआई विशेषज्ञ (Tech Lead):**\n` +
-          `  👤 **POLAMREDDY REVANTH REDDY** (कर्मचारी आईडी: \`202600000002\`)\n` +
-          `  ✉️ ईमेल: \`revanth@enterprenex.solutions\`\n` +
-          `  📞 फोन: \`+91-9876543210\`\n` +
+          `  👤 **Engineering Lead** (कर्मचारी आईडी: \`202600000002\`)\n` +
+          `  ✉️ ईमेल: \`techlead@enterprenex.solutions\`\n` +
+          `  📞 फोन: \`+91-9226860060\`\n` +
           `  💼 अधिकार: स्प्रिंट कार्य, तकनीकी सहायता एवं सिस्टम विकास\n\n` +
           `📌 **आधिकारिक हेल्पडेस्क:** \`/admin/helpdesk\` (सर्विस डेस्क एवं 24/7 एसएलए ट्रैकिंग)`;
       }
       if (language === 'mr') {
         return `👥 **एंटरप्रेनेक्स सोल्यूशन्स - व्यवस्थापन व वरिष्ठ नेतृत्व संपर्क निर्देशिका:**\n\n` +
           `• **व्यवस्थापकीय संचालक व मुख्य वास्तुकार (Managing Director):**\n` +
-          `  👤 **Rohit Pawar (रोहित पवार)**\n` +
+          `  👤 **Managing Director (व्यवस्थापकीय संचालक)**\n` +
           `  ✉️ ईमेल: \`director@enterprenexsolution.com\` | \`director@enterprenex.solutions\`\n` +
           `  📞 फोन: \`+91-9226860060\`\n` +
           `  🏢 कार्यालय: मुख्य संचालनालय, पुणे कॉर्पोरेट मुख्यालय\n` +
@@ -286,15 +286,15 @@ export const AiChatbotWidget: React.FC = () => {
           `  📞 फोन: \`+91-9226860060\` (Ext: 102)\n` +
           `  💼 कार्यक्षेत्र: हजेरी पडताळणी, सुट्ट्या, पगारपत्रके व भरती\n\n` +
           `• **फुल स्टॅक इंजिनिअर व एआय तज्ज्ञ (Tech Lead):**\n` +
-          `  👤 **POLAMREDDY REVANTH REDDY** (कर्मचारी क्र.: \`202600000002\`)\n` +
-          `  ✉️ ईमेल: \`revanth@enterprenex.solutions\`\n` +
-          `  📞 फोन: \`+91-9876543210\`\n` +
+          `  👤 **Engineering Lead** (कर्मचारी क्र.: \`202600000002\`)\n` +
+          `  ✉️ ईमेल: \`techlead@enterprenex.solutions\`\n` +
+          `  📞 फोन: \`+91-9226860060\`\n` +
           `  💼 कार्यक्षेत्र: स्प्रिंट प्रकल्प, सिस्टीम आर्किटेक्चर आणि तांत्रिक सहाय्य\n\n` +
           `📌 **अधिकृत सेवा डेस्क:** \`/admin/helpdesk\``;
       }
       return `👥 **Enterprenex Solutions - Management Team & Executive Leadership Directory:**\n\n` +
         `• **Managing Director & Lead Architect:**\n` +
-        `  👤 **Rohit Pawar**\n` +
+        `  👤 **Managing Director**\n` +
         `  ✉️ **Email:** \`director@enterprenexsolution.com\` | \`director@enterprenex.solutions\`\n` +
         `  📞 **Phone:** \`+91-9226860060\`\n` +
         `  🏢 **Office:** Executive Boardroom, Pune Corporate Headquarters\n` +
@@ -305,9 +305,9 @@ export const AiChatbotWidget: React.FC = () => {
         `  📞 **Phone:** \`+91-9226860060\` (Ext: 102)\n` +
         `  💼 **Escalation Scope:** Attendance regularizations, statutory leaves (CL/SL/EL), payroll slips & employee onboarding\n\n` +
         `• **Full Stack Engineer & AI Specialist (Tech Lead):**\n` +
-        `  👤 **POLAMREDDY REVANTH REDDY** (Emp ID: \`202600000002\`)\n` +
-        `  ✉️ **Email:** \`revanth@enterprenex.solutions\`\n` +
-        `  📞 **Phone:** \`+91-9876543210\`\n` +
+        `  👤 **Engineering Lead** (Emp ID: \`202600000002\`)\n` +
+        `  ✉️ **Email:** \`techlead@enterprenex.solutions\`\n` +
+        `  📞 **Phone:** \`+91-9226860060\`\n` +
         `  💼 **Escalation Scope:** Sprint Kanban workstreams, system delivery, cloud telemetry\n\n` +
         `• **Central Service Desk & Escalation:**\n` +
         `  ✉️ **Official Support:** \`support@enterprenexsolution.com\`\n` +

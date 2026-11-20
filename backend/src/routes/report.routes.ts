@@ -1,11 +1,11 @@
 import { Router, Response } from 'express';
 import { prisma } from '../db';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-// GET /api/v1/reports/workforce-summary
-router.get('/workforce-summary', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// GET /api/v1/reports/workforce-summary (Executive & HR Only)
+router.get('/workforce-summary', authenticateToken, requireRole(['Super Admin', 'Project Manager', 'HR Manager']), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const today = new Date();
     const thirtyDaysAgo = new Date();
@@ -113,12 +113,19 @@ router.get('/workforce-summary', authenticateToken, async (req: AuthRequest, res
   }
 });
 
-// GET /api/v1/reports/employee-performance (with filtering by employee, department, project, date, status)
+// GET /api/v1/reports/employee-performance (with filtering and strict ownership enforcement)
 router.get('/employee-performance', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { employeeId, department, project, startDate, endDate, status } = req.query as Record<string, string>;
+    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.role === 'HR Manager' || req.user?.email?.includes('director');
+
+    // Non-management employees can strictly only access their own performance data
+    const targetEmployeeId = isLeadership ? employeeId : (req.user?.employeeId || req.user?.id);
 
     const whereTask: any = {};
+    if (!isLeadership) {
+      whereTask.assignedTo = req.user?.name;
+    }
 
     if (department && department !== 'All') {
       whereTask.department = department;
@@ -137,7 +144,7 @@ router.get('/employee-performance', authenticateToken, async (req: AuthRequest, 
 
     const [employees, allTasks] = await Promise.all([
       prisma.employee.findMany({
-        where: employeeId ? { OR: [{ id: employeeId }, { employeeId }] } : {},
+        where: targetEmployeeId ? { OR: [{ id: targetEmployeeId }, { employeeId: targetEmployeeId }] } : {},
         select: {
           id: true,
           employeeId: true,

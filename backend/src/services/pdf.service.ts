@@ -98,7 +98,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
     const isInternship = true;
     const department = offer.department && offer.department !== 'Engineering' ? offer.department : 'IT';
     const durationText = offer.probationPeriod || '3 (Three) Months from the Date of Joining';
-    const reportingTo = offer.reportingManager || 'Rohit pawar';
+    const reportingTo = offer.reportingManager || 'Managing Director';
     const placeOfJoining = offer.placeOfJoining || 'chh sambhajinagar,Maharashtra,india';
     const workMode = offer.workMode || 'online';
     const workingHours = offer.workingHours || '4 to 6 hours per day, as assigned by the Reporting Manager';
@@ -129,7 +129,7 @@ export const generateOfferLetterPdf = async (offer: OfferLetterData): Promise<Bu
     const stipendText = 'This is an unpaid internship. No monetary compensation shall be provided for the duration of the internship.';
 
     // Signatory resolution
-    const signatoryName = offer.signatoryName || 'Rohit Pawar';
+    const signatoryName = offer.signatoryName || 'Managing Director';
     const signatoryRole = offer.signatoryRole || 'Operations Officer';
     const signatoryDepartment = offer.signatoryDepartment || 'HR Team, Enterprenex Solutions Pvt Ltd';
 

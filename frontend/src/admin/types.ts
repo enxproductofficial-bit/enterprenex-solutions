@@ -380,7 +380,7 @@ export interface Task {
   projectId: string; // 4. Project
   projectName: string;
   module?: string; // 5. Module (e.g. Core Engine, Billing, Security)
-  assignedBy?: string; // 6. Assigned By (e.g. Rohit Pawar - Technical Director)
+  assignedBy?: string; // 6. Assigned By (e.g. Managing Director)
   assignedTo: string; // 7. Assigned To (Employee name)
   department?: string;
   reviewer?: string; // 8. Reviewer (Peer/Lead Reviewer)

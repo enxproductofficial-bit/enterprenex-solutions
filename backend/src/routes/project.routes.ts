@@ -18,8 +18,11 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
       orderBy: { createdAt: 'desc' }
     });
 
+    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.email?.includes('director');
+
     const parsed = projects.map(p => ({
       ...p,
+      budget: isLeadership ? p.budget : undefined,
       teamMembers: p.teamMembersJson ? JSON.parse(p.teamMembersJson) : [],
       milestones: p.milestonesJson ? JSON.parse(p.milestonesJson) : []
     }));
@@ -42,9 +45,12 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       return;
     }
 
+    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.email?.includes('director');
+
     res.json({
       project: {
         ...project,
+        budget: isLeadership ? project.budget : undefined,
         teamMembers: project.teamMembersJson ? JSON.parse(project.teamMembersJson) : [],
         milestones: project.milestonesJson ? JSON.parse(project.milestonesJson) : []
       }
