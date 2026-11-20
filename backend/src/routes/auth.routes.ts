@@ -30,39 +30,6 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       }
     });
 
-    // Auto-provision standard Director and HR executive accounts if not already present
-    if (!user) {
-      const isDirector = [
-        'director@enterprenex.solutions',
-        'rohit@enterprenex.solutions',
-        'director@enterprenexsolution.com',
-        'rohit@enterprenexsolution.com'
-      ].includes(loginId.toLowerCase());
-
-      const isHr = [
-        'hr@enterprenex.solutions',
-        'manager@enterprenex.solutions',
-        'hr@enterprenexsolution.com',
-        'manager@enterprenexsolution.com'
-      ].includes(loginId.toLowerCase()) || loginId.toLowerCase().startsWith('hr@') || loginId.toLowerCase().startsWith('manager@');
-
-      if (isDirector || isHr) {
-        const seedPassword = process.env.INITIAL_ADMIN_SEED_PASS || 'Enterprenex@Director2026';
-        const defaultHash = await bcrypt.hash(seedPassword, 10);
-        user = await prisma.user.create({
-          data: {
-            email: loginId.toLowerCase(),
-            password: defaultHash,
-            name: isDirector ? 'Managing Director' : 'HR Administrator',
-            role: isDirector ? 'Super Admin' : 'Project Manager',
-            department: isDirector ? 'Executive Board' : 'Human Resources',
-            mustChangePassword: false,
-            status: 'Active'
-          }
-        });
-      }
-    }
-
     // Lookup in Employee roster if not found in User table
     if (!user) {
       const emp = await prisma.employee.findFirst({

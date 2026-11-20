@@ -23,10 +23,9 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   try {
     const isDirectorOrHr =
       req.user?.role === 'Super Admin' ||
+      req.user?.role === 'Director' ||
       req.user?.role === 'Project Manager' ||
-      req.user?.role === 'HR Manager' ||
-      req.user?.email?.includes('director') ||
-      req.user?.email?.includes('hr');
+      req.user?.role === 'HR Manager';
 
     const { status, type } = req.query as Record<string, string>;
 
@@ -298,9 +297,8 @@ router.post('/:id/cancel', authenticateToken, async (req: AuthRequest, res: Resp
 
     const isDirectorOrHr =
       req.user?.role === 'Super Admin' ||
-      req.user?.role === 'HR Manager' ||
-      req.user?.email?.includes('director') ||
-      req.user?.email?.includes('hr');
+      req.user?.role === 'Director' ||
+      req.user?.role === 'HR Manager';
 
     const isOwner =
       (req.user?.employeeId && existing.employeeId === req.user.employeeId) ||

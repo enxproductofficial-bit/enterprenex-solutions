@@ -12,8 +12,8 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   try {
     const isDirectorOrManager =
       req.user?.role === 'Super Admin' ||
-      req.user?.role === 'Project Manager' ||
-      req.user?.email?.includes('director');
+      req.user?.role === 'Director' ||
+      req.user?.role === 'Project Manager';
 
     let tickets;
     if (isDirectorOrManager) {
@@ -72,7 +72,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
 
     // Notify manager / technical lead
     await IntegrationService.sendEmail({
-      to: 'director@enterprenex.solutions',
+      to: process.env.SUPPORT_NOTIFICATION_EMAIL || 'support@enterprenex.solutions',
       subject: `[EDWMS Ticket] New ${category}: ${ticketNumber}`,
       template: 'TICKET_STATUS',
       data: { ticketNumber, title, category, requester: req.user?.name }

@@ -117,7 +117,7 @@ router.get('/workforce-summary', authenticateToken, requireRole(['Super Admin', 
 router.get('/employee-performance', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { employeeId, department, project, startDate, endDate, status } = req.query as Record<string, string>;
-    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.role === 'HR Manager' || req.user?.email?.includes('director');
+    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Project Manager' || req.user?.role === 'HR Manager';
 
     // Non-management employees can strictly only access their own performance data
     const targetEmployeeId = isLeadership ? employeeId : (req.user?.employeeId || req.user?.id);

@@ -15,11 +15,10 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 
     const isDirectorOrCfo =
       userRole === 'Super Admin' ||
-      userRole.includes('Director') ||
+      userRole === 'Director' ||
+      userRole === 'Managing Director' ||
       userRole === 'CFO' ||
-      userRole === 'HR Manager' ||
-      userEmail.includes('director') ||
-      userEmail.includes('cfo');
+      userRole === 'HR Manager';
 
     const { month, year, employeeId } = req.query as Record<string, string>;
 
@@ -229,11 +228,10 @@ router.get('/:id/payslip', authenticateToken, async (req: AuthRequest, res: Resp
 
     const isDirectorOrCfo =
       userRole === 'Super Admin' ||
-      userRole.includes('Director') ||
+      userRole === 'Director' ||
+      userRole === 'Managing Director' ||
       userRole === 'CFO' ||
-      userRole === 'HR Manager' ||
-      userEmail.includes('director') ||
-      userEmail.includes('cfo');
+      userRole === 'HR Manager';
 
     const isOwner =
       (userEmail && userEmail === (record.employeeEmail || '').toLowerCase()) ||

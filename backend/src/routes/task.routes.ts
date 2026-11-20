@@ -39,7 +39,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
     const data = req.body;
     const user = req.user;
 
-    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirector = user?.role === 'Super Admin' || user?.role === 'Director' || user?.role === 'Managing Director';
     const isHr = user?.role === 'HR' || user?.role === 'HR Manager' || user?.role === 'Project Manager' || user?.department === 'Human Resources';
 
     if (!isDirector && !isHr) {
@@ -170,9 +170,9 @@ router.post('/:id/director-review', authenticateToken, async (req: AuthRequest, 
 
     const isDirectorOrManager =
       user?.role === 'Super Admin' ||
+      user?.role === 'Director' ||
       user?.role === 'Project Manager' ||
-      user?.role === 'HR Manager' ||
-      user?.email?.includes('director');
+      user?.role === 'HR Manager';
 
     if (!isDirectorOrManager) {
       res.status(403).json({ error: 'Access forbidden: Only HR or Director can review task submissions.' });
@@ -303,10 +303,9 @@ router.post('/:id/stopwatch/start', authenticateToken, async (req: AuthRequest, 
     const user = req.user;
     const isDirectorOrManager =
       user?.role === 'Super Admin' ||
+      user?.role === 'Director' ||
       user?.role === 'Project Manager' ||
-      user?.role === 'HR Manager' ||
-      user?.email?.includes('director') ||
-      user?.email?.includes('manager');
+      user?.role === 'HR Manager';
 
     const isAssignee =
       (user?.employeeId && task.assignedTo.includes(user.employeeId)) ||
@@ -398,10 +397,9 @@ router.post('/:id/stopwatch/stop', authenticateToken, async (req: AuthRequest, r
     const user = req.user;
     const isDirectorOrManager =
       user?.role === 'Super Admin' ||
+      user?.role === 'Director' ||
       user?.role === 'Project Manager' ||
-      user?.role === 'HR Manager' ||
-      user?.email?.includes('director') ||
-      user?.email?.includes('manager');
+      user?.role === 'HR Manager';
 
     const isAssignee =
       (user?.employeeId && task.assignedTo.includes(user.employeeId)) ||
@@ -515,10 +513,9 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
     const user = req.user;
     const isDirectorOrManager =
       user?.role === 'Super Admin' ||
+      user?.role === 'Director' ||
       user?.role === 'Project Manager' ||
-      user?.role === 'HR Manager' ||
-      user?.email?.includes('director') ||
-      user?.email?.includes('manager');
+      user?.role === 'HR Manager';
 
     const isAssignee =
       (user?.employeeId && task.assignedTo.includes(user.employeeId)) ||

@@ -22,11 +22,9 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 
     const isDirectorOrManager =
       userRole === 'Super Admin' ||
-      userRole.includes('Director') ||
-      userRole === 'Project Manager' ||
-      userRole.includes('Manager') ||
-      userEmail.includes('director') ||
-      userEmail.includes('manager');
+      userRole === 'Director' ||
+      userRole === 'Managing Director' ||
+      userRole === 'Project Manager';
 
     const meetings = await prisma.scheduledMeeting.findMany({
       orderBy: { meetingTime: 'asc' }
@@ -110,7 +108,8 @@ router.patch('/:id/rsvp', authenticateToken, async (req: AuthRequest, res: Respo
     // Check invitation permission
     const isDirectorOrManager =
       user.role === 'Super Admin' ||
-      user.role?.includes('Director') ||
+      user.role === 'Director' ||
+      user.role === 'Managing Director' ||
       user.role === 'Project Manager';
 
     let attendees: string[] = [];

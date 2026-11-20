@@ -16,8 +16,8 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 
     const isDirector =
       userRole === 'Super Admin' ||
-      userRole.includes('Director') ||
-      userEmail.includes('director');
+      userRole === 'Director' ||
+      userRole === 'Managing Director';
 
     const isHR =
       isDirector ||
@@ -87,8 +87,8 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
 
     const isDirector =
       userRole === 'Super Admin' ||
-      userRole.includes('Director') ||
-      userEmail.includes('director');
+      userRole === 'Director' ||
+      userRole === 'Managing Director';
 
     const isHR =
       isDirector ||

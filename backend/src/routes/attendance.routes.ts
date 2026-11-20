@@ -32,7 +32,7 @@ function calculateHours(checkIn: string, checkOut: string, breakMinutes: number 
 // GET /api/v1/attendance (List records with optional filtering)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const isDirectorOrHr = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.email?.includes('director') || req.user?.role === 'HR Manager';
+    const isDirectorOrHr = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Project Manager' || req.user?.role === 'HR Manager';
     const { employeeId, department, date, month } = req.query as Record<string, string>;
 
     const where: any = {};

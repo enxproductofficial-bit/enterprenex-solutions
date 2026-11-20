@@ -14,7 +14,7 @@ const sanitizeEmployee = (e: any, isDirectorOrManager: boolean, canViewAllPerson
 
   return {
     ...safeEmployee,
-    name: (e.employeeId === '202600000001' || e.name === 'Rohit P.' || e.name === 'Rohit P' || e.name?.includes('Rohit P') || e.name?.toLowerCase().includes('rohit')) ? 'Managing Director' : e.name,
+    name: e.name,
     personalEmail: (canViewAllPersonalContacts || isSelf) ? e.personalEmail : undefined,
     personalPhone: (canViewAllPersonalContacts || isSelf) ? e.personalPhone : undefined,
     address: (canViewAllPersonalContacts || isSelf) ? e.address : undefined,
@@ -54,8 +54,8 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   try {
     const isDirector = Boolean(
       req.user?.role === 'Super Admin' ||
-      req.user?.role?.includes('Director') ||
-      req.user?.email?.includes('director')
+      req.user?.role === 'Director' ||
+      req.user?.role === 'Managing Director'
     );
 
     const isHr = Boolean(
@@ -89,7 +89,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 // POST /api/employees (HR Employee Onboarding & Registration)
 router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const isDirector = req.user?.role === 'Super Admin' || req.user?.role?.includes('Director') || req.user?.email?.includes('director');
+    const isDirector = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Managing Director';
     const isHr = req.user?.role === 'HR' || req.user?.role === 'HR Manager' || req.user?.department === 'Human Resources' || req.user?.department === 'HR' || req.user?.role?.includes('HR') || req.user?.email?.includes('hr');
     const isManager = req.user?.role === 'Project Manager';
 
@@ -241,7 +241,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
 router.put('/:id/approval', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
-    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirector = user?.role === 'Super Admin' || user?.role === 'Director' || user?.role === 'Managing Director';
 
     if (!isDirector) {
       res.status(403).json({ error: 'Access forbidden: Only Managing Director can approve or reject employee registrations.' });
@@ -298,7 +298,7 @@ router.put('/:id/approval', authenticateToken, async (req: AuthRequest, res: Res
 router.post('/:id/activate', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
-    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirector = user?.role === 'Super Admin' || user?.role === 'Director' || user?.role === 'Managing Director';
     const isHr = user?.role === 'HR' || user?.role === 'HR Manager' || user?.role === 'Project Manager' || user?.department === 'Human Resources';
 
     if (!isDirector && !isHr) {
@@ -417,7 +417,7 @@ router.delete('/:id', authenticateToken, requireRole(['Super Admin']), async (re
       return;
     }
 
-    if (emp.role?.includes('Director') || emp.employeeId === '202600000001') {
+    if (emp.role === 'Super Admin' || emp.role === 'Director' || emp.role === 'Managing Director') {
       res.status(403).json({ error: 'Executive Director accounts cannot be deleted.' });
       return;
     }
@@ -527,7 +527,7 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       return;
     }
 
-    const isDirector = req.user?.role === 'Super Admin' || req.user?.role?.includes('Director') || req.user?.email?.includes('director');
+    const isDirector = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Managing Director';
     const isHr = req.user?.role === 'HR' || req.user?.role === 'HR Manager' || req.user?.department === 'Human Resources' || req.user?.department === 'HR' || req.user?.role?.includes('HR') || req.user?.email?.includes('hr');
     const isManager = req.user?.role === 'Project Manager';
     const isSelf = req.user?.email === emp.email || req.user?.employeeId === emp.employeeId;

@@ -9,9 +9,9 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   try {
     const isDirectorOrManager =
       req.user?.role === 'Super Admin' ||
+      req.user?.role === 'Director' ||
       req.user?.role === 'Project Manager' ||
-      req.user?.role === 'HR Manager' ||
-      req.user?.email?.includes('director');
+      req.user?.role === 'HR Manager';
 
     let scorecards;
     if (isDirectorOrManager) {

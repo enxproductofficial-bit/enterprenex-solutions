@@ -18,7 +18,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
       orderBy: { createdAt: 'desc' }
     });
 
-    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.email?.includes('director');
+    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Project Manager';
 
     const parsed = projects.map(p => ({
       ...p,
@@ -45,7 +45,7 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
       return;
     }
 
-    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.email?.includes('director');
+    const isLeadership = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Project Manager';
 
     res.json({
       project: {

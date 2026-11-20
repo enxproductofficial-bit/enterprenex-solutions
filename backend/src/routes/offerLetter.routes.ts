@@ -76,7 +76,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
     const user = req.user;
     const { status, employeeId, search } = req.query as Record<string, string>;
 
-    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirector = user?.role === 'Super Admin' || user?.role === 'Director' || user?.role === 'Managing Director';
     const isHR = isDirector || user?.role === 'Project Manager' || user?.role === 'HR Manager' || user?.department === 'Human Resources';
 
     const whereClause: any = {};
@@ -127,7 +127,7 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
     }
 
     const user = req.user;
-    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirector = user?.role === 'Super Admin' || user?.role === 'Director' || user?.role === 'Managing Director';
     const isHR = isDirector || user?.role === 'Project Manager' || user?.role === 'HR Manager' || user?.department === 'Human Resources';
 
     const isOwner =
@@ -158,7 +158,7 @@ router.get('/:id/pdf', authenticateToken, async (req: AuthRequest, res: Response
     }
 
     const user = req.user;
-    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirector = user?.role === 'Super Admin' || user?.role === 'Director' || user?.role === 'Managing Director';
     const isHR = isDirector || user?.role === 'Project Manager' || user?.role === 'HR Manager' || user?.department === 'Human Resources';
 
     const isOwner =
@@ -185,7 +185,7 @@ router.get('/:id/pdf', authenticateToken, async (req: AuthRequest, res: Response
 router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
-    const isDirector = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirector = user?.role === 'Super Admin' || user?.role === 'Director' || user?.role === 'Managing Director';
     const isHR = isDirector || user?.role === 'Project Manager' || user?.role === 'HR Manager' || user?.department === 'Human Resources';
 
     if (!isHR) {
@@ -324,7 +324,7 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
 router.put('/:id/director-review', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = req.user;
-    const isDirectorRole = user?.role === 'Super Admin' || user?.role?.includes('Director') || user?.email?.includes('director');
+    const isDirectorRole = user?.role === 'Super Admin' || user?.role === 'Director' || user?.role === 'Managing Director';
     const isAuthorized = isDirectorRole || 
                          user?.role === 'HR Manager' || 
                          user?.role === 'HR' || 

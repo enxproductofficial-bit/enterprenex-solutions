@@ -8,7 +8,7 @@ const router = Router();
 // GET /api/v1/announcements (List announcements visible to current user)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const isDirectorOrAdmin = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.email?.includes('director');
+    const isDirectorOrAdmin = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Project Manager';
     const userDept = req.user?.department || '';
     const userId = req.user?.id || '';
 

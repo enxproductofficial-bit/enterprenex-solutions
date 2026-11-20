@@ -16,8 +16,8 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
 
     const isDirectorOrAdmin =
       userRole === 'Super Admin' ||
-      userRole.includes('Director') ||
-      userEmail.includes('director');
+      userRole === 'Director' ||
+      userRole === 'Managing Director';
 
     const where: any = {};
     if (category && category !== 'All') where.category = category;
@@ -82,8 +82,8 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response): P
 
     const isDirectorOrAdmin =
       req.user?.role === 'Super Admin' ||
-      req.user?.role?.includes('Director') ||
-      req.user?.email?.includes('director');
+      req.user?.role === 'Director' ||
+      req.user?.role === 'Managing Director';
 
     const isParticipant =
       email.senderEmail?.toLowerCase() === req.user?.email?.toLowerCase() ||
@@ -132,8 +132,12 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       return;
     }
 
-    const senderName = req.user?.name || 'Managing Director';
-    const senderEmail = req.user?.email || 'director@enterprenex.solutions';
+    const senderName = req.user?.name || 'Authorized User';
+    const senderEmail = req.user?.email;
+    if (!senderEmail) {
+      res.status(401).json({ error: 'Sender email is required.' });
+      return;
+    }
     const snippet = body.substring(0, 120).replace(/\n/g, ' ') + '...';
     const now = new Date();
     const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

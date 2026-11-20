@@ -32,17 +32,13 @@ function buildNotificationFilter(user: any) {
   const employeeId = user?.employeeId;
 
   const isDirector =
-    role.includes('admin') ||
-    role.includes('director') ||
-    role.includes('cmd') ||
-    role.includes('ceo') ||
-    email.includes('director');
+    role === 'Super Admin' ||
+    role === 'Director' ||
+    role === 'Managing Director';
 
   const isManager =
-    role.includes('manager') ||
-    role.includes('lead') ||
-    role.includes('scrum') ||
-    email.includes('manager');
+    role === 'Project Manager' ||
+    role === 'HR Manager';
 
   const isHr =
     role.includes('hr') ||
@@ -245,10 +241,9 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
 
     const isDirectorOrManager =
       user.role === 'Super Admin' ||
+      user.role === 'Director' ||
       user.role === 'Project Manager' ||
-      user.role === 'HR Manager' ||
-      user.role?.includes('Director') ||
-      user.email?.includes('director');
+      user.role === 'HR Manager';
 
     // Broadcast or arbitrary targeting is restricted to leadership / management
     if (!isDirectorOrManager) {
@@ -298,8 +293,8 @@ router.put('/:id/read', authenticateToken, async (req: AuthRequest, res: Respons
 
     const isDirector =
       user.role === 'Super Admin' ||
-      user.role?.includes('Director') ||
-      user.email?.includes('director');
+      user.role === 'Director' ||
+      user.role === 'Managing Director';
 
     const isDirectRecipient =
       (existing.recipientEmail && existing.recipientEmail.toLowerCase() === user.email?.toLowerCase()) ||

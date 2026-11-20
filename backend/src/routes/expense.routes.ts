@@ -8,7 +8,7 @@ const router = Router();
 // GET /api/v1/expenses (List expenses)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const isDirectorOrCfo = req.user?.role === 'Super Admin' || req.user?.role === 'Project Manager' || req.user?.role === 'CFO' || req.user?.role === 'HR Manager' || req.user?.email?.includes('director');
+    const isDirectorOrCfo = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Project Manager' || req.user?.role === 'CFO' || req.user?.role === 'HR Manager';
     const { status, category } = req.query as Record<string, string>;
 
     const where: any = {};

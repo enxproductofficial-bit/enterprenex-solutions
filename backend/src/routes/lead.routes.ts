@@ -11,9 +11,9 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   try {
     const isDirectorOrManager =
       req.user?.role === 'Super Admin' ||
+      req.user?.role === 'Director' ||
       req.user?.role === 'Project Manager' ||
-      req.user?.role === 'Sales Lead' ||
-      req.user?.email?.includes('director');
+      req.user?.role === 'Sales Lead';
 
     const { status, salesperson } = req.query as Record<string, string>;
     const where: any = {};
@@ -149,9 +149,9 @@ router.patch('/:id', authenticateToken, async (req: AuthRequest, res: Response):
 
     const isDirectorOrManager =
       req.user?.role === 'Super Admin' ||
+      req.user?.role === 'Director' ||
       req.user?.role === 'Project Manager' ||
-      req.user?.role === 'Sales Lead' ||
-      req.user?.email?.includes('director');
+      req.user?.role === 'Sales Lead';
 
     const isAssigned =
       existing.assignedSalesperson?.toLowerCase() === req.user?.name?.toLowerCase() ||
