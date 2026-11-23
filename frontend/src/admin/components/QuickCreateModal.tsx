@@ -144,6 +144,11 @@ export const QuickCreateModal: React.FC<QuickCreateModalProps> = ({ isOpen, onCl
     setDocNumber(prefix + Math.floor(1000 + Math.random() * 9000));
   };
 
+  const handleRegenerateDocNumber = () => {
+    const prefix = docType === 'Quotation' ? 'QT-2026-' : docType === 'Proforma' ? 'PI-2026-' : 'INV-2026-';
+    setDocNumber(prefix + Math.floor(1000 + Math.random() * 9000));
+  };
+
   const handleApplyPresetDays = (days: number) => {
     const d = new Date(iIssueDate || Date.now());
     d.setDate(d.getDate() + days);
