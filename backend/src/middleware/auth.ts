@@ -26,6 +26,21 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     token = String(req.query.token);
   }
 
+  if (!token && req.headers.cookie) {
+    const match = req.headers.cookie.match(/ewms_session=([^;]+)/);
+    if (match) {
+      token = match[1];
+    }
+  }
+
+  // Also support HttpOnly secure session cookie
+  if (!token && req.headers.cookie) {
+    const match = req.headers.cookie.match(/ewms_session=([^;]+)/);
+    if (match) {
+      token = match[1];
+    }
+  }
+
   if (token === 'undefined' || token === 'null' || token === '') {
     token = undefined;
   }
@@ -52,6 +67,13 @@ export const optionalAuth = (req: AuthRequest, res: Response, next: NextFunction
 
   if (!token && req.query.token) {
     token = String(req.query.token);
+  }
+
+  if (!token && req.headers.cookie) {
+    const match = req.headers.cookie.match(/ewms_session=([^;]+)/);
+    if (match) {
+      token = match[1];
+    }
   }
 
   if (token === 'undefined' || token === 'null' || token === '') {

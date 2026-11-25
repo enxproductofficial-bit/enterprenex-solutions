@@ -28,6 +28,23 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lockoutSeconds, setLockoutSeconds] = useState<number>(0);
+
+  // Progressive countdown timer for temporary security lockouts
+  React.useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setErrorMessage(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutSeconds]);
 
   // Employee Account Activation States
   const [showActivationModal, setShowActivationModal] = useState(false);
@@ -43,28 +60,29 @@ export const LoginPage: React.FC = () => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutSeconds > 0) {
+      setErrorMessage(`Security lockout active: Please wait ${lockoutSeconds} second(s) before attempting to sign in.`);
+      return;
+    }
+
+    if (!agreeTerms) {
+      setErrorMessage('Please review and agree to the Employee Terms & Conditions before signing in.');
+      return;
+    }
+
     setIsLoading(true);
     setStatusMessage(null);
     setErrorMessage(null);
 
     const rawInput = email.trim();
-    const inputEmail = rawInput.toLowerCase();
     const inputPassword = password.trim();
 
-    const DIRECTOR_EMAILS = [
-      'director@enterprenex.solutions',
-      'rohit@enterprenex.solutions',
-      'director@enterprenexsolution.com',
-      'rohit@enterprenexsolution.com'
-    ];
-    const MANAGER_HR_EMAILS = [
-      'hr@enterprenex.solutions',
-      'manager@enterprenex.solutions',
-      'hr@enterprenexsolution.com',
-      'manager@enterprenexsolution.com'
-    ];
+    if (!rawInput || !inputPassword) {
+      setIsLoading(false);
+      setErrorMessage('Please provide both your official identifier and security password.');
+      return;
+    }
 
-    // 1. Attempt Backend API Authentication
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -72,213 +90,58 @@ export const LoginPage: React.FC = () => {
         body: JSON.stringify({ identifier: rawInput, password: inputPassword })
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.token) {
-          localStorage.setItem('ewms_token', data.token);
-        }
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 429) {
         setIsLoading(false);
-        const userObj = data.user;
-        const mustChange = Boolean(data.mustChangePassword || userObj?.mustChangePassword);
+        const retrySec = data.retryAfter || (data.lockoutMinutes ? data.lockoutMinutes * 60 : 900);
+        setLockoutSeconds(retrySec);
+        setErrorMessage(data.error || `Access temporarily restricted due to excessive failed attempts. Please retry in ${Math.ceil(retrySec / 60)} minute(s).`);
+        return;
+      }
 
-        login({
-          id: userObj.id,
-          name: userObj.name,
-          email: userObj.email,
-          role: (userObj.role as UserRole) || 'Team Member',
-          avatar: userObj.avatar,
-          department: userObj.department,
-          status: 'Active',
-          lastLogin: 'Just now',
-          employeeId: userObj.employeeId,
-          mustChangePassword: mustChange
-        });
-
-        if (mustChange) {
-          setStatusMessage(`Welcome ${userObj.name}! Initial credentials verified. Redirecting to mandatory password setup...`);
-          setTimeout(() => navigate('/create-new-password'), 500);
+      if (!res.ok) {
+        setIsLoading(false);
+        if (data.remainingAttempts !== undefined && data.remainingAttempts <= 3) {
+          setErrorMessage(`${data.error || 'Invalid staff credentials.'} Warning: ${data.remainingAttempts} attempt(s) remaining before security lockout.`);
         } else {
-          setStatusMessage(`Authenticated successfully as ${userObj.name}. Opening Workspace...`);
-          setTimeout(() => navigate('/admin'), 500);
+          setErrorMessage(data.error || 'Invalid staff credentials. Access restricted.');
         }
         return;
+      }
+
+      // Success
+      if (data.token) {
+        localStorage.setItem('ewms_token', data.token);
+      }
+      setIsLoading(false);
+      const userObj = data.user;
+      const mustChange = Boolean(data.mustChangePassword || userObj?.mustChangePassword);
+
+      login({
+        id: userObj.id,
+        name: userObj.name,
+        email: userObj.email,
+        role: (userObj.role as UserRole) || 'Team Member',
+        avatar: userObj.avatar,
+        department: userObj.department,
+        status: 'Active',
+        lastLogin: 'Just now',
+        employeeId: userObj.employeeId,
+        mustChangePassword: mustChange
+      });
+
+      if (mustChange) {
+        setStatusMessage(`Welcome ${userObj.name}! Initial credentials verified. Redirecting to mandatory password setup...`);
+        setTimeout(() => navigate('/create-new-password'), 500);
       } else {
-        const errData = await res.json().catch(() => ({}));
-        const isExecutive = DIRECTOR_EMAILS.includes(inputEmail) || MANAGER_HR_EMAILS.includes(inputEmail) || inputEmail.startsWith('hr@');
-        if (!isExecutive) {
-          // Check if employee exists in client context roster (local or cached)
-          const matchedEmp = employees.find(
-            (emp) =>
-              (emp.employeeId && emp.employeeId.toUpperCase() === rawInput.toUpperCase()) ||
-              (emp.id && emp.id.toLowerCase() === inputEmail) ||
-              (emp.email && emp.email.toLowerCase() === inputEmail) ||
-              (emp.personalEmail && emp.personalEmail.toLowerCase() === inputEmail)
-          );
-
-          if (matchedEmp) {
-            const isEmpPasswordValid =
-              (matchedEmp.password && !matchedEmp.password.startsWith('$2a$') && inputPassword === matchedEmp.password) ||
-              (matchedEmp.temporaryPassword && inputPassword === matchedEmp.temporaryPassword);
-
-            if (isEmpPasswordValid) {
-              setIsLoading(false);
-              login({
-                id: matchedEmp.id,
-                name: matchedEmp.name,
-                email: matchedEmp.email,
-                role: (matchedEmp.role as UserRole) || 'Developer',
-                avatar: matchedEmp.avatar,
-                department: matchedEmp.department,
-                status: 'Active',
-                lastLogin: 'Just now',
-                employeeId: matchedEmp.employeeId,
-                mustChangePassword: Boolean(matchedEmp.mustChangePassword)
-              });
-              setStatusMessage(`Authenticated successfully as ${matchedEmp.name}. Opening Workspace...`);
-              setTimeout(() => navigate('/admin'), 500);
-              return;
-            }
-          }
-
-          setIsLoading(false);
-          setErrorMessage(errData.error || 'Access Denied: Invalid credentials provided. Please verify with HR.');
-          return;
-        }
+        setStatusMessage(`Authenticated successfully as ${userObj.name}. Opening Workspace...`);
+        setTimeout(() => navigate('/admin'), 500);
       }
     } catch {
-      // Offline fallback to local context
-    }
-
-    setTimeout(() => {
       setIsLoading(false);
-
-      // 1. Director check
-      if (DIRECTOR_EMAILS.includes(inputEmail)) {
-        if (!inputPassword) {
-          setErrorMessage('Access Denied: Please enter your security password.');
-          return;
-        }
-
-        setStatusMessage('Authenticated successfully as DIRECTOR. Redirecting to Executive Suite...');
-        login({
-          id: 'usr-dir',
-          name: 'Managing Director',
-          email: inputEmail,
-          role: 'Super Admin',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-          department: 'Executive Board',
-          status: 'Active',
-          lastLogin: 'Just now',
-          phone: '+91-9226860060',
-          employeeId: '202600000001',
-          mustChangePassword: false
-        });
-        setTimeout(() => navigate('/admin'), 400);
-        return;
-      }
-
-      // 2. Manager / HR check
-      if (MANAGER_HR_EMAILS.includes(inputEmail)) {
-        if (!inputPassword) {
-          setErrorMessage('Access Denied: Please enter your security password.');
-          return;
-        }
-
-        const isHr = inputEmail.includes('hr@');
-        setStatusMessage(`Authenticated successfully as ${isHr ? 'HR ADMINISTRATOR' : 'OPERATIONS MANAGER'}. Redirecting...`);
-        login({
-          id: 'usr-mgr',
-          name: isHr ? 'HR Administrator' : 'Operations Manager',
-          email: inputEmail,
-          role: 'Project Manager',
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-          department: isHr ? 'Human Resources' : 'Project Management',
-          status: 'Active',
-          lastLogin: 'Just now',
-          phone: '+91-9226860060',
-          employeeId: '202600000002',
-          mustChangePassword: false
-        });
-        setTimeout(() => navigate('/admin'), 400);
-        return;
-      }
-
-      // 3. Employee account lookup by Email, Employee ID, or System ID
-      const matchedEmp = employees.find(
-        (emp) =>
-          (emp.employeeId && emp.employeeId.toLowerCase() === inputEmail) ||
-          emp.id.toLowerCase() === inputEmail ||
-          (emp.email && emp.email.toLowerCase() === inputEmail)
-      );
-
-      if (matchedEmp) {
-        if (!agreeTerms) {
-          setErrorMessage('Please review and agree to the Employee Terms & Conditions before signing in.');
-          return;
-        }
-
-        if (matchedEmp.approvalStatus === 'Rejected') {
-          setErrorMessage(`Access Denied: This employee login account has been disabled or rejected by the Managing Director.`);
-          return;
-        }
-
-        const empPass = (matchedEmp.password || '').trim();
-        const tempPass = (matchedEmp.temporaryPassword || '').trim();
-        const entered = inputPassword.trim();
-        const isMasterPass = entered === 'Enx_sol_121006' || entered === 'Enterprenex@Director2026';
-        const isPasswordMatch =
-          entered === empPass ||
-          (tempPass && entered === tempPass) ||
-          isMasterPass ||
-          (empPass && entered.toLowerCase() === empPass.toLowerCase());
-
-        if (!isPasswordMatch) {
-          setErrorMessage(`Access Denied: Incorrect password for Employee account.`);
-          return;
-        }
-
-        const mustChange = Boolean(matchedEmp.mustChangePassword || (tempPass && entered === tempPass));
-
-        if (mustChange) {
-          setStatusMessage(`Welcome ${matchedEmp.name}! Temporary credentials verified. Redirecting to mandatory password setup...`);
-          login({
-            id: matchedEmp.id,
-            name: matchedEmp.name,
-            email: matchedEmp.email,
-            role: 'Team Member',
-            avatar: matchedEmp.avatar,
-            department: matchedEmp.department,
-            status: 'Active',
-            lastLogin: 'Just now',
-            phone: matchedEmp.phone || '+91-9226860060',
-            employeeId: matchedEmp.employeeId,
-            mustChangePassword: true
-          });
-          setTimeout(() => navigate('/create-new-password'), 600);
-          return;
-        }
-
-        setStatusMessage(`Authenticated successfully as ${matchedEmp.name} (${matchedEmp.employeeId || 'Staff'}). Opening Workspace...`);
-        login({
-          id: matchedEmp.id,
-          name: matchedEmp.name,
-          email: matchedEmp.email,
-          role: 'Team Member',
-          avatar: matchedEmp.avatar,
-          department: matchedEmp.department,
-          status: 'Active',
-          lastLogin: 'Just now',
-          phone: matchedEmp.phone || '+91-9226860060',
-          employeeId: matchedEmp.employeeId,
-          mustChangePassword: false
-        });
-        setTimeout(() => navigate('/admin'), 600);
-        return;
-      }
-
-      // 4. Default fallback: Invalid credentials
-      setErrorMessage('Access Denied: Invalid Email ID or Employee Password provided by HR.');
-    }, 400);
+      setErrorMessage('Unable to connect to authentication server. Please check your connection and try again.');
+    }
   };
 
   const handleActivateAccountSubmit = (e: React.FormEvent) => {
@@ -480,6 +343,29 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
+          {lockoutSeconds > 0 && (
+            <div
+              style={{
+                background: '#fffbeb',
+                border: '1px solid #fde68a',
+                color: '#92400e',
+                padding: '0.75rem 1rem',
+                borderRadius: '10px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '1.25rem',
+              }}
+            >
+              <AlertCircle size={16} color="#d97706" />
+              <span>
+                Security Lockout: Login restricted. Retry allowed in {Math.floor(lockoutSeconds / 60)}m {lockoutSeconds % 60}s.
+              </span>
+            </div>
+          )}
+
           {errorMessage && (
             <div
               style={{
@@ -612,7 +498,7 @@ export const LoginPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || lockoutSeconds > 0}
               className="reg-btn-primary"
               style={{
                 width: '100%',
@@ -626,7 +512,7 @@ export const LoginPage: React.FC = () => {
                 borderRadius: '10px'
               }}
             >
-              <span>{isLoading ? 'Verifying RBAC Credentials...' : 'Sign In to Workspace Portal'}</span>
+              <span>{lockoutSeconds > 0 ? `Account Restricted (${lockoutSeconds}s)` : isLoading ? 'Verifying RBAC Credentials...' : 'Sign In to Workspace Portal'}</span>
               <ArrowRight size={18} />
             </button>
             {/* First-time Employee Account Activation Trigger */}

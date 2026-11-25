@@ -24,6 +24,18 @@ model User {
   updatedAt          DateTime  @updatedAt
 }
 
+// 1b. Staff Login Security, Brute Force & Rate Limit Protection
+model LoginSecurity {
+  id              String    @id @default(uuid())
+  identifier      String    @unique // normalized email, employee ID, or ip:xxx
+  failedAttempts  Int       @default(0)
+  lastAttemptAt   DateTime  @default(now())
+  lockedUntil     DateTime?
+  totalAttempts   Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
 // 2. Comprehensive Employee Profile & Work History
 model Employee {
   id                  String    @id @default(uuid())

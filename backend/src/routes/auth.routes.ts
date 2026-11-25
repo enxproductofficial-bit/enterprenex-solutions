@@ -3,173 +3,279 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
+import {
+  loginIpRateLimiter,
+  authMutex,
+  hashPassword,
+  verifyPassword,
+  shouldUpgradeHash,
+  checkAccountLockout,
+  recordFailedLogin,
+  recordSuccessfulLogin,
+  sanitizeStaffUser
+} from '../services/authSecurity.service';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'enterprenex_enterprise_jwt_secret_2026_super_secure';
 
-// POST /api/auth/login (Support official email OR 12-digit Employee ID)
-router.post('/login', async (req: Request, res: Response): Promise<void> => {
+const GENERIC_AUTH_ERROR = 'Invalid credentials. Please verify your official email or 12-digit Employee ID, and password.';
+
+// POST /api/auth/login (Support official email OR 12-digit Employee ID with Argon2id, Rate Limiting & Brute-Force Lockout)
+router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { identifier, email, password } = req.body;
     const loginId = (identifier || email || '').trim();
+    const forwarded = req.headers['x-forwarded-for'];
+    const clientIp = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip || req.socket.remoteAddress || '127.0.0.1';
 
     if (!loginId || !password) {
       res.status(400).json({ error: 'Please enter your registered official email or 12-digit Employee ID, and password.' });
       return;
     }
 
-    // Lookup user by email OR employeeId (supporting case-insensitive comparison)
-    let user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: { equals: loginId } },
-          { email: { equals: loginId.toLowerCase() } },
-          { employeeId: { equals: loginId } },
-          { employeeId: { equals: loginId.toUpperCase() } }
-        ]
-      }
-    });
+    const normalizedLoginId = loginId.toLowerCase();
 
-    // Lookup in Employee roster if not found in User table
-    if (!user) {
-      const emp = await prisma.employee.findFirst({
+    // Concurrency Mutex: Serialize concurrent requests for the exact same identifier to prevent Race Conditions
+    await authMutex.runExclusive(normalizedLoginId, async () => {
+      // 1. Check account-level lockout status
+      const lockoutCheck = await checkAccountLockout(normalizedLoginId);
+      if (lockoutCheck.isLocked) {
+        res.set('Retry-After', String(lockoutCheck.retryAfterSeconds));
+        res.status(429).json({
+          error: 'Account Temporarily Restricted',
+          message: lockoutCheck.message,
+          retryAfterSeconds: lockoutCheck.retryAfterSeconds
+        });
+        return;
+      }
+
+      // 2. Lookup user in User table
+      let user = await prisma.user.findFirst({
         where: {
           OR: [
-            { employeeId: { equals: loginId } },
-            { employeeId: { equals: loginId.toUpperCase() } },
-            { employeeId: { equals: loginId.toLowerCase() } },
             { email: { equals: loginId } },
-            { email: { equals: loginId.toLowerCase() } },
-            { personalEmail: { equals: loginId } },
-            { personalEmail: { equals: loginId.toLowerCase() } }
+            { email: { equals: normalizedLoginId } },
+            { employeeId: { equals: loginId } },
+            { employeeId: { equals: loginId.toUpperCase() } }
           ]
         }
       });
 
-      if (emp) {
-        const rawPassword = password.trim();
-        const isBcryptMatch = emp.password ? await bcrypt.compare(rawPassword, emp.password).catch(() => false) : false;
-        const isTempBcryptMatch = emp.temporaryPassword ? await bcrypt.compare(rawPassword, emp.temporaryPassword).catch(() => false) : false;
-
-        const validEmpPassword = isBcryptMatch || isTempBcryptMatch;
-
-        if (!validEmpPassword) {
-          res.status(401).json({ error: 'Invalid password. Please check your credentials.' });
-          return;
-        }
-
-        const defaultHash = emp.password || await bcrypt.hash(rawPassword, 10);
-        const empRole = emp.role.includes('Director') ? 'Super Admin' :
-          (emp.role.includes('HR') || emp.department === 'Human Resources' ? 'HR Manager' :
-          (emp.role.includes('Manager') ? 'Project Manager' :
-          (emp.role.includes('Engineer') || emp.role.includes('Developer') ? 'Developer' : 'Team Member')));
-
-        user = await prisma.user.upsert({
-          where: { email: emp.email },
-          update: {
-            employeeId: emp.employeeId,
-            name: emp.name,
-            role: empRole,
-            department: emp.department,
-            status: 'Active',
-            avatar: emp.avatar
-          },
-          create: {
-            email: emp.email,
-            employeeId: emp.employeeId,
-            password: defaultHash,
-            name: emp.name,
-            role: empRole,
-            department: emp.department,
-            avatar: emp.avatar,
-            status: 'Active',
-            mustChangePassword: Boolean(emp.mustChangePassword)
+      // 3. Lookup in Employee roster if not found in User table
+      if (!user) {
+        const emp = await prisma.employee.findFirst({
+          where: {
+            OR: [
+              { employeeId: { equals: loginId } },
+              { employeeId: { equals: loginId.toUpperCase() } },
+              { employeeId: { equals: normalizedLoginId } },
+              { email: { equals: loginId } },
+              { email: { equals: normalizedLoginId } },
+              { personalEmail: { equals: loginId } },
+              { personalEmail: { equals: normalizedLoginId } }
+            ]
           }
         });
-      }
-    }
 
-    if (!user) {
-      res.status(401).json({ error: 'Account not found. Verify your official credentials.' });
-      return;
-    }
+        if (emp) {
+          const rawPassword = password.trim();
+          const isPassMatch = emp.password ? await verifyPassword(rawPassword, emp.password) : false;
+          const isTempMatch = emp.temporaryPassword ? await verifyPassword(rawPassword, emp.temporaryPassword) : false;
+          const validEmpPassword = isPassMatch || isTempMatch;
 
-    if (user.status !== 'Active') {
-      res.status(403).json({ error: 'Account is inactive or portal access has been revoked.' });
-      return;
-    }
+          if (!validEmpPassword) {
+            const failResult = await recordFailedLogin(normalizedLoginId, clientIp);
+            if (failResult.isLocked) {
+              res.set('Retry-After', String(failResult.retryAfterSeconds));
+              res.status(429).json({
+                error: 'Account Temporarily Restricted',
+                message: failResult.message,
+                retryAfterSeconds: failResult.retryAfterSeconds
+              });
+            } else {
+              res.status(401).json({
+                error: GENERIC_AUTH_ERROR,
+                attemptsRemaining: failResult.remainingAttempts
+              });
+            }
+            return;
+          }
 
-    // Verify password strictly using bcrypt hash
-    let validPassword = await bcrypt.compare(password, user.password).catch(() => false);
+          // Provision active user with memory-hardened Argon2id hash
+          const defaultHash = emp.password && !shouldUpgradeHash(emp.password) 
+            ? emp.password 
+            : await hashPassword(rawPassword);
 
-    if (!validPassword && (user.employeeId || user.email)) {
-      const emp = await prisma.employee.findFirst({
-        where: {
-          OR: [
-            { employeeId: user.employeeId || '' },
-            { email: user.email },
-            { personalEmail: user.email }
-          ]
+          const empRole = emp.role.includes('Director') ? 'Super Admin' :
+            (emp.role.includes('HR') || emp.department === 'Human Resources' ? 'HR Manager' :
+            (emp.role.includes('Manager') ? 'Project Manager' :
+            (emp.role.includes('Engineer') || emp.role.includes('Developer') ? 'Developer' : 'Team Member')));
+
+          user = await prisma.user.upsert({
+            where: { email: emp.email },
+            update: {
+              employeeId: emp.employeeId,
+              name: emp.name,
+              role: empRole,
+              department: emp.department,
+              status: 'Active',
+              avatar: emp.avatar
+            },
+            create: {
+              email: emp.email,
+              employeeId: emp.employeeId,
+              password: defaultHash,
+              name: emp.name,
+              role: empRole,
+              department: emp.department,
+              avatar: emp.avatar,
+              status: 'Active',
+              mustChangePassword: Boolean(emp.mustChangePassword)
+            }
+          });
         }
-      });
-      if (emp) {
-        const isEmpBcrypt = emp.password ? await bcrypt.compare(password, emp.password).catch(() => false) : false;
-        const isEmpTempBcrypt = emp.temporaryPassword ? await bcrypt.compare(password, emp.temporaryPassword).catch(() => false) : false;
+      }
 
-        validPassword = Boolean(isEmpBcrypt || isEmpTempBcrypt);
+      // If user does not exist, record failed login for identifier to thwart dictionary attacks
+      if (!user) {
+        const failResult = await recordFailedLogin(normalizedLoginId, clientIp);
+        if (failResult.isLocked) {
+          res.set('Retry-After', String(failResult.retryAfterSeconds));
+          res.status(429).json({
+            error: 'Account Temporarily Restricted',
+            message: failResult.message,
+            retryAfterSeconds: failResult.retryAfterSeconds
+          });
+        } else {
+          res.status(401).json({
+            error: GENERIC_AUTH_ERROR,
+            attemptsRemaining: failResult.remainingAttempts
+          });
+        }
+        return;
+      }
 
-        if (validPassword && emp.password) {
-          // Sync User password with Employee table
+      // Check account administrative status
+      if (user.status !== 'Active') {
+        res.status(403).json({ error: 'Account is inactive or portal access has been revoked.' });
+        return;
+      }
+
+      // Verify password strictly using Argon2id with backward-compatible bcrypt verification
+      let validPassword = await verifyPassword(password, user.password);
+
+      if (!validPassword && (user.employeeId || user.email)) {
+        const emp = await prisma.employee.findFirst({
+          where: {
+            OR: [
+              { employeeId: user.employeeId || '' },
+              { email: user.email },
+              { personalEmail: user.email }
+            ]
+          }
+        });
+        if (emp) {
+          const isEmpPass = emp.password ? await verifyPassword(password, emp.password) : false;
+          const isEmpTemp = emp.temporaryPassword ? await verifyPassword(password, emp.temporaryPassword) : false;
+          validPassword = Boolean(isEmpPass || isEmpTemp);
+
+          if (validPassword && emp.password) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { password: emp.password, mustChangePassword: false }
+            }).catch(() => {});
+          }
+        }
+      }
+
+      if (!validPassword) {
+        const failResult = await recordFailedLogin(normalizedLoginId, clientIp);
+        if (failResult.isLocked) {
+          res.set('Retry-After', String(failResult.retryAfterSeconds));
+          res.status(429).json({
+            error: 'Account Temporarily Restricted',
+            message: failResult.message,
+            retryAfterSeconds: failResult.retryAfterSeconds
+          });
+        } else {
+          res.status(401).json({
+            error: GENERIC_AUTH_ERROR,
+            attemptsRemaining: failResult.remainingAttempts
+          });
+        }
+        return;
+      }
+
+      // Successful Authentication: Reset failed counters immediately
+      await recordSuccessfulLogin(normalizedLoginId, clientIp);
+
+      // Automatic Transparent Hash Upgrade: Upgrade legacy bcrypt hashes to Argon2id
+      if (shouldUpgradeHash(user.password)) {
+        try {
+          const modernArgon2Hash = await hashPassword(password);
           await prisma.user.update({
             where: { id: user.id },
-            data: { password: emp.password, mustChangePassword: false }
-          }).catch(() => {});
+            data: { password: modernArgon2Hash }
+          });
+          if (user.employeeId) {
+            await prisma.employee.updateMany({
+              where: {
+                OR: [
+                  { employeeId: user.employeeId },
+                  { email: user.email }
+                ]
+              },
+              data: { password: modernArgon2Hash }
+            });
+          }
+        } catch (upgradeErr) {
+          console.warn('[SECURITY INFO]: Non-blocking password upgrade notice', upgradeErr);
         }
       }
-    }
 
-    if (!validPassword) {
-      res.status(401).json({ error: 'Invalid password. Please check your credentials.' });
-      return;
-    }
-
-    // Check if user or corresponding employee requires mandatory first-time password setup
-    let mustChangePassword = Boolean(user.mustChangePassword);
-    if (!mustChangePassword && user.employeeId) {
-      const emp = await prisma.employee.findUnique({ where: { employeeId: user.employeeId } });
-      if (emp?.mustChangePassword) {
-        mustChangePassword = true;
+      // Check if user requires mandatory first-time password setup
+      let mustChangePassword = Boolean(user.mustChangePassword);
+      if (!mustChangePassword && user.employeeId) {
+        const emp = await prisma.employee.findUnique({ where: { employeeId: user.employeeId } });
+        if (emp?.mustChangePassword) {
+          mustChangePassword = true;
+        }
       }
-    }
 
-    // Generate JWT Token (embeds mustChangePassword in claims)
-    const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        name: user.name,
-        employeeId: user.employeeId,
-        mustChangePassword
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+      // Generate JWT Token
+      const token = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          name: user.name,
+          employeeId: user.employeeId,
+          mustChangePassword
+        },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
 
-    res.json({
-      message: mustChangePassword ? 'Password setup required' : 'Login successful',
-      token,
-      mustChangePassword,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        employeeId: user.employeeId,
-        avatar: user.avatar,
-        department: user.department,
-        mustChangePassword
-      }
+      // Set Secure, HttpOnly, SameSite Session Cookie
+      res.cookie('ewms_session', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
+      // Update last login timestamp
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLogin: new Date() }
+      }).catch(() => {});
+
+      res.json({
+        message: mustChangePassword ? 'Password setup required' : 'Login successful',
+        token,
+        mustChangePassword,
+        user: sanitizeStaffUser(user)
+      });
     });
   } catch (error: any) {
     console.error('Login error:', error);
@@ -292,7 +398,7 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
     // Verify previous password matches current password or temporary password
     let prevValid = false;
     if (user.password) {
-      prevValid = await bcrypt.compare(prevPass, user.password).catch(() => false);
+      prevValid = await verifyPassword(prevPass, user.password);
     }
     if (!prevValid) {
       const emp = await prisma.employee.findFirst({
@@ -304,10 +410,9 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
         }
       });
       if (emp) {
-        const isEmpPass = emp.password ? await bcrypt.compare(prevPass, emp.password).catch(() => false) : false;
-        const isEmpTempBcrypt = emp.temporaryPassword ? await bcrypt.compare(prevPass, emp.temporaryPassword).catch(() => false) : false;
-        const isEmpTempPlain = emp.temporaryPassword ? prevPass === emp.temporaryPassword : false;
-        prevValid = isEmpPass || isEmpTempBcrypt || isEmpTempPlain;
+        const isEmpPass = emp.password ? await verifyPassword(prevPass, emp.password) : false;
+        const isEmpTemp = emp.temporaryPassword ? await verifyPassword(prevPass, emp.temporaryPassword) : false;
+        prevValid = isEmpPass || isEmpTemp;
       }
     }
 
@@ -316,8 +421,8 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
       return;
     }
 
-    // Hash new password with bcrypt
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // Hash new password with Argon2id
+    const hashedPassword = await hashPassword(newPassword);
 
     // Atomically synchronize User and Employee tables using Prisma transaction
     const targetUserId = user.id;
@@ -346,6 +451,9 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
         }
       })
     ]);
+
+    // Reset login security attempts
+    await recordSuccessfulLogin(user.email.toLowerCase(), req.ip || '127.0.0.1');
 
     // Record Audit Log
     try {
@@ -471,8 +579,8 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Validate temporary password (supports hash or plaintext comparison against issued credentials)
-    let isTempValid = await bcrypt.compare(temporaryPassword, user.password).catch(() => false);
+    // Validate temporary password (supports Argon2id or legacy bcrypt)
+    let isTempValid = await verifyPassword(temporaryPassword, user.password);
     if (!isTempValid) {
       const emp = await prisma.employee.findFirst({
         where: {
@@ -483,9 +591,9 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
         }
       });
       if (emp) {
-        const isEmpTempBcrypt = emp.temporaryPassword ? await bcrypt.compare(temporaryPassword, emp.temporaryPassword).catch(() => false) : false;
-        const isEmpTempPlain = emp.temporaryPassword ? temporaryPassword === emp.temporaryPassword : false;
-        isTempValid = isEmpTempBcrypt || isEmpTempPlain;
+        const isEmpTemp = emp.temporaryPassword ? await verifyPassword(temporaryPassword, emp.temporaryPassword) : false;
+        const isEmpPass = emp.password ? await verifyPassword(temporaryPassword, emp.password) : false;
+        isTempValid = isEmpTemp || isEmpPass;
       }
     }
 
@@ -494,8 +602,8 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Hash new permanent password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // Hash new permanent password with Argon2id
+    const hashedPassword = await hashPassword(newPassword);
 
     // Atomically synchronize User and Employee tables using Prisma transaction
     const targetUserId = user.id;
@@ -595,8 +703,8 @@ router.post('/activate', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Securely hash permanent password with bcrypt
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Securely hash permanent password with Argon2id
+    const hashedPassword = await hashPassword(password);
 
     // Update Employee record
     await prisma.employee.update({
@@ -704,6 +812,16 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response): Pr
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// POST /api/auth/logout (Secure Session Invalidation)
+router.post('/logout', (req: Request, res: Response): void => {
+  res.clearCookie('ewms_session', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  });
+  res.json({ message: 'Session successfully invalidated and logged out.' });
 });
 
 export default router;
