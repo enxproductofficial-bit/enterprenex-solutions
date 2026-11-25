@@ -221,14 +221,14 @@ function AdminRouteGuard({ children, allowedRoles, moduleName = 'This Module' }:
 // Public Website Layout Component (renders Public Header/Footer only for public routes)
 function PublicWebsiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="public-corp-website">
       <Header />
-      <div style={{ paddingTop: '72px' }}>
+      <div className="public-content-wrap" style={{ paddingTop: '72px' }}>
         {children}
       </div>
       <Footer />
       <FloatingWidgets />
-    </>
+    </div>
   );
 }
 

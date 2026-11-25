@@ -60,6 +60,14 @@
   --font-ewms: 'Times New Roman', Times, 'Tinos', serif;
   --font-handwriting: 'Dancing Script', 'Caveat', 'Brush Script MT', cursive;
   --font: var(--font-primary);
+
+  /* ── Corporate Public Website Typography Tokens (Georgia + Arial) ── */
+  --corp-font-heading: Georgia, Cambria, 'Times New Roman', Times, serif;
+  --corp-font-body: Arial, Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+  --corp-font-nav: Arial, Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+  --corp-font-button: Arial, Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+  --corp-font-footer: Arial, Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
+  --corp-font-input: Arial, Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
   --radius:      8px;
   --radius-lg:   16px;
   --radius-xl:   24px;
@@ -1051,6 +1059,186 @@ button, input, select, textarea {
   }
 }
 
+
+/* ── PUBLIC CORPORATE WEBSITE TYPOGRAPHY (Georgia + Arial Traditional Corporate Style) ──
+   Strictly scoped to .public-corp-website to ensure EWMS Staff Login &
+   Internal Admin/Employee Pages are 100% UNTOUCHED and PRESERVED. */
+.public-corp-website {
+  --font-heading: var(--corp-font-heading);
+  --font: var(--corp-font-body);
+  --font-primary: var(--corp-font-body);
+  font-family: var(--corp-font-body);
+  font-weight: 400;
+  color: var(--gray-800);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 1. Main Headings (H1–H3): Georgia, Bold */
+.public-corp-website h1,
+.public-corp-website h2,
+.public-corp-website h3,
+.public-corp-website .hero__h1,
+.public-corp-website .section-h2,
+.public-corp-website .section-title,
+.public-corp-website .t-h1,
+.public-corp-website .t-h2,
+.public-corp-website .t-h3,
+.public-corp-website [class*="h1"],
+.public-corp-website [class*="h2"],
+.public-corp-website [class*="h3"] {
+  font-family: var(--corp-font-heading) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.015em;
+}
+
+.public-corp-website h1,
+.public-corp-website .hero__h1 {
+  line-height: 1.2;
+}
+
+.public-corp-website h2,
+.public-corp-website .section-h2 {
+  line-height: 1.25;
+}
+
+.public-corp-website h3 {
+  line-height: 1.35;
+}
+
+/* Subordinate Headings (H4–H6) */
+.public-corp-website h4,
+.public-corp-website h5,
+.public-corp-website h6 {
+  font-family: var(--corp-font-heading);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* 2. Body Paragraphs: Arial, Regular */
+.public-corp-website p,
+.public-corp-website .hero__sub,
+.public-corp-website .section-sub,
+.public-corp-website .t-body,
+.public-corp-website li,
+.public-corp-website dd,
+.public-corp-website dt,
+.public-corp-website blockquote {
+  font-family: var(--corp-font-body) !important;
+  font-weight: 400 !important;
+  line-height: 1.65;
+}
+
+/* Overlines & Eyebrows */
+.public-corp-website .t-overline,
+.public-corp-website .section-eyebrow,
+.public-corp-website .hero__tag {
+  font-family: var(--corp-font-body) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* 3. Navigation Menu: Arial, Bold */
+.public-corp-website header,
+.public-corp-website nav,
+.public-corp-website nav a,
+.public-corp-website .nav-link,
+.public-corp-website .nav-item,
+.public-corp-website header a:not(.desktop-apply-btn),
+.public-corp-website .nav-dropdown a,
+.public-corp-website .mobile-nav a,
+.public-corp-website [class*="nav"] a {
+  font-family: var(--corp-font-nav) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+}
+
+/* 4. Buttons and CTAs: Arial, Bold */
+.public-corp-website .btn,
+.public-corp-website button,
+.public-corp-website [role="button"],
+.public-corp-website .btn-primary,
+.public-corp-website .btn-orange,
+.public-corp-website .btn-dark,
+.public-corp-website .btn-white,
+.public-corp-website .btn-outline-white,
+.public-corp-website .btn-link,
+.public-corp-website .btn-hero-primary,
+.public-corp-website .desktop-apply-btn,
+.public-corp-website a.btn,
+.public-corp-website input[type="submit"],
+.public-corp-website input[type="button"] {
+  font-family: var(--corp-font-button) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+}
+
+/* 5. Footer Content: Arial, Regular */
+.public-corp-website footer,
+.public-corp-website .footer,
+.public-corp-website footer p,
+.public-corp-website footer a,
+.public-corp-website footer span,
+.public-corp-website footer li,
+.public-corp-website .footer-inner,
+.public-corp-website .footer-brand p,
+.public-corp-website .footer-bottom {
+  font-family: var(--corp-font-footer) !important;
+  font-weight: 400 !important;
+  line-height: 1.6;
+}
+
+/* Footer Section Headings */
+.public-corp-website footer h4,
+.public-corp-website footer h5,
+.public-corp-website footer .footer-heading,
+.public-corp-website .footer-col h4,
+.public-corp-website .footer-title {
+  font-family: var(--corp-font-heading) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+}
+
+/* 6. Forms and Input Fields: Arial, Regular */
+.public-corp-website input:not([type="submit"]):not([type="button"]),
+.public-corp-website textarea,
+.public-corp-website select,
+.public-corp-website .form-input,
+.public-corp-website .form-select,
+.public-corp-website .form-textarea,
+.public-corp-website .input-group input {
+  font-family: var(--corp-font-input) !important;
+  font-weight: 400 !important;
+  font-size: 0.95rem;
+}
+
+.public-corp-website label,
+.public-corp-website .form-label {
+  font-family: var(--corp-font-input) !important;
+  font-weight: 600 !important;
+  font-size: 0.88rem;
+  letter-spacing: 0.01em;
+}
+
+/* Responsive heading adjustments for mobile and tablets */
+@media (max-width: 768px) {
+  .public-corp-website h1,
+  .public-corp-website .hero__h1 {
+    font-size: clamp(1.85rem, 5vw, 2.5rem) !important;
+    line-height: 1.25 !important;
+  }
+  .public-corp-website h2,
+  .public-corp-website .section-h2 {
+    font-size: clamp(1.6rem, 4vw, 2rem) !important;
+    line-height: 1.3 !important;
+  }
+  .public-corp-website h3 {
+    font-size: clamp(1.25rem, 3vw, 1.5rem) !important;
+    line-height: 1.35 !important;
+  }
+}
 
 /* ── EWMS Module Scoped Typography (Times New Roman) ────── */
 .ewms-module,
