@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SEOHead from '../components/SEOHead';
 
 /* ─── Contact Options Data ─── */
 const CONTACT_OPTIONS = [
@@ -529,6 +530,11 @@ export default function ContactPage() {
 
   return (
     <main id="main-content">
+      <SEOHead
+        title="Contact Enterprenex Solutions | Request a Quote & Discovery Call"
+        description="Connect with Enterprenex Solutions for custom software engineering, AI/ML development, enterprise ERP, and cloud architecture quotes. Response within 24 hours."
+        canonical="https://enterprenexsolution.com/contact"
+      />
       {/* ── RESPONSIVE EMBEDDED STYLES ── */}
       <style>{`
         .contact-section-pad {

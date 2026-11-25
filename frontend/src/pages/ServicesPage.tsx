@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { SERVICES_DATA } from '../data/servicesData';
 import { ArrowRight, Sparkles, Search } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 
 /* ── All service categories with metadata ── */
 const CATEGORIES = [
@@ -101,6 +102,11 @@ export default function ServicesPage() {
 
   return (
     <main id="main-content" style={{ background: '#ffffff', overflowX: 'hidden' }}>
+      <SEOHead
+        title="Enterprise Software & AI Engineering Services | Enterprenex Solutions"
+        description="Explore 25+ specialized engineering services from Enterprenex Solutions: AI/ML, custom web & mobile apps, cloud architecture, SaaS, ERP systems, and staff augmentation."
+        canonical="https://enterprenexsolution.com/services"
+      />
 
       {/* ── HERO SECTION ── */}
       <section style={{ position: 'relative', padding: 'clamp(4rem, 8vw, 6.5rem) 1rem 4rem', background: '#ffffff', overflow: 'hidden', textAlign: 'center' }}>

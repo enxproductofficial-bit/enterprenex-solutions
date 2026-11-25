@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Zap, Target, CheckCircle, ChevronDown, Sparkles, Cpu, Lock, Activity, ArrowRight, Check } from 'lucide-react';
 import type { ServiceData } from '../data/servicesData';
+import SEOHead from '../components/SEOHead';
 
 interface ServiceProps {
   serviceData: ServiceData;
@@ -85,8 +86,53 @@ export default function ServicePageLayout({ serviceData }: ServiceProps) {
     { question: 'Can we scale our dedicated team size during development?', answer: 'Absolutely. You can scale your team up or down with a 2-week notice to adapt to shifting project demands or accelerated launch targets.' }
   ];
 
+  const serviceJsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: `${serviceData.title} Services`,
+      serviceType: serviceData.title,
+      provider: {
+        '@type': 'Organization',
+        name: 'Enterprenex Solutions Pvt. Ltd.',
+        url: 'https://enterprenexsolution.com'
+      },
+      description: serviceData.heroDescription,
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: `${serviceData.title} Capabilities`,
+        itemListElement: (serviceData.sections || []).map((sec) => ({
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: sec
+          }
+        }))
+      }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqsList.map((f: any) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: f.answer
+        }
+      }))
+    }
+  ];
+
   return (
     <div className="service-page" style={{ overflowX: 'hidden' }}>
+      <SEOHead
+        title={`${serviceData.title} | Enterprenex Solutions`}
+        description={serviceData.heroDescription}
+        canonical={typeof window !== 'undefined' ? window.location.href : 'https://enterprenexsolution.com/services'}
+        keywords={[serviceData.title, ...(serviceData.sections || []), ...(serviceData.technologies || [])]}
+        jsonLd={serviceJsonLd}
+      />
       
       {/* ── 1. HERO SECTION ── */}
       <section className="hero" style={{ position: 'relative', background: '#0a0a0a', color: '#fff', padding: 'clamp(4rem, 8vw, 6.5rem) 1rem', overflow: 'hidden' }}>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import SEOHead from '../components/SEOHead';
 import {
   ShieldCheck,
   Award,
@@ -168,6 +169,11 @@ export default function VerificationPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#090d16', color: '#f8fafc', paddingTop: '100px', paddingBottom: '80px' }}>
+      <SEOHead
+        title="Official Credential Verification | Enterprenex Solutions"
+        description="Verify genuine employee credentials, internship certificates, and institutional appointments issued by Enterprenex Solutions Pvt. Ltd."
+        canonical="https://enterprenexsolution.com/verification"
+      />
       
       {/* ── Background Ambience Glows ── */}
       <div style={{ position: 'fixed', top: 0, left: '20%', width: '500px', height: '400px', background: 'radial-gradient(circle, rgba(246,97,53,0.12) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
