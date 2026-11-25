@@ -39,6 +39,19 @@ export const ClientsPage: React.FC = () => {
   const safeProjects = projects || [];
   const safeInvoices = invoices || [];
 
+  const corruptedClients = safeClients.filter(c => 
+    c && (
+      (c.companyName || '').toLowerCase().includes('wh kj') || 
+      (c.gstin || '').includes('+') || 
+      (c.website || '').includes(',')
+    )
+  );
+
+  const handlePurgeCorrupted = () => {
+    corruptedClients.forEach(c => deleteClient(c.id));
+    showToast('Cleaned Up', `Purged ${corruptedClients.length} corrupted test records.`, 'success');
+  };
+
   // Filter clients with null safety
   const filteredClients = safeClients.filter(c => {
     if (!c) return false;
@@ -54,17 +67,49 @@ export const ClientsPage: React.FC = () => {
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const trimmedName = formName.trim();
+    if (!trimmedName || trimmedName.length < 3) {
+      showToast('Validation Failed', 'Company name must be at least 3 characters.', 'error');
+      return;
+    }
+
+    const trimmedEmail = formEmail.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      showToast('Validation Failed', 'Please provide a valid corporate email address.', 'error');
+      return;
+    }
+
+    const trimmedGstin = formGstin.trim().toUpperCase();
+    const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    if (trimmedGstin && !gstinRegex.test(trimmedGstin)) {
+      showToast('Validation Failed', 'GSTIN must follow the statutory 15-character format (e.g. 27AAACB2212P1ZX).', 'error');
+      return;
+    }
+
+    const trimmedWebsite = formWebsite.trim();
+    const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
+    if (trimmedWebsite && !urlPattern.test(trimmedWebsite)) {
+      showToast('Validation Failed', 'Please provide a valid corporate website URL (e.g. https://domain.com).', 'error');
+      return;
+    }
+
+    const formattedWebsite = trimmedWebsite 
+      ? (trimmedWebsite.startsWith('http://') || trimmedWebsite.startsWith('https://') ? trimmedWebsite : `https://${trimmedWebsite}`)
+      : 'https://example.com';
+
     addClient({
-      companyName: formName,
+      companyName: trimmedName,
       industry: formIndustry,
-      website: formWebsite.startsWith('http') ? formWebsite : `https://${formWebsite || 'example.com'}`,
-      gstin: formGstin || '27AAACB2212P1ZX',
+      website: formattedWebsite,
+      gstin: trimmedGstin || '27AAACB2212P1ZX',
       status: 'Active',
       primaryContact: {
-        name: formContactName || 'Authorized Contact',
+        name: formContactName.trim() || 'Authorized Contact',
         role: formContactRole,
-        email: formEmail || 'contact@client.com',
-        phone: formPhone || '+91-9820112233'
+        email: trimmedEmail,
+        phone: formPhone.trim() || '+91-9820112233'
       },
       address: formAddress,
       city: formCity,
@@ -73,6 +118,7 @@ export const ClientsPage: React.FC = () => {
       activeProjectsCount: 0,
       notes: ['Client account created. Ready for onboarding kick-off.']
     });
+    showToast('Client Onboarded', `${trimmedName} registered successfully.`, 'success');
     setShowAddModal(false);
     // Reset
     setFormName('');
@@ -144,6 +190,35 @@ export const ClientsPage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Corrupted Records Warning Banner */}
+      {corruptedClients.length > 0 && (
+        <div style={{
+          marginBottom: '1.25rem',
+          padding: '0.9rem 1.25rem',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          borderRadius: 'var(--adm-radius)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          <div style={{ color: '#fca5a5', fontSize: '0.85rem' }}>
+            <strong>⚠️ Invalid Test Records Detected:</strong> Found {corruptedClients.length} non-compliant/corrupted client test record(s) with invalid GSTIN or company name format.
+          </div>
+          <button
+            type="button"
+            className="adm-btn adm-btn-danger adm-btn-sm"
+            onClick={handlePurgeCorrupted}
+            style={{ fontWeight: 700 }}
+          >
+            <Trash2 size={13} />
+            <span>Purge Invalid Test Records</span>
+          </button>
+        </div>
+      )}
 
       {/* Clients Table */}
       <div className="adm-table-container">
@@ -397,12 +472,29 @@ export const ClientsPage: React.FC = () => {
 
               <div className="adm-grid-2">
                 <div className="adm-form-group">
-                  <label className="adm-form-label">Statutory GSTIN / Tax Identifier</label>
-                  <input className="adm-input" value={formGstin} onChange={e => setFormGstin(e.target.value)} placeholder="27AAACB2212P1ZX" />
+                  <label className="adm-form-label">Statutory GSTIN / Tax Identifier (15 Chars)</label>
+                  <input
+                    className="adm-input"
+                    value={formGstin}
+                    onChange={e => setFormGstin(e.target.value.toUpperCase())}
+                    placeholder="27AAACB2212P1ZX"
+                    maxLength={15}
+                  />
+                  <small style={{ color: 'var(--adm-text-dim)', fontSize: '0.72rem', display: 'block', marginTop: '3px' }}>
+                    15-character statutory GSTIN (e.g. 27AAACB2212P1ZX)
+                  </small>
                 </div>
                 <div className="adm-form-group">
                   <label className="adm-form-label">Official Corporate Domain URL</label>
-                  <input className="adm-input" value={formWebsite} onChange={e => setFormWebsite(e.target.value)} placeholder="https://corporate-domain.com" />
+                  <input
+                    className="adm-input"
+                    value={formWebsite}
+                    onChange={e => setFormWebsite(e.target.value)}
+                    placeholder="https://corporate-domain.com"
+                  />
+                  <small style={{ color: 'var(--adm-text-dim)', fontSize: '0.72rem', display: 'block', marginTop: '3px' }}>
+                    Corporate website (e.g. https://domain.com)
+                  </small>
                 </div>
               </div>
 

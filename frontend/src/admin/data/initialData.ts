@@ -51,7 +51,56 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   }
 ];
 
-export const INITIAL_CLIENTS: Client[] = [];
+export const INITIAL_CLIENTS: Client[] = [
+  {
+    id: 'cl-1',
+    companyName: 'Tata Consultancy Services Ltd',
+    industry: 'Enterprise Software & Systems',
+    website: 'https://www.tcs.com',
+    gstin: '27AAACT2727Q1ZB',
+    status: 'Active',
+    primaryContact: {
+      name: 'Rajesh Sharma',
+      role: 'Head of Strategic Procurement',
+      email: 'rajesh.sharma@tcs-enterprise.com',
+      phone: '+91-22-67789999'
+    },
+    city: 'Mumbai',
+    country: 'India',
+    address: 'TCS House, Raveline Street, Fort',
+    totalRevenue: 1250000,
+    activeProjectsCount: 2,
+    createdAt: '2026-01-15',
+    notes: [
+      'Master Service Agreement (MSA) executed for FY2026.',
+      'Quarterly security, data confidentiality, and compliance review cleared.'
+    ]
+  },
+  {
+    id: 'cl-2',
+    companyName: 'Apex FinTech Technologies Pvt Ltd',
+    industry: 'Banking & Financial Technology',
+    website: 'https://www.apexfintech.in',
+    gstin: '27AABCA1234F1Z8',
+    status: 'Active',
+    primaryContact: {
+      name: 'Vikram Mehra',
+      role: 'VP of Engineering & Architecture',
+      email: 'v.mehra@apexfintech.in',
+      phone: '+91-9820198765'
+    },
+    city: 'Pune',
+    country: 'India',
+    address: 'Cyber City, Magarpatta',
+    totalRevenue: 850000,
+    activeProjectsCount: 1,
+    createdAt: '2026-02-10',
+    notes: [
+      'Core payment gateway reconciliation module delivered on schedule.',
+      'Statutory NDA and IP assignment covenant signed.'
+    ]
+  }
+];
 
 export const INITIAL_PROJECTS: Project[] = [];
 
