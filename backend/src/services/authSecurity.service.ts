@@ -251,7 +251,7 @@ export const checkAccountLockout = async (normalizedIdentifier: string): Promise
  */
 export const recordFailedLogin = async (
   normalizedIdentifier: string,
-  ipAddress: string
+  ipAddress: string = '127.0.0.1'
 ): Promise<LockoutCheckResult> => {
   const now = new Date();
 
@@ -356,7 +356,7 @@ export const recordFailedLogin = async (
  */
 export const recordSuccessfulLogin = async (
   normalizedIdentifier: string,
-  ipAddress: string
+  ipAddress: string = '127.0.0.1'
 ): Promise<void> => {
   memoryLockoutStore.delete(normalizedIdentifier);
 
