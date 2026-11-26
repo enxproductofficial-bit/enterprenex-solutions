@@ -1,0 +1,428 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Enterprenex Solutions//Maharashtra State Board Holidays 2026-2027//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Maharashtra State Board & Public Holidays 2026-2027
+X-WR-TIMEZONE:Asia/Kolkata
+X-WR-CALDESC:Official Maharashtra State Board, Government Public Holidays, Festivals, and School Vacations for Academic Year 2026-2027.
+
+BEGIN:VEVENT
+SUMMARY:Republic Day
+DTSTART;VALUE=DATE:20260126
+DTEND;VALUE=DATE:20260127
+DESCRIPTION:National Holiday: Republic Day of India. Flag hoisting and celebration across all educational institutions in Maharashtra.
+CATEGORIES:National Holiday
+COLOR:11
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Mahashivratri
+DTSTART;VALUE=DATE:20260215
+DTEND;VALUE=DATE:20260216
+DESCRIPTION:Gazetted Public Holiday: Festival dedicated to Lord Shiva.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Chhatrapati Shivaji Maharaj Jayanti
+DTSTART;VALUE=DATE:20260219
+DTEND;VALUE=DATE:20260220
+DESCRIPTION:Maharashtra State Holiday: Birth anniversary of Chhatrapati Shivaji Maharaj, founder of the Maratha Empire.
+CATEGORIES:State Holiday
+COLOR:5
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Holi (Second Day / Dhulivandan)
+DTSTART;VALUE=DATE:20260303
+DTEND;VALUE=DATE:20260304
+DESCRIPTION:Public Holiday & Festival: Festival of colors (Dhulivandan).
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Gudi Padwa (Marathi New Year)
+DTSTART;VALUE=DATE:20260319
+DTEND;VALUE=DATE:20260320
+DESCRIPTION:Maharashtra State Holiday: Traditional Marathi New Year and beginning of Chaitra Navratri.
+CATEGORIES:State Holiday,Religious Festival
+COLOR:5
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Ramzan-Id (Id-Ul-Fitr)
+DTSTART;VALUE=DATE:20260321
+DTEND;VALUE=DATE:20260322
+DESCRIPTION:Gazetted Public Holiday: Islamic festival marking the end of Ramadan.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Ram Navami
+DTSTART;VALUE=DATE:20260326
+DTEND;VALUE=DATE:20260327
+DESCRIPTION:Gazetted Public Holiday: Celebration of the birth of Lord Rama.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Mahavir Janmakalyanak
+DTSTART;VALUE=DATE:20260331
+DTEND;VALUE=DATE:20260401
+DESCRIPTION:Gazetted Public Holiday: Birth anniversary of Bhagwan Mahavira, 24th Tirthankara of Jainism.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Good Friday
+DTSTART;VALUE=DATE:20260403
+DTEND;VALUE=DATE:20260404
+DESCRIPTION:Gazetted Public Holiday: Christian holiday commemorating the crucifixion of Jesus Christ.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Dr. Babasaheb Ambedkar Jayanti
+DTSTART;VALUE=DATE:20260414
+DTEND;VALUE=DATE:20260415
+DESCRIPTION:Maharashtra State & National Holiday: Birth anniversary of Bharat Ratna Dr. B. R. Ambedkar, Chief Architect of the Constitution of India.
+CATEGORIES:State Holiday,National Holiday
+COLOR:11
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Maharashtra Din (Maharashtra Day) & Buddha Pournima
+DTSTART;VALUE=DATE:20260501
+DTEND;VALUE=DATE:20260502
+DESCRIPTION:Maharashtra State Holiday & Public Holiday: Commemoration of the formation of the state of Maharashtra (1960) and Buddha Jayanti.
+CATEGORIES:State Holiday
+COLOR:5
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:State Board Summer Vacation (2026)
+DTSTART;VALUE=DATE:20260502
+DTEND;VALUE=DATE:20260615
+DESCRIPTION:Maharashtra State Board Academic Calendar: Annual Summer Vacation for schools and junior colleges.
+CATEGORIES:School Vacation
+COLOR:10
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Bakri ID (Id-Uz-Zuha)
+DTSTART;VALUE=DATE:20260528
+DTEND;VALUE=DATE:20260529
+DESCRIPTION:Gazetted Public Holiday: Feast of the Sacrifice in Islam.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Moharram
+DTSTART;VALUE=DATE:20260626
+DTEND;VALUE=DATE:20260627
+DESCRIPTION:Gazetted Public Holiday: First month of the Islamic calendar and Day of Ashura.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Independence Day & Parsi New Year
+DTSTART;VALUE=DATE:20260815
+DTEND;VALUE=DATE:20260816
+DESCRIPTION:National Holiday: Independence Day of India, and Parsi New Year (Shahenshahi).
+CATEGORIES:National Holiday
+COLOR:11
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Id-E-Milad
+DTSTART;VALUE=DATE:20260826
+DTEND;VALUE=DATE:20260827
+DESCRIPTION:Gazetted Public Holiday: Birth anniversary of the Islamic Prophet Muhammad.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Ganesh Chaturthi
+DTSTART;VALUE=DATE:20260914
+DTEND;VALUE=DATE:20260915
+DESCRIPTION:Maharashtra State Festival: Arrival of Lord Ganesha, start of 10-day Ganeshotsav.
+CATEGORIES:State Holiday,Religious Festival
+COLOR:5
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Ganeshotsav School Break (State Board)
+DTSTART;VALUE=DATE:20260914
+DTEND;VALUE=DATE:20260919
+DESCRIPTION:Maharashtra State Board Special Break: 5-day holiday break observed in schools and colleges across Maharashtra for Ganeshotsav.
+CATEGORIES:School Vacation
+COLOR:10
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Mahatma Gandhi Jayanti
+DTSTART;VALUE=DATE:20261002
+DTEND;VALUE=DATE:20261003
+DESCRIPTION:National Holiday: Birth anniversary of Mahatma Gandhi (Father of the Nation).
+CATEGORIES:National Holiday
+COLOR:11
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Dasara (Vijaya Dashami)
+DTSTART;VALUE=DATE:20261020
+DTEND;VALUE=DATE:20261021
+DESCRIPTION:Gazetted Public Holiday: Triumph of good over evil (Vijayadashami).
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Maharashtra State Board Diwali Vacation (2026)
+DTSTART;VALUE=DATE:20261102
+DTEND;VALUE=DATE:20261118
+DESCRIPTION:Maharashtra State Board Academic Calendar: Official Mid-Term Diwali Vacation for schools and colleges across Maharashtra.
+CATEGORIES:School Vacation
+COLOR:10
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Diwali Amavasya (Laxmi Pujan)
+DTSTART;VALUE=DATE:20261108
+DTEND;VALUE=DATE:20261109
+DESCRIPTION:Gazetted Public Holiday: Main day of Diwali festival with Lakshmi Puja.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Diwali (Bali Pratipada)
+DTSTART;VALUE=DATE:20261110
+DTEND;VALUE=DATE:20261111
+DESCRIPTION:Maharashtra Public Holiday: Celebration of King Bali and New Vikram Samvat year.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Bhaubeej
+DTSTART;VALUE=DATE:20261111
+DTEND;VALUE=DATE:20261112
+DESCRIPTION:Maharashtra State Government Holiday: Sibling bond celebration (Bhai Dooj / Bhaubeej).
+CATEGORIES:State Holiday,Religious Festival
+COLOR:5
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Guru Nanak Jayanti
+DTSTART;VALUE=DATE:20261124
+DTEND;VALUE=DATE:20261125
+DESCRIPTION:Gazetted Public Holiday: Prakash Utsav of Guru Nanak Dev Ji.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Christmas
+DTSTART;VALUE=DATE:20261225
+DTEND;VALUE=DATE:20261226
+DESCRIPTION:Gazetted Public Holiday: Celebration of the birth of Jesus Christ.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Christmas & Winter Vacation (State Board)
+DTSTART;VALUE=DATE:20261225
+DTEND;VALUE=DATE:20270102
+DESCRIPTION:Maharashtra State Board Academic Calendar: Winter Vacation for primary, secondary, and higher secondary institutions.
+CATEGORIES:School Vacation
+COLOR:10
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Republic Day 2027
+DTSTART;VALUE=DATE:20270126
+DTEND;VALUE=DATE:20270127
+DESCRIPTION:National Holiday: 78th Republic Day of India.
+CATEGORIES:National Holiday
+COLOR:11
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Chhatrapati Shivaji Maharaj Jayanti 2027
+DTSTART;VALUE=DATE:20270219
+DTEND;VALUE=DATE:20270220
+DESCRIPTION:Maharashtra State Holiday: Birth anniversary of Chhatrapati Shivaji Maharaj.
+CATEGORIES:State Holiday
+COLOR:5
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Id-ul-Fitr (Ramazan Eid) 2027
+DTSTART;VALUE=DATE:20270310
+DTEND;VALUE=DATE:20270311
+DESCRIPTION:Gazetted Public Holiday: Islamic celebration of Eid-ul-Fitr (subject to moon sighting).
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Holi 2027 (Dhulivandan)
+DTSTART;VALUE=DATE:20270323
+DTEND;VALUE=DATE:20270324
+DESCRIPTION:Gazetted Public Holiday: Festival of colors (Dhulivandan).
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Good Friday 2027
+DTSTART;VALUE=DATE:20270326
+DTEND;VALUE=DATE:20270327
+DESCRIPTION:Gazetted Public Holiday: Observance of the crucifixion of Jesus Christ.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Gudi Padwa 2027
+DTSTART;VALUE=DATE:20270407
+DTEND;VALUE=DATE:20270408
+DESCRIPTION:Maharashtra State Holiday: Marathi New Year.
+CATEGORIES:State Holiday,Religious Festival
+COLOR:5
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Dr. Babasaheb Ambedkar Jayanti 2027
+DTSTART;VALUE=DATE:20270414
+DTEND;VALUE=DATE:20270415
+DESCRIPTION:Maharashtra State & National Holiday: Birth anniversary of Dr. B. R. Ambedkar.
+CATEGORIES:State Holiday,National Holiday
+COLOR:11
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Ram Navami 2027
+DTSTART;VALUE=DATE:20270415
+DTEND;VALUE=DATE:20270416
+DESCRIPTION:Gazetted Public Holiday: Celebration of the birth of Lord Rama.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Mahavir Jayanti 2027
+DTSTART;VALUE=DATE:20270419
+DTEND;VALUE=DATE:20270420
+DESCRIPTION:Gazetted Public Holiday: Birth anniversary of Bhagwan Mahavira.
+CATEGORIES:Religious Festival
+COLOR:6
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:Maharashtra Din 2027
+DTSTART;VALUE=DATE:20270501
+DTEND;VALUE=DATE:20270502
+DESCRIPTION:Maharashtra State Holiday: Maharashtra Day celebration.
+CATEGORIES:State Holiday
+COLOR:5
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+SUMMARY:State Board Summer Vacation (2027)
+DTSTART;VALUE=DATE:20270502
+DTEND;VALUE=DATE:20270614
+DESCRIPTION:Maharashtra State Board Academic Calendar: Annual Summer Vacation for schools and colleges across Maharashtra.
+CATEGORIES:School Vacation
+COLOR:10
+TRANSP:TRANSPARENT
+STATUS:CONFIRMED
+END:VEVENT
+
+END:VCALENDAR
