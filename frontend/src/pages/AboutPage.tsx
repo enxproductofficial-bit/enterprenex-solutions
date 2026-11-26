@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
 
 /* ── Animation Variants ── */
 const fadeUp: any = {
@@ -81,6 +82,11 @@ function AnimatedCounter({ target, suffix = '', duration = 2 }: { target: number
 export default function AboutPage() {
   return (
     <main id="main-content">
+      <SEOHead
+        title="About Enterprenex Solutions | Enterprise Software & AI Architecture"
+        description="Learn about Enterprenex Solutions Pvt. Ltd., an elite enterprise software development and AI engineering studio headquartered in Chhatrapati Sambhajinagar, Maharashtra."
+        canonical="https://enterprenexsolution.com/about"
+      />
       {/* ── RESPONSIVE STYLES ── */}
       <style>{`
         .bento-grid {

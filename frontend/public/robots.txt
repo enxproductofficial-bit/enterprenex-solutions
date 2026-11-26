@@ -1,0 +1,43 @@
+# Robots.txt for Enterprenex Solutions
+# https://enterprenexsolution.com
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /login
+Disallow: /create-new-password
+Disallow: /change-password
+Disallow: /register
+Disallow: /api/
+
+# Explicit permissions for Generative Engine Crawlers (GEO / AEO)
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+Sitemap: https://enterprenexsolution.com/sitemap.xml
