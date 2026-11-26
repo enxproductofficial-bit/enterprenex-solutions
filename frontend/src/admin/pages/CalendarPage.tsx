@@ -18,9 +18,14 @@ import {
   Search,
   ExternalLink,
   Radio,
-  Tag
+  Tag,
+  Download,
+  CheckCircle2,
+  Bookmark
 } from 'lucide-react';
 import type { CalendarMeeting, CommunityAnnouncement } from '../types';
+import { MAHARASHTRA_HOLIDAYS_DATA } from '../data/maharashtraHolidays';
+import type { MaharashtraHoliday } from '../data/maharashtraHolidays';
 
 // Clean SVG Icon for WhatsApp
 const WhatsAppIcon: React.FC<{ size?: number; color?: string }> = ({ size = 16, color = '#ffffff' }) => (
@@ -50,8 +55,12 @@ export const CalendarPage: React.FC = () => {
     showToast
   } = useAdmin();
 
-  // Active Tab: 'meetings' | 'community' | 'chat'
-  const [activeTab, setActiveTab] = useState<'meetings' | 'community' | 'chat'>('meetings');
+  // Active Tab: 'holidays' | 'meetings' | 'community' | 'chat'
+  const [activeTab, setActiveTab] = useState<'holidays' | 'meetings' | 'community' | 'chat'>('holidays');
+
+  // ── Maharashtra Holidays Tab State ──
+  const [holidayCategory, setHolidayCategory] = useState<'All' | 'National' | 'State' | 'Festival' | 'Vacation'>('All');
+  const [holidaySearch, setHolidaySearch] = useState('');
 
   // ── Meetings Tab State ──
   const [selectedType, setSelectedType] = useState<string>('All');
@@ -86,6 +95,16 @@ export const CalendarPage: React.FC = () => {
 
   // Filtered Meetings
   const filteredMeetings = meetings.filter(m => selectedType === 'All' || m.type === selectedType);
+
+  // Filtered Maharashtra State Board Holidays
+  const filteredHolidays = MAHARASHTRA_HOLIDAYS_DATA.filter(h => {
+    const matchesCat = holidayCategory === 'All' || h.category === holidayCategory;
+    const matchesSearch = !holidaySearch.trim() ||
+      h.name.toLowerCase().includes(holidaySearch.toLowerCase()) ||
+      h.description.toLowerCase().includes(holidaySearch.toLowerCase()) ||
+      h.dateStr.toLowerCase().includes(holidaySearch.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
 
   // ── WhatsApp Invite Formatter ──
   const formatWhatsAppInvite = (meet: {
@@ -245,7 +264,31 @@ export const CalendarPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="adm-page-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div className="adm-page-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {activeTab === 'holidays' && (
+            <>
+              <a
+                href="https://calendar.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="adm-btn adm-btn-secondary"
+                style={{ borderRadius: '10px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <ExternalLink size={14} />
+                <span>Open in Google Calendar</span>
+              </a>
+              <a
+                href="/maharashtra_holidays_2026_2027.ics"
+                download="maharashtra_holidays_2026_2027.ics"
+                className="adm-btn adm-btn-primary"
+                style={{ borderRadius: '10px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <Download size={14} />
+                <span>Download .ICS File</span>
+              </a>
+            </>
+          )}
+
           {activeTab === 'meetings' && (
             <button type="button" className="adm-btn adm-btn-primary" onClick={() => setShowAddModal(true)} style={{ borderRadius: '10px' }}>
               <Plus size={16} />
@@ -262,7 +305,7 @@ export const CalendarPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── PRIMARY SECTION TABS (Meetings / Community / Chat) ── */}
+      {/* ── PRIMARY SECTION TABS (Holidays / Meetings / Community / Chat) ── */}
       <div
         className="adm-card"
         style={{
@@ -274,6 +317,34 @@ export const CalendarPage: React.FC = () => {
           borderRadius: '12px'
         }}
       >
+        <button
+          onClick={() => setActiveTab('holidays')}
+          className={activeTab === 'holidays' ? 'adm-btn adm-btn-primary' : 'adm-btn adm-btn-secondary'}
+          style={{
+            borderRadius: '10px',
+            padding: '0.6rem 1.2rem',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          <Sparkles size={16} />
+          <span>Maharashtra Board Holidays & Festivals</span>
+          <span
+            style={{
+              padding: '0.1rem 0.5rem',
+              borderRadius: '12px',
+              fontSize: '0.72rem',
+              background: activeTab === 'holidays' ? 'rgba(255,255,255,0.25)' : 'var(--adm-border)'
+            }}
+          >
+            {MAHARASHTRA_HOLIDAYS_DATA.length}
+          </span>
+        </button>
+
         <button
           onClick={() => setActiveTab('meetings')}
           className={activeTab === 'meetings' ? 'adm-btn adm-btn-primary' : 'adm-btn adm-btn-secondary'}
@@ -358,6 +429,340 @@ export const CalendarPage: React.FC = () => {
           </span>
         </button>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════════
+          TAB 0: MAHARASHTRA STATE BOARD HOLIDAYS & FESTIVALS (2026-2027)
+      ══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'holidays' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* Top Banner with Google Calendar Status */}
+          <div
+            className="adm-card"
+            style={{
+              padding: '1.25rem 1.4rem',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(234, 88, 12, 0.08) 100%)',
+              border: '1px solid var(--adm-border)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem'
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: '#2563eb',
+                    background: 'rgba(37, 99, 235, 0.12)',
+                    padding: '0.2rem 0.6rem',
+                    borderRadius: '6px'
+                  }}
+                >
+                  Academic Year 2026–2027
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    color: '#16a34a',
+                    background: 'rgba(22, 163, 74, 0.12)',
+                    padding: '0.2rem 0.6rem',
+                    borderRadius: '6px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <CheckCircle2 size={12} /> Synced with Director's Google Calendar
+                </span>
+              </div>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--adm-text)', margin: '0 0 0.25rem 0' }}>
+                Maharashtra State Board & Public Holidays Calendar
+              </h2>
+              <p style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', margin: 0 }}>
+                Complete schedule of Maharashtra government gazetted public holidays, major cultural & religious festivals, national holidays, and State Board academic vacations.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <a
+                href="https://calendar.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="adm-btn adm-btn-secondary"
+                style={{ borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <ExternalLink size={13} />
+                <span>Open Google Calendar</span>
+              </a>
+              <a
+                href="/maharashtra_holidays_2026_2027.ics"
+                download="maharashtra_holidays_2026_2027.ics"
+                className="adm-btn adm-btn-primary"
+                style={{ borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <Download size={13} />
+                <span>Download .ICS</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Metric KPI Counter Badges */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1rem'
+            }}
+          >
+            <div className="adm-card" style={{ padding: '1rem 1.25rem', borderRadius: '12px' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase' }}>
+                🟦 National Holidays
+              </div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--adm-text)', marginTop: '0.2rem' }}>
+                4 Days
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+                Republic Day, Independence Day, Gandhi Jayanti
+              </div>
+            </div>
+
+            <div className="adm-card" style={{ padding: '1rem 1.25rem', borderRadius: '12px' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ea580c', textTransform: 'uppercase' }}>
+                🟧 Maharashtra State Holidays
+              </div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--adm-text)', marginTop: '0.2rem' }}>
+                10 Days
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+                Shivaji Jayanti, Gudi Padwa, Maharashtra Din, Bhaubeej
+              </div>
+            </div>
+
+            <div className="adm-card" style={{ padding: '1rem 1.25rem', borderRadius: '12px' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#dc2626', textTransform: 'uppercase' }}>
+                🟥 Religious & Cultural Festivals
+              </div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--adm-text)', marginTop: '0.2rem' }}>
+                20 Days
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+                Diwali, Ganesh Chaturthi, Holi, Eid, Christmas
+              </div>
+            </div>
+
+            <div className="adm-card" style={{ padding: '1rem 1.25rem', borderRadius: '12px' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#16a34a', textTransform: 'uppercase' }}>
+                🟩 State Board Vacations
+              </div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--adm-text)', marginTop: '0.2rem' }}>
+                5 Breaks
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)' }}>
+                Summer, Diwali, Ganeshotsav & Winter Breaks
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Bar & Search */}
+          <div
+            className="adm-card"
+            style={{
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              gap: '0.75rem',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderRadius: '12px'
+            }}
+          >
+            {/* Category Filter Pills */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-muted)', fontWeight: 700, marginRight: '0.25rem' }}>
+                Category:
+              </span>
+              {[
+                { label: 'All Events', val: 'All', count: MAHARASHTRA_HOLIDAYS_DATA.length },
+                { label: 'National', val: 'National', count: 4 },
+                { label: 'State Holidays', val: 'State', count: 10 },
+                { label: 'Festivals', val: 'Festival', count: 20 },
+                { label: 'School Vacations', val: 'Vacation', count: 5 }
+              ].map(cat => (
+                <button
+                  key={cat.val}
+                  type="button"
+                  onClick={() => setHolidayCategory(cat.val as any)}
+                  className={holidayCategory === cat.val ? 'adm-btn adm-btn-primary' : 'adm-btn adm-btn-secondary'}
+                  style={{
+                    borderRadius: '20px',
+                    fontSize: '0.78rem',
+                    padding: '0.35rem 0.85rem',
+                    fontWeight: holidayCategory === cat.val ? 700 : 500,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <span>{cat.label}</span>
+                  <span style={{ opacity: 0.8, fontSize: '0.7rem', marginLeft: '4px' }}>({cat.count})</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Search Input */}
+            <div style={{ position: 'relative', minWidth: '240px', flex: '1', maxWidth: '320px' }}>
+              <Search
+                size={14}
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--adm-text-muted)'
+                }}
+              />
+              <input
+                type="text"
+                value={holidaySearch}
+                onChange={e => setHolidaySearch(e.target.value)}
+                placeholder="Search holiday, festival..."
+                className="adm-input"
+                style={{
+                  paddingLeft: '34px',
+                  fontSize: '0.82rem',
+                  borderRadius: '10px',
+                  width: '100%'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Holiday Cards List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {filteredHolidays.map(hol => {
+              const [dayStr, monthStr, yearStr] = hol.dateStr.split(' ');
+              return (
+                <div
+                  key={hol.id}
+                  className="adm-card"
+                  style={{
+                    padding: '1.1rem 1.4rem',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '1rem',
+                    borderLeft: `4px solid ${hol.color}`
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: 1, minWidth: '300px' }}>
+                    {/* Date Block */}
+                    <div
+                      style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '12px',
+                        background: 'var(--adm-bg)',
+                        border: '1px solid var(--adm-border)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}
+                    >
+                      <span style={{ fontSize: '0.7rem', color: hol.color, fontWeight: 800, textTransform: 'uppercase' }}>
+                        {monthStr || 'DATE'}
+                      </span>
+                      <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--adm-text)', lineHeight: 1 }}>
+                        {dayStr}
+                      </span>
+                      {yearStr && (
+                        <span style={{ fontSize: '0.62rem', color: 'var(--adm-text-muted)', fontWeight: 600 }}>
+                          {yearStr}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Details */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px', flexWrap: 'wrap' }}>
+                        <span
+                          style={{
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            padding: '0.15rem 0.55rem',
+                            borderRadius: '6px',
+                            background: hol.badgeBg,
+                            color: hol.badgeColor
+                          }}
+                        >
+                          {hol.category === 'National' && 'National Holiday'}
+                          {hol.category === 'State' && 'Maharashtra State Holiday'}
+                          {hol.category === 'Festival' && 'Religious Festival'}
+                          {hol.category === 'Vacation' && 'State Board School Vacation'}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--adm-text-muted)', fontWeight: 600 }}>
+                          📅 {hol.dateStr} ({hol.dayOfWeek})
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            color: '#16a34a',
+                            background: 'rgba(22, 163, 74, 0.08)',
+                            padding: '0.1rem 0.45rem',
+                            borderRadius: '4px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}
+                        >
+                          <CheckCircle2 size={11} /> All-Day
+                        </span>
+                      </div>
+
+                      <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--adm-text)', margin: '3px 0' }}>
+                        {hol.name}
+                      </h3>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--adm-text-muted)', margin: 0, lineHeight: 1.4 }}>
+                        {hol.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Actions */}
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <a
+                      href="https://calendar.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="adm-btn adm-btn-secondary"
+                      style={{ fontSize: '0.75rem', borderRadius: '8px', padding: '0.45rem 0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    >
+                      <ExternalLink size={12} />
+                      <span>View in Google Calendar</span>
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+
+            {filteredHolidays.length === 0 && (
+              <div className="adm-card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--adm-text-muted)' }}>
+                <Search size={32} style={{ opacity: 0.5, marginBottom: '0.5rem' }} />
+                <h4>No holidays matching "{holidaySearch}"</h4>
+                <p style={{ fontSize: '0.82rem' }}>Try clearing your search query or selecting a different category.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════
           TAB 1: MEETINGS & CALENDAR
@@ -544,11 +949,31 @@ export const CalendarPage: React.FC = () => {
               >
                 <Calendar size={36} color="var(--adm-primary)" style={{ marginBottom: '0.75rem', opacity: 0.8 }} />
                 <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--adm-text)', margin: '0 0 0.25rem 0' }}>
-                  No meetings found in this category
+                  No executive meetings found in this category
                 </h4>
-                <p style={{ fontSize: '0.82rem', margin: 0 }}>
-                  Click "Schedule Meeting" to create an executive sync and dispatch meeting links over WhatsApp.
+                <p style={{ fontSize: '0.85rem', margin: '0 0 1.25rem 0' }}>
+                  Looking for official Maharashtra State Board Holidays, Festivals & Vacations for AY 2026–2027? All 39 events are synchronized.
                 </p>
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-primary"
+                    onClick={() => setActiveTab('holidays')}
+                    style={{ borderRadius: '10px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    <Sparkles size={14} />
+                    <span>View Maharashtra Board Holidays (39)</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-secondary"
+                    onClick={() => setShowAddModal(true)}
+                    style={{ borderRadius: '10px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                  >
+                    <Plus size={14} />
+                    <span>Schedule Meeting</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
