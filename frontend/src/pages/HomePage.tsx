@@ -1,5 +1,6 @@
 import HeroSection from '../components/HeroSection';
 import ServicesSection from '../components/ServicesSection';
+import PortfolioSection from '../components/PortfolioSection';
 import TechStackSection from '../components/TechStackSection';
 import ProcessSection from '../components/ProcessSection';
 import FaqSection, { getFaqPageJsonLd } from '../components/FaqSection';
@@ -20,6 +21,7 @@ export default function HomePage() {
       <main id="main-content">
         <HeroSection />
         <ServicesSection />
+        <PortfolioSection />
         <TechStackSection />
         <ProcessSection />
         <FaqSection />
