@@ -145,7 +145,7 @@ export const AdminLoginPage: React.FC = () => {
                 style={{ paddingLeft: '2.5rem' }}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="director@enterprenex.solutions"
+                placeholder="director@enterprenexsolution.com"
                 required
                 autoFocus
               />
