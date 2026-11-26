@@ -29,7 +29,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-1',
     name: 'Managing Director',
-    email: 'director@enterprenex.solutions',
+    email: 'director@enterprenexsolution.com',
     role: 'Super Admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     department: 'Executive Board',
@@ -41,7 +41,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
   {
     id: 'usr-2',
     name: 'HR Administrator',
-    email: 'hr@enterprenex.solutions',
+    email: 'hr@enterprenexsolution.com',
     role: 'Project Manager',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     department: 'Operations & HR Management',

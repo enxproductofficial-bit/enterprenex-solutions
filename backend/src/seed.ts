@@ -34,8 +34,8 @@ async function seed() {
     where: {
       email: {
         notIn: [
-          'director@enterprenex.solutions',
-          'hr@enterprenex.solutions'
+          'director@enterprenexsolution.com',
+          'hr@enterprenexsolution.com'
         ]
       }
     }
@@ -45,12 +45,12 @@ async function seed() {
   await prisma.employee.deleteMany({}).catch(() => {});
 
   // 4. Ensure official administrative accounts exist with initial seed credentials
-  const seedPass = process.env.INITIAL_ADMIN_SEED_PASS || 'Enterprenex@Director2026';
+  const seedPass = process.env.INITIAL_ADMIN_SEED_PASS || 'Enx_sol_121006';
   const defaultPasswordHash = await bcrypt.hash(seedPass, 10);
 
   // Director / Super Admin
   await prisma.user.upsert({
-    where: { email: 'director@enterprenex.solutions' },
+    where: { email: 'director@enterprenexsolution.com' },
     update: {
       name: 'Managing Director',
       password: defaultPasswordHash,
@@ -60,7 +60,7 @@ async function seed() {
       employeeId: '202600000001'
     },
     create: {
-      email: 'director@enterprenex.solutions',
+      email: 'director@enterprenexsolution.com',
       password: defaultPasswordHash,
       name: 'Managing Director',
       role: 'Super Admin',
@@ -74,7 +74,7 @@ async function seed() {
 
   // HR Administrator
   await prisma.user.upsert({
-    where: { email: 'hr@enterprenex.solutions' },
+    where: { email: 'hr@enterprenexsolution.com' },
     update: {
       password: defaultPasswordHash,
       role: 'Project Manager',
@@ -82,7 +82,7 @@ async function seed() {
       mustChangePassword: false
     },
     create: {
-      email: 'hr@enterprenex.solutions',
+      email: 'hr@enterprenexsolution.com',
       password: defaultPasswordHash,
       name: 'HR Administrator',
       role: 'Project Manager',

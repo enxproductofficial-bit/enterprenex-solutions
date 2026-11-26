@@ -934,7 +934,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {(() => {
                 const activeUser = currentUser || {
                   name: 'Managing Director',
-                  email: 'director@enterprenex.solutions',
+                  email: 'director@enterprenexsolution.com',
                   role: 'Super Admin',
                   department: 'Executive Board',
                   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
