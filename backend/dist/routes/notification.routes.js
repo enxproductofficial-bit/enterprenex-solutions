@@ -1,0 +1,313 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getNotificationModule = getNotificationModule;
+const express_1 = require("express");
+const db_1 = require("../db");
+const auth_1 = require("../middleware/auth");
+const notification_service_1 = require("../services/notification.service");
+const socket_service_1 = require("../services/socket.service");
+const router = (0, express_1.Router)();
+// Module mapping helper
+function getNotificationModule(type, actionUrl) {
+    const t = (type || '').toUpperCase();
+    const url = (actionUrl || '').toLowerCase();
+    if (t.includes('OFFER') || url.includes('offer'))
+        return 'Offer Letters';
+    if (t.includes('TASK') || url.includes('task'))
+        return 'Tasks';
+    if (t.includes('TICKET') || url.includes('support'))
+        return 'Support Desk';
+    if (t.includes('INVOICE') || t.includes('EXPENSE') || t.includes('PAYROLL') || url.includes('finance'))
+        return 'Finance';
+    if (t.includes('LEAD') || t.includes('CRM') || url.includes('crm'))
+        return 'Enterprise CRM';
+    if (t.includes('EMPLOYEE') || t.includes('LEAVE') || t.includes('ATTENDANCE') || t.includes('RESIGNATION') || t.includes('EXIT') || url.includes('team'))
+        return 'Personnel & HR';
+    if (t.includes('EMAIL') || t.includes('COMMUNICATION') || url.includes('email'))
+        return 'Communications';
+    if (t.includes('DOCUMENT') || t.includes('VAULT') || url.includes('document'))
+        return 'Compliance Vault';
+    if (t.includes('MEETING') || url.includes('calendar'))
+        return 'Corporate Calendar';
+    if (t.includes('ANNOUNCEMENT') || t.includes('SYSTEM') || t.includes('SECURITY'))
+        return 'System Alerts';
+    return 'System Alerts';
+}
+// Build query conditions based on role & identity with strict access boundaries
+function buildNotificationFilter(user) {
+    const role = (user?.role || '').toLowerCase();
+    const email = (user?.email || '').toLowerCase();
+    const dept = (user?.department || '').toLowerCase();
+    const employeeId = user?.employeeId;
+    const isDirector = role === 'Super Admin' ||
+        role === 'Director' ||
+        role === 'Managing Director';
+    const isManager = role === 'Project Manager' ||
+        role === 'HR Manager';
+    const isHr = role.includes('hr') ||
+        dept.includes('human resources') ||
+        dept.includes('hr') ||
+        email.includes('hr');
+    const orConditions = [];
+    // 1. Direct recipient matches (highest precedence - confidential to this user)
+    if (user?.email) {
+        orConditions.push({ recipientEmail: { equals: user.email, mode: 'insensitive' } });
+    }
+    if (employeeId) {
+        orConditions.push({ recipientEmployeeId: employeeId });
+    }
+    // 2. Universal broadcasts (strictly unaddressed broadcast messages)
+    orConditions.push({
+        recipientRole: { in: ['ALL', 'All', 'EVERYONE', 'Everyone'] },
+        recipientEmail: null,
+        recipientEmployeeId: null
+    });
+    // 3. Role-targeted alerts (only when NOT targeted to a specific individual)
+    const allowedRoles = [];
+    if (isDirector) {
+        allowedRoles.push('Super Admin', 'Director / CEO', 'Director', 'Leadership');
+    }
+    if (isManager) {
+        allowedRoles.push('Project Manager', 'Manager', 'Management');
+    }
+    if (isHr) {
+        allowedRoles.push('HR Manager', 'HR', 'Human Resources');
+    }
+    // Standard employee alerts
+    allowedRoles.push('Employee', 'Team Member', 'Developer', 'Staff');
+    if (allowedRoles.length > 0) {
+        orConditions.push({
+            recipientRole: { in: allowedRoles },
+            recipientEmail: null,
+            recipientEmployeeId: null
+        });
+    }
+    return { orConditions, isDirector, isManager, isHr };
+}
+// Auto-sync missing alerts from active database records to prevent desynchronization
+async function syncActiveSystemAlerts() {
+    try {
+        // 1. Pending Offer Letters
+        const pendingOffers = await db_1.prisma.offerLetter.findMany({
+            where: { status: 'Pending Approval' }
+        });
+        for (const offer of pendingOffers) {
+            const existing = await db_1.prisma.ewmsNotification.findFirst({
+                where: {
+                    type: 'OFFER_PENDING_APPROVAL',
+                    title: { contains: offer.offerLetterNo }
+                }
+            });
+            if (!existing) {
+                await db_1.prisma.ewmsNotification.create({
+                    data: {
+                        type: 'OFFER_PENDING_APPROVAL',
+                        title: `Offer Letter Pending Approval: ${offer.offerLetterNo}`,
+                        message: `Offer letter ${offer.offerLetterNo} for ${offer.employeeName} (${offer.designation}) is awaiting Director review.`,
+                        recipientRole: 'Super Admin',
+                        actionUrl: '/admin/offer-letters',
+                        read: false
+                    }
+                });
+            }
+        }
+        // 2. Open Support Tickets
+        const openTickets = await db_1.prisma.supportTicket.findMany({
+            where: { status: 'Open' },
+            take: 5
+        });
+        for (const tkt of openTickets) {
+            const existing = await db_1.prisma.ewmsNotification.findFirst({
+                where: {
+                    type: 'TICKET_RAISED',
+                    title: { contains: tkt.ticketNumber }
+                }
+            });
+            if (!existing) {
+                await db_1.prisma.ewmsNotification.create({
+                    data: {
+                        type: 'TICKET_RAISED',
+                        title: `Support Ticket Pending: ${tkt.ticketNumber}`,
+                        message: `Ticket ${tkt.ticketNumber} (${tkt.category}: "${tkt.title}") requires service desk resolution. Priority: ${tkt.priority}.`,
+                        recipientRole: 'Super Admin',
+                        actionUrl: '/admin/support',
+                        read: false
+                    }
+                });
+            }
+        }
+        // 3. Tasks Under Review
+        const reviewTasks = await db_1.prisma.task.findMany({
+            where: { status: 'Under Review' },
+            take: 5
+        });
+        for (const task of reviewTasks) {
+            const existing = await db_1.prisma.ewmsNotification.findFirst({
+                where: {
+                    type: 'TASK_SUBMITTED',
+                    title: { contains: task.title }
+                }
+            });
+            if (!existing) {
+                await db_1.prisma.ewmsNotification.create({
+                    data: {
+                        type: 'TASK_SUBMITTED',
+                        title: `Task Review Submitted: ${task.title}`,
+                        message: `${task.assignedTo} has submitted work on "${task.title}". Approval is pending.`,
+                        recipientRole: 'Super Admin',
+                        actionUrl: '/admin/tasks',
+                        read: false
+                    }
+                });
+            }
+        }
+    }
+    catch (err) {
+        console.warn('[NotificationSync] Warning during active alert sync:', err);
+    }
+}
+// GET /api/notifications (Fetch live notifications for the logged-in user / role)
+router.get('/', auth_1.authenticateToken, async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+        // Run active alerts sync safely in the background
+        await syncActiveSystemAlerts();
+        const { orConditions } = buildNotificationFilter(user);
+        const rawNotifications = await db_1.prisma.ewmsNotification.findMany({
+            where: orConditions.length > 0 ? { OR: orConditions } : {},
+            orderBy: { createdAt: 'desc' },
+            take: 50
+        });
+        // Decorate notifications with module metadata
+        const notifications = rawNotifications.map(n => ({
+            ...n,
+            module: getNotificationModule(n.type, n.actionUrl)
+        }));
+        const unreadCount = notifications.filter(n => !n.read).length;
+        // Module-specific unread counts
+        const moduleCounts = {};
+        for (const n of notifications) {
+            if (!n.read) {
+                const m = n.module || 'System Alerts';
+                moduleCounts[m] = (moduleCounts[m] || 0) + 1;
+            }
+        }
+        res.json({
+            notifications,
+            unreadCount,
+            moduleCounts
+        });
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+// POST /api/notifications (Create / broadcast a new notification with role-based authorization)
+router.post('/', auth_1.authenticateToken, async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            res.status(401).json({ error: 'Unauthorized.' });
+            return;
+        }
+        const { type, title, message, recipientRole, recipientEmail, recipientEmployeeId, actionUrl } = req.body;
+        if (!type || !title || !message) {
+            res.status(400).json({ error: 'Type, title, and message are required.' });
+            return;
+        }
+        const isDirectorOrManager = user.role === 'Super Admin' ||
+            user.role === 'Director' ||
+            user.role === 'Project Manager' ||
+            user.role === 'HR Manager';
+        // Broadcast or arbitrary targeting is restricted to leadership / management
+        if (!isDirectorOrManager) {
+            const isTargetingAdmin = recipientRole === 'Super Admin' ||
+                recipientRole === 'Project Manager' ||
+                recipientRole === 'HR Manager';
+            if (!isTargetingAdmin && (recipientEmail || recipientEmployeeId || recipientRole === 'ALL')) {
+                res.status(403).json({ error: 'Access Denied: Regular employees can only submit requests/alerts directed to management.' });
+                return;
+            }
+        }
+        const notif = await (0, notification_service_1.createNotification)({
+            type,
+            title,
+            message,
+            recipientRole,
+            recipientEmail,
+            recipientEmployeeId,
+            actionUrl
+        });
+        res.status(201).json({ notification: notif });
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+// PUT /api/notifications/:id/read (Mark a single notification as read - with strict ownership verification)
+router.put('/:id/read', auth_1.authenticateToken, async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            res.status(401).json({ error: 'Unauthorized.' });
+            return;
+        }
+        const { id } = req.params;
+        const existing = await db_1.prisma.ewmsNotification.findUnique({ where: { id } });
+        if (!existing) {
+            res.status(404).json({ error: 'Notification not found.' });
+            return;
+        }
+        const isDirector = user.role === 'Super Admin' ||
+            user.role === 'Director' ||
+            user.role === 'Managing Director';
+        const isDirectRecipient = (existing.recipientEmail && existing.recipientEmail.toLowerCase() === user.email?.toLowerCase()) ||
+            (existing.recipientEmployeeId && existing.recipientEmployeeId === user.employeeId);
+        const isBroadcastToRole = !existing.recipientEmail &&
+            !existing.recipientEmployeeId &&
+            (existing.recipientRole === 'ALL' || existing.recipientRole === 'All' || existing.recipientRole === user.role);
+        if (!isDirector && !isDirectRecipient && !isBroadcastToRole) {
+            res.status(403).json({ error: 'Access forbidden: You cannot modify notifications belonging to another user.' });
+            return;
+        }
+        const updated = await db_1.prisma.ewmsNotification.update({
+            where: { id },
+            data: { read: true }
+        });
+        // Notify any active socket sessions that this notification was read
+        try {
+            (0, socket_service_1.emitRealtimeNotification)({ ...updated, read: true });
+        }
+        catch {
+            // non-blocking
+        }
+        res.json({ notification: updated });
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+// PUT /api/notifications/read-all (Mark all visible notifications as read)
+router.put('/read-all', auth_1.authenticateToken, async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+        const { orConditions } = buildNotificationFilter(user);
+        await db_1.prisma.ewmsNotification.updateMany({
+            where: orConditions.length > 0 ? { OR: orConditions } : {},
+            data: { read: true }
+        });
+        res.json({ message: 'All notifications marked as read', success: true });
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+exports.default = router;

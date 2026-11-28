@@ -22,5 +22,15 @@ if (fs.existsSync(prismaBin)) {
 try {
   const envPath = path.join(__dirname, '..', '.env');
   const neonUrl = 'postgresql://neondb_owner:npg_QhISxl3XZ1Go@ep-gentle-salad-bdn7t3j3-pooler.c-8.us-east-2.aws.neon.tech/neondb?sslmode=require&connect_timeout=30';
-  fs.writeFileSync(envPath, `DATABASE_URL="${neonUrl}"\nJWT_SECRET="enterprenex_enterprise_jwt_secret_2026_super_secure"\nNODE_ENV="production"\nPORT=5000\n`, 'utf8');
+  const envContent = `DATABASE_URL="${neonUrl}"
+JWT_SECRET="enterprenex_enterprise_jwt_secret_2026_super_secure"
+NODE_ENV="production"
+PORT=5000
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="enxproductofficial@gmail.com"
+SMTP_PASS="xbaybpssduiryqqz"
+ADMIN_RECOVERY_EMAIL="enxproductofficial@gmail.com"
+`;
+  fs.writeFileSync(envPath, envContent, 'utf8');
 } catch(e) {}
