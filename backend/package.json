@@ -8,13 +8,13 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "tsx src/seed.ts",
     "postinstall": "node scripts/patch-prisma.js",
-    "render-build": "npm install && npx prisma generate --schema=prisma/schema.prisma && npx prisma db push --schema=prisma/schema.prisma && npm run build",
+    "render-build": "npm install && npm run prisma:generate && npm run prisma:push && npm run build",
     "render-start": "node dist/server.js"
   },
   "dependencies": {
