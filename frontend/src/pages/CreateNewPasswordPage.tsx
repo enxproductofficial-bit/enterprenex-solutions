@@ -313,6 +313,7 @@ export const CreateNewPasswordPage: React.FC = () => {
                   <input
                     type={showTempPassword ? 'text' : 'password'}
                     required
+                    autoComplete="new-password"
                     placeholder="Enter previous temporary password from HR / Director"
                     value={temporaryPassword}
                     onChange={(e) => setTemporaryPassword(e.target.value)}

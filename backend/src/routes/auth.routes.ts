@@ -557,6 +557,21 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
       return;
     }
 
+    // 1. Strict Security: Administrative accounts cannot be activated via employee self-service setup
+    const lowerId = cleanId.toLowerCase();
+    if (
+      lowerId === 'director@enterprenexsolution.com' ||
+      lowerId === 'director@enterprenex.solutions' ||
+      lowerId === 'hr@enterprenexsolution.com' ||
+      lowerId === 'hr@enterprenex.solutions' ||
+      lowerId === '202600000001'
+    ) {
+      res.status(403).json({
+        error: 'Access Denied: Administrative accounts (Director & HR) cannot be activated via employee self-service setup.'
+      });
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       res.status(400).json({ error: 'New password and confirmation do not match.' });
       return;
@@ -579,39 +594,60 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
       }
     });
 
-    if (!user) {
-      const emp = await prisma.employee.findFirst({
-        where: {
-          OR: [
-            { employeeId: { in: setupCandidates } },
-            { email: { in: setupCandidates } },
-            { personalEmail: { in: setupCandidates } }
-          ]
+    // Block administrative roles
+    if (user && (user.role === 'Super Admin' || user.role === 'Director' || user.role === 'Managing Director')) {
+      res.status(403).json({
+        error: 'Access Denied: Administrative accounts cannot be activated via employee self-service setup.'
+      });
+      return;
+    }
+
+    const emp = await prisma.employee.findFirst({
+      where: {
+        OR: [
+          { employeeId: { in: setupCandidates } },
+          { email: { in: setupCandidates } },
+          { personalEmail: { in: setupCandidates } }
+        ]
+      }
+    });
+
+    if (emp) {
+      if (emp.approvalStatus === 'Pending Approval' || emp.approvalStatus === 'Pending Director Approval') {
+        res.status(403).json({
+          error: `Account Pending Approval: Employee ${emp.name} (${emp.employeeId}) is awaiting executive authorization from Managing Director.`
+        });
+        return;
+      }
+      if (emp.approvalStatus === 'Rejected' || emp.status === 'Resigned' || emp.status === 'Terminated' || emp.status === 'Inactive') {
+        res.status(403).json({
+          error: 'Access Denied: This employee account has been deactivated or rejected by corporate administration.'
+        });
+        return;
+      }
+    }
+
+    if (!user && emp) {
+      const defaultHash = emp.password || await bcrypt.hash(temporaryPassword, 10);
+      user = await prisma.user.upsert({
+        where: { email: emp.email },
+        update: {
+          employeeId: emp.employeeId,
+          name: emp.name,
+          status: 'Active'
+        },
+        create: {
+          email: emp.email,
+          employeeId: emp.employeeId,
+          password: defaultHash,
+          name: emp.name,
+          role: 'Developer',
+          department: emp.department || 'Engineering',
+          avatar: emp.avatar,
+          status: 'Active',
+          mustChangePassword: true
         }
       });
-
-      if (emp) {
-        const defaultHash = emp.password || await bcrypt.hash(temporaryPassword, 10);
-        user = await prisma.user.upsert({
-          where: { email: emp.email },
-          update: {
-            employeeId: emp.employeeId,
-            name: emp.name,
-            status: 'Active'
-          },
-          create: {
-            email: emp.email,
-            employeeId: emp.employeeId,
-            password: defaultHash,
-            name: emp.name,
-            role: 'Developer',
-            department: emp.department || 'Engineering',
-            avatar: emp.avatar,
-            status: 'Active',
-            mustChangePassword: true
-          }
-        });
-      }
     }
 
     if (!user) {
@@ -620,21 +656,15 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
     }
 
     // Validate temporary password (supports Argon2id or legacy bcrypt)
-    let isTempValid = await verifyPassword(temporaryPassword, user.password);
+    let isTempValid = false;
+    if (emp && emp.temporaryPassword) {
+      isTempValid = await verifyPassword(temporaryPassword, emp.temporaryPassword);
+    }
     if (!isTempValid) {
-      const emp = await prisma.employee.findFirst({
-        where: {
-          OR: [
-            { employeeId: user.employeeId || '' },
-            { email: user.email }
-          ]
-        }
-      });
-      if (emp) {
-        const isEmpTemp = emp.temporaryPassword ? await verifyPassword(temporaryPassword, emp.temporaryPassword) : false;
-        const isEmpPass = emp.password ? await verifyPassword(temporaryPassword, emp.password) : false;
-        isTempValid = isEmpTemp || isEmpPass;
-      }
+      isTempValid = await verifyPassword(temporaryPassword, user.password);
+    }
+    if (!isTempValid && emp && emp.password) {
+      isTempValid = await verifyPassword(temporaryPassword, emp.password);
     }
 
     if (!isTempValid) {
@@ -655,7 +685,8 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
         where: { id: targetUserId },
         data: {
           password: hashedPassword,
-          mustChangePassword: false
+          mustChangePassword: false,
+          status: 'Active'
         }
       }),
       prisma.employee.updateMany({
@@ -668,7 +699,9 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
         data: {
           password: hashedPassword,
           mustChangePassword: false,
-          temporaryPassword: null
+          temporaryPassword: null,
+          isAccountActivated: true,
+          status: 'Active'
         }
       })
     ]);

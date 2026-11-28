@@ -216,111 +216,55 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleActivateAccountSubmit = (e: React.FormEvent) => {
+  const handleActivateAccountSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setActivateError(null);
-    setIsActivating(true);
 
-    const cleanId = activateId.trim().toLowerCase();
+    const cleanId = activateId.trim();
     const cleanPrevPass = activatePreviousPassword.trim();
 
     if (!cleanId) {
-      setIsActivating(false);
-      setActivateError('Please enter your assigned Employee ID or official email.');
+      setActivateError('Please enter your assigned 12-Digit Employee ID or official email.');
       return;
     }
 
     // COMPULSORY CHECK: Previous / Temporary password is required
     if (!cleanPrevPass) {
-      setIsActivating(false);
       setActivateError('Compulsory Requirement: Please enter your previous / temporary password provided by HR or Director.');
       return;
     }
 
     if (!activatePassword) {
-      setIsActivating(false);
       setActivateError('Please enter your new permanent password.');
       return;
     }
 
     if (activatePassword.length < 8) {
-      setIsActivating(false);
       setActivateError('Password must be at least 8 characters long in compliance with Enterprenex security policies.');
       return;
     }
 
     if (activatePassword !== activateConfirmPassword) {
-      setIsActivating(false);
       setActivateError('Passwords do not match. Please re-enter identical passwords.');
       return;
     }
 
     if (activatePassword === cleanPrevPass) {
-      setIsActivating(false);
       setActivateError('Security Violation: Your new password cannot be identical to your previous temporary password. Please create a new unique password.');
       return;
     }
 
-    // MANDATORY RULE: Employees cannot create their own accounts or IDs.
-    // The account MUST already be created and granted by the Director or HR.
-    const matchedEmp = employees.find(
-      (emp) =>
-        (emp.employeeId && emp.employeeId.toLowerCase() === cleanId) ||
-        emp.id.toLowerCase() === cleanId ||
-        (emp.email && emp.email.toLowerCase() === cleanId)
-    );
-
-    if (!matchedEmp) {
-      setIsActivating(false);
-      setActivateError(
-        `Access Denied: No pre-existing account found for '${activateId}'. Employees cannot create their own IDs or register accounts. An account must first be created and provisioned by the Managing Director or HR Administration. Please contact HR to set up your profile.`
-      );
+    // Disallow administrative accounts in employee activation
+    const lowerId = cleanId.toLowerCase();
+    if (lowerId.includes('director@') || lowerId.includes('hr@') || lowerId === '202600000001') {
+      setActivateError('Access Denied: Administrative accounts (Director & HR) cannot be activated via employee self-service.');
       return;
     }
 
-    // Verify Previous / Temporary Password against employee record
-    const empPass = (matchedEmp.password || '').trim();
-    const tempPass = (matchedEmp.temporaryPassword || '').trim();
-    const isPrevValid =
-      cleanPrevPass === empPass ||
-      (tempPass && cleanPrevPass === tempPass);
+    setIsActivating(true);
 
-    if (!isPrevValid) {
-      setIsActivating(false);
-      setActivateError(
-        'Access Denied: The previous / temporary password you entered is incorrect. You must provide the exact temporary password issued by HR Administration.'
-      );
-      return;
-    }
-
-    // If account was created by HR, check if Director approval is pending
-    if (matchedEmp.approvalStatus === 'Pending Director Approval') {
-      setIsActivating(false);
-      setActivateError(
-        `Account Pending Approval: Employee ID ${matchedEmp.employeeId || matchedEmp.name} has been registered by HR and is awaiting executive authorization from Managing Director. Portal activation will be enabled once the Director approves.`
-      );
-      return;
-    }
-
-    if (matchedEmp.approvalStatus === 'Rejected' || matchedEmp.status === 'Terminated' || matchedEmp.status === 'Resigned') {
-      setIsActivating(false);
-      setActivateError(
-        `Access Denied: This employee record has been marked as ${matchedEmp.status || 'Rejected'} by corporate administration. Please contact HR Administration.`
-      );
-      return;
-    }
-
-    // Update employee password and status
-    updateEmployee(matchedEmp.id, {
-      password: activatePassword,
-      temporaryPassword: undefined,
-      mustChangePassword: false,
-      status: 'Active'
-    });
-
-    // Sync with backend API if accessible
     try {
-      fetch('/api/auth/first-time-setup', {
+      const res = await fetch('/api/auth/first-time-setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -329,32 +273,36 @@ export const LoginPage: React.FC = () => {
           newPassword: activatePassword,
           confirmPassword: activateConfirmPassword
         })
-      }).catch(() => {});
-    } catch {
-      // ignore
-    }
-
-    setTimeout(() => {
-      setIsActivating(false);
-      setShowActivationModal(false);
-      showToast('Account Activated', `Welcome to Enterprenex, ${matchedEmp.name}! Your workspace is active.`, 'success');
-
-      login({
-        id: matchedEmp.id,
-        name: matchedEmp.name,
-        email: matchedEmp.email,
-        role: 'Team Member',
-        avatar: matchedEmp.avatar,
-        department: matchedEmp.department,
-        status: 'Active',
-        lastLogin: 'Just now',
-        phone: matchedEmp.phone || '+91-9226860060',
-        employeeId: matchedEmp.employeeId,
-        mustChangePassword: false
       });
 
-      navigate('/admin');
-    }, 600);
+      const data = await res.json();
+      if (!res.ok) {
+        setIsActivating(false);
+        setActivateError(data.error || 'Failed to activate employee account. Please verify your credentials.');
+        return;
+      }
+
+      setIsActivating(false);
+      setShowActivationModal(false);
+      setActivateId('');
+      setActivatePreviousPassword('');
+      setActivatePassword('');
+      setActivateConfirmPassword('');
+
+      if (data.token && data.user) {
+        localStorage.setItem('ewms_token', data.token);
+        localStorage.setItem('ewms_auth_token', data.token);
+        login(data.user);
+        showToast?.('Account Activated', `Welcome to Enterprenex, ${data.user.name}! Your workspace is active.`, 'success');
+        navigate('/employee');
+      } else {
+        setStatusMessage('Account successfully activated! Your new permanent password has been set. You may now sign in.');
+        showToast?.('Account Activated', 'Your employee workspace has been activated. Please sign in.', 'success');
+      }
+    } catch (err: any) {
+      setIsActivating(false);
+      setActivateError('Server communication error. Please try again.');
+    }
   };
 
   return (
@@ -630,6 +578,13 @@ export const LoginPage: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setActivateError(null);
+                  setActivateId('');
+                  setActivatePreviousPassword('');
+                  setActivatePassword('');
+                  setActivateConfirmPassword('');
+                  setShowActivatePrevPassword(false);
+                  setShowActivatePassword(false);
+                  setShowActivateConfirmPassword(false);
                   setShowActivationModal(true);
                 }}
                 style={{
@@ -769,7 +724,12 @@ export const LoginPage: React.FC = () => {
                 </div>
               )}
 
-              <form onSubmit={handleActivateAccountSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <form
+                onSubmit={handleActivateAccountSubmit}
+                autoComplete="off"
+                name="employee_activation_form_secure"
+                style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+              >
                 <div>
                   <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
                     Assigned 12-Digit Employee ID or Official Email <span style={{ color: '#dc2626' }}>*</span>
@@ -777,6 +737,8 @@ export const LoginPage: React.FC = () => {
                   <input
                     type="text"
                     required
+                    autoComplete="off"
+                    name="employee_activation_id"
                     placeholder="e.g. 202600000002 or name@enterprenex.com"
                     className="reg-input"
                     value={activateId}
@@ -797,6 +759,8 @@ export const LoginPage: React.FC = () => {
                     <input
                       type={showActivatePrevPassword ? 'text' : 'password'}
                       required
+                      autoComplete="new-password"
+                      name="employee_activation_prev_pass"
                       placeholder="Enter previous temporary password from HR..."
                       className="reg-input"
                       value={activatePreviousPassword}
@@ -836,6 +800,8 @@ export const LoginPage: React.FC = () => {
                     <input
                       type={showActivatePassword ? 'text' : 'password'}
                       required
+                      autoComplete="new-password"
+                      name="employee_activation_new_pass"
                       placeholder="Create strong permanent password..."
                       className="reg-input"
                       value={activatePassword}
@@ -872,6 +838,8 @@ export const LoginPage: React.FC = () => {
                     <input
                       type={showActivateConfirmPassword ? 'text' : 'password'}
                       required
+                      autoComplete="new-password"
+                      name="employee_activation_confirm_pass"
                       placeholder="Re-enter new permanent password..."
                       className="reg-input"
                       value={activateConfirmPassword}
