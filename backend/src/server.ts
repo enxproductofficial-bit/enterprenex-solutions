@@ -33,12 +33,105 @@ import dashboardRoutes from './routes/dashboard.routes';
 import { initSocketService } from './services/socket.service';
 import { securityHeaders, sanitizeInputs, rateLimiter, globalErrorHandler } from './middleware/security';
 import { prisma } from './db';
+import argon2 from 'argon2';
+
+async function ensureEssentialAccounts() {
+  try {
+    const director = await prisma.user.findFirst({
+      where: { email: 'director@enterprenexsolution.com' }
+    });
+    if (!director) {
+      const directorHash = await argon2.hash('Enx_sol_121006', { type: argon2.argon2id });
+      await prisma.user.create({
+        data: {
+          email: 'director@enterprenexsolution.com',
+          password: directorHash,
+          name: 'Managing Director',
+          role: 'Super Admin',
+          employeeId: '202600000001',
+          department: 'Executive Board',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          status: 'Active',
+          mustChangePassword: false
+        }
+      });
+      console.log('[DB INIT] Ensured Managing Director account exists and active.');
+    }
+
+    const hr = await prisma.user.findFirst({
+      where: { email: 'hr@enterprenexsolution.com' }
+    });
+    if (!hr) {
+      const hrHash = await argon2.hash('Enx_sol_121006', { type: argon2.argon2id });
+      await prisma.user.create({
+        data: {
+          email: 'hr@enterprenexsolution.com',
+          password: hrHash,
+          name: 'HR Administrator',
+          role: 'Project Manager',
+          department: 'Human Resources',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          status: 'Active',
+          mustChangePassword: false
+        }
+      });
+      console.log('[DB INIT] Ensured HR Administrator account exists and active.');
+    }
+
+    const emp = await prisma.employee.findFirst({
+      where: { employeeId: 'ZCX-EMP-0001' }
+    });
+    if (!emp) {
+      await prisma.employee.create({
+        data: {
+          employeeId: 'ZCX-EMP-0001',
+          name: 'POLAMREDDY REVANTH REDDY',
+          email: 'polamreddyrevanth.82@gmail.com',
+          phone: '+919440829762',
+          role: 'Full Stack (Employee)',
+          department: 'Engineering',
+          personalEmail: 'polamreddyrevanth.82@gmail.com',
+          personalPhone: '+919440829762',
+          salaryMonthly: 50000,
+          ctcAnnual: 600000,
+          status: 'Active',
+          approvalStatus: 'Approved',
+          isAccountActivated: true
+        }
+      });
+      console.log('[DB INIT] Ensured employee POLAMREDDY REVANTH REDDY exists.');
+    }
+
+    const empUser = await prisma.user.findFirst({
+      where: { email: 'polamreddyrevanth.82@gmail.com' }
+    });
+    if (!empUser) {
+      const empHash = await argon2.hash('Enx@PDEN995', { type: argon2.argon2id });
+      await prisma.user.create({
+        data: {
+          email: 'polamreddyrevanth.82@gmail.com',
+          employeeId: 'ZCX-EMP-0001',
+          password: empHash,
+          name: 'POLAMREDDY REVANTH REDDY',
+          role: 'Team Member',
+          department: 'Engineering',
+          status: 'Active',
+          mustChangePassword: true
+        }
+      });
+      console.log('[DB INIT] Ensured employee user login exists.');
+    }
+  } catch (err: any) {
+    console.warn('[DB INIT] Note on ensuring essential accounts:', err.message);
+  }
+}
 
 // Verify database connection on startup
 (async () => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     console.log('[DB INIT] Verified PostgreSQL database connection is active and healthy.');
+    await ensureEssentialAccounts();
   } catch (err: any) {
     console.warn('[DB INIT] Database connection note:', err.message);
   }
