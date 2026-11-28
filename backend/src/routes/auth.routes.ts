@@ -365,34 +365,29 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
 
     const userId = req.user?.id;
     const bodyIdentifier = (req.body.identifier || req.body.employeeId || req.body.email || '').trim();
+    const idCandidates = getIdentifierCandidates(bodyIdentifier || req.user?.email || req.user?.employeeId || '');
 
     let user = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
-    if (!user && (req.user?.email || bodyIdentifier)) {
-      const emailToSearch = (req.user?.email || bodyIdentifier).toLowerCase();
+    if (!user && idCandidates.length > 0) {
       user = await prisma.user.findFirst({
         where: {
           OR: [
-            { email: { equals: emailToSearch } },
-            { employeeId: { equals: bodyIdentifier } },
-            { employeeId: { equals: bodyIdentifier.toUpperCase() } },
-            { employeeId: { equals: req.user?.employeeId || '' } }
+            { email: { in: idCandidates } },
+            { employeeId: { in: idCandidates } }
           ]
         }
       });
     }
 
     // If still not found in User table, search Employee roster table
-    if (!user) {
+    if (!user && idCandidates.length > 0) {
       const emp = await prisma.employee.findFirst({
         where: {
           OR: [
             { id: userId || '' },
-            { employeeId: { equals: bodyIdentifier } },
-            { employeeId: { equals: bodyIdentifier.toUpperCase() } },
-            { employeeId: { equals: req.user?.employeeId || '' } },
-            { email: { equals: req.user?.email || '' } },
-            { email: { equals: bodyIdentifier.toLowerCase() } },
-            { personalEmail: { equals: bodyIdentifier.toLowerCase() } }
+            { employeeId: { in: idCandidates } },
+            { email: { in: idCandidates } },
+            { personalEmail: { in: idCandidates } }
           ]
         }
       });
@@ -558,13 +553,12 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
     }
 
     // Find user by Employee ID or email
+    const setupCandidates = getIdentifierCandidates(cleanId);
     let user = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: { equals: cleanId } },
-          { email: { equals: cleanId.toLowerCase() } },
-          { employeeId: { equals: cleanId } },
-          { employeeId: { equals: cleanId.toUpperCase() } }
+          { email: { in: setupCandidates } },
+          { employeeId: { in: setupCandidates } }
         ]
       }
     });
@@ -573,10 +567,9 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
       const emp = await prisma.employee.findFirst({
         where: {
           OR: [
-            { employeeId: { equals: cleanId } },
-            { employeeId: { equals: cleanId.toUpperCase() } },
-            { email: { equals: cleanId.toLowerCase() } },
-            { personalEmail: { equals: cleanId.toLowerCase() } }
+            { employeeId: { in: setupCandidates } },
+            { email: { in: setupCandidates } },
+            { personalEmail: { in: setupCandidates } }
           ]
         }
       });
@@ -867,23 +860,20 @@ router.post('/activate', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Lookup employee
+    // Lookup employee using candidate identifiers
+    const activateCandidates = getIdentifierCandidates(loginId);
     const emp = await prisma.employee.findFirst({
       where: {
         OR: [
-          { employeeId: { equals: loginId } },
-          { email: { equals: loginId } }
+          { employeeId: { in: activateCandidates } },
+          { email: { in: activateCandidates } },
+          { personalEmail: { in: activateCandidates } }
         ]
       }
     });
 
     if (!emp) {
       res.status(404).json({ error: `Access Denied: No pre-existing employee record found for '${loginId}'. Employees cannot self-create accounts or IDs. Accounts must be created by the Managing Director or HR Administration.` });
-      return;
-    }
-
-    if (emp.approvalStatus === 'Pending Director Approval') {
-      res.status(403).json({ error: `Account Pending Approval: Employee ID ${emp.employeeId || emp.name} has been registered by HR and is awaiting executive authorization from Managing Director. Portal activation will be enabled once approved.` });
       return;
     }
 

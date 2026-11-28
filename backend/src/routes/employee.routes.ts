@@ -4,6 +4,7 @@ import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth'
 import { generateSecureEmployeeId, generateSecureTemporaryPassword, logAuditSecurityEntry } from '../services/security.service';
 import { notifyNewEmployeeRegistered, notifyEmployeeApproved, notifyAccountActivated } from '../services/notification.service';
 import { sendAccountCredentialsEmail } from '../services/email.service';
+import { hashPassword } from '../services/authSecurity.service';
 import bcrypt from 'bcryptjs';
 
 const router = Router();
@@ -86,11 +87,11 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response): Prom
   }
 });
 
-// POST /api/employees (HR Employee Onboarding & Registration)
+// POST /api/employees (HR & Director Employee Onboarding & Registration)
 router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const isDirector = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Managing Director';
-    const isHr = req.user?.role === 'HR' || req.user?.role === 'HR Manager' || req.user?.department === 'Human Resources' || req.user?.department === 'HR' || req.user?.role?.includes('HR') || req.user?.email?.includes('hr');
+    const isHr = req.user?.role === 'HR' || req.user?.role === 'HR Manager' || req.user?.department === 'Human Resources' || req.user?.department === 'HR' || req.user?.role?.includes('HR') || req.user?.email?.includes('hr') || req.user?.role === 'Project Manager';
     const isManager = req.user?.role === 'Project Manager';
 
     if (!isDirector && !isHr && !isManager) {
@@ -99,20 +100,24 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
     }
 
     const data = req.body;
-    if (!data.name || !data.email) {
+    const cleanEmail = (data.email || '').trim().toLowerCase();
+    const cleanName = (data.name || '').trim();
+
+    if (!cleanName || !cleanEmail) {
       res.status(400).json({ error: 'Employee Full Name and Email Address are required.' });
       return;
     }
 
-    // Auto-generate employee ID if not provided
-    const assignedEmployeeId = data.employeeId || await generateSecureEmployeeId(data.department || 'Engineering');
+    // Auto-generate employee ID if not provided (12-digit sequential format)
+    const assignedEmployeeId = (data.employeeId || '').trim() || await generateSecureEmployeeId(data.department || 'Engineering');
 
-    // Default status: Approved so created employees can immediately access workspace
-    const initialApprovalStatus = data.approvalStatus || 'Approved';
+    // Immediate Active Login Access: Approved and Active for all newly created staff
+    const initialApprovalStatus = 'Approved';
+    const initialAccountStatus = data.status || 'Active';
 
     // Password setup: use provided password or generate secure temporary password
-    const rawPassword = data.password || generateSecureTemporaryPassword();
-    const hashedPassword = await bcrypt.hash(rawPassword, 10);
+    const rawPassword = (data.password || data.initialPassword || data.temporaryPassword || '').trim() || generateSecureTemporaryPassword();
+    const hashedPassword = await hashPassword(rawPassword);
 
     const monthlySalary = Number(data.salaryMonthly || 50000);
     if (isNaN(monthlySalary) || monthlySalary < 0) {
@@ -121,50 +126,56 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
     }
     const annualCtc = Number(data.ctcAnnual || monthlySalary * 12);
 
-    // Atomic Transaction: Create Employee Profile + Auto-provision User Account + Allocate Default Leave Balance
-    const { newEmp } = await prisma.$transaction(async (tx) => {
-      const emp = await tx.employee.create({
-        data: {
-          employeeId: assignedEmployeeId,
-          password: hashedPassword,
-          name: data.name,
-          role: data.role || data.designation || 'Team Member',
-          department: data.department || 'Engineering',
-          email: data.email.trim().toLowerCase(),
-          phone: data.phone || data.mobileNumber || '+91-9000000000',
-          personalEmail: data.personalEmail || data.email,
-          personalPhone: data.personalPhone || data.phone || data.mobileNumber,
-          avatar: data.avatar || data.profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-          address: data.address || null,
-          reportingManager: data.reportingManager || 'Managing Director',
-          probationPeriod: data.probationPeriod || '3 Months',
-          resumeUrl: data.resumeUrl || null,
-          documentsJson: JSON.stringify(data.documents || data.requiredDocuments || []),
-          salaryMonthly: monthlySalary,
-          ctcAnnual: annualCtc,
-          workloadPercentage: Number(data.workloadPercentage || 100),
-          status: data.status || 'Active',
-          approvalStatus: initialApprovalStatus,
-          panNumber: data.panNumber || null,
-          panDocUrl: data.panDocUrl || null,
-          aadhaarNumber: data.aadhaarNumber || null,
-          aadhaarDocUrl: data.aadhaarDocUrl || null,
-          kycStatus: data.kycStatus || 'Not Submitted',
-          employmentType: data.employmentType || 'Full-time',
-          workMode: data.workMode || 'Hybrid',
-          mustChangePassword: true,
-          temporaryPassword: hashedPassword,
-          isAccountActivated: true,
-          skillsMatrixJson: JSON.stringify(data.skillsMatrix || []),
-          educationJson: JSON.stringify(data.education || []),
-          joinDate: data.joinDate || data.joiningDate || new Date().toISOString().split('T')[0]
-        }
-      });
+    // Determine strict RBAC User Role (Never accidentally grant Admin/Director privileges to employees)
+    const rawRole = (data.role || data.designation || '').toLowerCase();
+    const userRole = rawRole.includes('director') ? 'Super Admin' :
+      (rawRole.includes('hr') || data.department === 'Human Resources' ? 'HR Manager' :
+      (rawRole.includes('manager') ? 'Project Manager' :
+      (rawRole.includes('engineer') || rawRole.includes('developer') ? 'Developer' : 'Team Member')));
 
-      const userRole = (data.role && data.role.includes('Director')) ? 'Super Admin' :
-        ((data.role && data.role.includes('HR')) || data.department === 'Human Resources' ? 'HR Manager' :
-        ((data.role && data.role.includes('Manager')) ? 'Project Manager' :
-        ((data.role && (data.role.includes('Engineer') || data.role.includes('Developer'))) ? 'Developer' : 'Team Member')));
+    // Atomic Transaction: Upsert Employee Profile + Auto-provision User Account + Allocate Default Leave Balance
+    const { newEmp } = await prisma.$transaction(async (tx) => {
+      const empData = {
+        employeeId: assignedEmployeeId,
+        password: hashedPassword,
+        temporaryPassword: hashedPassword,
+        name: cleanName,
+        role: data.role || data.designation || 'Team Member',
+        department: data.department || 'Engineering',
+        email: cleanEmail,
+        phone: data.phone || data.mobileNumber || '+91-9000000000',
+        personalEmail: data.personalEmail || cleanEmail,
+        personalPhone: data.personalPhone || data.phone || data.mobileNumber,
+        avatar: data.avatar || data.profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        address: data.address || null,
+        reportingManager: data.reportingManager || 'Managing Director',
+        probationPeriod: data.probationPeriod || '3 Months',
+        resumeUrl: data.resumeUrl || null,
+        documentsJson: JSON.stringify(data.documents || data.requiredDocuments || []),
+        salaryMonthly: monthlySalary,
+        ctcAnnual: annualCtc,
+        workloadPercentage: Number(data.workloadPercentage || 100),
+        status: initialAccountStatus,
+        approvalStatus: initialApprovalStatus,
+        panNumber: data.panNumber || null,
+        panDocUrl: data.panDocUrl || null,
+        aadhaarNumber: data.aadhaarNumber || null,
+        aadhaarDocUrl: data.aadhaarDocUrl || null,
+        kycStatus: data.kycStatus || 'Not Submitted',
+        employmentType: data.employmentType || 'Full-time',
+        workMode: data.workMode || 'Hybrid',
+        mustChangePassword: true,
+        isAccountActivated: true,
+        skillsMatrixJson: JSON.stringify(data.skillsMatrix || []),
+        educationJson: JSON.stringify(data.education || []),
+        joinDate: data.joinDate || data.joiningDate || new Date().toISOString().split('T')[0]
+      };
+
+      const emp = await tx.employee.upsert({
+        where: { email: cleanEmail },
+        update: empData,
+        create: empData
+      });
 
       await tx.user.upsert({
         where: { email: emp.email },
@@ -175,7 +186,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
           role: userRole,
           department: emp.department,
           status: 'Active',
-          avatar: emp.avatar
+          avatar: emp.avatar,
+          mustChangePassword: true
         },
         create: {
           email: emp.email,
@@ -207,32 +219,29 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response): Pro
       return { newEmp: emp };
     });
 
-    // Notify Director if registered by HR and pending approval
-    if (initialApprovalStatus === 'Pending Approval') {
-      await notifyNewEmployeeRegistered(
-        newEmp.name,
-        assignedEmployeeId,
-        newEmp.department || 'Engineering',
-        req.user?.name || 'HR'
-      );
-    }
-
     // ISO 27001 Security Audit Log
     await logAuditSecurityEntry({
       action: 'EMPLOYEE_REGISTERED',
       category: 'Human Capital Governance',
-      details: `Registered onboarding employee ${assignedEmployeeId} (${data.name}, ${data.department}) with status ${initialApprovalStatus}.`,
+      details: `Registered onboarding employee ${assignedEmployeeId} (${cleanName}, ${data.department}) with active immediate login credentials.`,
       actor: req.user?.name || req.user?.email || 'HR'
     });
 
     res.status(201).json({
-      message: initialApprovalStatus === 'Pending Approval'
-        ? `Employee ${data.name} (${assignedEmployeeId}) registered successfully with status 'Pending Approval'. Awaiting Director authorization.`
-        : `Employee ${data.name} (${assignedEmployeeId}) created and activated.`,
+      success: true,
+      message: `Employee ${cleanName} (${assignedEmployeeId}) registered and activated. Immediate workspace access established.`,
       employee: sanitizeSingleEmployee(newEmp),
+      user: {
+        email: cleanEmail,
+        employeeId: assignedEmployeeId,
+        name: cleanName,
+        role: userRole,
+        status: 'Active'
+      },
       temporaryPassword: rawPassword
     });
   } catch (error: any) {
+    console.error('Create employee error:', error);
     res.status(500).json({ error: error.message });
   }
 });

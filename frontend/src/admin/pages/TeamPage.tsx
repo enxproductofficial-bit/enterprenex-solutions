@@ -1172,7 +1172,7 @@ export const TeamPage: React.FC = () => {
 
   const handleCreateEmployee = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalEmpId = empId.trim() || 'ZCX-EMP-' + (employees.length + 1).toString().padStart(4, '0');
+    const finalEmpId = empId.trim() || generateUnique12DigitId();
     const finalPassword = empPassword.trim() || `Enx@${Math.random().toString(36).slice(2, 6).toUpperCase()}82`;
 
     // Duplicate check validation
@@ -1192,8 +1192,8 @@ export const TeamPage: React.FC = () => {
     const finalPan = panNumber.trim().toUpperCase();
     const finalAadhaar = aadhaarNumber.trim().replace(/\D/g, '');
 
-    const initialApprovalStatus: 'Approved' | 'Pending Director Approval' =
-      isDirector ? 'Approved' : 'Pending Director Approval';
+    // Newly created employees are Approved and Active immediately for instant portal login
+    const initialApprovalStatus: 'Approved' = 'Approved';
     const finalAvatar =
       avatarPreview || avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
 
@@ -1240,31 +1240,7 @@ export const TeamPage: React.FC = () => {
       kycVerifiedAt: (finalPan && finalAadhaar && isDirector) ? new Date().toISOString() : undefined
     });
 
-    // Sync with backend API
-    try {
-      const token = localStorage.getItem('ewms_token');
-      fetch('/api/employees', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          employeeId: finalEmpId,
-          password: finalPassword,
-          name,
-          role: role ? `${role} (${governanceRole})` : `${governanceRole}`,
-          department,
-          email: email || `${name.toLowerCase().replace(/\s+/g, '')}@enterprenex.com`,
-          phone: phone || '+91-9876543210',
-          salaryMonthly: finalSalaryMonthly,
-          workloadPercentage: Number(workload || 100),
-          approvalStatus: initialApprovalStatus
-        })
-      }).catch(() => {});
-    } catch {
-      // offline
-    }
+    // addEmployee in AdminContext already handles api.createEmployee with proper token authentication and state sync.
 
     if (panDocUrl) {
       uploadDocument({
