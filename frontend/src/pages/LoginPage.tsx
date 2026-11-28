@@ -9,7 +9,9 @@ import {
   Home,
   AlertCircle,
   CheckCircle2,
-  ShieldCheck
+  ShieldCheck,
+  KeyRound,
+  Phone
 } from 'lucide-react';
 import { useAdmin } from '../admin/context/AdminContext';
 import type { UserRole } from '../admin/types';
@@ -58,10 +60,79 @@ export const LoginPage: React.FC = () => {
   const [activateError, setActivateError] = useState<string | null>(null);
   const [isActivating, setIsActivating] = useState(false);
 
+  // Forgot Password Self-Service Recovery States
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [forgotVerification, setForgotVerification] = useState('');
+  const [forgotPassword, setForgotPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [showForgotPass, setShowForgotPass] = useState(false);
+  const [showForgotConfirmPass, setShowForgotConfirmPass] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
+
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+
+    const cleanId = forgotIdentifier.trim();
+    const cleanVerif = forgotVerification.trim();
+    const cleanPass = forgotPassword.trim();
+    const cleanConfirm = forgotConfirmPassword.trim();
+
+    if (!cleanId || !cleanVerif || !cleanPass || !cleanConfirm) {
+      setForgotError('Please fill in all recovery fields.');
+      return;
+    }
+
+    if (cleanPass !== cleanConfirm) {
+      setForgotError('New password and confirmation do not match.');
+      return;
+    }
+
+    if (cleanPass.length < 8) {
+      setForgotError('Password must be at least 8 characters long with uppercase, lowercase, and numbers/symbols.');
+      return;
+    }
+
+    setIsForgotLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: cleanId,
+          phoneOrEmail: cleanVerif,
+          newPassword: cleanPass,
+          confirmPassword: cleanConfirm
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setIsForgotLoading(false);
+        setForgotError(data.error || 'Failed to verify employee details. Please contact HR Administration.');
+        return;
+      }
+
+      setIsForgotLoading(false);
+      setShowForgotModal(false);
+      setLockoutSeconds(0); // Immediately lift any temporary lockout
+      setErrorMessage(null);
+      setStatusMessage('Password reset successfully! Security restriction cleared. You may now sign in.');
+      setEmail(cleanId);
+      setPassword('');
+      showToast?.('Password reset successful. Account restriction lifted.', 'success');
+    } catch (err: any) {
+      setIsForgotLoading(false);
+      setForgotError('Network error: ' + (err.message || 'Unable to connect to authentication server.'));
+    }
+  };
+
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutSeconds > 0) {
-      setErrorMessage(`Security lockout active: Please wait ${lockoutSeconds} second(s) before attempting to sign in.`);
       return;
     }
 
@@ -96,16 +167,17 @@ export const LoginPage: React.FC = () => {
         setIsLoading(false);
         const retrySec = data.retryAfter || (data.lockoutMinutes ? data.lockoutMinutes * 60 : 900);
         setLockoutSeconds(retrySec);
-        setErrorMessage(data.error || `Access temporarily restricted due to excessive failed attempts. Please retry in ${Math.ceil(retrySec / 60)} minute(s).`);
+        setErrorMessage(null); // Eliminate dual banner: single countdown banner displays when lockoutSeconds > 0
         return;
       }
 
       if (!res.ok) {
         setIsLoading(false);
-        if (data.remainingAttempts !== undefined && data.remainingAttempts <= 3) {
-          setErrorMessage(`${data.error || 'Invalid staff credentials.'} Warning: ${data.remainingAttempts} attempt(s) remaining before security lockout.`);
+        const remAttempts = data.remainingAttempts !== undefined ? data.remainingAttempts : data.attemptsRemaining;
+        if (remAttempts !== undefined && remAttempts <= 3 && remAttempts > 0) {
+          setErrorMessage(`Invalid credentials. Please verify your official email or 12-digit Employee ID, and password. Warning: ${remAttempts} attempt(s) remaining before 15-minute temporary lockout.`);
         } else {
-          setErrorMessage(data.error || 'Invalid staff credentials. Access restricted.');
+          setErrorMessage(data.error || 'Invalid credentials. Please verify your official email or 12-digit Employee ID, and password.');
         }
         return;
       }
@@ -343,30 +415,57 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {lockoutSeconds > 0 && (
+          {/* Mutually exclusive banners: When lockoutSeconds > 0, show ONLY the calm, reassuring 15-minute countdown banner */}
+          {lockoutSeconds > 0 ? (
             <div
               style={{
                 background: '#fffbeb',
                 border: '1px solid #fde68a',
                 color: '#92400e',
-                padding: '0.75rem 1rem',
+                padding: '0.9rem 1rem',
                 borderRadius: '10px',
                 fontSize: '0.85rem',
-                fontWeight: 600,
                 display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
+                alignItems: 'flex-start',
+                gap: '0.65rem',
                 marginBottom: '1.25rem',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
               }}
             >
-              <AlertCircle size={16} color="#d97706" />
-              <span>
-                Security Lockout: Login restricted. Retry allowed in {Math.floor(lockoutSeconds / 60)}m {lockoutSeconds % 60}s.
-              </span>
+              <AlertCircle size={18} color="#d97706" style={{ marginTop: '2px', flexShrink: 0 }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <div style={{ fontWeight: 700, color: '#92400e' }}>
+                  Temporary Security Lockout Active
+                </div>
+                <div style={{ color: '#78350f', fontSize: '0.82rem', lineHeight: 1.45 }}>
+                  Login is temporarily paused for 15 minutes due to 4 consecutive incorrect attempts.
+                  Retry allowed in <strong>{Math.floor(lockoutSeconds / 60)}m {lockoutSeconds % 60}s</strong>. Access will be automatically restored.
+                </div>
+                <div style={{ marginTop: '4px', fontSize: '0.8rem' }}>
+                  Forgot your password?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotIdentifier(email);
+                      setForgotError(null);
+                      setShowForgotModal(true);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: 'var(--primary, #1070C8)',
+                      fontWeight: 700,
+                      textDecoration: 'underline',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Reset password securely now
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
-
-          {errorMessage && (
+          ) : errorMessage ? (
             <div
               style={{
                 background: '#fef2f2',
@@ -385,7 +484,7 @@ export const LoginPage: React.FC = () => {
               <AlertCircle size={16} color="#dc2626" />
               <span>{errorMessage}</span>
             </div>
-          )}
+          ) : null}
 
           {/* Form */}
           <form onSubmit={handleLoginSubmit}>
@@ -418,16 +517,26 @@ export const LoginPage: React.FC = () => {
                   <label className="reg-label" style={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem' }}>
                     Security Password
                   </label>
-                  <a
-                    href="#forgot"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      alert('Password recovery notice sent to Enterprenex HR Administration.');
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotIdentifier(email);
+                      setForgotError(null);
+                      setShowForgotModal(true);
                     }}
-                    style={{ fontSize: '0.78rem', color: 'var(--primary, #1070C8)', fontWeight: 600, textDecoration: 'none' }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '0.78rem',
+                      color: 'var(--primary, #1070C8)',
+                      fontWeight: 600,
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      padding: 0
+                    }}
                   >
                     Forgot password?
-                  </a>
+                  </button>
                 </div>
                 <div className="reg-input-wrap">
                   <Lock size={16} className="reg-input-icon" />
@@ -512,7 +621,7 @@ export const LoginPage: React.FC = () => {
                 borderRadius: '10px'
               }}
             >
-              <span>{lockoutSeconds > 0 ? `Account Restricted (${lockoutSeconds}s)` : isLoading ? 'Verifying RBAC Credentials...' : 'Sign In to Workspace Portal'}</span>
+              <span>{lockoutSeconds > 0 ? `Sign-in Paused (${Math.floor(lockoutSeconds / 60)}m ${lockoutSeconds % 60}s)` : isLoading ? 'Verifying RBAC Credentials...' : 'Sign In to Workspace Portal'}</span>
               <ArrowRight size={18} />
             </button>
             {/* First-time Employee Account Activation Trigger */}
@@ -807,6 +916,225 @@ export const LoginPage: React.FC = () => {
                     style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem', fontWeight: 700, borderRadius: '8px' }}
                   >
                     {isActivating ? 'Verifying Account...' : 'Set Password & Activate'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Forgot Password Self-Service Recovery Modal */}
+        {showForgotModal && (
+          <div className="adm-modal-overlay" onClick={() => setShowForgotModal(false)}>
+            <div
+              className="adm-modal"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                maxWidth: '480px',
+                background: 'var(--surface, #FFFFFF)',
+                borderRadius: '16px',
+                padding: '1.75rem',
+                border: '1px solid var(--border, #E8E8E8)',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.18)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '10px',
+                      background: 'var(--blue-light, #E6EDF5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--primary, #1070C8)'
+                    }}
+                  >
+                    <KeyRound size={22} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary, #111827)' }}>
+                      Reset Security Password
+                    </h3>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--primary, #1070C8)', fontWeight: 600 }}>
+                      Self-Service Password Recovery
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(false)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary, #6B7280)', fontSize: '1.25rem', padding: '4px' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Lockout clearance notice */}
+              <div
+                style={{
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '10px',
+                  padding: '0.75rem 1rem',
+                  marginBottom: '1.25rem',
+                  fontSize: '0.8rem',
+                  lineHeight: 1.45,
+                  color: '#166534'
+                }}
+              >
+                <strong>Security Protection:</strong> Resetting your password securely clears any temporary login restriction immediately so you can sign in without waiting for the 15-minute countdown.
+              </div>
+
+              {forgotError && (
+                <div
+                  style={{
+                    background: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    color: '#991b1b',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '10px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    marginBottom: '1rem'
+                  }}
+                >
+                  {forgotError}
+                </div>
+              )}
+
+              <form onSubmit={handleForgotPasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
+                    Official Email or Employee ID <span style={{ color: '#dc2626' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Mail size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. employee@enterprenexsolution.com or 202600000001"
+                      className="reg-input"
+                      value={forgotIdentifier}
+                      onChange={(e) => setForgotIdentifier(e.target.value)}
+                      style={{ width: '100%', paddingLeft: '2.5rem' }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
+                    Registered Phone Number or Secondary Email <span style={{ color: '#dc2626' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Phone size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter registered mobile number or personal email"
+                      className="reg-input"
+                      value={forgotVerification}
+                      onChange={(e) => setForgotVerification(e.target.value)}
+                      style={{ width: '100%', paddingLeft: '2.5rem' }}
+                    />
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '3px' }}>
+                    Used strictly to verify your identity against company records
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
+                    New Password <span style={{ color: '#dc2626' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                    <input
+                      type={showForgotPass ? 'text' : 'password'}
+                      required
+                      placeholder="Min 8 characters (uppercase, lowercase, number/symbol)"
+                      className="reg-input"
+                      value={forgotPassword}
+                      onChange={(e) => setForgotPassword(e.target.value)}
+                      style={{ width: '100%', paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPass(!showForgotPass)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.75rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary, #6B7280)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showForgotPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary, #111827)', display: 'block', marginBottom: '4px' }}>
+                    Confirm New Password <span style={{ color: '#dc2626' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                    <input
+                      type={showForgotConfirmPass ? 'text' : 'password'}
+                      required
+                      placeholder="Re-enter your new password"
+                      className="reg-input"
+                      value={forgotConfirmPassword}
+                      onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                      style={{ width: '100%', paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotConfirmPass(!showForgotConfirmPass)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.75rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary, #6B7280)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showForgotConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn-secondary"
+                    onClick={() => setShowForgotModal(false)}
+                    style={{ borderRadius: '8px', fontSize: '0.85rem' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isForgotLoading}
+                    className="reg-btn-primary"
+                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem', fontWeight: 700, borderRadius: '8px' }}
+                  >
+                    {isForgotLoading ? 'Resetting Password...' : 'Reset Password & Restore Access'}
                   </button>
                 </div>
               </form>

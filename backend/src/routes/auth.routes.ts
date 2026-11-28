@@ -12,6 +12,7 @@ import {
   checkAccountLockout,
   recordFailedLogin,
   recordSuccessfulLogin,
+  clearAccountLockout,
   sanitizeStaffUser
 } from '../services/authSecurity.service';
 
@@ -44,7 +45,8 @@ router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): P
         res.status(429).json({
           error: 'Account Temporarily Restricted',
           message: lockoutCheck.message,
-          retryAfterSeconds: lockoutCheck.retryAfterSeconds
+          retryAfterSeconds: lockoutCheck.retryAfterSeconds,
+          retryAfter: lockoutCheck.retryAfterSeconds
         });
         return;
       }
@@ -90,11 +92,13 @@ router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): P
               res.status(429).json({
                 error: 'Account Temporarily Restricted',
                 message: failResult.message,
-                retryAfterSeconds: failResult.retryAfterSeconds
+                retryAfterSeconds: failResult.retryAfterSeconds,
+                retryAfter: failResult.retryAfterSeconds
               });
             } else {
               res.status(401).json({
                 error: GENERIC_AUTH_ERROR,
+                remainingAttempts: failResult.remainingAttempts,
                 attemptsRemaining: failResult.remainingAttempts
               });
             }
@@ -144,11 +148,13 @@ router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): P
           res.status(429).json({
             error: 'Account Temporarily Restricted',
             message: failResult.message,
-            retryAfterSeconds: failResult.retryAfterSeconds
+            retryAfterSeconds: failResult.retryAfterSeconds,
+            retryAfter: failResult.retryAfterSeconds
           });
         } else {
           res.status(401).json({
             error: GENERIC_AUTH_ERROR,
+            remainingAttempts: failResult.remainingAttempts,
             attemptsRemaining: failResult.remainingAttempts
           });
         }
@@ -195,11 +201,13 @@ router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): P
           res.status(429).json({
             error: 'Account Temporarily Restricted',
             message: failResult.message,
-            retryAfterSeconds: failResult.retryAfterSeconds
+            retryAfterSeconds: failResult.retryAfterSeconds,
+            retryAfter: failResult.retryAfterSeconds
           });
         } else {
           res.status(401).json({
             error: GENERIC_AUTH_ERROR,
+            remainingAttempts: failResult.remainingAttempts,
             attemptsRemaining: failResult.remainingAttempts
           });
         }
@@ -664,6 +672,162 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
   } catch (error: any) {
     console.error('First-time setup error:', error);
     res.status(500).json({ error: 'Failed to complete first-time setup: ' + error.message });
+  }
+});
+
+// POST /api/auth/forgot-password (Secure Self-Service Password Reset & Lockout Clearance)
+router.post('/forgot-password', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { identifier, phoneOrEmail, newPassword, confirmPassword } = req.body;
+    const cleanId = (identifier || '').trim();
+    const cleanVerification = (phoneOrEmail || '').trim();
+
+    if (!cleanId || !cleanVerification || !newPassword || !confirmPassword) {
+      res.status(400).json({
+        error: 'All fields are required (Official Email or Employee ID, Registered Phone/Email, New Password, Confirmation).'
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({ error: 'New password and confirmation do not match.' });
+      return;
+    }
+
+    const validation = validatePasswordStrength(newPassword);
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+
+    // Lookup employee in Employee roster or User table
+    const normalizedInput = cleanId.toLowerCase();
+    const emp = await prisma.employee.findFirst({
+      where: {
+        OR: [
+          { employeeId: { equals: cleanId } },
+          { employeeId: { equals: cleanId.toUpperCase() } },
+          { email: { equals: cleanId } },
+          { email: { equals: normalizedInput } },
+          { personalEmail: { equals: normalizedInput } }
+        ]
+      }
+    });
+
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: { equals: cleanId } },
+          { email: { equals: normalizedInput } },
+          { employeeId: { equals: cleanId } },
+          { employeeId: { equals: cleanId.toUpperCase() } }
+        ]
+      }
+    });
+
+    if (!emp && !user) {
+      res.status(404).json({
+        error: 'Employee record not found. Please contact HR Administration if you need credential assistance.'
+      });
+      return;
+    }
+
+    // Verify secondary contact: phone or personal/official email
+    const verificationNormalized = cleanVerification.toLowerCase();
+    const verificationDigits = cleanVerification.replace(/\D/g, '');
+
+    const empPhones = [
+      emp?.phone?.replace(/\D/g, ''),
+      emp?.personalPhone?.replace(/\D/g, '')
+    ].filter(Boolean);
+
+    const empEmails = [
+      emp?.email?.toLowerCase(),
+      emp?.personalEmail?.toLowerCase(),
+      user?.email?.toLowerCase()
+    ].filter(Boolean);
+
+    const isPhoneMatch = verificationDigits.length >= 6 && empPhones.some(p => p && (p.endsWith(verificationDigits) || verificationDigits.endsWith(p)));
+    const isEmailMatch = empEmails.some(e => e === verificationNormalized);
+
+    if (!isPhoneMatch && !isEmailMatch) {
+      res.status(401).json({
+        error: 'Verification detail did not match the registered phone number or secondary email on file. Please contact HR for manual assistance.'
+      });
+      return;
+    }
+
+    // Hash new password using modern Argon2id
+    const modernHash = await hashPassword(newPassword);
+
+    // Sync to User table and Employee table atomically
+    const targetEmail = emp?.email || user?.email;
+    const targetEmployeeId = emp?.employeeId || user?.employeeId;
+
+    if (!targetEmail) {
+      res.status(500).json({ error: 'Unable to resolve employee email for password update.' });
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.user.upsert({
+        where: { email: targetEmail },
+        update: {
+          password: modernHash,
+          mustChangePassword: false,
+          status: 'Active'
+        },
+        create: {
+          email: targetEmail,
+          employeeId: targetEmployeeId || 'TEMP',
+          password: modernHash,
+          name: emp?.name || user?.name || 'Staff Member',
+          role: emp?.role?.includes('Director') ? 'Super Admin' : (emp?.department === 'Human Resources' ? 'HR Manager' : 'Developer'),
+          department: emp?.department || 'Engineering',
+          status: 'Active',
+          mustChangePassword: false
+        }
+      }),
+      prisma.employee.updateMany({
+        where: {
+          OR: [
+            { email: targetEmail },
+            ...(targetEmployeeId ? [{ employeeId: targetEmployeeId }] : [])
+          ]
+        },
+        data: {
+          password: modernHash,
+          temporaryPassword: null,
+          mustChangePassword: false
+        }
+      })
+    ]);
+
+    // Clear any active temporary lockout in memory and database immediately
+    await clearAccountLockout(
+      cleanId,
+      normalizedInput,
+      targetEmail,
+      targetEmployeeId
+    );
+
+    // Record audit log
+    await prisma.auditLog.create({
+      data: {
+        action: 'EMPLOYEE_PASSWORD_RESET',
+        category: 'Identity & Access',
+        details: `Employee ${targetEmail} (${targetEmployeeId}) performed self-service password reset. Security restrictions cleared.`,
+        actor: emp?.name || user?.name || targetEmail
+      }
+    }).catch(() => {});
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully! Security lockout has been cleared. You may now log in with your new password.'
+    });
+  } catch (error: any) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Failed to reset password: ' + error.message });
   }
 });
 

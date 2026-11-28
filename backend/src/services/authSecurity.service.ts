@@ -15,8 +15,8 @@ import { logAuditSecurityEntry } from './security.service';
  */
 
 export const AUTH_SECURITY_CONFIG = {
-  MAX_FAILED_ATTEMPTS: 5,               // Consecutive failures before temporary restriction
-  LOCKOUT_DURATION_MS: 15 * 60 * 1000,  // 15 minutes lockout duration
+  MAX_FAILED_ATTEMPTS: 4,               // Max 4 failed attempts before temporary 15-minute restriction
+  LOCKOUT_DURATION_MS: 15 * 60 * 1000,  // 15 minutes lockout duration (900 seconds)
   PROGRESSIVE_DELAY_THRESHOLD: 3,       // Artificial delay after 3 failed attempts
   IP_MAX_REQUESTS_PER_MINUTE: 10,       // Max 10 login requests per minute per IP
   IP_WINDOW_MS: 60 * 1000,              // 1 minute window
@@ -127,6 +127,7 @@ export interface LockoutCheckResult {
   retryAfterSeconds: number;
   retryAfter: number;
   remainingAttempts: number;
+  attemptsRemaining?: number;
   failedAttempts?: number;
   lockoutMinutes?: number;
   delayMs?: number;
@@ -149,17 +150,23 @@ export const checkAccountLockout = async (normalizedIdentifier: string): Promise
 
   // 1. Check in-memory mirror first (fast & reliable)
   const memRecord = memoryLockoutStore.get(normalizedIdentifier);
-  if (memRecord?.lockedUntil && memRecord.lockedUntil > now) {
-    const retryAfterSeconds = Math.max(1, Math.ceil((memRecord.lockedUntil.getTime() - now.getTime()) / 1000));
-    return {
-      isLocked: true,
-      retryAfterSeconds,
-      retryAfter: retryAfterSeconds,
-      remainingAttempts: 0,
-      failedAttempts: memRecord.failedAttempts,
-      lockoutMinutes: Math.ceil(retryAfterSeconds / 60),
-      message: `Account is temporarily restricted due to repeated failed login attempts. Please wait ${Math.ceil(retryAfterSeconds / 60)} minute(s) before retrying.`
-    };
+  if (memRecord) {
+    if (memRecord.lockedUntil && memRecord.lockedUntil > now) {
+      const retryAfterSeconds = Math.max(1, Math.ceil((memRecord.lockedUntil.getTime() - now.getTime()) / 1000));
+      return {
+        isLocked: true,
+        retryAfterSeconds,
+        retryAfter: retryAfterSeconds,
+        remainingAttempts: 0,
+        attemptsRemaining: 0,
+        failedAttempts: memRecord.failedAttempts,
+        lockoutMinutes: Math.ceil(retryAfterSeconds / 60),
+        message: `Account is temporarily restricted due to 4 consecutive failed login attempts. Please wait ${Math.ceil(retryAfterSeconds / 60)} minute(s) before retrying, or use Forgot Password to reset.`
+      };
+    } else if (memRecord.lockedUntil && memRecord.lockedUntil <= now) {
+      // Lockout duration expired: automatically clear in-memory restriction
+      memoryLockoutStore.delete(normalizedIdentifier);
+    }
   }
 
   // 2. Check persistent database record
@@ -174,6 +181,7 @@ export const checkAccountLockout = async (normalizedIdentifier: string): Promise
         retryAfterSeconds: 0,
         retryAfter: 0,
         remainingAttempts: AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS,
+        attemptsRemaining: AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS,
         failedAttempts: 0
       };
     }
@@ -192,9 +200,10 @@ export const checkAccountLockout = async (normalizedIdentifier: string): Promise
         retryAfterSeconds,
         retryAfter: retryAfterSeconds,
         remainingAttempts: 0,
+        attemptsRemaining: 0,
         failedAttempts: record.failedAttempts,
         lockoutMinutes: Math.ceil(retryAfterSeconds / 60),
-        message: `Account is temporarily restricted due to repeated failed login attempts. Please wait ${Math.ceil(retryAfterSeconds / 60)} minute(s) before retrying.`
+        message: `Account is temporarily restricted due to 4 consecutive failed login attempts. Please wait ${Math.ceil(retryAfterSeconds / 60)} minute(s) before retrying, or use Forgot Password to reset.`
       };
     }
 
@@ -210,6 +219,7 @@ export const checkAccountLockout = async (normalizedIdentifier: string): Promise
         retryAfterSeconds: 0,
         retryAfter: 0,
         remainingAttempts: AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS,
+        attemptsRemaining: AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS,
         failedAttempts: 0
       };
     }
@@ -220,6 +230,7 @@ export const checkAccountLockout = async (normalizedIdentifier: string): Promise
       retryAfterSeconds: 0,
       retryAfter: 0,
       remainingAttempts,
+      attemptsRemaining: remainingAttempts,
       failedAttempts: record.failedAttempts
     };
   } catch (err) {
@@ -231,16 +242,19 @@ export const checkAccountLockout = async (normalizedIdentifier: string): Promise
         retryAfterSeconds,
         retryAfter: retryAfterSeconds,
         remainingAttempts: 0,
+        attemptsRemaining: 0,
         failedAttempts: memRecord.failedAttempts,
         lockoutMinutes: Math.ceil(retryAfterSeconds / 60),
-        message: `Account is temporarily restricted due to repeated failed login attempts. Please wait ${Math.ceil(retryAfterSeconds / 60)} minute(s) before retrying.`
+        message: `Account is temporarily restricted due to 4 consecutive failed login attempts. Please wait ${Math.ceil(retryAfterSeconds / 60)} minute(s) before retrying, or use Forgot Password to reset.`
       };
     }
+    const remainingAttempts = memRecord ? Math.max(0, AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS - memRecord.failedAttempts) : AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS;
     return {
       isLocked: false,
       retryAfterSeconds: 0,
       retryAfter: 0,
-      remainingAttempts: memRecord ? Math.max(0, AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS - memRecord.failedAttempts) : AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS,
+      remainingAttempts,
+      attemptsRemaining: remainingAttempts,
       failedAttempts: memRecord ? memRecord.failedAttempts : 0
     };
   }
@@ -256,20 +270,41 @@ export const recordFailedLogin = async (
   const now = new Date();
 
   // Update in-memory mirror
-  let mem = memoryLockoutStore.get(normalizedIdentifier) || {
-    failedAttempts: 0,
-    lastAttemptAt: now,
-    lockedUntil: null
-  };
+  let mem = memoryLockoutStore.get(normalizedIdentifier);
+  if (!mem || (mem.lockedUntil && mem.lockedUntil <= now)) {
+    // If lockout had expired or first failure, start fresh
+    mem = {
+      failedAttempts: 0,
+      lastAttemptAt: now,
+      lockedUntil: null
+    };
+  }
   mem.failedAttempts += 1;
   mem.lastAttemptAt = now;
 
   let currentFailedAttempts = mem.failedAttempts;
 
   try {
-    // Atomic database update with transaction
-    const record = await prisma.$transaction(async (tx) => {
-      return await tx.loginSecurity.upsert({
+    // Check if existing record had an expired lockout
+    const existing = await prisma.loginSecurity.findUnique({
+      where: { identifier: normalizedIdentifier }
+    });
+
+    if (existing && existing.lockedUntil && existing.lockedUntil <= now) {
+      // Lockout duration expired: reset counter to 1 for this new attempt
+      const updated = await prisma.loginSecurity.update({
+        where: { identifier: normalizedIdentifier },
+        data: {
+          failedAttempts: 1,
+          lockedUntil: null,
+          lastAttemptAt: now,
+          totalAttempts: { increment: 1 }
+        }
+      });
+      currentFailedAttempts = updated.failedAttempts;
+    } else {
+      // Atomic upsert with increment
+      const record = await prisma.loginSecurity.upsert({
         where: { identifier: normalizedIdentifier },
         create: {
           identifier: normalizedIdentifier,
@@ -283,8 +318,8 @@ export const recordFailedLogin = async (
           totalAttempts: { increment: 1 }
         }
       });
-    });
-    currentFailedAttempts = record.failedAttempts;
+      currentFailedAttempts = record.failedAttempts;
+    }
     mem.failedAttempts = currentFailedAttempts;
   } catch {
     // Fall back to memory count if DB unavailable
@@ -317,10 +352,11 @@ export const recordFailedLogin = async (
       retryAfterSeconds,
       retryAfter: retryAfterSeconds,
       remainingAttempts: 0,
+      attemptsRemaining: 0,
       failedAttempts: currentFailedAttempts,
       lockoutMinutes: 15,
       delayMs: 2000,
-      message: 'Account temporarily restricted due to repeated failed login attempts. Please wait 15 minutes before retrying.'
+      message: 'Account temporarily restricted due to 4 consecutive failed login attempts. Please wait 15 minutes before retrying, or use Forgot Password to reset.'
     };
   }
 
@@ -333,10 +369,12 @@ export const recordFailedLogin = async (
     await new Promise((r) => setTimeout(r, Math.min(100, appliedDelayMs))); // throttled in tests for speed
   }
 
+  const remainingAttempts = Math.max(0, AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS - currentFailedAttempts);
+
   logAuditSecurityEntry({
     action: 'LOGIN_FAILURE',
     category: 'Authentication Security',
-    details: `Failed staff credentials verification (${currentFailedAttempts}/${AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS} attempts).`,
+    details: `Failed staff credentials verification (${currentFailedAttempts}/${AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS} attempts, ${remainingAttempts} remaining).`,
     actor: normalizedIdentifier,
     ipAddress
   }).catch(() => {});
@@ -345,7 +383,8 @@ export const recordFailedLogin = async (
     isLocked: false,
     retryAfterSeconds: 0,
     retryAfter: 0,
-    remainingAttempts: Math.max(0, AUTH_SECURITY_CONFIG.MAX_FAILED_ATTEMPTS - currentFailedAttempts),
+    remainingAttempts,
+    attemptsRemaining: remainingAttempts,
     failedAttempts: currentFailedAttempts,
     delayMs: appliedDelayMs
   };
@@ -387,6 +426,27 @@ export const recordSuccessfulLogin = async (
     });
   } catch (err) {
     console.error('[SECURITY SUCCESS RECORD ERROR]:', err);
+  }
+};
+
+/**
+ * Clear any active temporary lockout for given identifiers (e.g. after password reset)
+ */
+export const clearAccountLockout = async (...identifiers: (string | undefined | null)[]): Promise<void> => {
+  const cleanIds = identifiers
+    .filter(Boolean)
+    .map((id) => String(id).trim().toLowerCase());
+
+  for (const id of cleanIds) {
+    memoryLockoutStore.delete(id);
+    try {
+      await prisma.loginSecurity.updateMany({
+        where: { identifier: id },
+        data: { failedAttempts: 0, lockedUntil: null }
+      });
+    } catch {
+      // non-blocking
+    }
   }
 };
 
