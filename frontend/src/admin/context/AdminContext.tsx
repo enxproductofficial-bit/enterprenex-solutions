@@ -1285,8 +1285,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast('Password Configured', 'Your permanent password has been set. Workspace unlocked.', 'success');
   };
 
-  const deleteEmployee = (id: string, purgeDocuments = false) => {
-    const emp = employees.find(e => e.id === id);
+  const deleteEmployee = async (id: string, purgeDocuments = false) => {
+    const emp = employees.find(e => e.id === id || e.employeeId === id);
     if (!emp) return;
 
     if (emp.email === 'director@enterprenex.solutions' || emp.email === 'director@enterprenexsolution.com' || emp.role.includes('Director') || emp.id === 'emp-1') {
@@ -1294,7 +1294,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    setEmployees(prev => prev.filter(e => e.id !== id));
+    setEmployees(prev => prev.filter(e => e.id !== id && e.employeeId !== id));
 
     if (purgeDocuments) {
       setDocuments(prev => prev.filter(d =>
@@ -1302,6 +1302,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         !d.tags.includes(emp.employeeId) &&
         !d.tags.includes(emp.id)
       ));
+    }
+
+    // Call backend API to permanently purge from database
+    try {
+      await api.deleteEmployee(emp.id || emp.employeeId);
+    } catch (err: any) {
+      console.warn('Backend delete employee fallback:', err);
     }
 
     logAction('Deleted Employee', 'Team Management', `Permanently removed employee ${emp.name} (${emp.employeeId || emp.id})`);

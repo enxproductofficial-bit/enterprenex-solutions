@@ -102,6 +102,12 @@ class ApiClient {
     });
   }
 
+  async deleteEmployee(employeeId: string) {
+    return this.request<{ message: string }>(`/employees/${employeeId}`, {
+      method: 'DELETE'
+    });
+  }
+
   async updateMyContact(contactData: { personalPhone?: string; personalEmail?: string; phone?: string }) {
     return this.request<{ message: string; employee: any }>('/employees/me/contact', {
       method: 'PUT',

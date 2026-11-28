@@ -414,11 +414,25 @@ router.post('/:id/activate', authenticateToken, async (req: AuthRequest, res: Re
 });
 
 // DELETE /api/employees/:id (Director Only)
-router.delete('/:id', authenticateToken, requireRole(['Super Admin']), async (req: AuthRequest, res: Response): Promise<void> => {
+router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const isDirector = req.user?.role === 'Super Admin' || req.user?.role === 'Director' || req.user?.role === 'Managing Director';
+    const isHr = req.user?.role === 'HR' || req.user?.role === 'HR Manager' || req.user?.department === 'Human Resources' || req.user?.role?.includes('HR') || req.user?.email?.includes('hr') || req.user?.role === 'Project Manager';
+
+    if (!isDirector && !isHr) {
+      res.status(403).json({ error: 'Access forbidden: Only HR or Director can delete employee records.' });
+      return;
+    }
+
     const { id } = req.params;
     const emp = await prisma.employee.findFirst({
-      where: { OR: [{ id }, { employeeId: id }] }
+      where: {
+        OR: [
+          { id },
+          { employeeId: id },
+          { employeeId: id.toUpperCase() }
+        ]
+      }
     });
 
     if (!emp) {
@@ -426,16 +440,31 @@ router.delete('/:id', authenticateToken, requireRole(['Super Admin']), async (re
       return;
     }
 
-    if (emp.role === 'Super Admin' || emp.role === 'Director' || emp.role === 'Managing Director') {
+    if (emp.role === 'Super Admin' || emp.role === 'Director' || emp.role === 'Managing Director' || emp.email === 'director@enterprenexsolution.com') {
       res.status(403).json({ error: 'Executive Director accounts cannot be deleted.' });
       return;
     }
 
-    await prisma.employee.delete({ where: { id: emp.id } });
-    await prisma.user.deleteMany({ where: { OR: [{ email: emp.email }, { employeeId: emp.employeeId }] } });
+    // Atomic cascade delete
+    await prisma.$transaction([
+      prisma.leaveBalance.deleteMany({ where: { employeeId: emp.employeeId } }),
+      prisma.leaveRequest.deleteMany({ where: { OR: [{ employeeId: emp.employeeId }, { employeeId: emp.id }] } }),
+      prisma.attendanceRecord.deleteMany({ where: { employeeId: emp.employeeId } }),
+      prisma.payrollRecord.deleteMany({ where: { employeeId: emp.employeeId } }),
+      prisma.task.deleteMany({ where: { OR: [{ assignedTo: emp.name }, { assignedTo: emp.email }, { assignedTo: emp.employeeId }] } }),
+      prisma.kpiScorecard.deleteMany({ where: { OR: [{ employeeId: emp.employeeId }, { employeeId: emp.id }] } }),
+      prisma.user.deleteMany({ where: { OR: [{ email: emp.email }, { employeeId: emp.employeeId }] } }),
+      prisma.loginSecurity.deleteMany({
+        where: {
+          identifier: { in: [emp.email, emp.employeeId, emp.email.toLowerCase(), emp.employeeId.toLowerCase()] }
+        }
+      }),
+      prisma.employee.delete({ where: { id: emp.id } })
+    ]);
 
-    res.json({ message: `Employee account ${emp.name} (${emp.employeeId}) successfully purged.` });
+    res.json({ success: true, message: `Employee account ${emp.name} (${emp.employeeId}) successfully purged from database.` });
   } catch (error: any) {
+    console.error('Delete employee error:', error);
     res.status(500).json({ error: error.message });
   }
 });
