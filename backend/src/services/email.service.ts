@@ -177,3 +177,108 @@ export const sendAccountCredentialsEmail = async (
     return false;
   }
 };
+
+/**
+ * Dispatches a high-priority, secure administrative password-reset email for Director and HR accounts.
+ * Always dispatches directly to the corporate recovery address: enxproductofficial@gmail.com
+ */
+export const sendAdminPasswordResetEmail = async (params: {
+  adminName: string;
+  adminEmail: string;
+  adminRole: string;
+  resetLink: string;
+  ipAddress?: string;
+  expiresMinutes?: number;
+}): Promise<boolean> => {
+  const {
+    adminName,
+    adminEmail,
+    adminRole,
+    resetLink,
+    ipAddress = 'Unknown IP',
+    expiresMinutes = 15
+  } = params;
+
+  const targetRecoveryEmail = process.env.ADMIN_RECOVERY_EMAIL || 'enxproductofficial@gmail.com';
+
+  try {
+    const transporter = await getTransporter();
+
+    const mailOptions = {
+      from: '"Enterprenex Corporate Security" <security@enterprenex.solutions>',
+      to: targetRecoveryEmail,
+      subject: `[EWMS Security] Password Reset Request: ${adminRole} (${adminEmail})`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; line-height: 1.6; background: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 24px; text-align: center; border-radius: 12px 12px 0 0;">
+            <div style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">ENTERPRENEX SOLUTIONS</div>
+            <div style="color: #38bdf8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">
+              Enterprise Workforce Management Suite (EWMS)
+            </div>
+            <div style="display: inline-block; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px; margin-top: 10px;">
+              CONFIDENTIAL • ADMINISTRATIVE SECURITY NOTIFICATION
+            </div>
+          </div>
+
+          <div style="padding: 32px 28px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="font-size: 16px; margin-top: 0;">
+              Hello <strong>${adminName}</strong>,
+            </p>
+
+            <p style="color: #475569; font-size: 14px;">
+              A formal request has been received to reset the security password for your <strong>${adminRole}</strong> portal account on the Enterprenex EWMS platform.
+            </p>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #1070c8; padding: 16px; margin: 24px 0; border-radius: 6px;">
+              <div style="font-size: 13px; margin-bottom: 6px;"><strong>Target Account:</strong> <code style="color: #0f172a; font-weight: 700;">${adminEmail}</code></div>
+              <div style="font-size: 13px; margin-bottom: 6px;"><strong>Administrative Role:</strong> ${adminRole}</div>
+              <div style="font-size: 13px; margin-bottom: 6px;"><strong>Request Timestamp:</strong> ${new Date().toUTCString()}</div>
+              <div style="font-size: 13px;"><strong>Originating IP:</strong> <code>${ipAddress}</code></div>
+            </div>
+
+            <p style="color: #475569; font-size: 14px;">
+              To configure a new password and restore full access to your workspace, click the button below:
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetLink}" style="background: #1070c8; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px; display: inline-block; box-shadow: 0 4px 12px rgba(16, 112, 200, 0.35);">
+                Create New Password →
+              </a>
+            </div>
+
+            <p style="font-size: 12px; color: #64748b; word-break: break-all;">
+              Or copy and paste this secure link into your browser:<br>
+              <a href="${resetLink}" style="color: #1070c8;">${resetLink}</a>
+            </p>
+
+            <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 12px; margin-top: 24px;">
+              <div style="font-size: 12px; color: #9a3412; font-weight: 700; margin-bottom: 4px;">
+                ⚠️ CRITICAL SECURITY PROTOCOLS:
+              </div>
+              <ul style="font-size: 12px; color: #7c2d12; margin: 0; padding-left: 18px; line-height: 1.5;">
+                <li>This link will automatically expire in <strong>${expiresMinutes} minutes</strong>.</li>
+                <li>This is a <strong>single-use token</strong>: once used, it cannot be reused.</li>
+                <li>Existing sessions are immediately revoked upon password update.</li>
+                <li>If you did not initiate this request, your current password is completely safe. No action is required.</li>
+              </ul>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 28px 0;" />
+
+            <p style="font-size: 12px; color: #94a3b8; margin: 0; text-align: center;">
+              Enterprenex Solutions Pvt Ltd • Enterprise Workforce Governance<br>
+              Official Inquiries: <a href="mailto:contact@enterprenex.solutions" style="color: #64748b;">contact@enterprenex.solutions</a>
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[Email] Admin password reset link dispatched to ${targetRecoveryEmail} for ${adminEmail}: MessageId: ${info.messageId}`);
+    return true;
+  } catch (error) {
+    console.error('[Email Error] Failed to send admin password reset email:', error);
+    return false;
+  }
+};

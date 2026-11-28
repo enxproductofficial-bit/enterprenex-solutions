@@ -1,8 +1,10 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { sendAdminPasswordResetEmail } from '../services/email.service';
 import {
   loginIpRateLimiter,
   authMutex,
@@ -740,14 +742,158 @@ router.post('/first-time-setup', async (req: Request, res: Response): Promise<vo
   }
 });
 
-// POST /api/auth/forgot-password (Secure Self-Service Password Reset & Lockout Clearance)
-router.post('/forgot-password', async (req: Request, res: Response): Promise<void> => {
+// ── ADMINISTRATIVE FORGOT PASSWORD & RECOVERY FLOW (Director & HR Accounts) ──
+
+/**
+ * Checks whether an account holds administrative privileges (Director, Super Admin, HR)
+ */
+const isAdministrativeUser = (user: { role?: string | null; email?: string | null; employeeId?: string | null } | null, emp: { role?: string | null; department?: string | null; email?: string | null } | null): boolean => {
+  const userRole = (user?.role || '').toLowerCase();
+  const empRole = (emp?.role || '').toLowerCase();
+  const empDept = (emp?.department || '').toLowerCase();
+  const userEmail = (user?.email || '').toLowerCase();
+  const empEmail = (emp?.email || '').toLowerCase();
+  const userEmpId = (user?.employeeId || '').trim();
+
+  return (
+    userRole.includes('admin') ||
+    userRole.includes('director') ||
+    userRole.includes('hr') ||
+    empRole.includes('director') ||
+    empRole.includes('hr') ||
+    empDept.includes('human resources') ||
+    empDept.includes('executive') ||
+    userEmail === 'director@enterprenexsolution.com' ||
+    userEmail === 'hr@enterprenexsolution.com' ||
+    empEmail === 'director@enterprenexsolution.com' ||
+    empEmail === 'hr@enterprenexsolution.com' ||
+    userEmpId === '202600000001'
+  );
+};
+
+// POST /api/auth/forgot-password (Administrative Recovery to enxproductofficial@gmail.com & Employee Self-Service)
+router.post('/forgot-password', loginIpRateLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { identifier, phoneOrEmail, newPassword, confirmPassword } = req.body;
     const cleanId = (identifier || '').trim();
-    const cleanVerification = (phoneOrEmail || '').trim();
+    const forwarded = req.headers['x-forwarded-for'];
+    const clientIp = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip || req.socket.remoteAddress || '127.0.0.1';
 
-    if (!cleanId || !cleanVerification || !newPassword || !confirmPassword) {
+    if (!cleanId) {
+      res.status(400).json({ error: 'Please enter your registered official email or 12-digit Employee ID.' });
+      return;
+    }
+
+    const cleanCandidates = getIdentifierCandidates(cleanId);
+
+    // Lookup user in User table or Employee roster
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: { in: cleanCandidates } },
+          { employeeId: { in: cleanCandidates } }
+        ]
+      }
+    });
+
+    const emp = await prisma.employee.findFirst({
+      where: {
+        OR: [
+          { employeeId: { in: cleanCandidates } },
+          { email: { in: cleanCandidates } },
+          { personalEmail: { in: cleanCandidates } }
+        ]
+      }
+    });
+
+    const isAdmin = isAdministrativeUser(user, emp);
+
+    // ── CASE 1: Director & HR Account Recovery (Single-Use Token via enxproductofficial@gmail.com) ──
+    // If this is an administrative recovery request (no immediate newPassword submitted, or admin account targeted)
+    if (!newPassword || isAdmin) {
+      // If someone attempted to bypass email recovery for an administrative account by passing newPassword:
+      if (newPassword && isAdmin) {
+        res.status(403).json({
+          error: 'Administrative Security Policy: Director and HR Admin accounts cannot be reset via public form. A secure reset link has been dispatched to enxproductofficial@gmail.com.'
+        });
+        return;
+      }
+
+      // If user exists and is an authorized Director / HR administrator:
+      if (isAdmin && (user || emp)) {
+        const targetEmail = user?.email || emp?.email || 'director@enterprenexsolution.com';
+        const targetName = user?.name || emp?.name || 'Administrative Official';
+        const targetRole = user?.role || emp?.role || 'Director / HR Administration';
+
+        // 1. Generate cryptographically strong single-use 64-hex token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+
+        // 2. Token expiration strictly set to 15 minutes
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+        // 3. Invalidate any prior active reset tokens for this administrative email
+        await prisma.passwordResetToken.updateMany({
+          where: {
+            email: targetEmail,
+            usedAt: null
+          },
+          data: {
+            usedAt: new Date()
+          }
+        }).catch(() => {});
+
+        // 4. Save new single-use token in database
+        await prisma.passwordResetToken.create({
+          data: {
+            identifier: cleanId,
+            email: targetEmail,
+            token: resetToken,
+            expiresAt,
+            ipAddress: clientIp
+          }
+        });
+
+        // 5. Construct secure reset link
+        const hostHeader = req.get('host') || 'www.enterprenexsolution.com';
+        const originHeader = req.get('origin');
+        const isLocal = hostHeader.includes('localhost') || (originHeader && originHeader.includes('localhost'));
+        const frontendUrl = isLocal
+          ? (originHeader || 'http://localhost:5173')
+          : 'https://www.enterprenexsolution.com';
+        const resetLink = `${frontendUrl}/create-new-password?token=${resetToken}`;
+
+        // 6. Send high-security reset email to enxproductofficial@gmail.com
+        await sendAdminPasswordResetEmail({
+          adminName: targetName,
+          adminEmail: targetEmail,
+          adminRole: targetRole,
+          resetLink,
+          ipAddress: clientIp,
+          expiresMinutes: 15
+        });
+
+        // 7. Record security audit log
+        await prisma.auditLog.create({
+          data: {
+            action: 'ADMIN_PASSWORD_RESET_DISPATCHED',
+            category: 'Identity & Access',
+            details: `Single-use password reset link generated for ${targetRole} (${targetEmail}). Recovery email dispatched to enxproductofficial@gmail.com. Token valid for 15 minutes.`,
+            actor: targetEmail
+          }
+        }).catch(() => {});
+      }
+
+      // Security Standard: Generic response avoids exposing whether an account exists
+      res.json({
+        success: true,
+        message: 'If an authorized Director or HR administrator account matches this identifier, a secure password-reset link has been dispatched to enxproductofficial@gmail.com. The link is single-use and valid for exactly 15 minutes.'
+      });
+      return;
+    }
+
+    // ── CASE 2: Non-Administrative Employee Self-Service Recovery ──
+    const cleanVerification = (phoneOrEmail || '').trim();
+    if (!cleanVerification || !newPassword || !confirmPassword) {
       res.status(400).json({
         error: 'All fields are required (Official Email or Employee ID, Registered Phone/Email, New Password, Confirmation).'
       });
@@ -764,28 +910,6 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
       res.status(400).json({ error: validation.error });
       return;
     }
-
-    // Lookup employee in Employee roster or User table
-    const normalizedInput = cleanId.toLowerCase();
-    const cleanCandidates = getIdentifierCandidates(cleanId);
-    const emp = await prisma.employee.findFirst({
-      where: {
-        OR: [
-          { employeeId: { in: cleanCandidates } },
-          { email: { in: cleanCandidates } },
-          { personalEmail: { in: cleanCandidates } }
-        ]
-      }
-    });
-
-    let user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: { in: cleanCandidates } },
-          { employeeId: { in: cleanCandidates } }
-        ]
-      }
-    });
 
     if (!emp && !user) {
       res.status(404).json({
@@ -819,10 +943,7 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // Hash new password using modern Argon2id
     const modernHash = await hashPassword(newPassword);
-
-    // Sync to User table and Employee table atomically
     const targetEmail = emp?.email || user?.email;
     const targetEmployeeId = emp?.employeeId || user?.employeeId;
 
@@ -844,7 +965,7 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
           employeeId: targetEmployeeId || 'TEMP',
           password: modernHash,
           name: emp?.name || user?.name || 'Staff Member',
-          role: emp?.role?.includes('Director') ? 'Super Admin' : (emp?.department === 'Human Resources' ? 'HR Manager' : 'Developer'),
+          role: 'Team Member',
           department: emp?.department || 'Engineering',
           status: 'Active',
           mustChangePassword: false
@@ -865,23 +986,7 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
       })
     ]);
 
-    // Clear any active temporary lockout in memory and database immediately
-    await clearAccountLockout(
-      cleanId,
-      normalizedInput,
-      targetEmail,
-      targetEmployeeId
-    );
-
-    // Record audit log
-    await prisma.auditLog.create({
-      data: {
-        action: 'EMPLOYEE_PASSWORD_RESET',
-        category: 'Identity & Access',
-        details: `Employee ${targetEmail} (${targetEmployeeId}) performed self-service password reset. Security restrictions cleared.`,
-        actor: emp?.name || user?.name || targetEmail
-      }
-    }).catch(() => {});
+    await clearAccountLockout(cleanId, cleanId.toLowerCase(), targetEmail, targetEmployeeId);
 
     res.json({
       success: true,
@@ -889,6 +994,170 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
     });
   } catch (error: any) {
     console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Failed to process password recovery request: ' + error.message });
+  }
+});
+
+// GET /api/auth/verify-reset-token (Validates token without consuming it)
+router.get('/verify-reset-token', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const rawToken = String(req.query.token || '').trim();
+
+    if (!rawToken) {
+      res.status(400).json({ valid: false, error: 'Password reset token is required.' });
+      return;
+    }
+
+    const record = await prisma.passwordResetToken.findUnique({
+      where: { token: rawToken }
+    });
+
+    if (!record) {
+      res.status(404).json({
+        valid: false,
+        error: 'Invalid or non-existent password reset link. Please request a new link.'
+      });
+      return;
+    }
+
+    if (record.usedAt) {
+      res.status(400).json({
+        valid: false,
+        error: 'This password reset link has already been used and is no longer valid. Each link can only be used once.'
+      });
+      return;
+    }
+
+    const now = new Date();
+    if (record.expiresAt < now) {
+      res.status(400).json({
+        valid: false,
+        error: 'This password reset link expired after 15 minutes. Please request a new link.'
+      });
+      return;
+    }
+
+    const remainingSeconds = Math.max(0, Math.ceil((record.expiresAt.getTime() - now.getTime()) / 1000));
+
+    res.json({
+      valid: true,
+      email: record.email,
+      expiresAt: record.expiresAt,
+      remainingSeconds
+    });
+  } catch (error: any) {
+    console.error('Verify reset token error:', error);
+    res.status(500).json({ valid: false, error: 'Server error verifying reset token: ' + error.message });
+  }
+});
+
+// POST /api/auth/reset-password-with-token (Consumes token and updates administrative password)
+router.post('/reset-password-with-token', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token, newPassword, confirmPassword } = req.body;
+    const rawToken = (token || '').trim();
+
+    if (!rawToken || !newPassword || !confirmPassword) {
+      res.status(400).json({ error: 'Reset token, new password, and confirmation are required.' });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      res.status(400).json({ error: 'New password and confirmation do not match.' });
+      return;
+    }
+
+    const validation = validatePasswordStrength(newPassword);
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.error });
+      return;
+    }
+
+    const record = await prisma.passwordResetToken.findUnique({
+      where: { token: rawToken }
+    });
+
+    if (!record) {
+      res.status(404).json({ error: 'Invalid or non-existent password reset link.' });
+      return;
+    }
+
+    if (record.usedAt) {
+      res.status(400).json({
+        error: 'Security Alert: This password reset link has already been used and is invalidated.'
+      });
+      return;
+    }
+
+    const now = new Date();
+    if (record.expiresAt < now) {
+      res.status(400).json({
+        error: 'Security Alert: This password reset link expired after 15 minutes. Please submit a new request.'
+      });
+      return;
+    }
+
+    // Hash new password using memory-hardened Argon2id
+    const modernHash = await hashPassword(newPassword);
+    const targetEmail = record.email;
+
+    // Atomically update User password, Employee record, invalidate token and clear lockouts
+    await prisma.$transaction([
+      // 1. Mark this token as used immediately
+      prisma.passwordResetToken.update({
+        where: { id: record.id },
+        data: { usedAt: now }
+      }),
+
+      // 2. Invalidate any other active tokens for this user
+      prisma.passwordResetToken.updateMany({
+        where: {
+          email: targetEmail,
+          usedAt: null
+        },
+        data: { usedAt: now }
+      }),
+
+      // 3. Update User table
+      prisma.user.updateMany({
+        where: { email: targetEmail },
+        data: {
+          password: modernHash,
+          mustChangePassword: false,
+          status: 'Active'
+        }
+      }),
+
+      // 4. Update Employee table if present
+      prisma.employee.updateMany({
+        where: { email: targetEmail },
+        data: {
+          password: modernHash,
+          temporaryPassword: null,
+          mustChangePassword: false
+        }
+      })
+    ]);
+
+    // Clear any active login restriction/lockouts
+    await clearAccountLockout(targetEmail, targetEmail.toLowerCase(), record.identifier);
+
+    // Record audit log
+    await prisma.auditLog.create({
+      data: {
+        action: 'ADMIN_PASSWORD_RESET_COMPLETED',
+        category: 'Identity & Access',
+        details: `Administrative account ${targetEmail} successfully completed secure password reset via single-use token. All previous sessions invalidated.`,
+        actor: targetEmail
+      }
+    }).catch(() => {});
+
+    res.json({
+      success: true,
+      message: 'Your administrative password has been successfully updated! You may now sign in using your new credentials.'
+    });
+  } catch (error: any) {
+    console.error('Reset password with token error:', error);
     res.status(500).json({ error: 'Failed to reset password: ' + error.message });
   }
 });

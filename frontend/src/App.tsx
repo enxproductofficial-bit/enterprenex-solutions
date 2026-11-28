@@ -234,7 +234,7 @@ function PublicWebsiteLayout({ children }: { children: React.ReactNode }) {
 
 function MainAppRoutes() {
   const { pathname } = useLocation();
-  const isAuthOrOnboardingRoute = pathname.startsWith('/admin') || pathname === '/register' || pathname === '/login' || pathname === '/create-new-password' || pathname === '/change-password';
+  const isAuthOrOnboardingRoute = pathname.startsWith('/admin') || pathname === '/register' || pathname === '/login' || pathname === '/create-new-password' || pathname === '/change-password' || pathname === '/reset-password';
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
@@ -298,6 +298,7 @@ function MainAppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/create-new-password" element={<CreateNewPasswordPage />} />
         <Route path="/change-password" element={<CreateNewPasswordPage />} />
+        <Route path="/reset-password" element={<CreateNewPasswordPage />} />
 
         {/* ── ADMIN LOGIN (Protected by IP Restriction Guard) ── */}
         <Route path="/admin/login" element={<IpRestrictionGuard><AdminLoginPage /></IpRestrictionGuard>} />

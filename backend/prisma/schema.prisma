@@ -36,6 +36,21 @@ model LoginSecurity {
   updatedAt       DateTime  @updatedAt
 }
 
+// 1c. Secure Single-Use Administrative Password Reset Tokens
+model PasswordResetToken {
+  id         String    @id @default(uuid())
+  identifier String    // Email or Employee ID submitted
+  email      String    // Target administrative user email
+  token      String    @unique // Cryptographically secure 64-character hex token
+  expiresAt  DateTime  // Expiration timestamp (15 minutes from creation)
+  usedAt     DateTime? // Nullable, marked on successful password reset
+  ipAddress  String?   // IP address of requestor for security audit
+  createdAt  DateTime  @default(now())
+
+  @@index([token])
+  @@index([email])
+}
+
 // 2. Comprehensive Employee Profile & Work History
 model Employee {
   id                  String    @id @default(uuid())
