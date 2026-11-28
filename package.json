@@ -7,10 +7,10 @@
     "schema": "backend/prisma/schema.prisma"
   },
   "scripts": {
-    "render-build": "npm --prefix backend install && npm --prefix backend run prisma:generate && npm --prefix backend run prisma:push && npm --prefix backend run build",
+    "render-build": "npm --prefix backend install && npm --prefix backend run prisma:generate && npm --prefix backend run build",
     "postinstall": "node backend/scripts/patch-prisma.js",
     "render-start": "node backend/dist/server.js",
-    "build": "npm --prefix backend install && npm --prefix backend run prisma:generate && npm --prefix backend run prisma:push && npm --prefix backend run build",
+    "build": "npm --prefix backend install && npm --prefix backend run prisma:generate && npm --prefix backend run build",
     "start": "node backend/dist/server.js"
   }
 }
