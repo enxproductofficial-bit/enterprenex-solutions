@@ -240,30 +240,16 @@ interface AdminContextType {
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'enterprenex_ewms_fresh_v10';
+const STORAGE_KEY = 'enterprenex_ewms_fresh_v11';
 
 export const isExcludedWorkforceRecord = (e: any) => {
-  const name = (e?.name || '').toLowerCase();
   const email = (e?.email || '').toLowerCase();
-  const role = (e?.role || '').toLowerCase();
-  const dept = (e?.department || '').toLowerCase();
   const id = e?.employeeId || '';
   return (
-    name.includes('revanth') ||
-    name.includes('polamreddy') ||
-    email.includes('revanth') ||
-    name.includes('director') ||
-    role.includes('director') ||
-    role.includes('lead architect') ||
-    role.includes('super admin') ||
-    dept.includes('executive') ||
-    name.includes('founder') ||
-    role.includes('founder') ||
-    id === 'ZCX-EMP-0001' ||
+    email === 'director@enterprenexsolution.com' ||
+    email === 'director@enterprenex.solutions' ||
     id === '202600000001' ||
-    id === '202600000002' ||
-    e?.id === 'emp-1' ||
-    e?.id === 'usr-1'
+    e?.id === 'emp-1'
   );
 };
 

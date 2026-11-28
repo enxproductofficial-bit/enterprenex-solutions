@@ -184,7 +184,7 @@ export const TeamPage: React.FC = () => {
   const [editingMetricId, setEditingMetricId] = useState<string | null>(null);
   const [editMetricActual, setEditMetricActual] = useState<string>('');
   const [editMetricScore, setEditMetricScore] = useState<number>(90);
-  const [rosterFilter, setRosterFilter] = useState<'all' | 'pending' | 'approved'>('all');
+  const [rosterFilter, setRosterFilter] = useState<'active' | 'pending' | 'approved' | 'resigned' | 'all'>('active');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showApplyLeaveModal, setShowApplyLeaveModal] = useState(false);
   const [showHolidayModal, setShowHolidayModal] = useState(false);
@@ -1476,13 +1476,17 @@ export const TeamPage: React.FC = () => {
 
       {/* ── 1. TEAM ROSTER GRID ── */}
       {tab === 'roster' && (() => {
-        const pendingEmployees = employees.filter(e => (e.approvalStatus === 'Pending Approval' || e.approvalStatus === 'Pending Director Approval'));
-        const approvedEmployees = employees.filter(e => e.approvalStatus === 'Approved' || !e.approvalStatus);
+        const activeEmployees = employees.filter(e => e.status !== 'Resigned' && e.status !== 'Terminated' && e.status !== 'Inactive' && e.approvalStatus !== 'Rejected');
+        const pendingEmployees = employees.filter(e => (e.approvalStatus === 'Pending Approval' || e.approvalStatus === 'Pending Director Approval') && e.status !== 'Resigned' && e.status !== 'Terminated');
+        const approvedEmployees = employees.filter(e => (e.approvalStatus === 'Approved' || !e.approvalStatus) && e.status !== 'Resigned' && e.status !== 'Terminated');
+        const resignedEmployees = employees.filter(e => e.status === 'Resigned' || e.status === 'Terminated' || e.approvalStatus === 'Rejected');
 
         const displayedEmployees = employees.filter(e => {
-          if (rosterFilter === 'pending') return (e.approvalStatus === 'Pending Approval' || e.approvalStatus === 'Pending Director Approval');
-          if (rosterFilter === 'approved') return e.approvalStatus === 'Approved' || !e.approvalStatus;
-          return true;
+          if (rosterFilter === 'active') return e.status !== 'Resigned' && e.status !== 'Terminated' && e.status !== 'Inactive' && e.approvalStatus !== 'Rejected';
+          if (rosterFilter === 'pending') return (e.approvalStatus === 'Pending Approval' || e.approvalStatus === 'Pending Director Approval') && e.status !== 'Resigned' && e.status !== 'Terminated';
+          if (rosterFilter === 'approved') return (e.approvalStatus === 'Approved' || !e.approvalStatus) && e.status !== 'Resigned' && e.status !== 'Terminated';
+          if (rosterFilter === 'resigned') return e.status === 'Resigned' || e.status === 'Terminated' || e.approvalStatus === 'Rejected';
+          return true; // 'all'
         });
 
         return (
@@ -1559,32 +1563,32 @@ export const TeamPage: React.FC = () => {
                   <button
                     className="adm-btn adm-btn-secondary"
                     style={{ fontSize: '0.78rem', padding: '0.45rem 0.85rem' }}
-                    onClick={() => setRosterFilter(rosterFilter === 'pending' ? 'all' : 'pending')}
+                    onClick={() => setRosterFilter(rosterFilter === 'pending' ? 'active' : 'pending')}
                   >
-                    {rosterFilter === 'pending' ? 'Show All Members' : `Filter Pending (${pendingEmployees.length})`}
+                    {rosterFilter === 'pending' ? 'Show Active Workforce' : `Filter Pending (${pendingEmployees.length})`}
                   </button>
                 </div>
               </div>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.82rem', color: 'var(--adm-text-dim)', fontWeight: 700, marginRight: '4px' }}>
                   {t('team.filterRoster', 'FILTER ROSTER:')}
                 </span>
                 <button
-                  onClick={() => setRosterFilter('all')}
-                  className={`adm-btn adm-btn-sm ${rosterFilter === 'all' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
+                  onClick={() => setRosterFilter('active')}
+                  className={`adm-btn adm-btn-sm ${rosterFilter === 'active' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
                   style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
                 >
-                  {t('team.filterAll', 'All')} ({employees.length})
+                  {t('team.filterActive', 'Active Workforce')} ({activeEmployees.length})
                 </button>
                 <button
                   onClick={() => setRosterFilter('pending')}
                   className={`adm-btn adm-btn-sm ${rosterFilter === 'pending' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
                   style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
                 >
-                  ⏳ {t('team.filterPending', 'Pending Director Review')} ({pendingEmployees.length})
+                  ⏳ {t('team.filterPending', 'Pending Review')} ({pendingEmployees.length})
                 </button>
                 <button
                   onClick={() => setRosterFilter('approved')}
@@ -1592,6 +1596,22 @@ export const TeamPage: React.FC = () => {
                   style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
                 >
                   ✓ {t('team.filterApproved', 'Approved')} ({approvedEmployees.length})
+                </button>
+                {resignedEmployees.length > 0 && (
+                  <button
+                    onClick={() => setRosterFilter('resigned')}
+                    className={`adm-btn adm-btn-sm ${rosterFilter === 'resigned' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
+                    style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem', borderColor: 'rgba(239, 68, 68, 0.4)' }}
+                  >
+                    🚫 {t('team.filterResigned', 'Resigned / Offboarded')} ({resignedEmployees.length})
+                  </button>
+                )}
+                <button
+                  onClick={() => setRosterFilter('all')}
+                  className={`adm-btn adm-btn-sm ${rosterFilter === 'all' ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
+                  style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
+                >
+                  {t('team.filterAll', 'All History')} ({employees.length})
                 </button>
               </div>
 

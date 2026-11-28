@@ -190,6 +190,22 @@ router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): P
         return;
       }
 
+      // Check linked employee administrative status
+      const linkedEmp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { employeeId: user.employeeId || '' },
+            { email: user.email },
+            ...(user.email ? [{ personalEmail: user.email }] : [])
+          ]
+        }
+      });
+
+      if (linkedEmp && (linkedEmp.status === 'Resigned' || linkedEmp.status === 'Terminated' || linkedEmp.status === 'Inactive' || linkedEmp.approvalStatus === 'Rejected')) {
+        res.status(403).json({ error: 'Portal access revoked: This employee account has been marked as resigned or deactivated.' });
+        return;
+      }
+
       // Verify password strictly using Argon2id with backward-compatible bcrypt verification
       let validPassword = await verifyPassword(password, user.password);
 

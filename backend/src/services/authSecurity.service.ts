@@ -18,7 +18,7 @@ export const AUTH_SECURITY_CONFIG = {
   MAX_FAILED_ATTEMPTS: 4,               // Max 4 failed attempts before temporary 15-minute restriction
   LOCKOUT_DURATION_MS: 15 * 60 * 1000,  // 15 minutes lockout duration (900 seconds)
   PROGRESSIVE_DELAY_THRESHOLD: 3,       // Artificial delay after 3 failed attempts
-  IP_MAX_REQUESTS_PER_MINUTE: 10,       // Max 10 login requests per minute per IP
+  IP_MAX_REQUESTS_PER_MINUTE: 100,      // Max 100 login requests per minute per IP (office/NAT & team friendly)
   IP_WINDOW_MS: 60 * 1000,              // 1 minute window
 };
 
