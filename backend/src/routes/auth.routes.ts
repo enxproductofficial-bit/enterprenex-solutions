@@ -21,6 +21,34 @@ const JWT_SECRET = process.env.JWT_SECRET || 'enterprenex_enterprise_jwt_secret_
 
 const GENERIC_AUTH_ERROR = 'Invalid credentials. Please verify your official email or 12-digit Employee ID, and password.';
 
+/**
+ * Normalizes identifier and generates prefix/padding variations
+ * Handles user typing e.g. ZCX-EMP-001 vs ZCX-EMP-0001 seamlessly
+ */
+export const getIdentifierCandidates = (input: string): string[] => {
+  const trimmed = (input || '').trim();
+  if (!trimmed) return [];
+  const candidates = new Set<string>([
+    trimmed,
+    trimmed.toLowerCase(),
+    trimmed.toUpperCase()
+  ]);
+
+  const match = trimmed.match(/^([A-Za-z0-9_-]+?-0*)(\d+)$/);
+  if (match) {
+    const rawPrefix = trimmed.replace(/-0*\d+$/, '-');
+    const num = parseInt(match[2], 10);
+    [1, 2, 3, 4, 5, 6].forEach((digits) => {
+      const padded = rawPrefix + String(num).padStart(digits, '0');
+      candidates.add(padded);
+      candidates.add(padded.toUpperCase());
+      candidates.add(padded.toLowerCase());
+    });
+  }
+
+  return Array.from(candidates);
+};
+
 // POST /api/auth/login (Support official email OR 12-digit Employee ID with Argon2id, Rate Limiting & Brute-Force Lockout)
 router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
@@ -35,6 +63,7 @@ router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): P
     }
 
     const normalizedLoginId = loginId.toLowerCase();
+    const candidates = getIdentifierCandidates(loginId);
 
     // Concurrency Mutex: Serialize concurrent requests for the exact same identifier to prevent Race Conditions
     await authMutex.runExclusive(normalizedLoginId, async () => {
@@ -55,10 +84,8 @@ router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): P
       let user = await prisma.user.findFirst({
         where: {
           OR: [
-            { email: { equals: loginId } },
-            { email: { equals: normalizedLoginId } },
-            { employeeId: { equals: loginId } },
-            { employeeId: { equals: loginId.toUpperCase() } }
+            { email: { in: candidates } },
+            { employeeId: { in: candidates } }
           ]
         }
       });
@@ -68,13 +95,9 @@ router.post('/login', loginIpRateLimiter, async (req: Request, res: Response): P
         const emp = await prisma.employee.findFirst({
           where: {
             OR: [
-              { employeeId: { equals: loginId } },
-              { employeeId: { equals: loginId.toUpperCase() } },
-              { employeeId: { equals: normalizedLoginId } },
-              { email: { equals: loginId } },
-              { email: { equals: normalizedLoginId } },
-              { personalEmail: { equals: loginId } },
-              { personalEmail: { equals: normalizedLoginId } }
+              { employeeId: { in: candidates } },
+              { email: { in: candidates } },
+              { personalEmail: { in: candidates } }
             ]
           }
         });
@@ -702,14 +725,13 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
 
     // Lookup employee in Employee roster or User table
     const normalizedInput = cleanId.toLowerCase();
+    const cleanCandidates = getIdentifierCandidates(cleanId);
     const emp = await prisma.employee.findFirst({
       where: {
         OR: [
-          { employeeId: { equals: cleanId } },
-          { employeeId: { equals: cleanId.toUpperCase() } },
-          { email: { equals: cleanId } },
-          { email: { equals: normalizedInput } },
-          { personalEmail: { equals: normalizedInput } }
+          { employeeId: { in: cleanCandidates } },
+          { email: { in: cleanCandidates } },
+          { personalEmail: { in: cleanCandidates } }
         ]
       }
     });
@@ -717,10 +739,8 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
     let user = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: { equals: cleanId } },
-          { email: { equals: normalizedInput } },
-          { employeeId: { equals: cleanId } },
-          { employeeId: { equals: cleanId.toUpperCase() } }
+          { email: { in: cleanCandidates } },
+          { employeeId: { in: cleanCandidates } }
         ]
       }
     });
